@@ -1,5 +1,5 @@
 {
-    "name": "laralord/laravel-orion",
+    "name": "laravel-orion/laravel-orion",
     "description": "Laravel Orion provides a driver based solution to creating API from your Eloquent models.",
     "keywords": [
         "laravel",
@@ -7,8 +7,8 @@
     ],
     "license": "MIT",
     "support": {
-        "issues": "https://github.com/laralord/laravel-orion/issues",
-        "source": "https://github.com/laralord/laravel-orion"
+        "issues": "https://github.com/laravel-orion/laravel-orion/issues",
+        "source": "https://github.com/laravel-orion/laravel-orion"
     },
     "authors": [
         {
