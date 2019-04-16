@@ -1,0 +1,58 @@
+{
+    "name": "laralord/laravel-orion",
+    "description": "Laravel Orion provides a driver based solution to creating API from your Eloquent models.",
+    "keywords": [
+        "laravel",
+        "api"
+    ],
+    "license": "MIT",
+    "support": {
+        "issues": "https://github.com/laralord/laravel-orion/issues",
+        "source": "https://github.com/laralord/laravel-orion"
+    },
+    "authors": [
+        {
+            "name": "Aleksei Zarubin",
+            "email": "alex@zarubin.co"
+        }
+    ],
+    "require": {
+        "php": ">=7.1",
+        "illuminate/http": "~5.7",
+        "illuminate/bus": "~5.7",
+        "illuminate/contracts": "~5.7",
+        "illuminate/database": "~5.7",
+        "illuminate/pagination": "~5.7",
+        "illuminate/support": "~5.7",
+        "ext-json": "*"
+    },
+    "require-dev": {
+        "mockery/mockery": "~1.0",
+        "phpunit/phpunit": "~6.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Laralord\\Orion\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Laralord\\Orion\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.0-dev"
+        },
+        "laravel": {
+            "providers": [
+                "Laralord\\Orion\\OrionServiceProvider"
+            ]
+        }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
