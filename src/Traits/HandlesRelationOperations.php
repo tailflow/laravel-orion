@@ -62,7 +62,7 @@ trait HandlesRelationOperations
         $beforeSaveHookResult = $this->beforeSave($request, $entity);
         if ($this->hookResponds($beforeSaveHookResult)) return $beforeSaveHookResult;
 
-        $resourceEntity->{static::$relation}()->save($entity);
+        $resourceEntity->{static::$relation}()->save($entity, $this->preparePivotFields($request->get('pivot', [])));
 
         $entity->load($this->relationsFromIncludes($request));
 
