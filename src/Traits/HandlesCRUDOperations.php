@@ -21,14 +21,20 @@ trait HandlesCRUDOperations
     public function index(Request $request)
     {
         $beforeHookResult = $this->beforeIndex($request);
-        if ($this->hookResponds($beforeHookResult)) return $beforeHookResult;
+        if ($this->hookResponds($beforeHookResult)) {
+            return $beforeHookResult;
+        }
 
-        if ($this->authorizationRequired()) $this->authorize('index', static::$model);
+        if ($this->authorizationRequired()) {
+            $this->authorize('index', static::$model);
+        }
 
         $entities = $this->buildMethodQuery($request)->with($this->relationsFromIncludes($request))->paginate();
 
         $afterHookResult = $this->afterIndex($request, $entities);
-        if ($this->hookResponds($afterHookResult)) return $afterHookResult;
+        if ($this->hookResponds($afterHookResult)) {
+            return $afterHookResult;
+        }
 
         return static::$collectionResource ? new static::$collectionResource($entities) : static::$resource::collection($entities);
     }
@@ -42,9 +48,13 @@ trait HandlesCRUDOperations
     public function store(Request $request)
     {
         $beforeHookResult = $this->beforeStore($request);
-        if ($this->hookResponds($beforeHookResult)) return $beforeHookResult;
+        if ($this->hookResponds($beforeHookResult)) {
+            return $beforeHookResult;
+        }
 
-        if ($this->authorizationRequired()) $this->authorize('store', static::$model);
+        if ($this->authorizationRequired()) {
+            $this->authorize('store', static::$model);
+        }
 
         /**
          * @var Model $entity
@@ -53,17 +63,23 @@ trait HandlesCRUDOperations
         $entity->fill($request->only($entity->getFillable()));
 
         $beforeSaveHookResult = $this->beforeSave($request, $entity);
-        if ($this->hookResponds($beforeSaveHookResult)) return $beforeSaveHookResult;
+        if ($this->hookResponds($beforeSaveHookResult)) {
+            return $beforeSaveHookResult;
+        }
 
         $entity->save();
 
         $entity->load($this->relationsFromIncludes($request));
 
         $afterSaveHookResult = $this->afterSave($request, $entity);
-        if ($this->hookResponds($afterSaveHookResult)) return $afterSaveHookResult;
+        if ($this->hookResponds($afterSaveHookResult)) {
+            return $afterSaveHookResult;
+        }
 
         $afterHookResult = $this->afterStore($request, $entity);
-        if ($this->hookResponds($afterHookResult)) return $afterHookResult;
+        if ($this->hookResponds($afterHookResult)) {
+            return $afterHookResult;
+        }
 
         return new static::$resource($entity);
     }
@@ -78,13 +94,19 @@ trait HandlesCRUDOperations
     public function show(Request $request, $id)
     {
         $beforeHookResult = $this->beforeShow($request, $id);
-        if ($this->hookResponds($beforeHookResult)) return $beforeHookResult;
+        if ($this->hookResponds($beforeHookResult)) {
+            return $beforeHookResult;
+        }
 
         $entity = $this->buildMethodQuery($request)->with($this->relationsFromIncludes($request))->findOrFail($id);
-        if ($this->authorizationRequired()) $this->authorize('show', $entity);
+        if ($this->authorizationRequired()) {
+            $this->authorize('show', $entity);
+        }
 
         $afterHookResult = $this->afterShow($request, $entity);
-        if ($this->hookResponds($afterHookResult)) return $afterHookResult;
+        if ($this->hookResponds($afterHookResult)) {
+            return $afterHookResult;
+        }
 
         return new static::$resource($entity);
     }
@@ -99,25 +121,35 @@ trait HandlesCRUDOperations
     public function update(Request $request, $id)
     {
         $beforeHookResult = $this->beforeUpdate($request, $id);
-        if ($this->hookResponds($beforeHookResult)) return $beforeHookResult;
+        if ($this->hookResponds($beforeHookResult)) {
+            return $beforeHookResult;
+        }
 
         $entity = $this->buildMethodQuery($request)->with($this->relationsFromIncludes($request))->findOrFail($id);
-        if ($this->authorizationRequired()) $this->authorize('update', $entity);
+        if ($this->authorizationRequired()) {
+            $this->authorize('update', $entity);
+        }
 
         $entity->fill($request->only($entity->getFillable()));
 
         $beforeSaveHookResult = $this->beforeSave($request, $entity);
-        if ($this->hookResponds($beforeSaveHookResult)) return $beforeSaveHookResult;
+        if ($this->hookResponds($beforeSaveHookResult)) {
+            return $beforeSaveHookResult;
+        }
 
         $entity->save();
 
         $entity->load($this->relationsFromIncludes($request));
 
         $afterSaveHookResult = $this->afterSave($request, $entity);
-        if ($this->hookResponds($afterSaveHookResult)) return $afterSaveHookResult;
+        if ($this->hookResponds($afterSaveHookResult)) {
+            return $afterSaveHookResult;
+        }
 
         $afterHookResult = $this->afterUpdate($request, $entity);
-        if ($this->hookResponds($afterHookResult)) return $afterHookResult;
+        if ($this->hookResponds($afterHookResult)) {
+            return $afterHookResult;
+        }
 
         return new static::$resource($entity);
     }
@@ -133,15 +165,21 @@ trait HandlesCRUDOperations
     public function destroy(Request $request, $id)
     {
         $beforeHookResult = $this->beforeDestroy($request, $id);
-        if ($this->hookResponds($beforeHookResult)) return $beforeHookResult;
+        if ($this->hookResponds($beforeHookResult)) {
+            return $beforeHookResult;
+        }
 
         $entity = $this->buildMethodQuery($request)->with($this->relationsFromIncludes($request))->findOrFail($id);
-        if ($this->authorizationRequired()) $this->authorize('destroy', $entity);
+        if ($this->authorizationRequired()) {
+            $this->authorize('destroy', $entity);
+        }
 
         $entity->delete();
 
         $afterHookResult = $this->afterDestroy($request, $entity);
-        if ($this->hookResponds($afterHookResult)) return $afterHookResult;
+        if ($this->hookResponds($afterHookResult)) {
+            return $afterHookResult;
+        }
 
         return new static::$resource($entity);
     }

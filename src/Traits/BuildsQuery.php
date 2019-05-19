@@ -40,9 +40,11 @@ trait BuildsQuery
     protected function buildMethodQuery(Request $request)
     {
         $method = debug_backtrace()[1]['function'];
-        $customQueryMethod = 'build' . ucfirst($method) . 'Query';
+        $customQueryMethod = 'build'.ucfirst($method).'Query';
 
-        if (method_exists($this, $customQueryMethod)) return $this->{$customQueryMethod}($request);
+        if (method_exists($this, $customQueryMethod)) {
+            return $this->{$customQueryMethod}($request);
+        }
         return $this->buildQuery($request);
     }
 
@@ -74,14 +76,18 @@ trait BuildsQuery
      */
     protected function applySortingToQuery(Request $request, $query)
     {
-        if (!$requestedSortableDescriptorsStr = $request->get('sort')) return;
+        if (!$requestedSortableDescriptorsStr = $request->get('sort')) {
+            return;
+        }
 
         $requestedSortableDescriptors = explode(',', $requestedSortableDescriptorsStr);
         $allowedSortables = $this->sortableBy();
 
         $validatedSortableDescriptors = array_filter($requestedSortableDescriptors, function ($sortableDescriptor) use ($allowedSortables) {
             $sortableDescriptorParams = array_filter(explode('|', $sortableDescriptor));
-            if (count($sortableDescriptorParams) !== 2) return false;
+            if (count($sortableDescriptorParams) !== 2) {
+                return false;
+            }
 
             [$sortable, $direction] = $sortableDescriptorParams;
 
@@ -133,12 +139,16 @@ trait BuildsQuery
      */
     protected function applySearchingToQuery(Request $request, $query)
     {
-        if (!$requestedSearchStr = $request->get('q')) return;
+        if (!$requestedSearchStr = $request->get('q')) {
+            return;
+        }
 
         $searchables = $this->searchableBy();
-        if (!count($searchables)) return;
+        if (!count($searchables)) {
+            return;
+        }
 
-        $query->where(function($whereQuery) use ($searchables, $requestedSearchStr) {
+        $query->where(function ($whereQuery) use ($searchables, $requestedSearchStr) {
             /**
              * @var Builder $whereQuery
              */
@@ -168,10 +178,16 @@ trait BuildsQuery
      */
     protected function validParamConstraint(string $paramConstraint, array $allowedParamConstraints)
     {
-        if (in_array('*', $allowedParamConstraints, true)) return true;
-        if (in_array($paramConstraint, $allowedParamConstraints, true)) return true;
+        if (in_array('*', $allowedParamConstraints, true)) {
+            return true;
+        }
+        if (in_array($paramConstraint, $allowedParamConstraints, true)) {
+            return true;
+        }
 
-        if (strpos($paramConstraint, '.') === false) return false;
+        if (strpos($paramConstraint, '.') === false) {
+            return false;
+        }
 
         $allowedNestedParamConstraints = array_filter($allowedParamConstraints, function ($allowedParamConstraint) {
             return strpos($allowedParamConstraint, '.*') !== false;
@@ -189,7 +205,9 @@ trait BuildsQuery
                 $paramConstraintReduced = $paramConstraint;
                 for ($k = 1; $k < $paramConstraintNestingLevel; $k++) {
                     $paramConstraintReduced = implode('.', array_slice(explode('.', $paramConstraintReduced), -$i));
-                    if ($paramConstraintReduced === $allowedNestedParamConstraintReduced) return true;
+                    if ($paramConstraintReduced === $allowedNestedParamConstraintReduced) {
+                        return true;
+                    }
                 }
             }
         }

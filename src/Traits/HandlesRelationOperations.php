@@ -24,15 +24,21 @@ trait HandlesRelationOperations
     public function index(Request $request, $resourceID)
     {
         $beforeHookResult = $this->beforeIndex($request);
-        if ($this->hookResponds($beforeHookResult)) return $beforeHookResult;
+        if ($this->hookResponds($beforeHookResult)) {
+            return $beforeHookResult;
+        }
 
-        if ($this->authorizationRequired()) $this->authorize('index', static::$model);
+        if ($this->authorizationRequired()) {
+            $this->authorize('index', static::$model);
+        }
 
         $resourceEntity = $this->buildMethodQuery($request)->with($this->relationsFromIncludes($request))->findOrFail($resourceID);
         $entities = $this->buildRelationMethodQuery($request, $resourceEntity)->with($this->relationsFromIncludes($request))->paginate();
 
         $afterHookResult = $this->afterIndex($request, $entities);
-        if ($this->hookResponds($afterHookResult)) return $afterHookResult;
+        if ($this->hookResponds($afterHookResult)) {
+            return $afterHookResult;
+        }
 
         return static::$collectionResource ? new static::$collectionResource($entities) : static::$resource::collection($entities);
     }
@@ -47,11 +53,15 @@ trait HandlesRelationOperations
     public function store(Request $request, $resourceID)
     {
         $beforeHookResult = $this->beforeStore($request);
-        if ($this->hookResponds($beforeHookResult)) return $beforeHookResult;
+        if ($this->hookResponds($beforeHookResult)) {
+            return $beforeHookResult;
+        }
 
         $relationModelClass = $this->getRelationModelClass();
 
-        if ($this->authorizationRequired()) $this->authorize('store', $relationModelClass);
+        if ($this->authorizationRequired()) {
+            $this->authorize('store', $relationModelClass);
+        }
 
         /**
          * @var Model $entity
@@ -62,17 +72,23 @@ trait HandlesRelationOperations
         $entity->fill($request->only($entity->getFillable()));
 
         $beforeSaveHookResult = $this->beforeSave($request, $entity);
-        if ($this->hookResponds($beforeSaveHookResult)) return $beforeSaveHookResult;
+        if ($this->hookResponds($beforeSaveHookResult)) {
+            return $beforeSaveHookResult;
+        }
 
         $resourceEntity->{static::$relation}()->save($entity, $this->preparePivotFields($request->get('pivot', [])));
 
         $entity = $this->buildRelationMethodQuery($request, $resourceEntity)->with($this->relationsFromIncludes($request))->findOrFail($entity->getKey());
 
         $afterSaveHookResult = $this->afterSave($request, $entity);
-        if ($this->hookResponds($afterSaveHookResult)) return $afterSaveHookResult;
+        if ($this->hookResponds($afterSaveHookResult)) {
+            return $afterSaveHookResult;
+        }
 
         $afterHookResult = $this->afterStore($request, $entity);
-        if ($this->hookResponds($afterHookResult)) return $afterHookResult;
+        if ($this->hookResponds($afterHookResult)) {
+            return $afterHookResult;
+        }
 
         return new static::$resource($entity);
     }
@@ -88,15 +104,21 @@ trait HandlesRelationOperations
     public function show(Request $request, $resourceID, $relationID)
     {
         $beforeHookResult = $this->beforeShow($request, $relationID);
-        if ($this->hookResponds($beforeHookResult)) return $beforeHookResult;
+        if ($this->hookResponds($beforeHookResult)) {
+            return $beforeHookResult;
+        }
 
         $resourceEntity = $this->buildMethodQuery($request)->with($this->relationsFromIncludes($request))->findOrFail($resourceID);
         $entity = $this->buildRelationMethodQuery($request, $resourceEntity)->with($this->relationsFromIncludes($request))->findOrFail($relationID);
 
-        if ($this->authorizationRequired()) $this->authorize('show', $entity);
+        if ($this->authorizationRequired()) {
+            $this->authorize('show', $entity);
+        }
 
         $afterHookResult = $this->afterShow($request, $entity);
-        if ($this->hookResponds($afterHookResult)) return $afterHookResult;
+        if ($this->hookResponds($afterHookResult)) {
+            return $afterHookResult;
+        }
 
         return new static::$resource($entity);
     }
@@ -112,17 +134,23 @@ trait HandlesRelationOperations
     public function update(Request $request, $resourceID, $relationID)
     {
         $beforeHookResult = $this->beforeUpdate($request, $relationID);
-        if ($this->hookResponds($beforeHookResult)) return $beforeHookResult;
+        if ($this->hookResponds($beforeHookResult)) {
+            return $beforeHookResult;
+        }
 
         $resourceEntity = $this->buildMethodQuery($request)->with($this->relationsFromIncludes($request))->findOrFail($resourceID);
         $entity = $this->buildRelationMethodQuery($request, $resourceEntity)->with($this->relationsFromIncludes($request))->findOrFail($relationID);
 
-        if ($this->authorizationRequired()) $this->authorize('update', $entity);
+        if ($this->authorizationRequired()) {
+            $this->authorize('update', $entity);
+        }
 
         $entity->fill($request->only($entity->getFillable()));
 
         $beforeSaveHookResult = $this->beforeSave($request, $entity);
-        if ($this->hookResponds($beforeSaveHookResult)) return $beforeSaveHookResult;
+        if ($this->hookResponds($beforeSaveHookResult)) {
+            return $beforeSaveHookResult;
+        }
 
         $entity->save();
 
@@ -134,10 +162,14 @@ trait HandlesRelationOperations
         $entity = $this->buildRelationMethodQuery($request, $resourceEntity)->with($this->relationsFromIncludes($request))->findOrFail($relationID);
 
         $afterSaveHookResult = $this->afterSave($request, $entity);
-        if ($this->hookResponds($afterSaveHookResult)) return $afterSaveHookResult;
+        if ($this->hookResponds($afterSaveHookResult)) {
+            return $afterSaveHookResult;
+        }
 
         $afterHookResult = $this->afterUpdate($request, $entity);
-        if ($this->hookResponds($afterHookResult)) return $afterHookResult;
+        if ($this->hookResponds($afterHookResult)) {
+            return $afterHookResult;
+        }
 
         return new static::$resource($entity);
     }
@@ -154,17 +186,23 @@ trait HandlesRelationOperations
     public function destroy(Request $request, $resourceID, $relationID)
     {
         $beforeHookResult = $this->beforeDestroy($request, $relationID);
-        if ($this->hookResponds($beforeHookResult)) return $beforeHookResult;
+        if ($this->hookResponds($beforeHookResult)) {
+            return $beforeHookResult;
+        }
 
         $resourceEntity = $this->buildMethodQuery($request)->with($this->relationsFromIncludes($request))->findOrFail($resourceID);
         $entity = $this->buildRelationMethodQuery($request, $resourceEntity)->with($this->relationsFromIncludes($request))->findOrFail($relationID);
 
-        if ($this->authorizationRequired()) $this->authorize('destroy', $entity);
+        if ($this->authorizationRequired()) {
+            $this->authorize('destroy', $entity);
+        }
 
         $entity->delete();
 
         $afterHookResult = $this->afterDestroy($request, $entity);
-        if ($this->hookResponds($afterHookResult)) return $afterHookResult;
+        if ($this->hookResponds($afterHookResult)) {
+            return $afterHookResult;
+        }
 
         return new static::$resource($entity);
     }
@@ -179,15 +217,21 @@ trait HandlesRelationOperations
     public function sync(Request $request, $resourceID)
     {
         $beforeHookResult = $this->beforeSync($request, $resourceID);
-        if ($this->hookResponds($beforeHookResult)) return $beforeHookResult;
+        if ($this->hookResponds($beforeHookResult)) {
+            return $beforeHookResult;
+        }
 
         $resourceEntity = $this->buildMethodQuery($request)->with($this->relationsFromIncludes($request))->findOrFail($resourceID);
-        if ($this->authorizationRequired()) $this->authorize('update', $resourceEntity);
+        if ($this->authorizationRequired()) {
+            $this->authorize('update', $resourceEntity);
+        }
 
         $syncResult = $resourceEntity->{static::$relation}()->sync($this->prepareResourcePivotFields($request->get('resources')), $request->get('detaching', true));
 
         $afterHookResult = $this->afterSync($request, $syncResult);
-        if ($this->hookResponds($afterHookResult)) return $afterHookResult;
+        if ($this->hookResponds($afterHookResult)) {
+            return $afterHookResult;
+        }
 
         return response()->json($syncResult);
     }
@@ -202,15 +246,21 @@ trait HandlesRelationOperations
     public function toggle(Request $request, $resourceID)
     {
         $beforeHookResult = $this->beforeToggle($request, $resourceID);
-        if ($this->hookResponds($beforeHookResult)) return $beforeHookResult;
+        if ($this->hookResponds($beforeHookResult)) {
+            return $beforeHookResult;
+        }
 
         $resourceEntity = $this->buildMethodQuery($request)->with($this->relationsFromIncludes($request))->findOrFail($resourceID);
-        if ($this->authorizationRequired()) $this->authorize('update', $resourceEntity);
+        if ($this->authorizationRequired()) {
+            $this->authorize('update', $resourceEntity);
+        }
 
         $togleResult = $resourceEntity->{static::$relation}()->toggle($this->prepareResourcePivotFields($request->get('resources')));
 
         $afterHookResult = $this->afterToggle($request, $togleResult);
-        if ($this->hookResponds($afterHookResult)) return $afterHookResult;
+        if ($this->hookResponds($afterHookResult)) {
+            return $afterHookResult;
+        }
 
         return response()->json($togleResult);
     }
@@ -225,18 +275,25 @@ trait HandlesRelationOperations
     public function attach(Request $request, $resourceID)
     {
         $beforeHookResult = $this->beforeAttach($request, $resourceID);
-        if ($this->hookResponds($beforeHookResult)) return $beforeHookResult;
+        if ($this->hookResponds($beforeHookResult)) {
+            return $beforeHookResult;
+        }
 
         $resourceEntity = $this->buildMethodQuery($request)->with($this->relationsFromIncludes($request))->findOrFail($resourceID);
-        if ($this->authorizationRequired()) $this->authorize('update', $resourceEntity);
+        if ($this->authorizationRequired()) {
+            $this->authorize('update', $resourceEntity);
+        }
 
-        if ($request->get('duplicates'))
+        if ($request->get('duplicates')) {
             $attachResult = $resourceEntity->{static::$relation}()->attach($this->prepareResourcePivotFields($request->get('resources')));
-        else
+        } else {
             $attachResult = $resourceEntity->{static::$relation}()->sync($this->prepareResourcePivotFields($request->get('resources')), false);
+        }
 
         $afterHookResult = $this->afterAttach($request, $attachResult);
-        if ($this->hookResponds($afterHookResult)) return $afterHookResult;
+        if ($this->hookResponds($afterHookResult)) {
+            return $afterHookResult;
+        }
 
         return response()->json([
             'attached' => array_get($attachResult, 'attached', [])
@@ -253,15 +310,21 @@ trait HandlesRelationOperations
     public function detach(Request $request, $resourceID)
     {
         $beforeHookResult = $this->beforeDetach($request, $resourceID);
-        if ($this->hookResponds($beforeHookResult)) return $beforeHookResult;
+        if ($this->hookResponds($beforeHookResult)) {
+            return $beforeHookResult;
+        }
 
         $resourceEntity = $this->buildMethodQuery($request)->with($this->relationsFromIncludes($request))->findOrFail($resourceID);
-        if ($this->authorizationRequired()) $this->authorize('update', $resourceEntity);
+        if ($this->authorizationRequired()) {
+            $this->authorize('update', $resourceEntity);
+        }
 
         $detachResult = $resourceEntity->{static::$relation}()->detach($this->prepareResourcePivotFields($request->get('resources')));
 
         $afterHookResult = $this->afterDetach($request, $detachResult);
-        if ($this->hookResponds($afterHookResult)) return $afterHookResult;
+        if ($this->hookResponds($afterHookResult)) {
+            return $afterHookResult;
+        }
 
         return response()->json([
             'detached' => array_values($request->get('resources', []))
@@ -279,18 +342,24 @@ trait HandlesRelationOperations
     public function updatePivot(Request $request, $resourceID, $relationID)
     {
         $beforeHookResult = $this->beforeUpdatePivot($request, $relationID);
-        if ($this->hookResponds($beforeHookResult)) return $beforeHookResult;
+        if ($this->hookResponds($beforeHookResult)) {
+            return $beforeHookResult;
+        }
 
         $resourceEntity = $this->buildMethodQuery($request)->with($this->relationsFromIncludes($request))->findOrFail($resourceID);
-        if ($this->authorizationRequired()) $this->authorize('update', $resourceEntity);
+        if ($this->authorizationRequired()) {
+            $this->authorize('update', $resourceEntity);
+        }
 
         $updateResult = $resourceEntity->{static::$relation}()->updateExistingPivot($relationID, $this->preparePivotFields($request->get('pivot', [])));
 
         $afterHookResult = $this->afterUpdatePivot($request, $updateResult);
-        if ($this->hookResponds($afterHookResult)) return $afterHookResult;
+        if ($this->hookResponds($afterHookResult)) {
+            return $afterHookResult;
+        }
 
         return response()->json([
-            'updated' => [is_numeric($relationID) ? (int)$relationID : $relationID]
+            'updated' => [is_numeric($relationID) ? (int) $relationID : $relationID]
         ]);
     }
 
@@ -305,7 +374,9 @@ trait HandlesRelationOperations
         $resources = array_wrap($resources);
 
         foreach ($resources as $key => &$pivotFields) {
-            if (!is_array($pivotFields)) continue;
+            if (!is_array($pivotFields)) {
+                continue;
+            }
             $pivotFields = array_only($pivotFields, $this->pivotFillable);
             $pivotFields = $this->preparePivotFields($pivotFields);
         }
@@ -322,7 +393,9 @@ trait HandlesRelationOperations
     protected function preparePivotFields($pivotFields)
     {
         foreach ($pivotFields as &$field) {
-            if (is_array($field) || is_object($field)) $field = json_encode($field);
+            if (is_array($field) || is_object($field)) {
+                $field = json_encode($field);
+            }
         }
 
         return $pivotFields;
@@ -624,9 +697,11 @@ trait HandlesRelationOperations
     protected function buildRelationMethodQuery(Request $request, $resourceEntity)
     {
         $method = debug_backtrace()[1]['function'];
-        $customQueryMethod = 'buildRelation' . ucfirst($method) . 'Query';
+        $customQueryMethod = 'buildRelation'.ucfirst($method).'Query';
 
-        if (method_exists($this, $customQueryMethod)) return $this->{$customQueryMethod}($request);
+        if (method_exists($this, $customQueryMethod)) {
+            return $this->{$customQueryMethod}($request);
+        }
         return $this->buildRelationQuery($request, $resourceEntity);
     }
 

@@ -35,7 +35,9 @@ class BaseController extends \Illuminate\Routing\Controller
      */
     public function __construct()
     {
-        if (!static::$model) throw new \Exception('Model is not specified for ' . __CLASS__);
+        if (!static::$model) {
+            throw new \Exception('Model is not specified for '.__CLASS__);
+        }
     }
 
     /**
