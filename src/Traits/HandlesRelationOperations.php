@@ -5,6 +5,8 @@ namespace Laralord\Orion\Traits;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\Resource;
@@ -64,7 +66,7 @@ trait HandlesRelationOperations
 
         $resourceEntity->{static::$relation}()->save($entity, $this->preparePivotFields($request->get('pivot', [])));
 
-        $entity->load($this->relationsFromIncludes($request));
+        $entity = $this->buildRelationMethodQuery($request, $resourceEntity)->with($this->relationsFromIncludes($request))->findOrFail($entity->getKey());
 
         $afterSaveHookResult = $this->afterSave($request, $entity);
         if ($this->hookResponds($afterSaveHookResult)) return $afterSaveHookResult;
@@ -122,9 +124,14 @@ trait HandlesRelationOperations
         $beforeSaveHookResult = $this->beforeSave($request, $entity);
         if ($this->hookResponds($beforeSaveHookResult)) return $beforeSaveHookResult;
 
-        $resourceEntity->{static::$relation}()->save($entity);
+        $entity->save();
 
-        $entity->load($this->relationsFromIncludes($request));
+        $relation = $resourceEntity->{static::$relation}();
+        if ($relation instanceof BelongsToMany || $relation instanceof MorphToMany) {
+            $relation->updateExistingPivot($relationID, $this->preparePivotFields($request->get('pivot', [])));
+        }
+
+        $entity = $this->buildRelationMethodQuery($request, $resourceEntity)->with($this->relationsFromIncludes($request))->findOrFail($relationID);
 
         $afterSaveHookResult = $this->afterSave($request, $entity);
         if ($this->hookResponds($afterSaveHookResult)) return $afterSaveHookResult;
