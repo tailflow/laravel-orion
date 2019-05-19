@@ -2,8 +2,6 @@
 
 namespace Laralord\Orion\Traits;
 
-use App\Models\Post;
-use App\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -284,7 +282,9 @@ trait HandlesRelationOperations
         $afterHookResult = $this->afterUpdatePivot($request, $updateResult);
         if ($this->hookResponds($afterHookResult)) return $afterHookResult;
 
-        return response()->json($updateResult);
+        return response()->json([
+            'updated' => [is_numeric($relationID) ? (int)$relationID : $relationID]
+        ]);
     }
 
     /**
