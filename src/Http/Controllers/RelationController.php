@@ -19,4 +19,11 @@ class RelationController extends BaseController
      * @var bool
      */
     protected $pivotFillable = [];
+
+    /**
+     * The list of pivot json fields that needs to be casted to array.
+     *
+     * @var array
+     */
+    protected $pivotJson = [];
 }

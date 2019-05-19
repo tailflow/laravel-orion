@@ -2,6 +2,7 @@
 
 namespace Laralord\Orion\Traits;
 
+use Exception;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -34,6 +35,18 @@ trait HandlesRelationOperations
 
         $resourceEntity = $this->buildMethodQuery($request)->with($this->relationsFromIncludes($request))->findOrFail($resourceID);
         $entities = $this->buildRelationMethodQuery($request, $resourceEntity)->with($this->relationsFromIncludes($request))->paginate();
+
+        if (count($this->pivotJson)) {
+            $entities->getCollection()->transform(function($entity) {
+                if (!$entity->pivot) return $entity;
+
+                foreach ($this->pivotJson as $pivotJsonField) {
+                    if (!$entity->pivot->{$pivotJsonField}) continue;
+                    $entity->pivot->{$pivotJsonField} = json_decode($entity->pivot->{$pivotJsonField}, true);
+                }
+                return $entity;
+            });
+        }
 
         $afterHookResult = $this->afterIndex($request, $entities);
         if ($this->hookResponds($afterHookResult)) {
@@ -181,7 +194,7 @@ trait HandlesRelationOperations
      * @param int $resourceID
      * @param int $relationID
      * @return Resource
-     * @throws \Exception
+     * @throws Exception
      */
     public function destroy(Request $request, $resourceID, $relationID)
     {
@@ -668,7 +681,7 @@ trait HandlesRelationOperations
      *
      * @param Request $request
      * @param Model $resourceEntity
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @return Builder
      */
     protected function buildRelationQuery(Request $request, $resourceEntity)
     {
