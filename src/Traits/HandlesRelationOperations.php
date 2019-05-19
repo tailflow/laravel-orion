@@ -233,7 +233,9 @@ trait HandlesRelationOperations
         $afterHookResult = $this->afterAttach($request, $attachResult);
         if ($this->hookResponds($afterHookResult)) return $afterHookResult;
 
-        return response()->json($attachResult);
+        return response()->json([
+            'attached' => array_get($attachResult, 'attached', [])
+        ]);
     }
 
     /**
@@ -256,7 +258,9 @@ trait HandlesRelationOperations
         $afterHookResult = $this->afterDetach($request, $detachResult);
         if ($this->hookResponds($afterHookResult)) return $afterHookResult;
 
-        return response()->json($detachResult);
+        return response()->json([
+            'detached' => array_values($request->get('resources', []))
+        ]);
     }
 
     /**
