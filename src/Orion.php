@@ -35,10 +35,10 @@ class Orion
             Route::get("{$resource}/{{$resourceName}}/{$relation}", $controller.'@index')->name("$resource.relation.$relation.index");
         }
         Route::post("{$resource}/{{$resourceName}}/{$relation}", $controller.'@store')->name("$resource.relation.$relation.store");
-        Route::get("{$resource}/{{$resourceName}}/{$relation}/{{$relation}}", $controller.'@show')->name("$resource.relation.$relation.show");
-        Route::patch("{$resource}/{{$resourceName}}/{$relation}/{{$relation}}", $controller.'@update')->name("$resource.relation.$relation.update");
-        Route::put("{$resource}/{{$resourceName}}/{$relation}/{{$relation}}", $controller.'@update')->name("$resource.relation.$relation.update");
-        Route::delete("{$resource}/{{$resourceName}}/{$relation}/{{$relation}}", $controller.'@destroy')->name("$resource.relation.$relation.destroy");
+        Route::get("{$resource}/{{$resourceName}}/{$relation}/{{$relation}?}", $controller.'@show')->name("$resource.relation.$relation.show");
+        Route::patch("{$resource}/{{$resourceName}}/{$relation}/{{$relation}?}", $controller.'@update')->name("$resource.relation.$relation.update");
+        Route::put("{$resource}/{{$resourceName}}/{$relation}/{{$relation}?}", $controller.'@update')->name("$resource.relation.$relation.update");
+        Route::delete("{$resource}/{{$resourceName}}/{$relation}/{{$relation}?}", $controller.'@destroy')->name("$resource.relation.$relation.destroy");
 
         return true;
     }
