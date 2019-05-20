@@ -2,6 +2,7 @@
 
 namespace Laralord\Orion;
 
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -21,17 +22,20 @@ class Orion
     {
         $resourceName = str_singular($resource);
 
-        if (!in_array($relationType, [HasOne::class, MorphOne::class], true)) {
+        if ($relationType === BelongsTo::class) {
+            Route::post("{$resource}/{{$resourceName}}/{$relation}/associate", $controller.'@associate')->name("$resource.relation.$relation.associate");
+            Route::delete("{$resource}/{{$resourceName}}/{$relation}/disassociate", $controller.'@disassociate')->name("$resource.relation.$relation.disassociate");
+        }
+
+        if (!in_array($relationType, [HasOne::class, MorphOne::class, BelongsTo::class], true)) {
             if (!in_array($relationType, [HasMany::class, MorphMany::class], true)) {
                 Route::patch("{$resource}/{{$resourceName}}/{$relation}/sync", $controller.'@sync')->name("$resource.relation.$relation.sync");
                 Route::patch("{$resource}/{{$resourceName}}/{$relation}/toggle", $controller.'@toggle')->name("$resource.relation.$relation.toggle");
                 Route::patch("{$resource}/{{$resourceName}}/{$relation}/{{$relation}}/pivot", $controller.'@updatePivot')->name("$resource.relation.$relation.pivot");
+                Route::post("{$resource}/{{$resourceName}}/{$relation}/attach", $controller.'@attach')->name("$resource.relation.$relation.attach");
+                Route::delete("{$resource}/{{$resourceName}}/{$relation}/detach", $controller.'@detach')->name("$resource.relation.$relation.detach");
             }
-            Route::post("{$resource}/{{$resourceName}}/{$relation}/attach", $controller.'@attach')->name("$resource.relation.$relation.attach");
-            Route::delete("{$resource}/{{$resourceName}}/{$relation}/detach", $controller.'@detach')->name("$resource.relation.$relation.detach");
-        }
 
-        if (!in_array($relationType, [HasOne::class, MorphOne::class], true)) {
             Route::get("{$resource}/{{$resourceName}}/{$relation}", $controller.'@index')->name("$resource.relation.$relation.index");
         }
         Route::post("{$resource}/{{$resourceName}}/{$relation}", $controller.'@store')->name("$resource.relation.$relation.store");
@@ -51,6 +55,11 @@ class Orion
     public static function hasManyResource($resource, $relation, $controller)
     {
         return static::resourceRelation($resource, $relation, $controller, HasMany::class);
+    }
+
+    public static function belongsToResource($resource, $relation, $controller)
+    {
+        return static::resourceRelation($resource, $relation, $controller, BelongsTo::class);
     }
 
     public static function belongsToManyResource($resource, $relation, $controller)

@@ -11,7 +11,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
-use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\Resource;
@@ -119,12 +118,12 @@ trait HandlesRelationOperations
      *
      * @param Request $request
      * @param int $resourceID
-     * @param int|null $relationID
+     * @param int|null $relatedID
      * @return Resource
      */
-    public function show(Request $request, $resourceID, $relationID = null)
+    public function show(Request $request, $resourceID, $relatedID = null)
     {
-        $beforeHookResult = $this->beforeShow($request, $relationID);
+        $beforeHookResult = $this->beforeShow($request, $relatedID);
         if ($this->hookResponds($beforeHookResult)) {
             return $beforeHookResult;
         }
@@ -134,8 +133,8 @@ trait HandlesRelationOperations
         if ($this->isOneToOneRelation($resourceEntity)) {
             $entity = $this->buildRelationMethodQuery($request, $resourceEntity)->with($this->relationsFromIncludes($request))->firstOrFail();
         } else {
-            $this->abortIfMissingRelationID($relationID);
-            $entity = $this->buildRelationMethodQuery($request, $resourceEntity)->with($this->relationsFromIncludes($request))->findOrFail($relationID);
+            $this->abortIfMissingRelatedID($relatedID);
+            $entity = $this->buildRelationMethodQuery($request, $resourceEntity)->with($this->relationsFromIncludes($request))->findOrFail($relatedID);
         }
 
         if ($this->authorizationRequired()) {
@@ -155,12 +154,12 @@ trait HandlesRelationOperations
      *
      * @param Request $request
      * @param int $resourceID
-     * @param int|null $relationID
+     * @param int|null $relatedID
      * @return Resource
      */
-    public function update(Request $request, $resourceID, $relationID = null)
+    public function update(Request $request, $resourceID, $relatedID = null)
     {
-        $beforeHookResult = $this->beforeUpdate($request, $relationID);
+        $beforeHookResult = $this->beforeUpdate($request, $relatedID);
         if ($this->hookResponds($beforeHookResult)) {
             return $beforeHookResult;
         }
@@ -170,8 +169,8 @@ trait HandlesRelationOperations
         if ($this->isOneToOneRelation($resourceEntity)) {
             $entity = $this->buildRelationMethodQuery($request, $resourceEntity)->with($this->relationsFromIncludes($request))->firstOrFail();
         } else {
-            $this->abortIfMissingRelationID($relationID);
-            $entity = $this->buildRelationMethodQuery($request, $resourceEntity)->with($this->relationsFromIncludes($request))->findOrFail($relationID);
+            $this->abortIfMissingRelatedID($relatedID);
+            $entity = $this->buildRelationMethodQuery($request, $resourceEntity)->with($this->relationsFromIncludes($request))->findOrFail($relatedID);
         }
 
         if ($this->authorizationRequired()) {
@@ -189,14 +188,14 @@ trait HandlesRelationOperations
 
         $relation = $resourceEntity->{static::$relation}();
         if ($relation instanceof BelongsToMany || $relation instanceof MorphToMany) {
-            $relation->updateExistingPivot($relationID, $this->preparePivotFields($request->get('pivot', [])));
-        }
+            $relation->updateExistingPivot($relatedID, $this->preparePivotFields($request->get('pivot', [])));
 
-        if ($this->isOneToOneRelation($resourceEntity)) {
-            $entity = $this->buildRelationMethodQuery($request, $resourceEntity)->with($this->relationsFromIncludes($request))->firstOrFail();
-        } else {
-            $this->abortIfMissingRelationID($relationID);
-            $entity = $this->buildRelationMethodQuery($request, $resourceEntity)->with($this->relationsFromIncludes($request))->findOrFail($relationID);
+            if ($this->isOneToOneRelation($resourceEntity)) {
+                $entity = $this->buildRelationMethodQuery($request, $resourceEntity)->with($this->relationsFromIncludes($request))->firstOrFail();
+            } else {
+                $this->abortIfMissingRelatedID($relatedID);
+                $entity = $this->buildRelationMethodQuery($request, $resourceEntity)->with($this->relationsFromIncludes($request))->findOrFail($relatedID);
+            }
         }
 
         $afterSaveHookResult = $this->afterSave($request, $entity);
@@ -217,13 +216,13 @@ trait HandlesRelationOperations
      *
      * @param Request $request
      * @param int $resourceID
-     * @param int|null $relationID
+     * @param int|null $relatedID
      * @return Resource
      * @throws Exception
      */
-    public function destroy(Request $request, $resourceID, $relationID = null)
+    public function destroy(Request $request, $resourceID, $relatedID = null)
     {
-        $beforeHookResult = $this->beforeDestroy($request, $relationID);
+        $beforeHookResult = $this->beforeDestroy($request, $relatedID);
         if ($this->hookResponds($beforeHookResult)) {
             return $beforeHookResult;
         }
@@ -233,8 +232,8 @@ trait HandlesRelationOperations
         if ($this->isOneToOneRelation($resourceEntity)) {
             $entity = $this->buildRelationMethodQuery($request, $resourceEntity)->with($this->relationsFromIncludes($request))->firstOrFail();
         } else {
-            $this->abortIfMissingRelationID($relationID);
-            $entity = $this->buildRelationMethodQuery($request, $resourceEntity)->with($this->relationsFromIncludes($request))->findOrFail($relationID);
+            $this->abortIfMissingRelatedID($relatedID);
+            $entity = $this->buildRelationMethodQuery($request, $resourceEntity)->with($this->relationsFromIncludes($request))->findOrFail($relatedID);
         }
 
         if ($this->authorizationRequired()) {
@@ -249,6 +248,77 @@ trait HandlesRelationOperations
         }
 
         return new static::$resource($entity);
+    }
+
+    /**
+     * Associates resource with another resource.
+     *
+     * @param Request $request
+     * @param int $resourceID
+     * @return Resource
+     * @throws Exception
+     */
+    public function associate(Request $request, $resourceID)
+    {
+        $this->validate($request, [
+            'related_id' => 'required|integer'
+        ]);
+
+        $relatedID = $request->get('related_id');
+
+        $resourceEntity = $this->buildMethodQuery($request)->with($this->relationsFromIncludes($request))->findOrFail($resourceID);
+        $entity = $resourceEntity->{static::$relation}()->getRelated()->findOrFail($relatedID);
+
+        $beforeHookResult = $this->beforeAssociate($request, $resourceEntity, $entity);
+        if ($this->hookResponds($beforeHookResult)) {
+            return $beforeHookResult;
+        }
+
+        if ($this->authorizationRequired()) {
+            $this->authorize('update', $resourceEntity);
+            $this->authorize('show', $entity);
+        }
+
+        $resourceEntity->{static::$relation}()->associate($entity);
+
+        $afterHookResult = $this->afterAssociate($request, $resourceEntity);
+        if ($this->hookResponds($afterHookResult)) {
+            return $afterHookResult;
+        }
+
+        return new static::$resource($resourceEntity);
+    }
+
+    /**
+     * Disassociates resource from another resource.
+     *
+     * @param Request $request
+     * @param int $resourceID
+     * @return Resource
+     * @throws Exception
+     */
+    public function disassociate(Request $request, $resourceID)
+    {
+        $resourceEntity = $this->buildMethodQuery($request)->with($this->relationsFromIncludes($request))->findOrFail($resourceID);
+        $entity = $resourceEntity->{static::$relation}()->first();
+
+        $beforeHookResult = $this->beforeDisassociate($request, $resourceEntity, $entity);
+        if ($this->hookResponds($beforeHookResult)) {
+            return $beforeHookResult;
+        }
+
+        if ($this->authorizationRequired()) {
+            $this->authorize('update', $resourceEntity);
+        }
+
+        $resourceEntity->{static::$relation}()->disassociate();
+
+        $afterHookResult = $this->afterDisassociate($request, $resourceEntity);
+        if ($this->hookResponds($afterHookResult)) {
+            return $afterHookResult;
+        }
+
+        return new static::$resource($resourceEntity);
     }
 
     /**
@@ -458,13 +528,13 @@ trait HandlesRelationOperations
     }
 
     /**
-     * Throws exception, if relation ID is undefined and relation type is not one-to-one.
+     * Throws exception, if related ID is undefined and relation type is not one-to-one.
      *
-     * @param int|null $relationID
+     * @param int|null $relatedID
      */
-    protected function abortIfMissingRelationID($relationID)
+    protected function abortIfMissingRelatedID($relatedID)
     {
-        if ($relationID) {
+        if ($relatedID) {
             return;
         }
         throw new \InvalidArgumentException('Relation ID is required, if relation type is not one-to-one');
@@ -608,6 +678,56 @@ trait HandlesRelationOperations
      * @return mixed
      */
     protected function afterSave(Request $request, $entity)
+    {
+        return null;
+    }
+
+    /**
+     * The hook is executed before associating relation resource.
+     *
+     * @param Request $request
+     * @param Model $resourceEntity
+     * @param Model $entity
+     * @return mixed
+     */
+    protected function beforeAssociate(Request $request, $resourceEntity, $entity)
+    {
+        return null;
+    }
+
+    /**
+     * The hook is executed after associating relation resource.
+     *
+     * @param Request $request
+     * @param Model $resourceEntity
+     * @return mixed
+     */
+    protected function afterAssociate(Request $request, $resourceEntity)
+    {
+        return null;
+    }
+
+    /**
+     * The hook is executed before disassociating relation resource.
+     *
+     * @param Request $request
+     * @param Model $resourceEntity
+     * @param Model $entity
+     * @return mixed
+     */
+    protected function beforeDisassociate(Request $request, $resourceEntity, $entity)
+    {
+        return null;
+    }
+
+    /**
+     * The hook is executed after disassociating relation resource.
+     *
+     * @param Request $request
+     * @param Model $resourceEntity
+     * @return mixed
+     */
+    protected function afterDisassociate(Request $request, $resourceEntity)
     {
         return null;
     }
