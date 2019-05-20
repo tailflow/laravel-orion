@@ -22,13 +22,11 @@ class Orion
     {
         $resourceName = str_singular($resource);
 
-        if ($relationType === BelongsTo::class) {
-            Route::post("{$resource}/{{$resourceName}}/{$relation}/associate", $controller.'@associate')->name("$resource.relation.$relation.associate");
-            Route::delete("{$resource}/{{$resourceName}}/{$relation}/disassociate", $controller.'@disassociate')->name("$resource.relation.$relation.disassociate");
-        }
-
         if (!in_array($relationType, [HasOne::class, MorphOne::class, BelongsTo::class], true)) {
-            if (!in_array($relationType, [HasMany::class, MorphMany::class], true)) {
+            if (in_array($relationType, [HasMany::class, MorphMany::class], true)) {
+                Route::post("{$resource}/{{$resourceName}}/{$relation}/associate", $controller.'@associate')->name("$resource.relation.$relation.associate");
+                Route::delete("{$resource}/{{$resourceName}}/{$relation}/{{$relation}}/dissociate", $controller.'@dissociate')->name("$resource.relation.$relation.dissociate");
+            } else {
                 Route::patch("{$resource}/{{$resourceName}}/{$relation}/sync", $controller.'@sync')->name("$resource.relation.$relation.sync");
                 Route::patch("{$resource}/{{$resourceName}}/{$relation}/toggle", $controller.'@toggle')->name("$resource.relation.$relation.toggle");
                 Route::patch("{$resource}/{{$resourceName}}/{$relation}/{{$relation}}/pivot", $controller.'@updatePivot')->name("$resource.relation.$relation.pivot");
@@ -38,7 +36,10 @@ class Orion
 
             Route::get("{$resource}/{{$resourceName}}/{$relation}", $controller.'@index')->name("$resource.relation.$relation.index");
         }
-        Route::post("{$resource}/{{$resourceName}}/{$relation}", $controller.'@store')->name("$resource.relation.$relation.store");
+
+        if ($relationType !== BelongsTo::class) {
+            Route::post("{$resource}/{{$resourceName}}/{$relation}", $controller.'@store')->name("$resource.relation.$relation.store");
+        }
         Route::get("{$resource}/{{$resourceName}}/{$relation}/{{$relation}?}", $controller.'@show')->name("$resource.relation.$relation.show");
         Route::patch("{$resource}/{{$resourceName}}/{$relation}/{{$relation}?}", $controller.'@update')->name("$resource.relation.$relation.update");
         Route::put("{$resource}/{{$resourceName}}/{$relation}/{{$relation}?}", $controller.'@update')->name("$resource.relation.$relation.update");

@@ -96,7 +96,12 @@ trait HandlesRelationOperations
             return $beforeSaveHookResult;
         }
 
-        $resourceEntity->{static::$relation}()->save($entity, $this->preparePivotFields($request->get('pivot', [])));
+        if (!$resourceEntity->{static::$relation}() instanceof BelongsTo) {
+            $resourceEntity->{static::$relation}()->save($entity, $this->preparePivotFields($request->get('pivot', [])));
+        } else {
+            $entity->save();
+            $resourceEntity->{static::$relation}()->associate($entity);
+        }
 
         $entity = $this->buildRelationMethodQuery($request, $resourceEntity)->with($this->relationsFromIncludes($request))->findOrFail($entity->getKey());
 
@@ -264,6 +269,10 @@ trait HandlesRelationOperations
             'related_id' => 'required|integer'
         ]);
 
+        if (!static::$associatingRelation) {
+            throw new Exception('$associatingRelation property is not set on '.__CLASS__);
+        }
+
         $relatedID = $request->get('related_id');
 
         $resourceEntity = $this->buildMethodQuery($request)->with($this->relationsFromIncludes($request))->findOrFail($resourceID);
@@ -275,18 +284,18 @@ trait HandlesRelationOperations
         }
 
         if ($this->authorizationRequired()) {
-            $this->authorize('update', $resourceEntity);
-            $this->authorize('show', $entity);
+            $this->authorize('show', $resourceEntity);
+            $this->authorize('update', $entity);
         }
 
-        $resourceEntity->{static::$relation}()->associate($entity);
+        $entity->{static::$associatingRelation}()->associate($resourceEntity);
 
-        $afterHookResult = $this->afterAssociate($request, $resourceEntity);
+        $afterHookResult = $this->afterAssociate($request, $entity);
         if ($this->hookResponds($afterHookResult)) {
             return $afterHookResult;
         }
 
-        return new static::$resource($resourceEntity);
+        return new static::$resource($entity);
     }
 
     /**
@@ -294,31 +303,37 @@ trait HandlesRelationOperations
      *
      * @param Request $request
      * @param int $resourceID
+     * @param int $relatedID
      * @return Resource
      * @throws Exception
      */
-    public function disassociate(Request $request, $resourceID)
+    public function dissociate(Request $request, $resourceID, $relatedID)
     {
-        $resourceEntity = $this->buildMethodQuery($request)->with($this->relationsFromIncludes($request))->findOrFail($resourceID);
-        $entity = $resourceEntity->{static::$relation}()->first();
+        if (!static::$associatingRelation) {
+            throw new Exception('$associatingRelation property is not set on '.__CLASS__);
+        }
 
-        $beforeHookResult = $this->beforeDisassociate($request, $resourceEntity, $entity);
+        $resourceEntity = $this->buildMethodQuery($request)->with($this->relationsFromIncludes($request))->findOrFail($resourceID);
+        $entity = $this->buildRelationMethodQuery($request, $resourceEntity)->with($this->relationsFromIncludes($request))->findOrFail($relatedID);
+
+        $beforeHookResult = $this->beforeDissociate($request, $resourceEntity, $entity);
         if ($this->hookResponds($beforeHookResult)) {
             return $beforeHookResult;
         }
 
         if ($this->authorizationRequired()) {
-            $this->authorize('update', $resourceEntity);
+            $this->authorize('update', $entity);
         }
 
-        $resourceEntity->{static::$relation}()->disassociate();
+        $entity->{static::$associatingRelation}()->dissociate();
+        $entity->save();
 
-        $afterHookResult = $this->afterDisassociate($request, $resourceEntity);
+        $afterHookResult = $this->afterDissociate($request, $entity);
         if ($this->hookResponds($afterHookResult)) {
             return $afterHookResult;
         }
 
-        return new static::$resource($resourceEntity);
+        return new static::$resource($entity);
     }
 
     /**
@@ -699,35 +714,35 @@ trait HandlesRelationOperations
      * The hook is executed after associating relation resource.
      *
      * @param Request $request
-     * @param Model $resourceEntity
+     * @param Model $entity
      * @return mixed
      */
-    protected function afterAssociate(Request $request, $resourceEntity)
+    protected function afterAssociate(Request $request, $entity)
     {
         return null;
     }
 
     /**
-     * The hook is executed before disassociating relation resource.
+     * The hook is executed before dissociating relation resource.
      *
      * @param Request $request
      * @param Model $resourceEntity
      * @param Model $entity
      * @return mixed
      */
-    protected function beforeDisassociate(Request $request, $resourceEntity, $entity)
+    protected function beforeDissociate(Request $request, $resourceEntity, $entity)
     {
         return null;
     }
 
     /**
-     * The hook is executed after disassociating relation resource.
+     * The hook is executed after dissociating relation resource.
      *
      * @param Request $request
-     * @param Model $resourceEntity
+     * @param Model $entity
      * @return mixed
      */
-    protected function afterDisassociate(Request $request, $resourceEntity)
+    protected function afterDissociate(Request $request, $entity)
     {
         return null;
     }

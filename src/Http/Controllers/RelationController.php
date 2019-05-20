@@ -14,6 +14,11 @@ class RelationController extends BaseController
     protected static $relation = null;
 
     /**
+     * @var string|null $relation
+     */
+    protected static $associatingRelation = null;
+
+    /**
      * The list of pivot fields that can be set upon relation resource creation or update.
      *
      * @var bool
