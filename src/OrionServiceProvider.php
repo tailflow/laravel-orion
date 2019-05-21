@@ -2,7 +2,9 @@
 
 namespace Laralord\Orion;
 
-class OrionServiceProvider extends \Illuminate\Support\ServiceProvider
+use Illuminate\Support\ServiceProvider;
+
+class OrionServiceProvider extends ServiceProvider
 {
 
 }

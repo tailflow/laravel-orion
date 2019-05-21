@@ -31,4 +31,14 @@ class RelationController extends BaseController
      * @var array
      */
     protected $pivotJson = [];
+
+    /**
+     * Retrieves model related to resource.
+     *
+     * @return string
+     */
+    protected function getResourceModel()
+    {
+        return get_class((new static::$model)->{static::$relation}()->getRelated());
+    }
 }

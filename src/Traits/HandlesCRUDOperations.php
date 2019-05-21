@@ -2,6 +2,7 @@
 
 namespace Laralord\Orion\Traits;
 
+use Exception;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
@@ -160,7 +161,7 @@ trait HandlesCRUDOperations
      * @param Request $request
      * @param int $id
      * @return Resource
-     * @throws \Exception
+     * @throws Exception
      */
     public function destroy(Request $request, $id)
     {

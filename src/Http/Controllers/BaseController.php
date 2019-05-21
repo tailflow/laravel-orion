@@ -2,6 +2,7 @@
 
 namespace Laralord\Orion\Http\Controllers;
 
+use Exception;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
@@ -9,7 +10,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Response;
 use Laralord\Orion\Traits\BuildsQuery;
 
-class BaseController extends \Illuminate\Routing\Controller
+abstract class BaseController extends \Illuminate\Routing\Controller
 {
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests, BuildsQuery;
 
@@ -21,7 +22,7 @@ class BaseController extends \Illuminate\Routing\Controller
     /**
      * @var string $resource
      */
-    protected static $resource = JsonResource::class;
+    protected static $resource = null;
 
     /**
      * @var string $collectionResource
@@ -31,12 +32,18 @@ class BaseController extends \Illuminate\Routing\Controller
     /**
      * Controller constructor.
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function __construct()
     {
         if (!static::$model) {
-            throw new \Exception('Model is not specified for '.__CLASS__);
+            throw new Exception('Model is not specified for '.__CLASS__);
+        }
+        if (!static::$resource) {
+            $this->resolveResource();
+        }
+        if (!static::$collectionResource) {
+            $this->resolveCollectionResource();
         }
     }
 
@@ -128,4 +135,35 @@ class BaseController extends \Illuminate\Routing\Controller
             'destroy' => 'delete',
         ];
     }
+
+    /**
+     * Guesses resource class based on the resource model.
+     */
+    protected function resolveResource()
+    {
+        $resourceClassName = 'App\\Http\\Resources\\'.class_basename($this->getResourceModel()).'Resource';
+        if (class_exists($resourceClassName)) {
+            static::$resource = $resourceClassName;
+        } else {
+            static::$resource = JsonResource::class;
+        }
+    }
+
+    /**
+     * Guesses collection resource class based on the resource model.
+     */
+    protected function resolveCollectionResource()
+    {
+        $collectionResourceClassName = 'App\\Http\\Resources\\'.class_basename($this->getResourceModel()).'CollectionResource';
+        if (class_exists($collectionResourceClassName)) {
+            static::$collectionResource = $collectionResourceClassName;
+        }
+    }
+
+    /**
+     * Retrieves model related to resource.
+     *
+     * @return string
+     */
+    abstract protected function getResourceModel();
 }

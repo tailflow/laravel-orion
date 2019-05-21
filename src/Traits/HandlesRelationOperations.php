@@ -15,6 +15,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\Resource;
 use Illuminate\Http\Resources\Json\ResourceCollection;
+use InvalidArgumentException;
 
 trait HandlesRelationOperations
 {
@@ -579,7 +580,7 @@ trait HandlesRelationOperations
         if ($relatedID) {
             return;
         }
-        throw new \InvalidArgumentException('Relation ID is required, if relation type is not one-to-one');
+        throw new InvalidArgumentException('Relation ID is required, if relation type is not one-to-one');
     }
 
     /**
