@@ -41,17 +41,7 @@ trait HandlesRelationOperations
 
         if (count($this->pivotJson)) {
             $entities->getCollection()->transform(function ($entity) {
-                if (!$entity->pivot) {
-                    return $entity;
-                }
-
-                foreach ($this->pivotJson as $pivotJsonField) {
-                    if (!$entity->pivot->{$pivotJsonField}) {
-                        continue;
-                    }
-                    $entity->pivot->{$pivotJsonField} = json_decode($entity->pivot->{$pivotJsonField}, true);
-                }
-                return $entity;
+                return $this->castPivotJsonFields($entity);
             });
         }
 
@@ -105,6 +95,10 @@ trait HandlesRelationOperations
 
         $entity = $this->buildRelationMethodQuery($request, $resourceEntity)->with($this->relationsFromIncludes($request))->findOrFail($entity->getKey());
 
+        if (count($this->pivotJson)) {
+            $entity = $this->castPivotJsonFields($entity);
+        }
+
         $afterSaveHookResult = $this->afterSave($request, $entity);
         if ($this->hookResponds($afterSaveHookResult)) {
             return $afterSaveHookResult;
@@ -144,6 +138,10 @@ trait HandlesRelationOperations
 
         if ($this->authorizationRequired()) {
             $this->authorize('show', $entity);
+        }
+
+        if (count($this->pivotJson)) {
+            $entity = $this->castPivotJsonFields($entity);
         }
 
         $afterHookResult = $this->afterShow($request, $entity);
@@ -203,6 +201,10 @@ trait HandlesRelationOperations
             }
         }
 
+        if (count($this->pivotJson)) {
+            $entity = $this->castPivotJsonFields($entity);
+        }
+
         $afterSaveHookResult = $this->afterSave($request, $entity);
         if ($this->hookResponds($afterSaveHookResult)) {
             return $afterSaveHookResult;
@@ -246,6 +248,10 @@ trait HandlesRelationOperations
         }
 
         $entity->delete();
+
+        if (count($this->pivotJson)) {
+            $entity = $this->castPivotJsonFields($entity);
+        }
 
         $afterHookResult = $this->afterDestroy($request, $entity);
         if ($this->hookResponds($afterHookResult)) {
@@ -528,6 +534,27 @@ trait HandlesRelationOperations
         }
 
         return $pivotFields;
+    }
+
+    /**
+     * Casts pivot json fields to array on the given entity.
+     *
+     * @param Model $entity
+     * @return Model
+     */
+    protected function castPivotJsonFields($entity)
+    {
+        if (!$entity->pivot) {
+            return $entity;
+        }
+
+        foreach ($this->pivotJson as $pivotJsonField) {
+            if (!$entity->pivot->{$pivotJsonField}) {
+                continue;
+            }
+            $entity->pivot->{$pivotJsonField} = json_decode($entity->pivot->{$pivotJsonField}, true);
+        }
+        return $entity;
     }
 
     /**
