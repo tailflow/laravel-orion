@@ -5,6 +5,7 @@ namespace Laralord\Orion;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
@@ -37,7 +38,7 @@ class Orion
             Route::get("{$resource}/{{$resourceName}}/{$relation}", $controller.'@index')->name("$resource.relation.$relation.index");
         }
 
-        if ($relationType !== BelongsTo::class) {
+        if (!in_array($relationType, [BelongsTo::class, HasManyThrough::class], true)) {
             Route::post("{$resource}/{{$resourceName}}/{$relation}", $controller.'@store')->name("$resource.relation.$relation.store");
         }
         Route::get("{$resource}/{{$resourceName}}/{$relation}/{{$relation}?}", $controller.'@show')->name("$resource.relation.$relation.show");
@@ -56,6 +57,11 @@ class Orion
     public static function hasManyResource($resource, $relation, $controller)
     {
         return static::resourceRelation($resource, $relation, $controller, HasMany::class);
+    }
+
+    public static function hasManyThroughResource($resource, $relation, $controller)
+    {
+        return static::resourceRelation($resource, $relation, $controller, HasManyThrough::class);
     }
 
     public static function belongsToResource($resource, $relation, $controller)
