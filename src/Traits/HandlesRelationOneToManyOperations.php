@@ -20,7 +20,7 @@ trait HandlesRelationOneToManyOperations
     public function associate(Request $request, $resourceID)
     {
         $this->validate($request, [
-            'related_id' => 'required|integer'
+            'related_id' => 'required'
         ]);
 
         if (!static::$associatingRelation) {

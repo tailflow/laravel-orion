@@ -18,6 +18,11 @@ trait HandlesRelationManyToManyOperations
      */
     public function sync(Request $request, $resourceID)
     {
+        $this->validate($request, [
+            'resources' => 'present',
+            'detaching' => 'sometimes|boolean'
+        ]);
+
         $beforeHookResult = $this->beforeSync($request, $resourceID);
         if ($this->hookResponds($beforeHookResult)) {
             return $beforeHookResult;
@@ -47,6 +52,10 @@ trait HandlesRelationManyToManyOperations
      */
     public function toggle(Request $request, $resourceID)
     {
+        $this->validate($request, [
+            'resources' => 'present'
+        ]);
+
         $beforeHookResult = $this->beforeToggle($request, $resourceID);
         if ($this->hookResponds($beforeHookResult)) {
             return $beforeHookResult;
@@ -76,6 +85,11 @@ trait HandlesRelationManyToManyOperations
      */
     public function attach(Request $request, $resourceID)
     {
+        $this->validate($request, [
+            'resources' => 'present',
+            'duplicates' => 'sometimes|boolean'
+        ]);
+
         $beforeHookResult = $this->beforeAttach($request, $resourceID);
         if ($this->hookResponds($beforeHookResult)) {
             return $beforeHookResult;
@@ -111,6 +125,10 @@ trait HandlesRelationManyToManyOperations
      */
     public function detach(Request $request, $resourceID)
     {
+        $this->validate($request, [
+            'resources' => 'present'
+        ]);
+
         $beforeHookResult = $this->beforeDetach($request, $resourceID);
         if ($this->hookResponds($beforeHookResult)) {
             return $beforeHookResult;
@@ -143,6 +161,10 @@ trait HandlesRelationManyToManyOperations
      */
     public function updatePivot(Request $request, $resourceID, $relationID)
     {
+        $this->validate($request, [
+            'pivot' => 'required|array'
+        ]);
+
         $beforeHookResult = $this->beforeUpdatePivot($request, $relationID);
         if ($this->hookResponds($beforeHookResult)) {
             return $beforeHookResult;
