@@ -3,6 +3,7 @@
 namespace Orion;
 
 use Illuminate\Contracts\Container\BindingResolutionException;
+use Orion\Drivers\Standard\OrionBuilder;
 use Orion\Http\Routing\BelongsToManyRelationResourceRegistrar;
 use Orion\Http\Routing\BelongsToRelationResourceRegistrar;
 use Orion\Http\Routing\HasManyRelationResourceRegistrar;

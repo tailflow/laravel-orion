@@ -1,12 +1,35 @@
 <?php
 
 return [
+    'composition' => [
+        'model' => [
+            app()->getNamespace() . 'Models\\',
+            ''
+        ],
+        'request' => [
+            app()->getNamespace() . 'Http\Requests\\',
+            'Request'
+        ],
+        'controller' => [
+            app()->getNamespace() . 'Http\Controllers\\',
+            'Controller',
+        ],
+        'job' =>[
+            app()->getNamespace() . 'Jobs\\',
+            'Job'
+        ]
+    ],
     'namespaces' => [
         'models' => 'App\\Models\\',
-        'controllers' => 'App\\Http\\Controllers\\'
+        'controllers' => 'App\\Http\\Controllers\\',
+        'jobs' => 'App\\Jobs\\'
     ],
     'auth' => [
         'guard' => 'api'
+    ],
+    'api' => [
+        'limit' => 10,
+        'pagination_disabled' => false
     ],
     'specs' => [
         'info' => [
