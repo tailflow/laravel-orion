@@ -28,7 +28,7 @@ trait HandlesProcess
 
         if ($attributes != null) {
 
-            $value = $attributes[0]->newInstance()->input[$type];
+            $value = $attributes[0]->newInstance()->input[$type] ?? null;
             if ($value) {
                 $z = config('orion.composition.job');
                 $z[0] = $z[0] . $value[1];
