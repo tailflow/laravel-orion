@@ -40,6 +40,8 @@ trait HandlesRelationManyToManyOperations
             return $afterHookResult;
         }
 
+        $syncResult['detached'] = array_values($syncResult['detached']);
+
         return response()->json($syncResult);
     }
 
