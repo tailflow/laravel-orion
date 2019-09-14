@@ -8,6 +8,7 @@ use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Response;
+use Laralord\Orion\Http\Requests\Request;
 use Laralord\Orion\Traits\BuildsQuery;
 
 abstract class BaseController extends \Illuminate\Routing\Controller
@@ -18,6 +19,11 @@ abstract class BaseController extends \Illuminate\Routing\Controller
      * @var string|null $model
      */
     protected static $model = null;
+
+    /**
+     * @var string $request
+     */
+    protected static $request = null;
 
     /**
      * @var string $resource
@@ -37,8 +43,14 @@ abstract class BaseController extends \Illuminate\Routing\Controller
     public function __construct()
     {
         if (!static::$model) {
-            throw new Exception('Model is not specified for '.__CLASS__);
+            throw new Exception('Model is not defined for '.static::class);
         }
+
+        if (!static::$request) {
+            $this->resolveRequest();
+        }
+        $this->bindRequestClass();
+
         if (!static::$resource) {
             $this->resolveResource();
         }
@@ -134,6 +146,28 @@ abstract class BaseController extends \Illuminate\Routing\Controller
             'update' => 'update',
             'destroy' => 'delete',
         ];
+    }
+
+
+    /**
+     * Guesses request class based on the resource model.
+     */
+    protected function resolveRequest()
+    {
+        $requestClassName = 'App\\Http\\Requests\\'.class_basename($this->getResourceModel()).'Request';
+        if (class_exists($requestClassName)) {
+            static::$request = $requestClassName;
+        } else {
+            static::$request = Request::class;
+        }
+    }
+
+    /**
+     * Contextually binds resolved request class on current controller.
+     */
+    protected function bindRequestClass()
+    {
+        app()->bind(Request::class, static::$request);
     }
 
     /**

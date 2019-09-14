@@ -5,8 +5,8 @@ namespace Laralord\Orion\Traits;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Laralord\Orion\Http\Requests\Request;
 
 trait HandlesRelationManyToManyOperations
 {

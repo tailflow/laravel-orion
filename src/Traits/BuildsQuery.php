@@ -4,7 +4,7 @@ namespace Laralord\Orion\Traits;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\Relation;
-use Illuminate\Http\Request;
+use Laralord\Orion\Http\Requests\Request;
 
 trait BuildsQuery
 {

@@ -5,7 +5,7 @@ namespace Laralord\Orion\Traits;
 
 use Exception;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Http\Request;
+use Laralord\Orion\Http\Requests\Request;
 
 trait HandlesRelationOneToManyOperations
 {
@@ -24,7 +24,7 @@ trait HandlesRelationOneToManyOperations
         ]);
 
         if (!static::$associatingRelation) {
-            throw new Exception('$associatingRelation property is not set on '.__CLASS__);
+            throw new Exception('$associatingRelation property is not set on '.static::class);
         }
 
         $relatedID = $request->get('related_id');
@@ -64,7 +64,7 @@ trait HandlesRelationOneToManyOperations
     public function dissociate(Request $request, $resourceID, $relatedID)
     {
         if (!static::$associatingRelation) {
-            throw new Exception('$associatingRelation property is not set on '.__CLASS__);
+            throw new Exception('$associatingRelation property is not set on '.static::class);
         }
 
         $resourceEntity = $this->buildMethodQuery($request)->with($this->relationsFromIncludes($request))->findOrFail($resourceID);

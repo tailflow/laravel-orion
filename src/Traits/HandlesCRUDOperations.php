@@ -5,9 +5,9 @@ namespace Laralord\Orion\Traits;
 use Exception;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\Resource;
 use Illuminate\Http\Resources\Json\ResourceCollection;
+use Laralord\Orion\Http\Requests\Request;
 
 trait HandlesCRUDOperations
 {
