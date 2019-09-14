@@ -2,9 +2,11 @@
 
 namespace Laralord\Orion\Traits;
 
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 
 trait HandlesRelationManyToManyOperations
 {
@@ -33,7 +35,9 @@ trait HandlesRelationManyToManyOperations
             $this->authorize('update', $resourceEntity);
         }
 
-        $syncResult = $resourceEntity->{static::$relation}()->sync($this->prepareResourcePivotFields($request->get('resources')), $request->get('detaching', true));
+        $syncResult = $resourceEntity->{static::$relation}()->sync(
+            $this->prepareResourcePivotFields($this->preparePivotResources($request->get('resources'))), $request->get('detaching', true)
+        );
 
         $afterHookResult = $this->afterSync($request, $syncResult);
         if ($this->hookResponds($afterHookResult)) {
@@ -68,7 +72,9 @@ trait HandlesRelationManyToManyOperations
             $this->authorize('update', $resourceEntity);
         }
 
-        $togleResult = $resourceEntity->{static::$relation}()->toggle($this->prepareResourcePivotFields($request->get('resources')));
+        $togleResult = $resourceEntity->{static::$relation}()->toggle(
+            $this->prepareResourcePivotFields($this->preparePivotResources($request->get('resources')))
+        );
 
         $afterHookResult = $this->afterToggle($request, $togleResult);
         if ($this->hookResponds($afterHookResult)) {
@@ -103,9 +109,14 @@ trait HandlesRelationManyToManyOperations
         }
 
         if ($request->get('duplicates')) {
-            $attachResult = $resourceEntity->{static::$relation}()->attach($this->prepareResourcePivotFields($request->get('resources')));
+            $attachResult = $resourceEntity->{static::$relation}()->attach(
+                $this->prepareResourcePivotFields($this->preparePivotResources($request->get('resources')))
+            );
         } else {
-            $attachResult = $resourceEntity->{static::$relation}()->sync($this->prepareResourcePivotFields($request->get('resources')), false);
+            $attachResult = $resourceEntity->{static::$relation}()->sync(
+                $this->prepareResourcePivotFields($this->preparePivotResources($request->get('resources'))),
+                false
+            );
         }
 
         $afterHookResult = $this->afterAttach($request, $attachResult);
@@ -141,7 +152,9 @@ trait HandlesRelationManyToManyOperations
             $this->authorize('update', $resourceEntity);
         }
 
-        $detachResult = $resourceEntity->{static::$relation}()->detach($this->prepareResourcePivotFields($request->get('resources')));
+        $detachResult = $resourceEntity->{static::$relation}()->detach(
+            $this->prepareResourcePivotFields($this->preparePivotResources($request->get('resources')))
+        );
 
         $afterHookResult = $this->afterDetach($request, $detachResult);
         if ($this->hookResponds($afterHookResult)) {
@@ -190,6 +203,51 @@ trait HandlesRelationManyToManyOperations
     }
 
     /**
+     * Standardizes resources array structure and authorizes individual resources.
+     *
+     * @param array $resources
+     * @return array
+     */
+    protected function preparePivotResources($resources)
+    {
+        $resources = $this->standardizePivotResourcesArray($resources);
+        $resourceModels = (new static::$model)->{static::$relation}()->getModel()->whereIn('id', array_keys($resources))->get();
+
+        $resources = array_filter($resources, function ($resourceID) use ($resourceModels) {
+            /**
+             * @var Collection $resourceModels
+             */
+            $resourceModel = $resourceModels->where('id', $resourceID)->first();
+
+            return $resourceModel && (!$this->authorizationRequired() || Gate::allows('view', $resourceModel));
+        }, ARRAY_FILTER_USE_KEY);
+
+        return $resources;
+    }
+
+    /**
+     * Standardizes resources array structure.
+     *
+     * @param array $resources
+     * @return array
+     */
+    protected function standardizePivotResourcesArray($resources)
+    {
+        $resources = array_wrap($resources);
+
+        $standardizedResources = [];
+        foreach ($resources as $key => $pivotFields) {
+            if (!is_array($pivotFields)) {
+                $standardizedResources[$pivotFields] = [];
+            } else {
+                $standardizedResources[$key] = $pivotFields;
+            }
+        }
+
+        return $standardizedResources;
+    }
+
+    /**
      * Retrieves only fillable pivot fields and json encodes any objects/arrays.
      *
      * @param array $resources
@@ -197,8 +255,6 @@ trait HandlesRelationManyToManyOperations
      */
     protected function prepareResourcePivotFields($resources)
     {
-        $resources = array_wrap($resources);
-
         foreach ($resources as $key => &$pivotFields) {
             if (!is_array($pivotFields)) {
                 continue;

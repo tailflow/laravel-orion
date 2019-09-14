@@ -104,7 +104,7 @@ abstract class BaseController extends \Illuminate\Routing\Controller
      */
     protected function authorizationRequired()
     {
-        return property_exists($this, 'authorizationDisabled');
+        return !property_exists($this, 'authorizationDisabled');
     }
 
     /**
