@@ -31,7 +31,8 @@ trait HandlesRelationCRUDOperations
         }
 
         if ($this->authorizationRequired()) {
-            $this->authorize('index', static::$model);
+            $relationModelClass = $this->getRelationModelClass();
+            $this->authorize('viewAny', $relationModelClass);
         }
 
         $resourceEntity = $this->buildMethodQuery($request)->with($this->relationsFromIncludes($request))->findOrFail($resourceID);
@@ -68,7 +69,7 @@ trait HandlesRelationCRUDOperations
         $relationModelClass = $this->getRelationModelClass();
 
         if ($this->authorizationRequired()) {
-            $this->authorize('store', $relationModelClass);
+            $this->authorize('create', $relationModelClass);
         }
 
         /**
@@ -135,7 +136,7 @@ trait HandlesRelationCRUDOperations
         }
 
         if ($this->authorizationRequired()) {
-            $this->authorize('show', $entity);
+            $this->authorize('view', $entity);
         }
 
         if (count($this->pivotJson)) {
@@ -242,7 +243,7 @@ trait HandlesRelationCRUDOperations
         }
 
         if ($this->authorizationRequired()) {
-            $this->authorize('destroy', $entity);
+            $this->authorize('delete', $entity);
         }
 
         $entity->delete();

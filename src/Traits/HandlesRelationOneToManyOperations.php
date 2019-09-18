@@ -37,12 +37,14 @@ trait HandlesRelationOneToManyOperations
             return $beforeHookResult;
         }
 
+        $entity->{static::$associatingRelation}()->associate($resourceEntity);
+
         if ($this->authorizationRequired()) {
-            $this->authorize('show', $resourceEntity);
+            $this->authorize('view', $resourceEntity);
             $this->authorize('update', $entity);
         }
 
-        $entity->{static::$associatingRelation}()->associate($resourceEntity);
+        $entity->save();
 
         $afterHookResult = $this->afterAssociate($request, $entity);
         if ($this->hookResponds($afterHookResult)) {

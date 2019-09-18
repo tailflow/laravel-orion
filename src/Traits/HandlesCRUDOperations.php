@@ -27,7 +27,7 @@ trait HandlesCRUDOperations
         }
 
         if ($this->authorizationRequired()) {
-            $this->authorize('index', static::$model);
+            $this->authorize('viewAny', static::$model);
         }
 
         $entities = $this->buildMethodQuery($request)->with($this->relationsFromIncludes($request))->paginate();
@@ -54,7 +54,7 @@ trait HandlesCRUDOperations
         }
 
         if ($this->authorizationRequired()) {
-            $this->authorize('store', static::$model);
+            $this->authorize('create', static::$model);
         }
 
         /**
@@ -101,7 +101,7 @@ trait HandlesCRUDOperations
 
         $entity = $this->buildMethodQuery($request)->with($this->relationsFromIncludes($request))->findOrFail($id);
         if ($this->authorizationRequired()) {
-            $this->authorize('show', $entity);
+            $this->authorize('view', $entity);
         }
 
         $afterHookResult = $this->afterShow($request, $entity);
@@ -172,7 +172,7 @@ trait HandlesCRUDOperations
 
         $entity = $this->buildMethodQuery($request)->with($this->relationsFromIncludes($request))->findOrFail($id);
         if ($this->authorizationRequired()) {
-            $this->authorize('destroy', $entity);
+            $this->authorize('delete', $entity);
         }
 
         $entity->delete();

@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Str;
 
 class Orion
 {
@@ -21,7 +22,7 @@ class Orion
 
     public static function resourceRelation($resource, $relation, $controller, $relationType)
     {
-        $resourceName = str_singular($resource);
+        $resourceName = Str::singular($resource);
 
         if (!in_array($relationType, [HasOne::class, MorphOne::class, BelongsTo::class], true)) {
             if (in_array($relationType, [HasMany::class, MorphMany::class], true)) {

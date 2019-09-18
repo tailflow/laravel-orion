@@ -10,11 +10,10 @@ class Request extends FormRequest
      * Determine if the user is authorized to make this request.
      *
      * @return bool
-     * @throws \Exception
      */
     public function authorize()
     {
-        throw new \Exception('Authorization logic is not defined for '.static::class.' request class.');
+        return true; // authorization is handled in controllers
     }
 
     /**
@@ -24,15 +23,15 @@ class Request extends FormRequest
      */
     public function rules()
     {
-        if ($this->isMethod('POST')) {
+        if ($this->route()->getActionMethod() === 'store') {
             return array_merge($this->commonRules(), $this->storeRules());
         }
 
-        if ($this->isMethod('PUT') || $this->isMethod('PATCH')) {
+        if ($this->route()->getActionMethod() === 'update') {
             return array_merge($this->commonRules(), $this->updateRules());
         }
 
-        return $this->commonRules();
+        return [];
     }
 
     /**

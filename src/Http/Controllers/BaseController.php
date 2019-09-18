@@ -8,6 +8,7 @@ use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Auth;
 use Laralord\Orion\Http\Requests\Request;
 use Laralord\Orion\Traits\BuildsQuery;
 
@@ -192,6 +193,30 @@ abstract class BaseController extends \Illuminate\Routing\Controller
         if (class_exists($collectionResourceClassName)) {
             static::$collectionResource = $collectionResourceClassName;
         }
+    }
+
+    /**
+     * Authorize a given action for the current user.
+     *
+     * @param string $ability
+     * @param array $arguments
+     * @return \Illuminate\Auth\Access\Response
+     * @throws \Illuminate\Auth\Access\AuthorizationException
+     */
+    protected function authorize($ability, $arguments = [])
+    {
+        $user = $this->resolveUser();
+        return $this->authorizeForUser($user, $ability, $arguments);
+    }
+
+    /**
+     * Retrieves currently authenticated user based on the guard.
+     *
+     * @return \Illuminate\Foundation\Auth\User|null
+     */
+    protected function resolveUser()
+    {
+        return Auth::guard('api')->user();
     }
 
     /**

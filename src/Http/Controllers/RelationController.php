@@ -4,7 +4,7 @@ namespace Laralord\Orion\Http\Controllers;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Http\Request;
+use Laralord\Orion\Http\Requests\Request;
 use Laralord\Orion\Traits\HandlesRelationCRUDOperations;
 use Laralord\Orion\Traits\HandlesRelationManyToManyOperations;
 use Laralord\Orion\Traits\HandlesRelationOneToManyOperations;

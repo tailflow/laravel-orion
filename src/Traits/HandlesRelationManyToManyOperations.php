@@ -219,7 +219,7 @@ trait HandlesRelationManyToManyOperations
              */
             $resourceModel = $resourceModels->where('id', $resourceID)->first();
 
-            return $resourceModel && (!$this->authorizationRequired() || Gate::allows('view', $resourceModel));
+            return $resourceModel && (!$this->authorizationRequired() || Gate::forUser($this->resolveUser())->allows('view', $resourceModel));
         }, ARRAY_FILTER_USE_KEY);
 
         return $resources;
