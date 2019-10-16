@@ -4,6 +4,7 @@ namespace Laralord\Orion\Traits;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Support\Arr;
 use Laralord\Orion\Http\Requests\Request;
 
 trait BuildsQuery
@@ -118,7 +119,7 @@ trait BuildsQuery
         foreach ($validatedFilterables as $filterable => $filterValue) {
             if (strpos($filterable, '.') !== false) {
                 $relation = implode('.', array_slice(explode('.', $filterable), -1));
-                $relationField = array_last(explode('.', $filterable));
+                $relationField = Arr::last(explode('.', $filterable));
                 $query->whereHas($relation, function ($relationQuery) use ($relationField, $filterValue) {
                     /**
                      * @var \Illuminate\Database\Query\Builder $relationQuery
@@ -155,7 +156,7 @@ trait BuildsQuery
             foreach ($searchables as $searchable) {
                 if (strpos($searchable, '.') !== false) {
                     $relation = implode('.', array_slice(explode('.', $searchable), -1));
-                    $relationField = array_last(explode('.', $searchable));
+                    $relationField = Arr::last(explode('.', $searchable));
                     $whereQuery->orWhereHas($relation, function ($relationQuery) use ($relationField, $requestedSearchStr) {
                         /**
                          * @var \Illuminate\Database\Query\Builder $relationQuery
