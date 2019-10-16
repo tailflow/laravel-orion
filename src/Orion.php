@@ -34,10 +34,10 @@ class Orion
             Route::post("{$resource}/{{$resourceParamName}}/{$relation}", $controller.'@store')->name("$resource.relation.$relation.store");
         }
 
-        Route::get("{$resource}/{{$resourceParamName}}/{$relation}/{{$relationParamName}?}", $controller.'@show')->name("$resource.relation.$relation.show");
-        Route::patch("{$resource}/{{$resourceParamName}}/{$relation}/{{$relationParamName}?}", $controller.'@update')->name("$resource.relation.$relation.update");
-        Route::put("{$resource}/{{$resourceParamName}}/{$relation}/{{$relationParamName}?}", $controller.'@update')->name("$resource.relation.$relation.update");
-        Route::delete("{$resource}/{{$resourceParamName}}/{$relation}/{{$relationParamName}?}", $controller.'@destroy')->name("$resource.relation.$relation.destroy");
+        Route::get("{$resource}/{{$resourceParamName}}/{$relation}/{{$relationParamName}}", $controller.'@show')->name("$resource.relation.$relation.show");
+        Route::patch("{$resource}/{{$resourceParamName}}/{$relation}/{{$relationParamName}}", $controller.'@update')->name("$resource.relation.$relation.update");
+        Route::put("{$resource}/{{$resourceParamName}}/{$relation}/{{$relationParamName}}", $controller.'@update')->name("$resource.relation.$relation.update");
+        Route::delete("{$resource}/{{$resourceParamName}}/{$relation}/{{$relationParamName}}", $controller.'@destroy')->name("$resource.relation.$relation.destroy");
 
         if (in_array($relationType, [HasMany::class, HasManyThrough::class, MorphMany::class], true)) {
             Route::post("{$resource}/{{$resourceParamName}}/{$relation}/associate", $controller.'@associate')->name("$resource.relation.$relation.associate");
