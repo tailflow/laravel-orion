@@ -5,11 +5,84 @@ namespace Laralord\Orion\Traits;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Gate;
 use Laralord\Orion\Http\Requests\Request;
 
 trait HandlesRelationManyToManyOperations
 {
+    /**
+     * Attach resource to the relation.
+     *
+     * @param Request $request
+     * @param int $resourceID
+     * @return JsonResponse
+     */
+    public function attach(Request $request, $resourceID)
+    {
+        $beforeHookResult = $this->beforeAttach($request, $resourceID);
+        if ($this->hookResponds($beforeHookResult)) {
+            return $beforeHookResult;
+        }
+
+        $resourceEntity = $this->buildMethodQuery($request)->with($this->relationsFromIncludes($request))->findOrFail($resourceID);
+        if ($this->authorizationRequired()) {
+            $this->authorize('update', $resourceEntity);
+        }
+
+        if ($request->get('duplicates')) {
+            $attachResult = $resourceEntity->{static::$relation}()->attach(
+                $this->prepareResourcePivotFields($this->preparePivotResources($request->get('resources')))
+            );
+        } else {
+            $attachResult = $resourceEntity->{static::$relation}()->sync(
+                $this->prepareResourcePivotFields($this->preparePivotResources($request->get('resources'))),
+                false
+            );
+        }
+
+        $afterHookResult = $this->afterAttach($request, $attachResult);
+        if ($this->hookResponds($afterHookResult)) {
+            return $afterHookResult;
+        }
+
+        return response()->json([
+            'attached' => Arr::get($attachResult, 'attached', [])
+        ]);
+    }
+
+    /**
+     * Detach resource to the relation.
+     *
+     * @param Request $request
+     * @param int $resourceID
+     * @return JsonResponse
+     */
+    public function detach(Request $request, $resourceID)
+    {
+        $beforeHookResult = $this->beforeDetach($request, $resourceID);
+        if ($this->hookResponds($beforeHookResult)) {
+            return $beforeHookResult;
+        }
+
+        $resourceEntity = $this->buildMethodQuery($request)->with($this->relationsFromIncludes($request))->findOrFail($resourceID);
+        if ($this->authorizationRequired()) {
+            $this->authorize('update', $resourceEntity);
+        }
+
+        $detachResult = $resourceEntity->{static::$relation}()->detach(
+            $this->prepareResourcePivotFields($this->preparePivotResources($request->get('resources')))
+        );
+
+        $afterHookResult = $this->afterDetach($request, $detachResult);
+        if ($this->hookResponds($afterHookResult)) {
+            return $afterHookResult;
+        }
+
+        return response()->json([
+            'detached' => array_values($request->get('resources', []))
+        ]);
+    }
 
     /**
      * Sync relation resources.
@@ -20,11 +93,6 @@ trait HandlesRelationManyToManyOperations
      */
     public function sync(Request $request, $resourceID)
     {
-        $this->validate($request, [
-            'resources' => 'present',
-            'detaching' => 'sometimes|boolean'
-        ]);
-
         $beforeHookResult = $this->beforeSync($request, $resourceID);
         if ($this->hookResponds($beforeHookResult)) {
             return $beforeHookResult;
@@ -58,10 +126,6 @@ trait HandlesRelationManyToManyOperations
      */
     public function toggle(Request $request, $resourceID)
     {
-        $this->validate($request, [
-            'resources' => 'present'
-        ]);
-
         $beforeHookResult = $this->beforeToggle($request, $resourceID);
         if ($this->hookResponds($beforeHookResult)) {
             return $beforeHookResult;
@@ -85,88 +149,6 @@ trait HandlesRelationManyToManyOperations
     }
 
     /**
-     * Attach resource to the relation.
-     *
-     * @param Request $request
-     * @param int $resourceID
-     * @return JsonResponse
-     */
-    public function attach(Request $request, $resourceID)
-    {
-        $this->validate($request, [
-            'resources' => 'present',
-            'duplicates' => 'sometimes|boolean'
-        ]);
-
-        $beforeHookResult = $this->beforeAttach($request, $resourceID);
-        if ($this->hookResponds($beforeHookResult)) {
-            return $beforeHookResult;
-        }
-
-        $resourceEntity = $this->buildMethodQuery($request)->with($this->relationsFromIncludes($request))->findOrFail($resourceID);
-        if ($this->authorizationRequired()) {
-            $this->authorize('update', $resourceEntity);
-        }
-
-        if ($request->get('duplicates')) {
-            $attachResult = $resourceEntity->{static::$relation}()->attach(
-                $this->prepareResourcePivotFields($this->preparePivotResources($request->get('resources')))
-            );
-        } else {
-            $attachResult = $resourceEntity->{static::$relation}()->sync(
-                $this->prepareResourcePivotFields($this->preparePivotResources($request->get('resources'))),
-                false
-            );
-        }
-
-        $afterHookResult = $this->afterAttach($request, $attachResult);
-        if ($this->hookResponds($afterHookResult)) {
-            return $afterHookResult;
-        }
-
-        return response()->json([
-            'attached' => array_get($attachResult, 'attached', [])
-        ]);
-    }
-
-    /**
-     * Detach resource to the relation.
-     *
-     * @param Request $request
-     * @param int $resourceID
-     * @return JsonResponse
-     */
-    public function detach(Request $request, $resourceID)
-    {
-        $this->validate($request, [
-            'resources' => 'present'
-        ]);
-
-        $beforeHookResult = $this->beforeDetach($request, $resourceID);
-        if ($this->hookResponds($beforeHookResult)) {
-            return $beforeHookResult;
-        }
-
-        $resourceEntity = $this->buildMethodQuery($request)->with($this->relationsFromIncludes($request))->findOrFail($resourceID);
-        if ($this->authorizationRequired()) {
-            $this->authorize('update', $resourceEntity);
-        }
-
-        $detachResult = $resourceEntity->{static::$relation}()->detach(
-            $this->prepareResourcePivotFields($this->preparePivotResources($request->get('resources')))
-        );
-
-        $afterHookResult = $this->afterDetach($request, $detachResult);
-        if ($this->hookResponds($afterHookResult)) {
-            return $afterHookResult;
-        }
-
-        return response()->json([
-            'detached' => array_values($request->get('resources', []))
-        ]);
-    }
-
-    /**
      * Update relation resource pivot.
      *
      * @param Request $request
@@ -176,10 +158,6 @@ trait HandlesRelationManyToManyOperations
      */
     public function updatePivot(Request $request, $resourceID, $relationID)
     {
-        $this->validate($request, [
-            'pivot' => 'required|array'
-        ]);
-
         $beforeHookResult = $this->beforeUpdatePivot($request, $relationID);
         if ($this->hookResponds($beforeHookResult)) {
             return $beforeHookResult;
@@ -233,7 +211,7 @@ trait HandlesRelationManyToManyOperations
      */
     protected function standardizePivotResourcesArray($resources)
     {
-        $resources = array_wrap($resources);
+        $resources = Arr::wrap($resources);
 
         $standardizedResources = [];
         foreach ($resources as $key => $pivotFields) {
@@ -259,7 +237,7 @@ trait HandlesRelationManyToManyOperations
             if (!is_array($pivotFields)) {
                 continue;
             }
-            $pivotFields = array_only($pivotFields, $this->pivotFillable);
+            $pivotFields = Arr::only($pivotFields, $this->pivotFillable);
             $pivotFields = $this->preparePivotFields($pivotFields);
         }
 

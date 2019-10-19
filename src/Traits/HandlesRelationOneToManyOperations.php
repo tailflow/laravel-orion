@@ -19,10 +19,6 @@ trait HandlesRelationOneToManyOperations
      */
     public function associate(Request $request, $resourceID)
     {
-        $this->validate($request, [
-            'related_id' => 'required'
-        ]);
-
         if (!static::$associatingRelation) {
             throw new Exception('$associatingRelation property is not set on '.static::class);
         }

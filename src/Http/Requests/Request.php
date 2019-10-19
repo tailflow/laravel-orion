@@ -31,6 +31,44 @@ class Request extends FormRequest
             return array_merge($this->commonRules(), $this->updateRules());
         }
 
+        if ($this->route()->getActionMethod() === 'associate') {
+            return array_merge([
+                'related_id' => 'required'
+            ], $this->associateRules());
+        }
+
+        if ($this->route()->getActionMethod() === 'attach') {
+            return array_merge([
+                'resources' => 'present',
+                'duplicates' => 'sometimes|boolean'
+            ], $this->attachRules());
+        }
+
+        if ($this->route()->getActionMethod() === 'detach') {
+            return array_merge([
+                'resources' => 'present'
+            ], $this->detachRules());
+        }
+
+        if ($this->route()->getActionMethod() === 'sync') {
+            return array_merge([
+                'resources' => 'present',
+                'detaching' => 'sometimes|boolean'
+            ], $this->syncRules());
+        }
+
+        if ($this->route()->getActionMethod() === 'toggle') {
+            return array_merge([
+                'resources' => 'present'
+            ], $this->toggleRules());
+        }
+
+        if ($this->route()->getActionMethod() === 'updatePivot') {
+            return array_merge([
+                'pivot' => 'required|array'
+            ], $this->updatePivotRules());
+        }
+
         return [];
     }
 
@@ -45,7 +83,7 @@ class Request extends FormRequest
     }
 
     /**
-     * Rules for the "store" (POST) method.
+     * Rules for the "store" (POST) endpoint.
      *
      * @return array
      */
@@ -55,11 +93,71 @@ class Request extends FormRequest
     }
 
     /**
-     * Rules for the "update" (PATCH|PUT) method.
+     * Rules for the "update" (PATCH|PUT) endpoint.
      *
      * @return array
      */
     public function updateRules()
+    {
+        return [];
+    }
+
+    /**
+     * Rules for the "associate" endpoint.
+     *
+     * @return array
+     */
+    public function associateRules()
+    {
+        return [];
+    }
+
+    /**
+     * Rules for the "attach" endpoint.
+     *
+     * @return array
+     */
+    public function attachRules()
+    {
+        return [];
+    }
+
+    /**
+     * Rules for the "detach" endpoint.
+     *
+     * @return array
+     */
+    public function detachRules()
+    {
+        return [];
+    }
+
+    /**
+     * Rules for the "sync" endpoint.
+     *
+     * @return array
+     */
+    public function syncRules()
+    {
+        return [];
+    }
+
+    /**
+     * Rules for the "toggle" endpoint.
+     *
+     * @return array
+     */
+    public function toggleRules()
+    {
+        return [];
+    }
+
+    /**
+     * Rules for the "pivot" endpoint.
+     *
+     * @return array
+     */
+    public function updatePivotRules()
     {
         return [];
     }
