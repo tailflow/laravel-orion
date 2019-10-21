@@ -149,7 +149,6 @@ abstract class BaseController extends \Illuminate\Routing\Controller
         ];
     }
 
-
     /**
      * Guesses request class based on the resource model.
      */
