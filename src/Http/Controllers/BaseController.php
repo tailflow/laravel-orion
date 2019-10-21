@@ -10,7 +10,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Laralord\Orion\Http\Requests\Request;
-use Laralord\Orion\Traits\BuildsQuery;
+use Laralord\Orion\Concerns\BuildsQuery;
 
 abstract class BaseController extends \Illuminate\Routing\Controller
 {

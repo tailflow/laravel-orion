@@ -2,10 +2,10 @@
 
 namespace Laralord\Orion\Http\Controllers;
 
-use Laralord\Orion\Traits\BuildsRelationsQuery;
-use Laralord\Orion\Traits\HandlesRelationCRUDOperations;
-use Laralord\Orion\Traits\HandlesRelationManyToManyOperations;
-use Laralord\Orion\Traits\HandlesRelationOneToManyOperations;
+use Laralord\Orion\Concerns\BuildsRelationsQuery;
+use Laralord\Orion\Concerns\HandlesRelationCRUDOperations;
+use Laralord\Orion\Concerns\HandlesRelationManyToManyOperations;
+use Laralord\Orion\Concerns\HandlesRelationOneToManyOperations;
 
 class RelationController extends BaseController
 {

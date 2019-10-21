@@ -2,7 +2,7 @@
 
 namespace Laralord\Orion\Http\Controllers;
 
-use Laralord\Orion\Traits\HandlesCRUDOperations;
+use Laralord\Orion\Concerns\HandlesCRUDOperations;
 
 class Controller extends BaseController
 {

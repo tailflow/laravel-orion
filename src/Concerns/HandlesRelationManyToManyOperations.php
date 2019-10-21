@@ -1,6 +1,6 @@
 <?php
 
-namespace Laralord\Orion\Traits;
+namespace Laralord\Orion\Concerns;
 
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;

@@ -1,6 +1,6 @@
 <?php
 
-namespace Laralord\Orion\Traits;
+namespace Laralord\Orion\Concerns;
 
 use Exception;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;

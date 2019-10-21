@@ -3,7 +3,7 @@
 namespace Laralord\Orion\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
-use Laralord\Orion\Traits\ExtendsResources;
+use Laralord\Orion\Concerns\ExtendsResources;
 
 class Resource extends JsonResource
 {

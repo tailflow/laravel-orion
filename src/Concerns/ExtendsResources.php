@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Laralord\Orion\Traits;
+namespace Laralord\Orion\Concerns;
 
 use Illuminate\Http\Request;
 
