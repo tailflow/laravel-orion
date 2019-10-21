@@ -139,7 +139,7 @@ abstract class BaseController extends \Illuminate\Routing\Controller
     protected function resourceAbilityMap()
     {
         return [
-            'index' => 'list',
+            'index' => 'viewAny',
             'show' => 'view',
             'create' => 'create',
             'store' => 'create',
