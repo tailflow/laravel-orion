@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 
@@ -18,6 +19,11 @@ class Orion
 {
     public static function resource($name, $controller, $options = [])
     {
+        if (Arr::get($options, 'softDeletes')) {
+            $paramName = Str::singular($name);
+            Route::post("{$name}/{{$paramName}}/restore", $controller.'@restore')->name("$name.restore");
+        }
+
         return Route::apiResource($name, $controller, $options);
     }
 

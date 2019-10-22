@@ -215,4 +215,15 @@ trait BuildsQuery
 
         return false;
     }
+
+    /**
+     * Determine whether the resource model soft deletes.
+     *
+     * @return bool
+     */
+    protected function softDeletes()
+    {
+        $modelClass = $this->getResourceModel();
+        return method_exists(new $modelClass, 'initializeSoftDeletes');
+    }
 }

@@ -170,14 +170,51 @@ trait HandlesCRUDOperations
             return $beforeHookResult;
         }
 
-        $entity = $this->buildMethodQuery($request)->with($this->relationsFromIncludes($request))->findOrFail($id);
+        $softDeletes = $this->softDeletes();
+
+        $query = $this->buildMethodQuery($request)->with($this->relationsFromIncludes($request));
+        if ($softDeletes) {
+            $query->withTrashed();
+        }
+        $entity = $query->findOrFail($id);
+
         if ($this->authorizationRequired()) {
-            $this->authorize('delete', $entity);
+            $this->authorize($softDeletes && $request->get('force') ? 'forceDelete' : ' delete', $entity);
         }
 
         $entity->delete();
 
         $afterHookResult = $this->afterDestroy($request, $entity);
+        if ($this->hookResponds($afterHookResult)) {
+            return $afterHookResult;
+        }
+
+        return new static::$resource($entity);
+    }
+
+    /**
+     * Restore previously deleted a resource.
+     *
+     * @param Request $request
+     * @param int $id
+     * @return Resource
+     * @throws Exception
+     */
+    public function restore(Request $request, $id)
+    {
+        $beforeHookResult = $this->beforeRestore($request, $id);
+        if ($this->hookResponds($beforeHookResult)) {
+            return $beforeHookResult;
+        }
+
+        $entity = $this->buildMethodQuery($request)->with($this->relationsFromIncludes($request))->withTrashed()->findOrFail($id);
+        if ($this->authorizationRequired()) {
+            $this->authorize('restore', $entity);
+        }
+
+        $entity->restore();
+
+        $afterHookResult = $this->afterRestore($request, $entity);
         if ($this->hookResponds($afterHookResult)) {
             return $afterHookResult;
         }
@@ -299,6 +336,30 @@ trait HandlesCRUDOperations
      * @return mixed
      */
     protected function afterDestroy(Request $request, $entity)
+    {
+        return null;
+    }
+
+    /**
+     * The hook is executed before force restoring a previously deleted resource.
+     *
+     * @param Request $request
+     * @param int $id
+     * @return mixed
+     */
+    protected function beforeRestore(Request $request, int $id)
+    {
+        return null;
+    }
+
+    /**
+     * The hook is executed after force restoring a previously deleted resource.
+     *
+     * @param Request $request
+     * @param Model $entity
+     * @return mixed
+     */
+    protected function afterRestore(Request $request, $entity)
     {
         return null;
     }
