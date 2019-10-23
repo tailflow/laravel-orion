@@ -27,6 +27,7 @@ trait BuildsQuery
             $this->applyFiltersToQuery($request, $query);
             $this->applySearchingToQuery($request, $query);
             $this->applySortingToQuery($request, $query);
+            $this->applySoftDeletesToQuery($request, $query);
         }
 
         return $query;
@@ -168,6 +169,25 @@ trait BuildsQuery
                 }
             }
         });
+    }
+
+    /**
+     * Apply "soft deletes" query to the given query builder based on either "with_trashed" or "only_trashed" query parameters.
+     *
+     * @param Request $request
+     * @param Builder|Relation $query
+     */
+    protected function applySoftDeletesToQuery(Request $request, $query)
+    {
+        if (!$query->getMacro('withTrashed')) {
+            return;
+        }
+
+        if ($request->has('with_trashed')) {
+            $query->withTrashed();
+        } elseif ($request->has('only_trashed')) {
+            $query->onlyTrashed();
+        }
     }
 
     /**

@@ -27,6 +27,7 @@ trait BuildsRelationsQuery
             $this->applyFiltersToQuery($request, $query);
             $this->applySearchingToQuery($request, $query);
             $this->applySortingToQuery($request, $query);
+            $this->applySoftDeletesToQuery($request, $query);
         }
 
         return $query;
