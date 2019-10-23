@@ -235,24 +235,76 @@ trait HandlesRelationCRUDOperations
 
         $resourceEntity = $this->buildMethodQuery($request)->with($this->relationsFromIncludes($request))->findOrFail($resourceID);
 
+        $relationEntityQuery = $this->buildRelationMethodQuery($request, $resourceEntity)->with($this->relationsFromIncludes($request));
+        $softDeletes = $this->softDeletes();
+        if ($softDeletes) {
+            $relationEntityQuery->withTrashed();
+        }
+
         if ($this->isOneToOneRelation($resourceEntity)) {
-            $entity = $this->buildRelationMethodQuery($request, $resourceEntity)->with($this->relationsFromIncludes($request))->firstOrFail();
+            $entity = $relationEntityQuery->firstOrFail();
         } else {
             $this->abortIfMissingRelatedID($relatedID);
-            $entity = $this->buildRelationMethodQuery($request, $resourceEntity)->with($this->relationsFromIncludes($request))->findOrFail($relatedID);
+            $entity = $relationEntityQuery->findOrFail($relatedID);
         }
+
+        $forceDeletes = $softDeletes && $request->get('force');
 
         if ($this->authorizationRequired()) {
-            $this->authorize('delete', $entity);
+            $this->authorize($forceDeletes ? 'forceDelete' : 'delete', $entity);
         }
 
-        $entity->delete();
+        if (!$forceDeletes) {
+            $entity->delete();
+        } else {
+            $entity->forceDelete();
+        }
 
         if (count($this->pivotJson)) {
             $entity = $this->castPivotJsonFields($entity);
         }
 
         $afterHookResult = $this->afterDestroy($request, $entity);
+        if ($this->hookResponds($afterHookResult)) {
+            return $afterHookResult;
+        }
+
+        return new static::$resource($entity);
+    }
+
+    /**
+     * Restores a previously deleted relation resource.
+     *
+     * @param Request $request
+     * @param int $resourceID
+     * @param int|null $relatedID
+     * @return Resource
+     */
+    public function restore(Request $request, $resourceID, $relatedID = null)
+    {
+        $beforeHookResult = $this->beforeRestore($request, $relatedID);
+        if ($this->hookResponds($beforeHookResult)) {
+            return $beforeHookResult;
+        }
+
+        $resourceEntity = $this->buildMethodQuery($request)->with($this->relationsFromIncludes($request))->findOrFail($resourceID);
+
+        $relationEntityQuery = $this->buildRelationMethodQuery($request, $resourceEntity)->with($this->relationsFromIncludes($request))->withTrashed();
+
+        if ($this->isOneToOneRelation($resourceEntity)) {
+            $entity = $relationEntityQuery->firstOrFail();
+        } else {
+            $this->abortIfMissingRelatedID($relatedID);
+            $entity = $relationEntityQuery->findOrFail($relatedID);
+        }
+
+        if ($this->authorizationRequired()) {
+            $this->authorize('restore', $entity);
+        }
+
+        $entity->restore();
+
+        $afterHookResult = $this->afterRestore($request, $entity);
         if ($this->hookResponds($afterHookResult)) {
             return $afterHookResult;
         }
@@ -414,7 +466,29 @@ trait HandlesRelationCRUDOperations
         return null;
     }
 
+    /**
+     * The hook is executed before restoring a relation resource.
+     *
+     * @param Request $request
+     * @param int|null $id
+     * @return mixed
+     */
+    protected function beforeRestore(Request $request, $id)
+    {
+        return null;
+    }
 
+    /**
+     * The hook is executed after restoring a relation resource.
+     *
+     * @param Request $request
+     * @param Model $entity
+     * @return mixed
+     */
+    protected function afterRestore(Request $request, $entity)
+    {
+        return null;
+    }
 
     /**
      * The hook is executed before creating or updating a relation resource.

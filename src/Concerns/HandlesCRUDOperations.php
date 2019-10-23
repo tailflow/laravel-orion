@@ -178,11 +178,17 @@ trait HandlesCRUDOperations
         }
         $entity = $query->findOrFail($id);
 
+        $forceDeletes = $softDeletes && $request->get('force');
+
         if ($this->authorizationRequired()) {
-            $this->authorize($softDeletes && $request->get('force') ? 'forceDelete' : ' delete', $entity);
+            $this->authorize($forceDeletes ? 'forceDelete' : 'delete', $entity);
         }
 
-        $entity->delete();
+        if (!$forceDeletes) {
+            $entity->delete();
+        } else {
+            $entity->forceDelete();
+        }
 
         $afterHookResult = $this->afterDestroy($request, $entity);
         if ($this->hookResponds($afterHookResult)) {

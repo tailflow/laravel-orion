@@ -17,6 +17,8 @@ use Illuminate\Support\Str;
 
 class Orion
 {
+    //TODO: use own registrar to define both resources and relation resources
+
     public static function resource($name, $controller, $options = [])
     {
         if (Arr::get($options, 'softDeletes')) {
@@ -27,8 +29,10 @@ class Orion
         return Route::apiResource($name, $controller, $options);
     }
 
-    public static function resourceRelation($resource, $relation, $controller, $relationType)
+    public static function resourceRelation($resource, $relation, $controller, $relationType, $options = [])
     {
+        //TODO: make buildRelationUri method and mark the last parameter as optional only for one-to-one relations
+
         $resourceParamName = Str::singular($resource);
         $relationParamName = Str::singular($relation);
 
@@ -40,10 +44,14 @@ class Orion
             Route::post("{$resource}/{{$resourceParamName}}/{$relation}", $controller.'@store')->name("$resource.relation.$relation.store");
         }
 
-        Route::get("{$resource}/{{$resourceParamName}}/{$relation}/{{$relationParamName}}", $controller.'@show')->name("$resource.relation.$relation.show");
-        Route::patch("{$resource}/{{$resourceParamName}}/{$relation}/{{$relationParamName}}", $controller.'@update')->name("$resource.relation.$relation.update");
-        Route::put("{$resource}/{{$resourceParamName}}/{$relation}/{{$relationParamName}}", $controller.'@update')->name("$resource.relation.$relation.update");
-        Route::delete("{$resource}/{{$resourceParamName}}/{$relation}/{{$relationParamName}}", $controller.'@destroy')->name("$resource.relation.$relation.destroy");
+        Route::get("{$resource}/{{$resourceParamName}}/{$relation}/{{$relationParamName}?}", $controller.'@show')->name("$resource.relation.$relation.show");
+        Route::patch("{$resource}/{{$resourceParamName}}/{$relation}/{{$relationParamName}?}", $controller.'@update')->name("$resource.relation.$relation.update");
+        Route::put("{$resource}/{{$resourceParamName}}/{$relation}/{{$relationParamName}?}", $controller.'@update')->name("$resource.relation.$relation.update");
+        Route::delete("{$resource}/{{$resourceParamName}}/{$relation}/{{$relationParamName}?}", $controller.'@destroy')->name("$resource.relation.$relation.destroy");
+
+        if (Arr::get($options, 'softDeletes')) {
+            Route::post("{$resource}/{{$resourceParamName}}/{$relation}/{{$relationParamName}?}/restore", $controller.'@restore')->name("$resource.relation.$relation.restore");
+        }
 
         if (in_array($relationType, [HasMany::class, HasManyThrough::class, MorphMany::class], true)) {
             Route::post("{$resource}/{{$resourceParamName}}/{$relation}/associate", $controller.'@associate')->name("$resource.relation.$relation.associate");
@@ -58,53 +66,51 @@ class Orion
             Route::delete("{$resource}/{{$resourceParamName}}/{$relation}/detach", $controller.'@detach')->name("$resource.relation.$relation.detach");
         }
 
-
-
         return true;
     }
 
-    public static function hasOneResource($resource, $relation, $controller)
+    public static function hasOneResource($resource, $relation, $controller, $options = [])
     {
-        return static::resourceRelation($resource, $relation, $controller, HasOne::class);
+        return static::resourceRelation($resource, $relation, $controller, HasOne::class, $options);
     }
 
-    public static function belongsToResource($resource, $relation, $controller)
+    public static function belongsToResource($resource, $relation, $controller, $options = [])
     {
-        return static::resourceRelation($resource, $relation, $controller, BelongsTo::class);
+        return static::resourceRelation($resource, $relation, $controller, BelongsTo::class, $options);
     }
 
-    public static function hasManyResource($resource, $relation, $controller)
+    public static function hasManyResource($resource, $relation, $controller, $options = [])
     {
-        return static::resourceRelation($resource, $relation, $controller, HasMany::class);
+        return static::resourceRelation($resource, $relation, $controller, HasMany::class, $options);
     }
 
-    public static function belongsToManyResource($resource, $relation, $controller)
+    public static function belongsToManyResource($resource, $relation, $controller, $options = [])
     {
-        return static::resourceRelation($resource, $relation, $controller, BelongsToMany::class);
+        return static::resourceRelation($resource, $relation, $controller, BelongsToMany::class, $options);
     }
 
-    public static function hasOneThrough($resource, $relation, $controller)
+    public static function hasOneThrough($resource, $relation, $controller, $options = [])
     {
-        return static::resourceRelation($resource, $relation, $controller, HasOneThrough::class);
+        return static::resourceRelation($resource, $relation, $controller, HasOneThrough::class, $options);
     }
 
-    public static function hasManyThroughResource($resource, $relation, $controller)
+    public static function hasManyThroughResource($resource, $relation, $controller, $options = [])
     {
-        return static::resourceRelation($resource, $relation, $controller, HasManyThrough::class);
+        return static::resourceRelation($resource, $relation, $controller, HasManyThrough::class, $options);
     }
 
-    public static function morphOneResource($resource, $relation, $controller)
+    public static function morphOneResource($resource, $relation, $controller, $options = [])
     {
-        return static::resourceRelation($resource, $relation, $controller, MorphOne::class);
+        return static::resourceRelation($resource, $relation, $controller, MorphOne::class, $options);
     }
 
-    public static function morphManyResource($resource, $relation, $controller)
+    public static function morphManyResource($resource, $relation, $controller, $options = [])
     {
-        return static::resourceRelation($resource, $relation, $controller, MorphMany::class);
+        return static::resourceRelation($resource, $relation, $controller, MorphMany::class, $options);
     }
 
-    public static function morphToManyResource($resource, $relation, $controller)
+    public static function morphToManyResource($resource, $relation, $controller, $options = [])
     {
-        return static::resourceRelation($resource, $relation, $controller, MorphToMany::class);
+        return static::resourceRelation($resource, $relation, $controller, MorphToMany::class, $options);
     }
 }
