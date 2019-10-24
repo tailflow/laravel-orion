@@ -31,39 +31,41 @@ class Orion
 
     public static function resourceRelation($resource, $relation, $controller, $relationType, $options = [])
     {
-        //TODO: make buildRelationUri method and mark the last parameter as optional only for one-to-one relations
-
         $resourceParamName = Str::singular($resource);
         $relationParamName = Str::singular($relation);
 
+        $baseUri = "{$resource}/{{$resourceParamName}}/{$relation}";
+        $completeUri = "$baseUri/{{$relationParamName}?}";
+
         if (!in_array($relationType, [HasOne::class, BelongsTo::class, HasOneThrough::class, MorphOne::class], true)) {
-            Route::get("{$resource}/{{$resourceParamName}}/{$relation}", $controller.'@index')->name("$resource.relation.$relation.index");
+            Route::get($baseUri, $controller.'@index')->name("$resource.relation.$relation.index");
+            $completeUri = "$baseUri/{{$relationParamName}}";
         }
 
         if ($relationType !== BelongsTo::class) {
-            Route::post("{$resource}/{{$resourceParamName}}/{$relation}", $controller.'@store')->name("$resource.relation.$relation.store");
+            Route::post($baseUri, $controller.'@store')->name("$resource.relation.$relation.store");
         }
 
-        Route::get("{$resource}/{{$resourceParamName}}/{$relation}/{{$relationParamName}?}", $controller.'@show')->name("$resource.relation.$relation.show");
-        Route::patch("{$resource}/{{$resourceParamName}}/{$relation}/{{$relationParamName}?}", $controller.'@update')->name("$resource.relation.$relation.update");
-        Route::put("{$resource}/{{$resourceParamName}}/{$relation}/{{$relationParamName}?}", $controller.'@update')->name("$resource.relation.$relation.update");
-        Route::delete("{$resource}/{{$resourceParamName}}/{$relation}/{{$relationParamName}?}", $controller.'@destroy')->name("$resource.relation.$relation.destroy");
+        Route::get($completeUri, $controller.'@show')->name("$resource.relation.$relation.show");
+        Route::patch($completeUri, $controller.'@update')->name("$resource.relation.$relation.update");
+        Route::put($completeUri, $controller.'@update')->name("$resource.relation.$relation.update");
+        Route::delete($completeUri, $controller.'@destroy')->name("$resource.relation.$relation.destroy");
 
         if (Arr::get($options, 'softDeletes')) {
-            Route::post("{$resource}/{{$resourceParamName}}/{$relation}/{{$relationParamName}?}/restore", $controller.'@restore')->name("$resource.relation.$relation.restore");
+            Route::post("{$completeUri}/restore", $controller.'@restore')->name("$resource.relation.$relation.restore");
         }
 
         if (in_array($relationType, [HasMany::class, HasManyThrough::class, MorphMany::class], true)) {
-            Route::post("{$resource}/{{$resourceParamName}}/{$relation}/associate", $controller.'@associate')->name("$resource.relation.$relation.associate");
-            Route::delete("{$resource}/{{$resourceParamName}}/{$relation}/{{$relationParamName}}/dissociate", $controller.'@dissociate')->name("$resource.relation.$relation.dissociate");
+            Route::post("{$baseUri}/associate", $controller.'@associate')->name("$resource.relation.$relation.associate");
+            Route::delete("{$completeUri}/dissociate", $controller.'@dissociate')->name("$resource.relation.$relation.dissociate");
         }
 
         if (in_array($relationType, [BelongsToMany::class, MorphToMany::class], true)) {
-            Route::patch("{$resource}/{{$resourceParamName}}/{$relation}/sync", $controller.'@sync')->name("$resource.relation.$relation.sync");
-            Route::patch("{$resource}/{{$resourceParamName}}/{$relation}/toggle", $controller.'@toggle')->name("$resource.relation.$relation.toggle");
-            Route::patch("{$resource}/{{$resourceParamName}}/{$relation}/{{$relationParamName}}/pivot", $controller.'@updatePivot')->name("$resource.relation.$relation.pivot");
-            Route::post("{$resource}/{{$resourceParamName}}/{$relation}/attach", $controller.'@attach')->name("$resource.relation.$relation.attach");
-            Route::delete("{$resource}/{{$resourceParamName}}/{$relation}/detach", $controller.'@detach')->name("$resource.relation.$relation.detach");
+            Route::patch("{$baseUri}/sync", $controller.'@sync')->name("$resource.relation.$relation.sync");
+            Route::patch("{$baseUri}/toggle", $controller.'@toggle')->name("$resource.relation.$relation.toggle");
+            Route::patch("{$completeUri}/pivot", $controller.'@updatePivot')->name("$resource.relation.$relation.pivot");
+            Route::post("{$baseUri}/attach", $controller.'@attach')->name("$resource.relation.$relation.attach");
+            Route::delete("{$baseUri}/detach", $controller.'@detach')->name("$resource.relation.$relation.detach");
         }
 
         return true;
