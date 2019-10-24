@@ -3,13 +3,13 @@
 namespace Laralord\Orion\Http\Controllers;
 
 use Laralord\Orion\Concerns\BuildsRelationsQuery;
-use Laralord\Orion\Concerns\HandlesRelationCRUDOperations;
+use Laralord\Orion\Concerns\HandlesRelationStandardOperations;
 use Laralord\Orion\Concerns\HandlesRelationManyToManyOperations;
 use Laralord\Orion\Concerns\HandlesRelationOneToManyOperations;
 
 class RelationController extends BaseController
 {
-    use BuildsRelationsQuery, HandlesRelationCRUDOperations, HandlesRelationOneToManyOperations, HandlesRelationManyToManyOperations;
+    use BuildsRelationsQuery, HandlesRelationStandardOperations, HandlesRelationOneToManyOperations, HandlesRelationManyToManyOperations;
 
     /**
      * @var string|null $relation

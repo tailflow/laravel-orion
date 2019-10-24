@@ -98,6 +98,7 @@ trait BuildsQuery
 
         foreach ($validatedSortableDescriptors as $sortableDescriptor) {
             [$sortable, $direction] = explode('|', $sortableDescriptor);
+            //TODO: investigate whether fully-qualified column name is required to make it work correctly with joins
             $query->orderBy($sortable, $direction);
         }
     }
@@ -120,6 +121,7 @@ trait BuildsQuery
         foreach ($validatedFilterables as $filterable => $filterValue) {
             if (strpos($filterable, '.') !== false) {
                 $relation = implode('.', array_slice(explode('.', $filterable), -1));
+                //TODO: investigate whether fully-qualified column name is required to make it work correctly with joins
                 $relationField = Arr::last(explode('.', $filterable));
                 $query->whereHas($relation, function ($relationQuery) use ($relationField, $filterValue) {
                     /**
@@ -157,6 +159,7 @@ trait BuildsQuery
             foreach ($searchables as $searchable) {
                 if (strpos($searchable, '.') !== false) {
                     $relation = implode('.', array_slice(explode('.', $searchable), -1));
+                    //TODO: investigate whether fully-qualified column name is required to make it work correctly with joins
                     $relationField = Arr::last(explode('.', $searchable));
                     $whereQuery->orWhereHas($relation, function ($relationQuery) use ($relationField, $requestedSearchStr) {
                         /**

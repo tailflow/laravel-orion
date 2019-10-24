@@ -2,11 +2,11 @@
 
 namespace Laralord\Orion\Http\Controllers;
 
-use Laralord\Orion\Concerns\HandlesCRUDOperations;
+use Laralord\Orion\Concerns\HandlesStandardOperations;
 
 class Controller extends BaseController
 {
-    use HandlesCRUDOperations;
+    use HandlesStandardOperations;
 
     /**
      * Retrieves model related to resource.

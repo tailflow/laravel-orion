@@ -9,7 +9,7 @@ use Illuminate\Http\Resources\Json\Resource;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 use Laralord\Orion\Http\Requests\Request;
 
-trait HandlesCRUDOperations
+trait HandlesStandardOperations
 {
     use BuildsQuery;
 

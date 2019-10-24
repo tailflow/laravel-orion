@@ -14,7 +14,7 @@ use Illuminate\Http\Resources\Json\ResourceCollection;
 use InvalidArgumentException;
 use Laralord\Orion\Http\Requests\Request;
 
-trait HandlesRelationCRUDOperations
+trait HandlesRelationStandardOperations
 {
     /**
      * Fetch the list of relation resources.
