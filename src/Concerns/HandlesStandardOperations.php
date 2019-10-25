@@ -1,13 +1,13 @@
 <?php
 
-namespace Laralord\Orion\Concerns;
+namespace Orion\Concerns;
 
 use Exception;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Resources\Json\Resource;
 use Illuminate\Http\Resources\Json\ResourceCollection;
-use Laralord\Orion\Http\Requests\Request;
+use Orion\Http\Requests\Request;
 
 trait HandlesStandardOperations
 {

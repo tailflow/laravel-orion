@@ -1,10 +1,10 @@
 <?php
 
-namespace Laralord\Orion\Concerns;
+namespace Orion\Concerns;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Laralord\Orion\Http\Requests\Request;
+use Orion\Http\Requests\Request;
 
 trait BuildsRelationsQuery
 {

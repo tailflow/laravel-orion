@@ -1,11 +1,11 @@
 <?php
 
-namespace Laralord\Orion\Http\Controllers;
+namespace Orion\Http\Controllers;
 
-use Laralord\Orion\Concerns\BuildsRelationsQuery;
-use Laralord\Orion\Concerns\HandlesRelationStandardOperations;
-use Laralord\Orion\Concerns\HandlesRelationManyToManyOperations;
-use Laralord\Orion\Concerns\HandlesRelationOneToManyOperations;
+use Orion\Concerns\BuildsRelationsQuery;
+use Orion\Concerns\HandlesRelationManyToManyOperations;
+use Orion\Concerns\HandlesRelationOneToManyOperations;
+use Orion\Concerns\HandlesRelationStandardOperations;
 
 class RelationController extends BaseController
 {

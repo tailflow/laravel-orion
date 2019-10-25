@@ -1,6 +1,6 @@
 <?php
 
-namespace Laralord\Orion;
+namespace Orion;
 
 use Illuminate\Support\ServiceProvider;
 

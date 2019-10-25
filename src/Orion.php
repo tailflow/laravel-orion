@@ -1,6 +1,6 @@
 <?php
 
-namespace Laralord\Orion;
+namespace Orion;
 
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;

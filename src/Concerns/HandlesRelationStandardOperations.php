@@ -1,6 +1,6 @@
 <?php
 
-namespace Laralord\Orion\Concerns;
+namespace Orion\Concerns;
 
 use Exception;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 use InvalidArgumentException;
-use Laralord\Orion\Http\Requests\Request;
+use Orion\Http\Requests\Request;
 
 trait HandlesRelationStandardOperations
 {

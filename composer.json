@@ -32,12 +32,12 @@
     },
     "autoload": {
         "psr-4": {
-            "Laralord\\Orion\\": "src/"
+            "Orion\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Laralord\\Orion\\Tests\\": "tests/"
+            "Orion\\Tests\\": "tests/"
         }
     },
     "extra": {
@@ -46,7 +46,7 @@
         },
         "laravel": {
             "providers": [
-                "Laralord\\Orion\\OrionServiceProvider"
+                "Orion\\OrionServiceProvider"
             ]
         }
     },

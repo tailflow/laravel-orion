@@ -1,6 +1,6 @@
 <?php
 
-namespace Laralord\Orion\Http\Controllers;
+namespace Orion\Http\Controllers;
 
 use Exception;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
@@ -9,8 +9,8 @@ use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
-use Laralord\Orion\Http\Requests\Request;
-use Laralord\Orion\Concerns\BuildsQuery;
+use Orion\Concerns\BuildsQuery;
+use Orion\Http\Requests\Request;
 
 abstract class BaseController extends \Illuminate\Routing\Controller
 {

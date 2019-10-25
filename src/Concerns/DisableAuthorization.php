@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Laralord\Orion\Concerns;
+namespace Orion\Concerns;
 
 
 trait DisableAuthorization

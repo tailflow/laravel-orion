@@ -1,6 +1,6 @@
 <?php
 
-namespace Laralord\Orion\Http\Requests;
+namespace Orion\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 

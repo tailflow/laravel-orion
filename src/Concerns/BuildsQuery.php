@@ -1,11 +1,11 @@
 <?php
 
-namespace Laralord\Orion\Concerns;
+namespace Orion\Concerns;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Arr;
-use Laralord\Orion\Http\Requests\Request;
+use Orion\Http\Requests\Request;
 
 trait BuildsQuery
 {

@@ -1,13 +1,13 @@
 <?php
 
-namespace Laralord\Orion\Concerns;
+namespace Orion\Concerns;
 
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Gate;
-use Laralord\Orion\Http\Requests\Request;
+use Orion\Http\Requests\Request;
 
 trait HandlesRelationManyToManyOperations
 {

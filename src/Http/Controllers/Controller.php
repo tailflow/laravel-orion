@@ -1,8 +1,8 @@
 <?php
 
-namespace Laralord\Orion\Http\Controllers;
+namespace Orion\Http\Controllers;
 
-use Laralord\Orion\Concerns\HandlesStandardOperations;
+use Orion\Concerns\HandlesStandardOperations;
 
 class Controller extends BaseController
 {
