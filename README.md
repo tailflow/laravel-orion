@@ -1,6 +1,5 @@
 <p align="center">
     <img src="https://res.cloudinary.com/dudxt4lp6/image/upload/v1572018972/logo_kqef3x.svg" width="200">
-    <h1>Laravel Orion</h1>
 </p>
 
 <p align="center">
