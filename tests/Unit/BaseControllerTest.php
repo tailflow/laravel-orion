@@ -10,9 +10,6 @@ use PHPUnit\Framework\TestCase;
  */
 class BaseControllerTest extends TestCase
 {
-    /**
-     * @covers ::resourceAbilityMap
-     */
     public function testExample() {
         $this->assertTrue(true);
     }
