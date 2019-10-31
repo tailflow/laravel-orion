@@ -19,6 +19,14 @@ class Orion
 {
     //TODO: use own registrar to define both resources and relation resources
 
+    /**
+     * Registers new standard resource.
+     *
+     * @param string $name
+     * @param string $controller
+     * @param array $options
+     * @return \Illuminate\Routing\PendingResourceRegistration
+     */
     public static function resource($name, $controller, $options = [])
     {
         if (Arr::get($options, 'softDeletes')) {
@@ -29,6 +37,16 @@ class Orion
         return Route::apiResource($name, $controller, $options);
     }
 
+    /**
+     * Registers new relation resource.
+     *
+     * @param string $resource
+     * @param string $relation
+     * @param string $controller
+     * @param string $relationType
+     * @param array $options
+     * @return bool
+     */
     public static function resourceRelation($resource, $relation, $controller, $relationType, $options = [])
     {
         $resourceParamName = Str::singular($resource);
@@ -71,46 +89,127 @@ class Orion
         return true;
     }
 
+    /**
+     * Register new resource for "hasOne" relation.
+     *
+     * @param string $resource
+     * @param string $relation
+     * @param string $controller
+     * @param array $options
+     * @return bool
+     */
     public static function hasOneResource($resource, $relation, $controller, $options = [])
     {
         return static::resourceRelation($resource, $relation, $controller, HasOne::class, $options);
     }
 
+    /**
+     * Register new resource for "belongsTo" relation.
+     *
+     * @param string $resource
+     * @param string $relation
+     * @param string $controller
+     * @param array $options
+     * @return bool
+     */
     public static function belongsToResource($resource, $relation, $controller, $options = [])
     {
         return static::resourceRelation($resource, $relation, $controller, BelongsTo::class, $options);
     }
 
+    /**
+     * Register new resource for "hasMany" relation.
+     *
+     * @param string $resource
+     * @param string $relation
+     * @param string $controller
+     * @param array $options
+     * @return bool
+     */
     public static function hasManyResource($resource, $relation, $controller, $options = [])
     {
         return static::resourceRelation($resource, $relation, $controller, HasMany::class, $options);
     }
 
+    /**
+     * Register new resource for "belongsToMany" relation.
+     *
+     * @param string $resource
+     * @param string $relation
+     * @param string $controller
+     * @param array $options
+     * @return bool
+     */
     public static function belongsToManyResource($resource, $relation, $controller, $options = [])
     {
         return static::resourceRelation($resource, $relation, $controller, BelongsToMany::class, $options);
     }
 
-    public static function hasOneThrough($resource, $relation, $controller, $options = [])
+    /**
+     * Register new resource for "hasOneThrough" relation.
+     *
+     * @param string $resource
+     * @param string $relation
+     * @param string $controller
+     * @param array $options
+     * @return bool
+     */
+    public static function hasOneThroughResource($resource, $relation, $controller, $options = [])
     {
         return static::resourceRelation($resource, $relation, $controller, HasOneThrough::class, $options);
     }
 
+    /**
+     * Register new resource for "hasManyThrough" relation.
+     *
+     * @param string $resource
+     * @param string $relation
+     * @param string $controller
+     * @param array $options
+     * @return bool
+     */
     public static function hasManyThroughResource($resource, $relation, $controller, $options = [])
     {
         return static::resourceRelation($resource, $relation, $controller, HasManyThrough::class, $options);
     }
 
+    /**
+     * Register new resource for "morphOne" relation.
+     *
+     * @param string $resource
+     * @param string $relation
+     * @param string $controller
+     * @param array $options
+     * @return bool
+     */
     public static function morphOneResource($resource, $relation, $controller, $options = [])
     {
         return static::resourceRelation($resource, $relation, $controller, MorphOne::class, $options);
     }
 
+    /**
+     * Register new resource for "morphMany" relation.
+     *
+     * @param string $resource
+     * @param string $relation
+     * @param string $controller
+     * @param array $options
+     * @return bool
+     */
     public static function morphManyResource($resource, $relation, $controller, $options = [])
     {
         return static::resourceRelation($resource, $relation, $controller, MorphMany::class, $options);
     }
 
+    /**
+     * Register new resource for "morphToMany" relation.
+     *
+     * @param string $resource
+     * @param string $relation
+     * @param string $controller
+     * @param array $options
+     * @return bool
+     */
     public static function morphToManyResource($resource, $relation, $controller, $options = [])
     {
         return static::resourceRelation($resource, $relation, $controller, MorphToMany::class, $options);

@@ -240,7 +240,7 @@ trait BuildsQuery
     }
 
     /**
-     * Determine whether the resource model soft deletes.
+     * Determine whether the resource model uses soft deletes.
      *
      * @return bool
      */
