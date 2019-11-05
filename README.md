@@ -8,7 +8,7 @@
 
 ## Introduction
 
-Laravel Orion allows you to build a fully featured REST API for your Eloquent models and relationships with simplicity of Laravel as you love it.
+Laravel Orion allows you to build a fully featured REST API based on your Eloquent models and relationships with simplicity of Laravel as you love it.
 
 ## Official Documentation
 
