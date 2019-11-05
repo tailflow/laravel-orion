@@ -4,6 +4,8 @@
 
 <p align="center">
 <a href="https://travis-ci.org/laravel-orion/laravel-orion"><img src="https://travis-ci.org/laravel-orion/laravel-orion.svg" alt="Build Status"></a>
+<a href="https://packagist.org/packages/laravel-orion/laravel-orion"><img src="https://poser.pugx.org/laravel-orion/laravel-orion/version" alt="Stable Release"></a>
+<a href="https://packagist.org/packages/laravel-orion/laravel-orion"><img src="https://poser.pugx.org/laravel-orion/laravel-orion/license" alt="Stable Release"></a>
 </p>
 
 ## Introduction
