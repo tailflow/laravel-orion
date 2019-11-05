@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="https://res.cloudinary.com/dudxt4lp6/image/upload/v1572018972/logo_kqef3x.svg" width="200">
+<img src="https://res.cloudinary.com/dudxt4lp6/image/upload/v1572976051/Laravel%20Orion/logo_with_text_t5jjyc.png" width="400">
 </p>
 
 <p align="center">
