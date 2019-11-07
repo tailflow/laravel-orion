@@ -70,7 +70,7 @@ trait HandlesStandardOperations
 
         $entity->save();
 
-        $entity->load($this->relationsFromIncludes($request));
+        $entity->refresh($this->relationsFromIncludes($request));
 
         $afterSaveHookResult = $this->afterSave($request, $entity);
         if ($this->hookResponds($afterSaveHookResult)) {

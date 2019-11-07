@@ -1,12 +1,11 @@
 <?php
 
-use Orion\Http\Controllers\BaseController;
-use PHPUnit\Framework\TestCase;
+namespace Orion\Tests\Unit;
+
 
 /**
  * Class BaseControllerTest
  *
- * @coversDefaultClass BaseController
  */
 class BaseControllerTest extends TestCase
 {
