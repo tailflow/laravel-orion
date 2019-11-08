@@ -5,7 +5,7 @@ namespace Orion\Tests\Feature;
 use Illuminate\Support\Collection;
 use Orion\Tests\Fixtures\App\Models\ModelWithoutRelations;
 
-class HandlesStandardOperations extends TestCase
+class HandlesStandardOperationsTest extends TestCase
 {
     /**
      * @test
