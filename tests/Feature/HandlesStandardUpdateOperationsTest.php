@@ -2,25 +2,22 @@
 
 namespace Orion\Tests\Feature;
 
-use Orion\Tests\Fixtures\App\Models\ModelWithoutRelations;
+use Orion\Tests\Fixtures\App\Models\Tag;
 
 class HandlesStandardUpdateOperationsTest extends TestCase
 {
-    /**
-     * @test
-     */
+    /** @test */
     public function can_update_a_single_resource()
     {
-        $originalResource = factory(ModelWithoutRelations::class)->create();
+        $originalResource = factory(Tag::class)->create();
         $payload = ['description' => 'test description'];
 
-        $response = $this->patch("/api/model_without_relations/{$originalResource->id}", $payload);
+        $response = $this->patch("/api/tags/{$originalResource->id}", $payload);
 
         $response->assertStatus(200);
         $response->assertJsonStructure(['data']);
-        $this->assertDatabaseHas('model_without_relations', $payload);
-
-        $updatedResource = ModelWithoutRelations::query()->first();
+        $this->assertDatabaseHas('tags', $payload);
+        $updatedResource = Tag::query()->first();
         $response->assertJson(['data' => $updatedResource->toArray()]);
     }
 }

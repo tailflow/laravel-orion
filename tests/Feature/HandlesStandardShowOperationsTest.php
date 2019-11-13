@@ -2,18 +2,16 @@
 
 namespace Orion\Tests\Feature;
 
-use Orion\Tests\Fixtures\App\Models\ModelWithoutRelations;
+use Orion\Tests\Fixtures\App\Models\Tag;
 
 class HandlesStandardShowOperationsTest extends TestCase
 {
-    /**
-     * @test
-     */
+    /** @test */
     public function can_get_a_single_resource()
     {
-        $resource = factory(ModelWithoutRelations::class)->create();
+        $resource = factory(Tag::class)->create();
 
-        $response = $this->get("/api/model_without_relations/{$resource->id}");
+        $response = $this->get("/api/tags/{$resource->id}");
 
         $response->assertStatus(200);
         $response->assertJsonStructure(['data']);

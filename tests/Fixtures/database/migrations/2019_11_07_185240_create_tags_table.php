@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateModelWithoutRelationsTable extends Migration
+class CreateTagsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,7 +13,7 @@ class CreateModelWithoutRelationsTable extends Migration
      */
     public function up()
     {
-        Schema::create('model_without_relations', function (Blueprint $table) {
+        Schema::create('tags', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('name');
             $table->text('description')->nullable();
@@ -28,6 +28,6 @@ class CreateModelWithoutRelationsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('model_without_relations');
+        Schema::dropIfExists('tags');
     }
 }

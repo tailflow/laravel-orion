@@ -2,23 +2,21 @@
 
 namespace Orion\Tests\Feature;
 
-use Orion\Tests\Fixtures\App\Models\ModelWithoutRelations;
+use Orion\Tests\Fixtures\App\Models\Tag;
 
 class HandlesStandardStoreOperationsTest extends TestCase
 {
-    /**
-     * @test
-     */
+    /** @test */
     public function can_store_a_single_resource()
     {
         $payload = ['name' => 'my test resource'];
 
-        $response = $this->post('/api/model_without_relations', $payload);
+        $response = $this->post('/api/tags', $payload);
 
         $response->assertStatus(201);
         $response->assertJsonStructure(['data']);
-        $this->assertDatabaseHas('model_without_relations', $payload);
-        $resource = ModelWithoutRelations::query()->first();
+        $this->assertDatabaseHas('tags', $payload);
+        $resource = Tag::query()->first();
         $response->assertJson(['data' => $resource->toArray()]);
     }
 }
