@@ -30,7 +30,7 @@ trait HandlesStandardOperations
             $this->authorize('viewAny', static::$model);
         }
 
-        $entities = $this->buildMethodQuery($request)->with($this->relationsFromIncludes($request))->paginate();
+        $entities = $this->buildMethodQuery($request)->with($this->relationsFromIncludes($request))->paginate($this->resolvePaginationLimit($request));
 
         $afterHookResult = $this->afterIndex($request, $entities);
         if ($this->hookResponds($afterHookResult)) {

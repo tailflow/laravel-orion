@@ -111,6 +111,16 @@ abstract class BaseController extends \Illuminate\Routing\Controller
     }
 
     /**
+     *
+     *
+     * @return int
+     */
+    protected function limit()
+    {
+        return 15;
+    }
+
+    /**
      * Determine whether authorization is required or not to perform the action.
      *
      * @return bool

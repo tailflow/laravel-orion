@@ -71,6 +71,16 @@ trait BuildsQuery
     }
 
     /**
+     * @param Request $request
+     * @return int
+     */
+    protected function resolvePaginationLimit(Request $request)
+    {
+        $limit = (int) $request->get('limit', $this->limit());
+        return $limit > 0 ? $limit : $this->limit();
+    }
+
+    /**
      * Apply sorting to the given query builder based on the "sort" query parameter.
      *
      * @param Request $request
