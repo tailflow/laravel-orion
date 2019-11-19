@@ -14,4 +14,14 @@ class TagsController extends Controller
      * @var string|null $model
      */
     protected static $model = Tag::class;
+
+    /**
+     * The attributes that are used for sorting.
+     *
+     * @return array
+     */
+    public function sortableBy()
+    {
+        return ['name'];
+    }
 }

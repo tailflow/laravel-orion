@@ -9,7 +9,8 @@ namespace Orion\Tests\Unit;
  */
 class BaseControllerTest extends TestCase
 {
-    public function testExample() {
+    public function testExample()
+    {
         $this->assertTrue(true);
     }
 }

@@ -71,6 +71,8 @@ trait BuildsQuery
     }
 
     /**
+     * Determine the pagination limit based on the "limit" query parameter or the default, specified by developer.
+     *
      * @param Request $request
      * @return int
      */

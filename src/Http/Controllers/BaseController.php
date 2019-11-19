@@ -111,7 +111,7 @@ abstract class BaseController extends \Illuminate\Routing\Controller
     }
 
     /**
-     *
+     * Default pagination limit.
      *
      * @return int
      */
