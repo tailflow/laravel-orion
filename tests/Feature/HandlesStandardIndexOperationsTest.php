@@ -5,6 +5,7 @@ namespace Orion\Tests\Feature;
 use Illuminate\Foundation\Testing\TestResponse;
 use Illuminate\Support\Collection;
 use Orion\Tests\Fixtures\App\Models\Tag;
+use Orion\Tests\Fixtures\App\Models\TagMeta;
 
 class HandlesStandardIndexOperationsTest extends TestCase
 {
@@ -354,6 +355,42 @@ class HandlesStandardIndexOperationsTest extends TestCase
         $this->assertEquals($resourceA->toArray(), $response->json('data.0'));
         $this->assertEquals($resourceB->toArray(), $response->json('data.1'));
         $this->assertEquals($resourceC->toArray(), $response->json('data.2'));
+    }
+
+    /** @test */
+    public function can_get_a_list_of_asc_sorted_resources_with_sort_query_parameter_containing_nested_value()
+    {
+        /**
+         * @var Tag $resourceA
+         * @var Tag $resourceB
+         * @var Tag $resourceC
+         */
+        $resourceA = factory(Tag::class)->create()->refresh();
+        $resourceA->meta()->save(factory(TagMeta::class)->make(['key' => 'A']));
+        $resourceB = factory(Tag::class)->create()->refresh();
+        $resourceB->meta()->save(factory(TagMeta::class)->make(['key' => 'B']));
+        $resourceC = factory(Tag::class)->create()->refresh();
+        $resourceC->meta()->save(factory(TagMeta::class)->make(['key' => 'C']));
+
+        $this->withoutExceptionHandling();
+
+        $response = $this->get('/api/tags?sort=meta.key|desc');
+
+        $this->assertResponseSuccessfulAndStructureIsValid($response);
+        $response->assertJson([
+            'meta' => [
+                'current_page' => 1,
+                'from' => 1,
+                'last_page' => 1,
+                'per_page' => 15,
+                'to' => 3,
+                'total' => 3
+            ]
+        ]);
+
+        $this->assertEquals($resourceC->toArray(), $response->json('data.0'));
+        $this->assertEquals($resourceB->toArray(), $response->json('data.1'));
+        $this->assertEquals($resourceA->toArray(), $response->json('data.2'));
     }
 
     /**

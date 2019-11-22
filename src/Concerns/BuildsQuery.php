@@ -3,6 +3,9 @@
 namespace Orion\Concerns;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Arr;
 use Orion\Http\Requests\Request;
@@ -110,8 +113,35 @@ trait BuildsQuery
 
         foreach ($validatedSortableDescriptors as $sortableDescriptor) {
             [$sortable, $direction] = explode('|', $sortableDescriptor);
-            //TODO: investigate whether fully-qualified column name is required to make it work correctly with joins
-            $query->orderBy($sortable, $direction);
+
+            if (strpos($sortable, '.') !== false) {
+                $relation = Arr::first(explode('.', $sortable));
+                $relationField = Arr::last(explode('.', $sortable));
+
+                $model = $this->getResourceModel();
+                /**
+                 * @var BelongsTo|HasOne|HasOneThrough $relationInstance
+                 */
+                $relationInstance = (new $model)->{$relation}();
+                $relationTable = $relationInstance->getModel()->getTable();
+                $relationForeignKey = $relationInstance->getQualifiedForeignKeyName();
+
+                switch (get_class($relationInstance)) {
+                    case HasOne::class:
+                        $relationLocalKey = $relationInstance->getParent()->getTable().'.'.$relationInstance->getLocalKeyName();
+                        break;
+                    case BelongsTo::class:
+                        $relationLocalKey = $relationInstance->getParent()->getTable().'.'.$relationInstance->getQualifiedOwnerKeyName();
+                        break;
+                    default:
+                        $relationLocalKey = $relationInstance->getQualifiedLocalKeyName();
+                        break;
+                }
+
+                $query->leftJoin($relationTable, $relationForeignKey, '=', $relationLocalKey)->orderBy("$relationTable.$relationField", $direction)->select((new $model)->getTable().'.*');
+            } else {
+                $query->orderBy($sortable, $direction);
+            }
         }
     }
 

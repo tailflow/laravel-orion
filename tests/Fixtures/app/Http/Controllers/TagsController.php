@@ -22,6 +22,6 @@ class TagsController extends Controller
      */
     public function sortableBy()
     {
-        return ['name'];
+        return ['name', 'meta.key'];
     }
 }
