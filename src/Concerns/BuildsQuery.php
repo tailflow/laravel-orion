@@ -114,9 +114,9 @@ trait BuildsQuery
         foreach ($validatedSortableDescriptors as $sortableDescriptor) {
             [$sortable, $direction] = explode('|', $sortableDescriptor);
 
-            if (strpos($sortable, '.') !== false) {
-                $relation = Arr::first(explode('.', $sortable));
-                $relationField = Arr::last(explode('.', $sortable));
+            if (strpos($sortable, '~') !== false) {
+                $relation = $this->relationFromParamConstraint($sortable);
+                $relationField = $this->relationFieldFromParamConstraint($sortable);
 
                 $model = $this->getResourceModel();
                 /**
@@ -124,19 +124,9 @@ trait BuildsQuery
                  */
                 $relationInstance = (new $model)->{$relation}();
                 $relationTable = $relationInstance->getModel()->getTable();
-                $relationForeignKey = $relationInstance->getQualifiedForeignKeyName();
 
-                switch (get_class($relationInstance)) {
-                    case HasOne::class:
-                        $relationLocalKey = $relationInstance->getParent()->getTable().'.'.$relationInstance->getLocalKeyName();
-                        break;
-                    case BelongsTo::class:
-                        $relationLocalKey = $relationInstance->getParent()->getTable().'.'.$relationInstance->getQualifiedOwnerKeyName();
-                        break;
-                    default:
-                        $relationLocalKey = $relationInstance->getQualifiedLocalKeyName();
-                        break;
-                }
+                $relationForeignKey = $relationInstance->getQualifiedForeignKeyName();
+                $relationLocalKey = $this->relationLocalKeyFromRelationInstance($relationInstance);
 
                 $query->leftJoin($relationTable, $relationForeignKey, '=', $relationLocalKey)->orderBy("$relationTable.$relationField", $direction)->select((new $model)->getTable().'.*');
             } else {
@@ -161,10 +151,10 @@ trait BuildsQuery
         }, ARRAY_FILTER_USE_KEY);
 
         foreach ($validatedFilterables as $filterable => $filterValue) {
-            if (strpos($filterable, '.') !== false) {
-                $relation = implode('.', array_slice(explode('.', $filterable), -1));
-                //TODO: investigate whether fully-qualified column name is required to make it work correctly with joins
-                $relationField = Arr::last(explode('.', $filterable));
+            if (strpos($filterable, '~') !== false) {
+                $relation = $this->relationFromParamConstraint($filterable);
+                $relationField = $this->relationFieldFromParamConstraint($filterable);
+
                 $query->whereHas($relation, function ($relationQuery) use ($relationField, $filterValue) {
                     /**
                      * @var \Illuminate\Database\Query\Builder $relationQuery
@@ -200,9 +190,9 @@ trait BuildsQuery
              */
             foreach ($searchables as $searchable) {
                 if (strpos($searchable, '.') !== false) {
-                    $relation = implode('.', array_slice(explode('.', $searchable), -1));
-                    //TODO: investigate whether fully-qualified column name is required to make it work correctly with joins
-                    $relationField = Arr::last(explode('.', $searchable));
+                    $relation = $this->relationFromParamConstraint($searchable);
+                    $relationField = $this->relationFromParamConstraint($searchable);
+
                     $whereQuery->orWhereHas($relation, function ($relationQuery) use ($relationField, $requestedSearchStr) {
                         /**
                          * @var \Illuminate\Database\Query\Builder $relationQuery
@@ -251,26 +241,26 @@ trait BuildsQuery
             return true;
         }
 
-        if (strpos($paramConstraint, '.') === false) {
+        if (strpos($paramConstraint, '~') === false) {
             return false;
         }
 
         $allowedNestedParamConstraints = array_filter($allowedParamConstraints, function ($allowedParamConstraint) {
-            return strpos($allowedParamConstraint, '.*') !== false;
+            return strpos($allowedParamConstraint, '~*') !== false;
         });
 
-        $paramConstraintNestingLevel = substr_count($paramConstraint, '.');
+        $paramConstraintNestingLevel = substr_count($paramConstraint, '~');
 
         foreach ($allowedNestedParamConstraints as $allowedNestedParamConstraint) {
-            $allowedNestedParamConstraintNestingLevel = substr_count($allowedNestedParamConstraint, '.');
-            $allowedNestedParamConstraintReduced = explode('.*', $allowedNestedParamConstraint)[0];
+            $allowedNestedParamConstraintNestingLevel = substr_count($allowedNestedParamConstraint, '~');
+            $allowedNestedParamConstraintReduced = explode('~*', $allowedNestedParamConstraint)[0];
 
             for ($i = 0; $i < $allowedNestedParamConstraintNestingLevel; $i++) {
-                $allowedNestedParamConstraintReduced = implode('.', array_slice(explode('.', $allowedNestedParamConstraintReduced), -$i));
+                $allowedNestedParamConstraintReduced = implode('~', array_slice(explode('~', $allowedNestedParamConstraintReduced), -$i));
 
                 $paramConstraintReduced = $paramConstraint;
                 for ($k = 1; $k < $paramConstraintNestingLevel; $k++) {
-                    $paramConstraintReduced = implode('.', array_slice(explode('.', $paramConstraintReduced), -$i));
+                    $paramConstraintReduced = implode('~', array_slice(explode('~', $paramConstraintReduced), -$i));
                     if ($paramConstraintReduced === $allowedNestedParamConstraintReduced) {
                         return true;
                     }
@@ -279,6 +269,54 @@ trait BuildsQuery
         }
 
         return false;
+    }
+
+    /**
+     * Resolves relation name from the given param constraint.
+     *
+     * @param string $paramConstraint
+     * @return string
+     */
+    protected function relationFromParamConstraint(string $paramConstraint)
+    {
+        $paramConstraintParts = explode('~', $paramConstraint);
+        if (count($paramConstraintParts) === 2) {
+            return Arr::first($paramConstraintParts);
+        }
+
+        return implode('~', array_slice($paramConstraintParts, -1));
+    }
+
+    /**
+     * Resolves relation field from the given param constraint.
+     *
+     * @param string $paramConstraint
+     * @return string
+     */
+    protected function relationFieldFromParamConstraint(string $paramConstraint)
+    {
+        return Arr::last(explode('~', $paramConstraint));
+    }
+
+    /**
+     * Resolves relation local key from the given relation instance.
+     *
+     * @param BelongsTo|HasOne|HasOneThrough $relationInstance
+     * @return string
+     */
+    protected function relationLocalKeyFromRelationInstance($relationInstance)
+    {
+        switch (get_class($relationInstance)) {
+            case HasOne::class:
+                return $relationInstance->getParent()->getTable().'.'.$relationInstance->getLocalKeyName();
+                break;
+            case BelongsTo::class:
+                return $relationInstance->getParent()->getTable().'.'.$relationInstance->getQualifiedOwnerKeyName();
+                break;
+            default:
+                return $relationInstance->getQualifiedLocalKeyName();
+                break;
+        }
     }
 
     /**

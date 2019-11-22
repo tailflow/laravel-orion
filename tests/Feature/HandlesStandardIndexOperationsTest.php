@@ -141,8 +141,6 @@ class HandlesStandardIndexOperationsTest extends TestCase
          */
         $resources = factory(Tag::class)->times(5)->create();
 
-        $this->withoutExceptionHandling();
-
         $response = $this->get('/api/tags?limit=-1');
 
         $this->assertResponseSuccessfulAndStructureIsValid($response);
@@ -372,9 +370,7 @@ class HandlesStandardIndexOperationsTest extends TestCase
         $resourceC = factory(Tag::class)->create()->refresh();
         $resourceC->meta()->save(factory(TagMeta::class)->make(['key' => 'C']));
 
-        $this->withoutExceptionHandling();
-
-        $response = $this->get('/api/tags?sort=meta.key|desc');
+        $response = $this->get('/api/tags?sort=meta~key|desc');
 
         $this->assertResponseSuccessfulAndStructureIsValid($response);
         $response->assertJson([
@@ -391,6 +387,94 @@ class HandlesStandardIndexOperationsTest extends TestCase
         $this->assertEquals($resourceC->toArray(), $response->json('data.0'));
         $this->assertEquals($resourceB->toArray(), $response->json('data.1'));
         $this->assertEquals($resourceA->toArray(), $response->json('data.2'));
+    }
+
+    /** @test */
+    public function can_get_a_list_of_filtered_by_model_field_resources()
+    {
+        /**
+         * @var Tag $matchingResource
+         */
+        $matchingResource = factory(Tag::class)->create(['name' => 'match'])->refresh();
+        factory(Tag::class)->create(['name' => 'not match'])->refresh();
+
+        $response = $this->get('/api/tags?name=match');
+
+        $this->assertResponseSuccessfulAndStructureIsValid($response);
+        $response->assertJson([
+            'meta' => [
+                'current_page' => 1,
+                'from' => 1,
+                'last_page' => 1,
+                'per_page' => 15,
+                'to' => 1,
+                'total' => 1
+            ]
+        ]);
+
+        $response->assertJson([
+           'data' => [$matchingResource->toArray()]
+        ]);
+    }
+
+    /** @test */
+    public function can_get_a_list_of_filtered_by_relation_field_resources()
+    {
+        /**
+         * @var Tag $matchingResource
+         * @var Tag $notMatchingResource
+         */
+        $matchingResource = factory(Tag::class)->create()->refresh();
+        $matchingResource->meta()->save(factory(TagMeta::class)->make(['key' => 'match']));
+        $notMatchingResource = factory(Tag::class)->create()->refresh();
+        $notMatchingResource->meta()->save(factory(TagMeta::class)->make(['key' => 'not match']));
+
+        $response = $this->get('/api/tags?meta~key=match');
+
+        $this->assertResponseSuccessfulAndStructureIsValid($response);
+        $response->assertJson([
+            'meta' => [
+                'current_page' => 1,
+                'from' => 1,
+                'last_page' => 1,
+                'per_page' => 15,
+                'to' => 1,
+                'total' => 1
+            ]
+        ]);
+
+        $response->assertJson([
+            'data' => [$matchingResource->toArray()]
+        ]);
+    }
+
+    /** @test */
+    public function cannot_get_a_list_of_resources_filtered_by_not_whitelisted_field()
+    {
+        /**
+         * @var Tag $matchingResourceA
+         * @var Tag $matchingResourceB
+         */
+        $matchingResourceA = factory(Tag::class)->create(['description' => 'match'])->refresh();
+        $matchingResourceB = factory(Tag::class)->create(['description' => 'not match'])->refresh();
+
+        $response = $this->get('/api/tags?description=match');
+
+        $this->assertResponseSuccessfulAndStructureIsValid($response);
+        $response->assertJson([
+            'meta' => [
+                'current_page' => 1,
+                'from' => 1,
+                'last_page' => 1,
+                'per_page' => 15,
+                'to' => 2,
+                'total' => 2
+            ]
+        ]);
+
+        $response->assertJson([
+            'data' => [$matchingResourceA->toArray(), $matchingResourceB->toArray()]
+        ]);
     }
 
     /**

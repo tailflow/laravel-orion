@@ -22,6 +22,14 @@ class TagsController extends Controller
      */
     public function sortableBy()
     {
-        return ['name', 'meta.key'];
+        return ['name', 'meta~key'];
+    }
+
+    /**
+     * @return array
+     */
+    public function filterableBy()
+    {
+        return ['name', 'meta~key'];
     }
 }
