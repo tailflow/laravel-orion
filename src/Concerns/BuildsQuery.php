@@ -125,7 +125,7 @@ trait BuildsQuery
                 $relationInstance = (new $model)->{$relation}();
                 $relationTable = $relationInstance->getModel()->getTable();
 
-                $relationForeignKey = $relationInstance->getQualifiedForeignKeyName();
+                $relationForeignKey = $this->relationForeignKeyFromRelationInstance($relationInstance);
                 $relationLocalKey = $this->relationLocalKeyFromRelationInstance($relationInstance);
 
                 $query->leftJoin($relationTable, $relationForeignKey, '=', $relationLocalKey)
@@ -298,6 +298,19 @@ trait BuildsQuery
     protected function relationFieldFromParamConstraint(string $paramConstraint)
     {
         return Arr::last(explode('~', $paramConstraint));
+    }
+
+    /**
+     * Resolves relation foreign key from the given relation instance.
+     *
+     * @param BelongsTo|HasOne|HasOneThrough $relationInstance
+     * @return string
+     */
+    protected function relationForeignKeyFromRelationInstance($relationInstance)
+    {
+        $laravelVersion = (int)app()->version();
+
+        return $laravelVersion > 5.7 || get_class($relationInstance) === HasOne::class ? $relationInstance->getQualifiedForeignKeyName() : $relationInstance->getQualifiedForeignKey();
     }
 
     /**
