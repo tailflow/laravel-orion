@@ -308,7 +308,7 @@ trait BuildsQuery
      */
     protected function relationForeignKeyFromRelationInstance($relationInstance)
     {
-        $laravelVersion = (int)app()->version();
+        $laravelVersion = (float)app()->version();
 
         return $laravelVersion > 5.7 || get_class($relationInstance) === HasOne::class ? $relationInstance->getQualifiedForeignKeyName() : $relationInstance->getQualifiedForeignKey();
     }
