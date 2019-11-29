@@ -137,6 +137,10 @@ class HandlesStandardIndexSortingOperationsTest extends TestCase
     /** @test */
     public function can_get_a_list_of_asc_sorted_by_has_one_through_relation_field_resources()
     {
+        if ((int)app()->version() <= 5.7) {
+            $this->markTestSkipped('hasOneThrough relation is available starting from Laravel 5.8');
+        }
+
         /**
          * @var Team $teamA
          * @var Team $teamB
