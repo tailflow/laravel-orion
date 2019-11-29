@@ -128,7 +128,9 @@ trait BuildsQuery
                 $relationForeignKey = $relationInstance->getQualifiedForeignKeyName();
                 $relationLocalKey = $this->relationLocalKeyFromRelationInstance($relationInstance);
 
-                $query->leftJoin($relationTable, $relationForeignKey, '=', $relationLocalKey)->orderBy("$relationTable.$relationField", $direction)->select((new $model)->getTable().'.*');
+                $query->leftJoin($relationTable, $relationForeignKey, '=', $relationLocalKey)
+                    ->orderBy("$relationTable.$relationField", $direction)
+                    ->select((new $model)->getTable().'.*');
             } else {
                 $query->orderBy($sortable, $direction);
             }
@@ -311,7 +313,7 @@ trait BuildsQuery
                 return $relationInstance->getParent()->getTable().'.'.$relationInstance->getLocalKeyName();
                 break;
             case BelongsTo::class:
-                return $relationInstance->getParent()->getTable().'.'.$relationInstance->getQualifiedOwnerKeyName();
+                return $relationInstance->getQualifiedOwnerKeyName();
                 break;
             default:
                 return $relationInstance->getQualifiedLocalKeyName();

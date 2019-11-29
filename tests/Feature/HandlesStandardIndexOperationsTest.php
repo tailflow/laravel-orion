@@ -4,8 +4,11 @@ namespace Orion\Tests\Feature;
 
 use Illuminate\Foundation\Testing\TestResponse;
 use Illuminate\Support\Collection;
+use Orion\Tests\Fixtures\App\Models\History;
+use Orion\Tests\Fixtures\App\Models\Supplier;
 use Orion\Tests\Fixtures\App\Models\Tag;
 use Orion\Tests\Fixtures\App\Models\TagMeta;
+use Orion\Tests\Fixtures\App\Models\Team;
 
 class HandlesStandardIndexOperationsTest extends TestCase
 {
@@ -356,7 +359,7 @@ class HandlesStandardIndexOperationsTest extends TestCase
     }
 
     /** @test */
-    public function can_get_a_list_of_asc_sorted_resources_with_sort_query_parameter_containing_nested_value()
+    public function can_get_a_list_of_asc_sorted_by_has_one_relation_field_resources()
     {
         /**
          * @var Tag $resourceA
@@ -387,6 +390,76 @@ class HandlesStandardIndexOperationsTest extends TestCase
         $this->assertEquals($resourceC->toArray(), $response->json('data.0'));
         $this->assertEquals($resourceB->toArray(), $response->json('data.1'));
         $this->assertEquals($resourceA->toArray(), $response->json('data.2'));
+    }
+
+    /** @test */
+    public function can_get_a_list_of_asc_sorted_by_belongs_to_relation_field_resources()
+    {
+        /**
+         * @var Tag $resourceA
+         * @var Tag $resourceB
+         * @var Tag $resourceC
+         */
+        $resourceA = factory(Tag::class)->create(['team_id' => factory(Team::class)->create(['name' => 'A'])->id])->refresh();
+        $resourceB = factory(Tag::class)->create(['team_id' => factory(Team::class)->create(['name' => 'B'])->id])->refresh();
+        $resourceC = factory(Tag::class)->create(['team_id' => factory(Team::class)->create(['name' => 'C'])->id])->refresh();
+
+        $response = $this->get('/api/tags?sort=team~name|desc');
+
+        $this->assertResponseSuccessfulAndStructureIsValid($response);
+        $response->assertJson([
+            'meta' => [
+                'current_page' => 1,
+                'from' => 1,
+                'last_page' => 1,
+                'per_page' => 15,
+                'to' => 3,
+                'total' => 3
+            ]
+        ]);
+
+        $this->assertEquals($resourceC->toArray(), $response->json('data.0'));
+        $this->assertEquals($resourceB->toArray(), $response->json('data.1'));
+        $this->assertEquals($resourceA->toArray(), $response->json('data.2'));
+    }
+
+    /** @test */
+    public function can_get_a_list_of_asc_sorted_by_has_one_through_relation_field_resources()
+    {
+        /**
+         * @var Team $teamA
+         * @var Team $teamB
+         * @var Team $teamC
+         */
+        $teamA = factory(Team::class)->create()->refresh();
+        $supplierA = factory(Supplier::class)->create(['team_id' => $teamA->id]);
+        factory(History::class)->create(['code' => 'A', 'supplier_id' => $supplierA->id]);
+        $teamB = factory(Team::class)->create()->refresh();
+        $supplierB = factory(Supplier::class)->create(['team_id' => $teamA->id]);
+        factory(History::class)->create(['code' => 'B', 'supplier_id' => $supplierB->id]);
+        $teamC = factory(Team::class)->create()->refresh();
+        $supplierC = factory(Supplier::class)->create(['team_id' => $teamA->id]);
+        factory(History::class)->create(['code' => 'C', 'supplier_id' => $supplierC->id]);
+
+        $this->withoutExceptionHandling();
+
+        $response = $this->get('/api/teams?sort=supplierHistory~code|desc');
+
+        $this->assertResponseSuccessfulAndStructureIsValid($response);
+        $response->assertJson([
+            'meta' => [
+                'current_page' => 1,
+                'from' => 1,
+                'last_page' => 1,
+                'per_page' => 15,
+                'to' => 3,
+                'total' => 3
+            ]
+        ]);
+
+        $this->assertEquals($teamC->toArray(), $response->json('data.0'));
+        $this->assertEquals($teamB->toArray(), $response->json('data.1'));
+        $this->assertEquals($teamA->toArray(), $response->json('data.2'));
     }
 
     /** @test */

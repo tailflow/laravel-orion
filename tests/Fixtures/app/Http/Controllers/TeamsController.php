@@ -1,19 +1,20 @@
 <?php
 
+
 namespace Orion\Tests\Fixtures\App\Http\Controllers;
 
 use Orion\Concerns\DisableAuthorization;
 use Orion\Http\Controllers\Controller;
-use Orion\Tests\Fixtures\App\Models\Tag;
+use Orion\Tests\Fixtures\App\Models\Team;
 
-class TagsController extends Controller
+class TeamsController extends Controller
 {
     use DisableAuthorization;
 
     /**
      * @var string|null $model
      */
-    protected static $model = Tag::class;
+    protected static $model = Team::class;
 
     /**
      * The attributes that are used for sorting.
@@ -22,14 +23,6 @@ class TagsController extends Controller
      */
     public function sortableBy()
     {
-        return ['name', 'meta~key', 'team~name'];
-    }
-
-    /**
-     * @return array
-     */
-    public function filterableBy()
-    {
-        return ['name', 'meta~key'];
+        return ['supplierHistory~code'];
     }
 }

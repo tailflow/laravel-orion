@@ -30,4 +30,12 @@ class Tag extends Model
     {
         return $this->hasOne(TagMeta::class);
     }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function team()
+    {
+        return $this->belongsTo(Team::class);
+    }
 }
