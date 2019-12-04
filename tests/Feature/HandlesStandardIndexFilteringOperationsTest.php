@@ -7,7 +7,6 @@ use Orion\Tests\Fixtures\App\Models\TagMeta;
 
 class HandlesStandardIndexFilteringOperationsTest extends TestCase
 {
-
     /** @test */
     public function can_get_a_list_of_filtered_by_model_field_resources()
     {

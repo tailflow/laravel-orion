@@ -8,3 +8,9 @@ $factory->define(Team::class, function (Faker $faker) {
         'name' => $faker->word,
     ];
 });
+
+$factory->state(Team::class, 'trashed', function (Faker $faker) {
+    return [
+        'deleted_at' => \Carbon\Carbon::now()
+    ];
+});

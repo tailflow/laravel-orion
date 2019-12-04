@@ -35,7 +35,7 @@ class HandlesStandardIndexSortingOperationsTest extends TestCase
 
         $response = $this->get('/api/tags?sort=name');
 
-        $this->assertSuccessfulIndexResponse($response, 1, 1, 1 ,15, 3,3);
+        $this->assertSuccessfulIndexResponse($response, 1, 1, 1, 15, 3, 3);
 
         $this->assertEquals($tagA->toArray(), $response->json('data.0'));
         $this->assertEquals($tagB->toArray(), $response->json('data.1'));
@@ -137,7 +137,7 @@ class HandlesStandardIndexSortingOperationsTest extends TestCase
     /** @test */
     public function can_get_a_list_of_asc_sorted_by_has_one_through_relation_field_resources()
     {
-        if ((float)app()->version() <= 5.7) {
+        if ((float) app()->version() <= 5.7) {
             $this->markTestSkipped('hasOneThrough relation is available starting from Laravel 5.8');
         }
 

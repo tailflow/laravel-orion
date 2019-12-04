@@ -4,6 +4,7 @@ namespace Orion\Tests\Feature;
 
 use Illuminate\Support\Collection;
 use Orion\Tests\Fixtures\App\Models\Tag;
+use Orion\Tests\Fixtures\App\Models\Team;
 
 class HandlesStandardIndexOperationsTest extends TestCase
 {
@@ -47,5 +48,72 @@ class HandlesStandardIndexOperationsTest extends TestCase
                 return $tag->toArray();
             })->toArray()
         ]);
+    }
+
+    /** @test */
+    public function can_get_a_list_of_soft_delatable_resources_with_trashed()
+    {
+        /**
+         * @var Collection $trashedTeams
+         */
+        $trashedTeams = factory(Team::class)->state('trashed')->times(5)->create();
+        $teams = factory(Team::class)->times(5)->create();
+
+        $response = $this->get('/api/teams?with_trashed=true');
+
+        $this->assertSuccessfulIndexResponse($response, 1, 1, 1, 15, 10, 10);
+        $response->assertJson([
+            'data' => $trashedTeams->merge($teams)->map(function ($team) {
+                /**
+                 * @var Team $team
+                 */
+                return $team->toArray();
+            })->toArray()
+        ]);
+    }
+
+    /** @test */
+    public function can_get_a_list_of_soft_delatable_resources_with_only_trashed()
+    {
+        /**
+         * @var Collection $trashedTeams
+         */
+        $trashedTeams = factory(Team::class)->state('trashed')->times(5)->create();
+        factory(Team::class)->times(5)->create();
+
+        $response = $this->get('/api/teams?only_trashed=true');
+
+        $this->assertSuccessfulIndexResponse($response, 1, 1, 1, 15, 5, 5);
+        $response->assertJson([
+            'data' => $trashedTeams->map(function ($team) {
+                /**
+                 * @var Team $team
+                 */
+                return $team->toArray();
+            })->toArray()
+        ]);
+    }
+
+    /** @test */
+    public function cannot_not_see_trashed_resources_if_query_parameters_are_missing()
+    {
+        /**
+         * @var Collection $trashedTeams
+         */
+        $trashedTeams = factory(Team::class)->state('trashed')->times(5)->create();
+        factory(Team::class)->times(5)->create();
+
+        $response = $this->get('/api/teams');
+
+        $this->assertSuccessfulIndexResponse($response, 1, 1, 1, 15, 5, 5);
+        $response->assertJsonMissing([
+            'data' => $trashedTeams->map(function ($team) {
+                /**
+                 * @var Team $team
+                 */
+                return $team->toArray();
+            })->toArray()
+        ]);
+
     }
 }
