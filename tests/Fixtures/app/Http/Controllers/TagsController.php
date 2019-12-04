@@ -32,4 +32,12 @@ class TagsController extends Controller
     {
         return ['name', 'meta~key'];
     }
+
+    /**
+     * @return array
+     */
+    public function searchableBy()
+    {
+        return ['name', 'meta~key'];
+    }
 }

@@ -191,9 +191,9 @@ trait BuildsQuery
              * @var Builder $whereQuery
              */
             foreach ($searchables as $searchable) {
-                if (strpos($searchable, '.') !== false) {
+                if (strpos($searchable, '~') !== false) {
                     $relation = $this->relationFromParamConstraint($searchable);
-                    $relationField = $this->relationFromParamConstraint($searchable);
+                    $relationField = $this->relationFieldFromParamConstraint($searchable);
 
                     $whereQuery->orWhereHas($relation, function ($relationQuery) use ($relationField, $requestedSearchStr) {
                         /**
