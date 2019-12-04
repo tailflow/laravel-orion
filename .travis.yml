@@ -22,6 +22,8 @@ matrix:
       env: LARAVEL=^6.0
     - php: 7.1
       env: LARAVEL=^7.0
+    - php: 7.4
+      env: LARAVEL=5.7.*
   allow_failures:
     - env: LARAVEL=^7.0
 
