@@ -35,4 +35,13 @@ abstract class TestCase extends BaseTestCase
             ]
         ]);
     }
+
+    /**
+     * @param TestResponse $response
+     */
+    protected function assertUnauthorizedResponse($response)
+    {
+        $response->assertStatus(403);
+        $response->assertJson(['message' => 'This action is unauthorized.']);
+    }
 }

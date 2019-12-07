@@ -3,8 +3,12 @@
 namespace Orion\Tests\Feature;
 
 use Illuminate\Support\Collection;
+use Orion\Tests\Fixtures\App\Models\History;
+use Orion\Tests\Fixtures\App\Models\Post;
+use Orion\Tests\Fixtures\App\Models\Supplier;
 use Orion\Tests\Fixtures\App\Models\Tag;
 use Orion\Tests\Fixtures\App\Models\Team;
+use Orion\Tests\Fixtures\App\Models\User;
 
 class HandlesStandardIndexOperationsTest extends TestCase
 {
@@ -114,6 +118,47 @@ class HandlesStandardIndexOperationsTest extends TestCase
                 return $team->toArray();
             })->toArray()
         ]);
+    }
 
+    /** @test */
+    public function can_get_a_list_of_resources_if_disable_authorization_trait_is_applied()
+    {
+        /**
+         * @var Collection $tags
+         */
+        factory(Tag::class)->times(5)->create();
+
+        $response = $this->get('/api/tags');
+
+        $this->assertSuccessfulIndexResponse($response, 1, 1, 1, 15, 5, 5);
+    }
+
+    /** @test */
+    public function cannot_get_a_list_of_resources_if_no_policy_is_defined_and_disable_authorizatin_trait_is_not_applied()
+    {
+        $supplier = factory(Supplier::class)->create();
+        factory(History::class)->times(5)->create(['supplier_id' => $supplier]);
+
+        $response = $this->get('/api/history', ['Accept' => 'application/json']);
+
+        $this->assertUnauthorizedResponse($response);
+    }
+
+    /** @test */
+    public function can_get_a_list_of_resources_when_allowed_by_a_policy()
+    {
+        $posts = factory(Post::class)->times(5)->create();
+
+        $response = $this->actingAs(factory(User::class)->create(), 'api')->get('/api/posts');
+
+        $this->assertSuccessfulIndexResponse($response, 1, 1, 1, 15, 5, 5);
+        $response->assertJson([
+            'data' => $posts->map(function ($post) {
+                /**
+                 * @var Post $post
+                 */
+                return $post->toArray();
+            })->toArray()
+        ]);
     }
 }
