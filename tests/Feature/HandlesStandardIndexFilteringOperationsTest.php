@@ -2,8 +2,10 @@
 
 namespace Orion\Tests\Feature;
 
+use Orion\Tests\Fixtures\App\Models\Supplier;
 use Orion\Tests\Fixtures\App\Models\Tag;
 use Orion\Tests\Fixtures\App\Models\TagMeta;
+use Orion\Tests\Fixtures\App\Models\Team;
 
 class HandlesStandardIndexFilteringOperationsTest extends TestCase
 {
@@ -62,6 +64,46 @@ class HandlesStandardIndexFilteringOperationsTest extends TestCase
 
         $response->assertJson([
             'data' => [$matchingTagA->toArray(), $notMatchingTagB->toArray()]
+        ]);
+    }
+
+    /** @test */
+    public function can_get_a_list_of_filtered_by_model_field_resources_with_wildcard_whitelisting()
+    {
+        /**
+         * @var Supplier $matchingSupplierA
+         * @var Supplier $notMatchingSupplierB
+         */
+        $matchingSupplierA = factory(Supplier::class)->create(['name' => 'match'])->refresh();
+        factory(Supplier::class)->create(['name' => 'not match'])->refresh();
+
+        $response = $this->get('/api/suppliers?name=match');
+
+        $this->assertSuccessfulIndexResponse($response, 1, 1, 1, 15, 1, 1);
+
+        $response->assertJson([
+            'data' => [$matchingSupplierA->toArray()]
+        ]);
+    }
+
+    /** @test */
+    public function can_get_a_list_of_filtered_by_relation_field_resources_with_wildcard_whitelisting()
+    {
+        /**
+         * @var Supplier $matchingSupplierA
+         * @var Supplier $notMatchingSupplierB
+         */
+        $matchingSupplierATeam = factory(Team::class)->create(['name' => 'match']);
+        $matchingSupplierA = factory(Supplier::class)->create(['team_id' => $matchingSupplierATeam->id])->refresh();
+        $notMatchingSupplierBTeam = factory(Team::class)->create(['name' => 'not match']);
+        factory(Supplier::class)->create(['team_id' => $notMatchingSupplierBTeam->id])->refresh();
+
+        $response = $this->get('/api/suppliers?team~name=match');
+
+        $this->assertSuccessfulIndexResponse($response, 1, 1, 1, 15, 1, 1);
+
+        $response->assertJson([
+            'data' => [$matchingSupplierA->toArray()]
         ]);
     }
 }
