@@ -32,4 +32,14 @@ class SuppliersController extends Controller
     {
         return ['*'];
     }
+
+    /**
+     * The relations that are always included together with a resource.
+     *
+     * @return array
+     */
+    protected function alwaysIncludes()
+    {
+        return ['team'];
+    }
 }

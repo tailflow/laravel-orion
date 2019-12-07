@@ -40,4 +40,14 @@ class TagsController extends Controller
     {
         return ['name', 'meta~key'];
     }
+
+    /**
+     * The relations that are allowed to be included together with a resource.
+     *
+     * @return array
+     */
+    protected function includes()
+    {
+        return ['posts', 'team'];
+    }
 }
