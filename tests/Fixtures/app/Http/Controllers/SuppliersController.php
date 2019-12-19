@@ -4,6 +4,7 @@ namespace Orion\Tests\Fixtures\App\Http\Controllers;
 
 use Orion\Concerns\DisableAuthorization;
 use Orion\Http\Controllers\Controller;
+use Orion\Tests\Fixtures\App\Http\Resources\SupplierCollectionResource;
 use Orion\Tests\Fixtures\App\Models\Supplier;
 
 class SuppliersController extends Controller
@@ -14,6 +15,11 @@ class SuppliersController extends Controller
      * @var string|null $model
      */
     protected static $model = Supplier::class;
+
+    /**
+     * @var string $collectionResource
+     */
+    protected static $collectionResource = SupplierCollectionResource::class;
 
     /**
      * The attributes that are used for sorting.

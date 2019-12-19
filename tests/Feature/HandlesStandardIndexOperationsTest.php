@@ -7,6 +7,7 @@ use Orion\Tests\Fixtures\App\Models\History;
 use Orion\Tests\Fixtures\App\Models\Post;
 use Orion\Tests\Fixtures\App\Models\Supplier;
 use Orion\Tests\Fixtures\App\Models\Tag;
+use Orion\Tests\Fixtures\App\Models\TagMeta;
 use Orion\Tests\Fixtures\App\Models\Team;
 use Orion\Tests\Fixtures\App\Models\User;
 
@@ -159,6 +160,42 @@ class HandlesStandardIndexOperationsTest extends TestCase
                  */
                 return $post->toArray();
             })->toArray()
+        ]);
+    }
+
+    /** @test */
+    public function can_get_a_list_of_transformed_by_resource_resources()
+    {
+        $tagMeta = factory(TagMeta::class)->times(5)->create(['tag_id' => factory(Tag::class)->create()->id]);
+
+        $response = $this->get('/api/tag_meta');
+
+        $this->assertSuccessfulIndexResponse($response, 1, 1, 1, 15, 5, 5);
+        $response->assertJsonPath('data',$tagMeta->map(function ($tagMeta) {
+                /**
+                 * @var TagMeta $tagMeta
+                 */
+                return array_merge($tagMeta->toArray(), ['test-field-from-resource' => 'test-value']);
+            })->toArray()
+        );
+    }
+
+    /** @test */
+    public function can_get_a_list_of_transformed_by_collection_resource_resources()
+    {
+        $suppliers = factory(Supplier::class)->times(5)->create();
+
+        $response = $this->get('/api/suppliers');
+
+        $this->assertSuccessfulIndexResponse($response, 1, 1, 1, 15, 5, 5);
+        $response->assertJson([
+            'data' => $suppliers->map(function ($supplier) {
+                /**
+                 * @var Supplier $supplier
+                 */
+                return $supplier->toArray();
+            })->toArray(),
+            'test-field-from-resource' => 'test-value'
         ]);
     }
 }
