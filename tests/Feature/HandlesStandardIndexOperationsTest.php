@@ -171,13 +171,14 @@ class HandlesStandardIndexOperationsTest extends TestCase
         $response = $this->get('/api/tag_meta');
 
         $this->assertSuccessfulIndexResponse($response, 1, 1, 1, 15, 5, 5);
-        $response->assertJsonPath('data',$tagMeta->map(function ($tagMeta) {
+        $response->assertJson([
+            'data' => $tagMeta->map(function ($tagMeta) {
                 /**
                  * @var TagMeta $tagMeta
                  */
                 return array_merge($tagMeta->toArray(), ['test-field-from-resource' => 'test-value']);
             })->toArray()
-        );
+        ]);
     }
 
     /** @test */
