@@ -6,6 +6,7 @@ use Orion\Tests\Fixtures\App\Models\History;
 use Orion\Tests\Fixtures\App\Models\Post;
 use Orion\Tests\Fixtures\App\Models\Supplier;
 use Orion\Tests\Fixtures\App\Models\Tag;
+use Orion\Tests\Fixtures\App\Models\Team;
 use Orion\Tests\Fixtures\App\Models\User;
 
 class HandlesStandardShowOperationsTest extends TestCase
@@ -22,7 +23,29 @@ class HandlesStandardShowOperationsTest extends TestCase
     }
 
     /** @test */
-    public function can_get_a_list_of_resources_if_disable_authorization_trait_is_applied()
+    public function cannot_not_see_trashed_resources_if_query_parameters_are_missing()
+    {
+        $trashedTeam = factory(Team::class)->state('trashed')->create();
+
+        $response = $this->get("/api/teams/{$trashedTeam->id}", ['Accept' => 'application/json']);
+
+        $response->assertNotFound();
+        $response->assertJsonStructure(['message']);
+    }
+
+    /** @test */
+    public function can_get_a_single_soft_delatable_resource_with_trashed()
+    {
+        $trashedTeam = factory(Team::class)->state('trashed')->create();
+
+        $response = $this->get("/api/teams/{$trashedTeam->id}?with_trashed=true");
+
+        $this->assertSuccessfulShowResponse($response);
+        $response->assertJson(['data' => $trashedTeam->toArray()]);
+    }
+
+    /** @test */
+    public function can_get_a_single_resource_if_disable_authorization_trait_is_applied()
     {
         $tag = factory(Tag::class)->create();
 
@@ -50,6 +73,5 @@ class HandlesStandardShowOperationsTest extends TestCase
         $response = $this->actingAs(factory(User::class)->create(), 'api')->get("/api/posts/{$post->id}");
 
         $this->assertSuccessfulShowResponse($response);
-        $response->assertJson(['data' => $post->toArray()]);
     }
 }
