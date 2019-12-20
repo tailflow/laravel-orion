@@ -6,6 +6,7 @@ use Orion\Tests\Fixtures\App\Models\History;
 use Orion\Tests\Fixtures\App\Models\Post;
 use Orion\Tests\Fixtures\App\Models\Supplier;
 use Orion\Tests\Fixtures\App\Models\Tag;
+use Orion\Tests\Fixtures\App\Models\TagMeta;
 use Orion\Tests\Fixtures\App\Models\Team;
 use Orion\Tests\Fixtures\App\Models\User;
 
@@ -73,5 +74,16 @@ class HandlesStandardShowOperationsTest extends TestCase
         $response = $this->actingAs(factory(User::class)->create(), 'api')->get("/api/posts/{$post->id}");
 
         $this->assertSuccessfulShowResponse($response);
+    }
+
+    /** @test */
+    public function can_get_a_single_transformed_resource()
+    {
+        $tagMeta = factory(TagMeta::class)->create(['tag_id' => factory(Tag::class)->create()->id]);
+
+        $response = $this->get("/api/tag_meta/{$tagMeta->id}");
+
+        $this->assertSuccessfulShowResponse($response);
+        $response->assertJson(['data' => array_merge($tagMeta->toArray(), ['test-field-from-resource' => 'test-value'])]);
     }
 }
