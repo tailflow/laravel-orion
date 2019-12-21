@@ -4,6 +4,7 @@ namespace Orion\Tests\Fixtures\App\Http\Controllers;
 
 use Orion\Concerns\DisableAuthorization;
 use Orion\Http\Controllers\Controller;
+use Orion\Tests\Fixtures\App\Http\Requests\TagRequest;
 use Orion\Tests\Fixtures\App\Models\Tag;
 
 class TagsController extends Controller
@@ -14,6 +15,11 @@ class TagsController extends Controller
      * @var string|null $model
      */
     protected static $model = Tag::class;
+
+    /**
+     * @var string $request
+     */
+    protected static $request = TagRequest::class;
 
     /**
      * The attributes that are used for sorting.

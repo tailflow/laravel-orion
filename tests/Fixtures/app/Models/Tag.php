@@ -21,7 +21,7 @@ class Tag extends Model
      * @var array
      */
     protected $fillable = [
-        'name', 'description'
+        'name', 'description', 'team_id'
     ];
 
     /**

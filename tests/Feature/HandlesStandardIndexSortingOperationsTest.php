@@ -156,8 +156,6 @@ class HandlesStandardIndexSortingOperationsTest extends TestCase
         $supplierC = factory(Supplier::class)->create(['team_id' => $teamA->id]);
         factory(History::class)->create(['code' => 'C', 'supplier_id' => $supplierC->id]);
 
-        $this->withoutExceptionHandling();
-
         $response = $this->get('/api/teams?sort=supplierHistory~code|desc');
 
         $this->assertSuccessfulIndexResponse($response, 1, 1, 1, 15, 3, 3);

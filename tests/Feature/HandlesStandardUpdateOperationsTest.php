@@ -10,7 +10,7 @@ class HandlesStandardUpdateOperationsTest extends TestCase
     public function can_update_a_single_resource()
     {
         $originalResource = factory(Tag::class)->create();
-        $payload = ['description' => 'test description'];
+        $payload = ['name' => 'test title', 'description' => 'test description'];
 
         $response = $this->patch("/api/tags/{$originalResource->id}", $payload);
 

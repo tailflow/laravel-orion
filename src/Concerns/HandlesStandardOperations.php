@@ -69,8 +69,8 @@ trait HandlesStandardOperations
         }
 
         $entity->save();
-
-        $entity->refresh($this->relationsFromIncludes($request));
+        $entity = $entity->fresh($this->relationsFromIncludes($request));
+        $entity->wasRecentlyCreated = true;
 
         $afterSaveHookResult = $this->afterSave($request, $entity);
         if ($this->hookResponds($afterSaveHookResult)) {
