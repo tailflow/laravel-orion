@@ -19,7 +19,7 @@ class HandlesStandardShowRelationsInclusionOperationsTest extends TestCase
 
         $response = $this->get("/api/tags/{$tag->id}?include=team");
 
-        $this->assertResourceShowed($response);
+        $this->assertResourceShown($response);
         $response->assertJson(['data' => $tag->toArray()]);
     }
 
@@ -31,7 +31,7 @@ class HandlesStandardShowRelationsInclusionOperationsTest extends TestCase
 
         $response = $this->get("/api/tags/{$tag->id}?include=team,posts");
 
-        $this->assertResourceShowed($response);
+        $this->assertResourceShown($response);
         $response->assertJson(['data' => $tag->toArray()]);
     }
 
@@ -44,7 +44,7 @@ class HandlesStandardShowRelationsInclusionOperationsTest extends TestCase
 
         $response = $this->get("/api/tags/{$tag->id}?include=meta");
 
-        $this->assertResourceShowed($response);
+        $this->assertResourceShown($response);
         $response->assertJson(['data' => $tag->unsetRelation('meta')->toArray()]);
     }
 
@@ -57,7 +57,7 @@ class HandlesStandardShowRelationsInclusionOperationsTest extends TestCase
 
         $response = $this->get("/api/suppliers/{$supplier->id}");
 
-        $this->assertResourceShowed($response);
+        $this->assertResourceShown($response);
         $response->assertJson(['data' => $supplier->toArray()]);
     }
 }

@@ -40,7 +40,7 @@ abstract class TestCase extends BaseTestCase
     /**
      * @param TestResponse $response
      */
-    protected function assertResourceShowed($response)
+    protected function assertResourceShown($response)
     {
         $response->assertStatus(200);
         $response->assertJsonStructure(['data']);
