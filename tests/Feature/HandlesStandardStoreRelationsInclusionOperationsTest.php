@@ -17,7 +17,7 @@ class HandlesStandardStoreRelationsInclusionOperationsTest extends TestCase
 
         $response = $this->post('/api/tags?include=team', $payload);
 
-        $this->assertSuccessfulStoreResponse($response);
+        $this->assertSuccessfulStoreResponse($response, 'tags', $payload);
         $tag = Tag::query()->with('team')->first();
         $response->assertJson(['data' => $tag->toArray()]);
     }
@@ -29,7 +29,7 @@ class HandlesStandardStoreRelationsInclusionOperationsTest extends TestCase
 
         $response = $this->actingAs(factory(User::class)->create(), 'api')->post('/api/posts?include=team', $payload);
 
-        $this->assertSuccessfulStoreResponse($response);
+        $this->assertSuccessfulStoreResponse($response, 'posts', $payload);
         $post = Post::query()->first();
         $response->assertJson(['data' => $post->toArray()]);
     }
@@ -41,7 +41,7 @@ class HandlesStandardStoreRelationsInclusionOperationsTest extends TestCase
 
         $response = $this->post('/api/suppliers', $payload);
 
-        $this->assertSuccessfulStoreResponse($response);
+        $this->assertSuccessfulStoreResponse($response, 'suppliers', $payload);
         $supplier = Supplier::query()->with('team')->first();
         $response->assertJson(['data' => $supplier->toArray()]);
     }

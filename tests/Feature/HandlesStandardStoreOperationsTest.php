@@ -16,8 +16,7 @@ class HandlesStandardStoreOperationsTest extends TestCase
 
         $response = $this->post('/api/tags', $payload);
 
-        $this->assertSuccessfulStoreResponse($response);
-        $this->assertDatabaseHas('tags', $payload);
+        $this->assertSuccessfulStoreResponse($response, 'tags', $payload);
         $tag = Tag::query()->first();
         $response->assertJson(['data' => $tag->toArray()]);
     }
@@ -29,7 +28,7 @@ class HandlesStandardStoreOperationsTest extends TestCase
 
         $response = $this->actingAs(factory(User::class)->create(), 'api')->post('/api/posts', $payload);
 
-        $this->assertSuccessfulStoreResponse($response);
+        $this->assertSuccessfulStoreResponse($response, 'posts', ['title' => 'test post title', 'body' => 'test post body']);
         $this->assertDatabaseMissing('posts', ['tracking_id' => 'test tracking id']);
         $response->assertJsonMissing(['tracking_id' => 'test tracking id']);
     }
@@ -53,7 +52,7 @@ class HandlesStandardStoreOperationsTest extends TestCase
 
         $response = $this->post('/api/tags', $payload);
 
-        $this->assertSuccessfulStoreResponse($response);
+        $this->assertSuccessfulStoreResponse($response, 'tags', $payload);
     }
 
     /** @test */
@@ -74,7 +73,7 @@ class HandlesStandardStoreOperationsTest extends TestCase
 
         $response = $this->actingAs(factory(User::class)->create(), 'api')->post('/api/posts', $payload);
 
-        $this->assertSuccessfulStoreResponse($response);
+        $this->assertSuccessfulStoreResponse($response, 'posts', $payload);
     }
 
     /** @test */
@@ -84,7 +83,7 @@ class HandlesStandardStoreOperationsTest extends TestCase
 
         $response = $this->post('/api/tag_meta', $payload);
 
-        $this->assertSuccessfulStoreResponse($response);
+        $this->assertSuccessfulStoreResponse($response, 'tag_metas', $payload);
         $tagMeta = TagMeta::query()->first();
         $response->assertJson(['data' => array_merge($tagMeta->toArray(), ['test-field-from-resource' => 'test-value'])]);
     }
