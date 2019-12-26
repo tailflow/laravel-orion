@@ -18,7 +18,7 @@ class HandlesStandardIndexSearchingOperationsTest extends TestCase
 
         $response = $this->get('/api/tags?q=match');
 
-        $this->assertSuccessfulIndexResponse($response, 1, 1, 1, 15, 1, 1);
+        $this->assertResourceListed($response, 1, 1, 1, 15, 1, 1);
 
         $response->assertJson([
             'data' => [$matchingTag->toArray()]
@@ -39,7 +39,7 @@ class HandlesStandardIndexSearchingOperationsTest extends TestCase
 
         $response = $this->get('/api/tags?q=match');
 
-        $this->assertSuccessfulIndexResponse($response, 1, 1, 1, 15, 1, 1);
+        $this->assertResourceListed($response, 1, 1, 1, 15, 1, 1);
 
         $response->assertJson([
             'data' => [$matchingTag->toArray()]
@@ -57,7 +57,7 @@ class HandlesStandardIndexSearchingOperationsTest extends TestCase
 
         $response = $this->get('/api/tags?q=');
 
-        $this->assertSuccessfulIndexResponse($response, 1, 1, 1, 15, 2, 2);
+        $this->assertResourceListed($response, 1, 1, 1, 15, 2, 2);
 
         $response->assertJson([
             'data' => [$matchingTagA->toArray(), $matchingTagB->toArray()]

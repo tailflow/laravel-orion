@@ -19,7 +19,7 @@ class HandlesStandardDeleteOperationsTest extends TestCase
 
         $response = $this->delete("/api/tags/{$tag->id}");
 
-        $this->assertSuccessfulDeleteResponse($response, $tag);
+        $this->assertResourceDeleted($response, $tag);
         $response->assertJson(['data' => $tag->toArray()]);
     }
 
@@ -30,7 +30,7 @@ class HandlesStandardDeleteOperationsTest extends TestCase
 
         $response = $this->delete("/api/teams/{$team->id}", [], ['Accept' => 'application/json']);
 
-        $this->assertSuccessfulDeleteResponse($response, $team, true);
+        $this->assertResourceTrashed($response, $team);
         $response->assertJson(['data' => $team->toArray()]);
     }
 
@@ -41,7 +41,7 @@ class HandlesStandardDeleteOperationsTest extends TestCase
 
         $response = $this->delete("/api/teams/{$team->id}?force=true", [], ['Accept' => 'application/json']);
 
-        $this->assertSuccessfulDeleteResponse($response, $team);
+        $this->assertResourceDeleted($response, $team);
         $response->assertJson(['data' => $team->toArray()]);
     }
 
@@ -76,7 +76,7 @@ class HandlesStandardDeleteOperationsTest extends TestCase
 
         $response = $this->delete("/api/teams/{$trashedTeam->id}?force=true", [], ['Accept' => 'application/json']);
 
-        $this->assertSuccessfulDeleteResponse($response, $trashedTeam);
+        $this->assertResourceDeleted($response, $trashedTeam);
         $response->assertJson(['data' => $trashedTeam->toArray()]);
     }
 
@@ -87,7 +87,7 @@ class HandlesStandardDeleteOperationsTest extends TestCase
 
         $response = $this->delete("/api/tags/{$tag->id}");
 
-        $this->assertSuccessfulDeleteResponse($response, $tag);
+        $this->assertResourceDeleted($response, $tag);
     }
 
     /** @test */
@@ -108,7 +108,7 @@ class HandlesStandardDeleteOperationsTest extends TestCase
 
         $response = $this->actingAs(factory(User::class)->create(), 'api')->delete("/api/posts/{$post->id}");
 
-        $this->assertSuccessfulDeleteResponse($response, $post);
+        $this->assertResourceDeleted($response, $post);
     }
 
     /** @test */
@@ -118,7 +118,7 @@ class HandlesStandardDeleteOperationsTest extends TestCase
 
         $response = $this->delete("/api/tag_meta/{$tagMeta->id}");
 
-        $this->assertSuccessfulDeleteResponse($response, $tagMeta);
+        $this->assertResourceDeleted($response, $tagMeta);
         $response->assertJson(['data' => array_merge($tagMeta->toArray(), ['test-field-from-resource' => 'test-value'])]);
     }
 }

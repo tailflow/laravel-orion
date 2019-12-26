@@ -20,7 +20,7 @@ class HandlesStandardIndexFilteringOperationsTest extends TestCase
 
         $response = $this->get('/api/tags?name=match');
 
-        $this->assertSuccessfulIndexResponse($response, 1, 1, 1, 15, 1, 1);
+        $this->assertResourceListed($response, 1, 1, 1, 15, 1, 1);
 
         $response->assertJson([
             'data' => [$matchingTag->toArray()]
@@ -41,7 +41,7 @@ class HandlesStandardIndexFilteringOperationsTest extends TestCase
 
         $response = $this->get('/api/tags?meta~key=match');
 
-        $this->assertSuccessfulIndexResponse($response, 1, 1, 1, 15, 1, 1);
+        $this->assertResourceListed($response, 1, 1, 1, 15, 1, 1);
 
         $response->assertJson([
             'data' => [$matchingTag->toArray()]
@@ -60,7 +60,7 @@ class HandlesStandardIndexFilteringOperationsTest extends TestCase
 
         $response = $this->get('/api/tags?description=match');
 
-        $this->assertSuccessfulIndexResponse($response, 1, 1, 1, 15, 2, 2);
+        $this->assertResourceListed($response, 1, 1, 1, 15, 2, 2);
 
         $response->assertJson([
             'data' => [$matchingTagA->toArray(), $notMatchingTagB->toArray()]
@@ -79,7 +79,7 @@ class HandlesStandardIndexFilteringOperationsTest extends TestCase
 
         $response = $this->get('/api/suppliers?name=match');
 
-        $this->assertSuccessfulIndexResponse($response, 1, 1, 1, 15, 1, 1);
+        $this->assertResourceListed($response, 1, 1, 1, 15, 1, 1);
 
         $response->assertJson([
             'data' => [$matchingSupplierA->toArray()]
@@ -100,7 +100,7 @@ class HandlesStandardIndexFilteringOperationsTest extends TestCase
 
         $response = $this->get('/api/suppliers?team~name=match');
 
-        $this->assertSuccessfulIndexResponse($response, 1, 1, 1, 15, 1, 1);
+        $this->assertResourceListed($response, 1, 1, 1, 15, 1, 1);
 
         $response->assertJson([
             'data' => [$matchingSupplierA->toArray()]

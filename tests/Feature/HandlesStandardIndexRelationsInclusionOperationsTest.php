@@ -23,7 +23,7 @@ class HandlesStandardIndexRelationsInclusionOperationsTest extends TestCase
 
         $response = $this->get('/api/tags?include=team');
 
-        $this->assertSuccessfulIndexResponse($response, 1, 1, 1, 15, 5, 5);
+        $this->assertResourceListed($response, 1, 1, 1, 15, 5, 5);
         $response->assertJson([
             'data' => $tags->map(function ($tag) {
                 /**
@@ -49,7 +49,7 @@ class HandlesStandardIndexRelationsInclusionOperationsTest extends TestCase
 
         $response = $this->get('/api/tags?include=team,posts');
 
-        $this->assertSuccessfulIndexResponse($response, 1, 1, 1, 15, 5, 5);
+        $this->assertResourceListed($response, 1, 1, 1, 15, 5, 5);
         $response->assertJson([
             'data' => $tags->map(function ($tag) {
                 /**
@@ -73,7 +73,7 @@ class HandlesStandardIndexRelationsInclusionOperationsTest extends TestCase
 
         $response = $this->get('/api/tags?include=meta');
 
-        $this->assertSuccessfulIndexResponse($response, 1, 1, 1, 15, 5, 5);
+        $this->assertResourceListed($response, 1, 1, 1, 15, 5, 5);
         $response->assertJson([
             'data' => $tags->map(function ($tag) {
                 /**
@@ -97,7 +97,7 @@ class HandlesStandardIndexRelationsInclusionOperationsTest extends TestCase
 
         $response = $this->get('/api/suppliers');
 
-        $this->assertSuccessfulIndexResponse($response, 1, 1, 1, 15, 5, 5);
+        $this->assertResourceListed($response, 1, 1, 1, 15, 5, 5);
         $response->assertJson([
             'data' => $suppliers->map(function ($supplier) {
                 /**

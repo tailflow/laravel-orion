@@ -17,7 +17,7 @@ class HandlesStandardIndexLimitingOperationsTest extends TestCase
 
         $response = $this->get('/api/tags?limit=5');
 
-        $this->assertSuccessfulIndexResponse($response, 1, 1, 3, 5, 5, 15);
+        $this->assertResourceListed($response, 1, 1, 3, 5, 5, 15);
         $response->assertJson([
             'data' => $tags->take(5)->values()->map(function ($tag) {
                 /**
@@ -38,7 +38,7 @@ class HandlesStandardIndexLimitingOperationsTest extends TestCase
 
         $response = $this->get('/api/tags?limit=is+a+string');
 
-        $this->assertSuccessfulIndexResponse($response, 1, 1, 1, 15, 5, 5);
+        $this->assertResourceListed($response, 1, 1, 1, 15, 5, 5);
         $response->assertJson([
             'data' => $tags->map(function ($tag) {
                 /**
@@ -59,7 +59,7 @@ class HandlesStandardIndexLimitingOperationsTest extends TestCase
 
         $response = $this->get('/api/tags?limit=-1');
 
-        $this->assertSuccessfulIndexResponse($response, 1, 1, 1, 15, 5, 5);
+        $this->assertResourceListed($response, 1, 1, 1, 15, 5, 5);
         $response->assertJson([
             'data' => $tags->map(function ($tag) {
                 /**
@@ -80,7 +80,7 @@ class HandlesStandardIndexLimitingOperationsTest extends TestCase
 
         $response = $this->get('/api/tags?limit=0');
 
-        $this->assertSuccessfulIndexResponse($response, 1, 1, 1, 15, 5, 5);
+        $this->assertResourceListed($response, 1, 1, 1, 15, 5, 5);
         $response->assertJson([
             'data' => $tags->map(function ($tag) {
                 /**
@@ -101,7 +101,7 @@ class HandlesStandardIndexLimitingOperationsTest extends TestCase
 
         $response = $this->get('/api/tags?limit=');
 
-        $this->assertSuccessfulIndexResponse($response, 1, 1, 1, 15, 5, 5);
+        $this->assertResourceListed($response, 1, 1, 1, 15, 5, 5);
         $response->assertJson([
             'data' => $tags->map(function ($tag) {
                 /**

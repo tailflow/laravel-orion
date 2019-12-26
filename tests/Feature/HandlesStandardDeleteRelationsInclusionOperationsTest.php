@@ -17,7 +17,7 @@ class HandlesStandardDeleteRelationsInclusionOperationsTest extends TestCase
 
         $response = $this->delete("/api/tags/{$tag->id}?include=team");
 
-        $this->assertSuccessfulDeleteResponse($response, $tag);
+        $this->assertResourceDeleted($response, $tag);
         $tag->load('team');
         $response->assertJson(['data' => $tag->toArray()]);
     }
@@ -29,7 +29,7 @@ class HandlesStandardDeleteRelationsInclusionOperationsTest extends TestCase
 
         $response = $this->actingAs(factory(User::class)->create(), 'api')->delete("/api/posts/{$post->id}?include=team");
 
-        $this->assertSuccessfulDeleteResponse($response, $post);
+        $this->assertResourceDeleted($response, $post);
         $response->assertJson(['data' => $post->toArray()]);
     }
 
@@ -40,7 +40,7 @@ class HandlesStandardDeleteRelationsInclusionOperationsTest extends TestCase
 
         $response = $this->delete("/api/suppliers/{$supplier->id}");
 
-        $this->assertSuccessfulDeleteResponse($response, $supplier);
+        $this->assertResourceDeleted($response, $supplier);
         $supplier->load('team');
         $response->assertJson(['data' => $supplier->toArray()]);
     }

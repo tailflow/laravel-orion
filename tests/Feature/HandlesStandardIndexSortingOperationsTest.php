@@ -19,7 +19,7 @@ class HandlesStandardIndexSortingOperationsTest extends TestCase
 
         $response = $this->get('/api/tags?sort=name|asc');
 
-        $this->assertSuccessfulIndexResponse($response, 1, 1, 1, 15, 3, 3);
+        $this->assertResourceListed($response, 1, 1, 1, 15, 3, 3);
 
         $this->assertEquals($tagA->toArray(), $response->json('data.0'));
         $this->assertEquals($tagB->toArray(), $response->json('data.1'));
@@ -35,7 +35,7 @@ class HandlesStandardIndexSortingOperationsTest extends TestCase
 
         $response = $this->get('/api/tags?sort=name');
 
-        $this->assertSuccessfulIndexResponse($response, 1, 1, 1, 15, 3, 3);
+        $this->assertResourceListed($response, 1, 1, 1, 15, 3, 3);
 
         $this->assertEquals($tagA->toArray(), $response->json('data.0'));
         $this->assertEquals($tagB->toArray(), $response->json('data.1'));
@@ -51,7 +51,7 @@ class HandlesStandardIndexSortingOperationsTest extends TestCase
 
         $response = $this->get('/api/tags?sort=name|desc');
 
-        $this->assertSuccessfulIndexResponse($response, 1, 1, 1, 15, 3, 3);
+        $this->assertResourceListed($response, 1, 1, 1, 15, 3, 3);
 
         $this->assertEquals($tagC->toArray(), $response->json('data.0'));
         $this->assertEquals($tagB->toArray(), $response->json('data.1'));
@@ -67,7 +67,7 @@ class HandlesStandardIndexSortingOperationsTest extends TestCase
 
         $response = $this->get('/api/tags?sort=description|asc');
 
-        $this->assertSuccessfulIndexResponse($response, 1, 1, 1, 15, 3, 3);
+        $this->assertResourceListed($response, 1, 1, 1, 15, 3, 3);
         $this->assertEquals($tagC->toArray(), $response->json('data.0'));
         $this->assertEquals($tagB->toArray(), $response->json('data.1'));
         $this->assertEquals($tagA->toArray(), $response->json('data.2'));
@@ -82,7 +82,7 @@ class HandlesStandardIndexSortingOperationsTest extends TestCase
 
         $response = $this->get('/api/tags?sort=');
 
-        $this->assertSuccessfulIndexResponse($response, 1, 1, 1, 15, 3, 3);
+        $this->assertResourceListed($response, 1, 1, 1, 15, 3, 3);
 
         $this->assertEquals($tagA->toArray(), $response->json('data.0'));
         $this->assertEquals($tagB->toArray(), $response->json('data.1'));
@@ -106,7 +106,7 @@ class HandlesStandardIndexSortingOperationsTest extends TestCase
 
         $response = $this->get('/api/tags?sort=meta~key|desc');
 
-        $this->assertSuccessfulIndexResponse($response, 1, 1, 1, 15, 3, 3);
+        $this->assertResourceListed($response, 1, 1, 1, 15, 3, 3);
 
         $this->assertEquals($tagC->toArray(), $response->json('data.0'));
         $this->assertEquals($tagB->toArray(), $response->json('data.1'));
@@ -127,7 +127,7 @@ class HandlesStandardIndexSortingOperationsTest extends TestCase
 
         $response = $this->get('/api/tags?sort=team~name|desc');
 
-        $this->assertSuccessfulIndexResponse($response, 1, 1, 1, 15, 3, 3);
+        $this->assertResourceListed($response, 1, 1, 1, 15, 3, 3);
 
         $this->assertEquals($tagC->toArray(), $response->json('data.0'));
         $this->assertEquals($tagB->toArray(), $response->json('data.1'));
@@ -158,7 +158,7 @@ class HandlesStandardIndexSortingOperationsTest extends TestCase
 
         $response = $this->get('/api/teams?sort=supplierHistory~code|desc');
 
-        $this->assertSuccessfulIndexResponse($response, 1, 1, 1, 15, 3, 3);
+        $this->assertResourceListed($response, 1, 1, 1, 15, 3, 3);
 
         $this->assertEquals($teamC->toArray(), $response->json('data.0'));
         $this->assertEquals($teamB->toArray(), $response->json('data.1'));

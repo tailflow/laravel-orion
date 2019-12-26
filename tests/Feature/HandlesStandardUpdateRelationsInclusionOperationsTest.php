@@ -18,7 +18,7 @@ class HandlesStandardUpdateRelationsInclusionOperationsTest extends TestCase
 
         $response = $this->patch("/api/tags/{$tag->id}?include=team", $payload);
 
-        $this->assertSuccessfulUpdateResponse($response, $tag, $payload);
+        $this->assertResourceUpdated($response, $tag, $payload);
         $tag = Tag::query()->with('team')->first();
         $response->assertJson(['data' => $tag->toArray()]);
     }
@@ -31,7 +31,7 @@ class HandlesStandardUpdateRelationsInclusionOperationsTest extends TestCase
 
         $response = $this->actingAs(factory(User::class)->create(), 'api')->patch("/api/posts/{$post->id}?include=team", $payload);
 
-        $this->assertSuccessfulUpdateResponse($response, $post, $payload);
+        $this->assertResourceUpdated($response, $post, $payload);
         $post = Post::query()->first();
         $response->assertJson(['data' => $post->toArray()]);
     }
@@ -44,7 +44,7 @@ class HandlesStandardUpdateRelationsInclusionOperationsTest extends TestCase
 
         $response = $this->patch("/api/suppliers/{$supplier->id}", $payload);
 
-        $this->assertSuccessfulUpdateResponse($response, $supplier, $payload);
+        $this->assertResourceUpdated($response, $supplier, $payload);
         $supplier = Supplier::query()->with('team')->first();
         $response->assertJson(['data' => $supplier->toArray()]);
     }

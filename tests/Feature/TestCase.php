@@ -17,7 +17,7 @@ abstract class TestCase extends BaseTestCase
      * @param int $to
      * @param int $total
      */
-    protected function assertSuccessfulIndexResponse($response, $currentPage = 1, $from = 1, $lastPage = 1, $perPage = 15, $to = 3, $total = 3)
+    protected function assertResourceListed($response, $currentPage = 1, $from = 1, $lastPage = 1, $perPage = 15, $to = 3, $total = 3)
     {
         $response->assertStatus(200);
         $response->assertJsonStructure([
@@ -40,7 +40,7 @@ abstract class TestCase extends BaseTestCase
     /**
      * @param TestResponse $response
      */
-    protected function assertSuccessfulShowResponse($response)
+    protected function assertResourceShowed($response)
     {
         $response->assertStatus(200);
         $response->assertJsonStructure(['data']);
@@ -51,7 +51,7 @@ abstract class TestCase extends BaseTestCase
      * @param string $table
      * @param array $payload
      */
-    protected function assertSuccessfulStoreResponse($response, $table, $payload)
+    protected function assertResourceStored($response, $table, $payload)
     {
         $response->assertStatus(201);
         $response->assertJsonStructure(['data']);
@@ -63,7 +63,7 @@ abstract class TestCase extends BaseTestCase
      * @param Model $originalResource
      * @param array $updates
      */
-    protected function assertSuccessfulUpdateResponse($response, $originalResource, $updates)
+    protected function assertResourceUpdated($response, $originalResource, $updates)
     {
         $response->assertStatus(200);
         $response->assertJsonStructure(['data']);
@@ -73,17 +73,23 @@ abstract class TestCase extends BaseTestCase
     /**
      * @param TestResponse $response
      * @param Model $resource
-     * @param bool $trashed
      */
-    protected function assertSuccessfulDeleteResponse($response, $resource, $trashed = false)
+    protected function assertResourceDeleted($response, $resource)
     {
         $response->assertStatus(200);
         $response->assertJsonStructure(['data']);
-        if ($trashed) {
-            $this->assertDatabaseHas($resource->getTable(), [$resource->getKeyName() => $resource->getKey()]);
-        } else {
-            $this->assertDatabaseMissing($resource->getTable(), [$resource->getKeyName() => $resource->getKey()]);
-        }
+        $this->assertDatabaseMissing($resource->getTable(), [$resource->getKeyName() => $resource->getKey()]);
+    }
+
+    /**
+     * @param TestResponse $response
+     * @param Model $resource
+     */
+    protected function assertResourceTrashed($response, $resource)
+    {
+        $response->assertStatus(200);
+        $response->assertJsonStructure(['data']);
+        $this->assertDatabaseHas($resource->getTable(), [$resource->getKeyName() => $resource->getKey()]);
     }
 
     /**

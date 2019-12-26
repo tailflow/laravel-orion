@@ -19,7 +19,7 @@ class HandlesStandardShowOperationsTest extends TestCase
 
         $response = $this->get("/api/tags/{$tag->id}");
 
-        $this->assertSuccessfulShowResponse($response);
+        $this->assertResourceShowed($response);
         $response->assertJson(['data' => $tag->toArray()]);
     }
 
@@ -41,7 +41,7 @@ class HandlesStandardShowOperationsTest extends TestCase
 
         $response = $this->get("/api/teams/{$trashedTeam->id}?with_trashed=true");
 
-        $this->assertSuccessfulShowResponse($response);
+        $this->assertResourceShowed($response);
         $response->assertJson(['data' => $trashedTeam->toArray()]);
     }
 
@@ -52,7 +52,7 @@ class HandlesStandardShowOperationsTest extends TestCase
 
         $response = $this->get("/api/tags/{$tag->id}");
 
-        $this->assertSuccessfulShowResponse($response);
+        $this->assertResourceShowed($response);
     }
 
     /** @test */
@@ -73,7 +73,7 @@ class HandlesStandardShowOperationsTest extends TestCase
 
         $response = $this->actingAs(factory(User::class)->create(), 'api')->get("/api/posts/{$post->id}");
 
-        $this->assertSuccessfulShowResponse($response);
+        $this->assertResourceShowed($response);
     }
 
     /** @test */
@@ -83,7 +83,7 @@ class HandlesStandardShowOperationsTest extends TestCase
 
         $response = $this->get("/api/tag_meta/{$tagMeta->id}");
 
-        $this->assertSuccessfulShowResponse($response);
+        $this->assertResourceShowed($response);
         $response->assertJson(['data' => array_merge($tagMeta->toArray(), ['test-field-from-resource' => 'test-value'])]);
     }
 }

@@ -23,7 +23,7 @@ class HandlesStandardIndexOperationsTest extends TestCase
 
         $response = $this->get('/api/tags');
 
-        $this->assertSuccessfulIndexResponse($response, 1, 1, 1, 15, 5, 5);
+        $this->assertResourceListed($response, 1, 1, 1, 15, 5, 5);
         $response->assertJson([
             'data' => $tags->map(function ($tag) {
                 /**
@@ -44,7 +44,7 @@ class HandlesStandardIndexOperationsTest extends TestCase
 
         $response = $this->get('/api/tags?page=2');
 
-        $this->assertSuccessfulIndexResponse($response, 2, 16, 3, 15, 30, 45);
+        $this->assertResourceListed($response, 2, 16, 3, 15, 30, 45);
         $response->assertJson([
             'data' => $tags->forPage(2, 15)->values()->map(function ($tag) {
                 /**
@@ -66,7 +66,7 @@ class HandlesStandardIndexOperationsTest extends TestCase
 
         $response = $this->get('/api/teams?with_trashed=true');
 
-        $this->assertSuccessfulIndexResponse($response, 1, 1, 1, 15, 10, 10);
+        $this->assertResourceListed($response, 1, 1, 1, 15, 10, 10);
         $response->assertJson([
             'data' => $trashedTeams->merge($teams)->map(function ($team) {
                 /**
@@ -88,7 +88,7 @@ class HandlesStandardIndexOperationsTest extends TestCase
 
         $response = $this->get('/api/teams?only_trashed=true');
 
-        $this->assertSuccessfulIndexResponse($response, 1, 1, 1, 15, 5, 5);
+        $this->assertResourceListed($response, 1, 1, 1, 15, 5, 5);
         $response->assertJson([
             'data' => $trashedTeams->map(function ($team) {
                 /**
@@ -110,7 +110,7 @@ class HandlesStandardIndexOperationsTest extends TestCase
 
         $response = $this->get('/api/teams');
 
-        $this->assertSuccessfulIndexResponse($response, 1, 1, 1, 15, 5, 5);
+        $this->assertResourceListed($response, 1, 1, 1, 15, 5, 5);
         $response->assertJsonMissing([
             'data' => $trashedTeams->map(function ($team) {
                 /**
@@ -131,7 +131,7 @@ class HandlesStandardIndexOperationsTest extends TestCase
 
         $response = $this->get('/api/tags');
 
-        $this->assertSuccessfulIndexResponse($response, 1, 1, 1, 15, 5, 5);
+        $this->assertResourceListed($response, 1, 1, 1, 15, 5, 5);
     }
 
     /** @test */
@@ -152,7 +152,7 @@ class HandlesStandardIndexOperationsTest extends TestCase
 
         $response = $this->actingAs(factory(User::class)->create(), 'api')->get('/api/posts');
 
-        $this->assertSuccessfulIndexResponse($response, 1, 1, 1, 15, 5, 5);
+        $this->assertResourceListed($response, 1, 1, 1, 15, 5, 5);
         $response->assertJson([
             'data' => $posts->map(function ($post) {
                 /**
@@ -170,7 +170,7 @@ class HandlesStandardIndexOperationsTest extends TestCase
 
         $response = $this->get('/api/tag_meta');
 
-        $this->assertSuccessfulIndexResponse($response, 1, 1, 1, 15, 5, 5);
+        $this->assertResourceListed($response, 1, 1, 1, 15, 5, 5);
         $response->assertJson([
             'data' => $tagMeta->map(function ($tagMeta) {
                 /**
@@ -188,7 +188,7 @@ class HandlesStandardIndexOperationsTest extends TestCase
 
         $response = $this->get('/api/suppliers');
 
-        $this->assertSuccessfulIndexResponse($response, 1, 1, 1, 15, 5, 5);
+        $this->assertResourceListed($response, 1, 1, 1, 15, 5, 5);
         $response->assertJson([
             'data' => $suppliers->map(function ($supplier) {
                 /**
