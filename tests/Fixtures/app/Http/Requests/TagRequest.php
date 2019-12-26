@@ -13,7 +13,7 @@ class TagRequest extends Request
      */
     public function commonRules()
     {
-        return ['name' => 'string|required|max:255'];
+        return [];
     }
 
     /**
@@ -23,7 +23,7 @@ class TagRequest extends Request
      */
     public function storeRules()
     {
-        return [];
+        return ['name' => 'string|required|max:255'];
     }
 
     /**
@@ -33,6 +33,6 @@ class TagRequest extends Request
      */
     public function updateRules()
     {
-        return [];
+        return ['description' => 'string|required'];
     }
 }

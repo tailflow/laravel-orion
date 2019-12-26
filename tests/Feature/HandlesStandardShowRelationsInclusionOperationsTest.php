@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Orion\Tests\Feature;
-
 
 use Orion\Tests\Fixtures\App\Models\Post;
 use Orion\Tests\Fixtures\App\Models\Supplier;

@@ -80,7 +80,7 @@ class HandlesStandardStoreOperationsTest extends TestCase
     /** @test */
     public function can_store_a_single_resource_transformed_by_resource()
     {
-        $payload = ['key' => 'test key', 'tag_id' => factory(Tag::class)->create()];
+        $payload = ['key' => 'test key', 'tag_id' => factory(Tag::class)->create()->id];
 
         $response = $this->post('/api/tag_meta', $payload);
 

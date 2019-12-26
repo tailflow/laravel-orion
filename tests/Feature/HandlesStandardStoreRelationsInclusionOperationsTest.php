@@ -37,7 +37,7 @@ class HandlesStandardStoreRelationsInclusionOperationsTest extends TestCase
     /** @test */
     public function cat_store_a_single_resource_and_get_always_included_relations()
     {
-        $payload = ['name' => 'test tag', 'team_id' => factory(Team::class)->create()->id];
+        $payload = ['name' => 'test supplier', 'team_id' => factory(Team::class)->create()->id];
 
         $response = $this->post('/api/suppliers', $payload);
 

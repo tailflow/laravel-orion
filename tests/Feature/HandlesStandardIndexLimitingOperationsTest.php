@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Orion\Tests\Feature;
-
 
 use Illuminate\Support\Collection;
 use Orion\Tests\Fixtures\App\Models\Tag;

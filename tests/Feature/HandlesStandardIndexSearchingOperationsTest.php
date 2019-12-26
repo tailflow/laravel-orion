@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Orion\Tests\Feature;
 
 use Orion\Tests\Fixtures\App\Models\Tag;
