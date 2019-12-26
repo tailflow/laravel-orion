@@ -19,7 +19,7 @@ class HandlesStandardUpdateOperationsTest extends TestCase
 
         $response = $this->patch("/api/tags/{$tag->id}", $payload);
 
-        $this->assertSuccessfulUpdateResponse($response);
+        $this->assertSuccessfulUpdateResponse($response, $tag, $payload);
         $this->assertDatabaseHas('tags', $payload);
         $updatedTag = Tag::query()->first();
         $response->assertJson(['data' => $updatedTag->toArray()]);
@@ -33,7 +33,7 @@ class HandlesStandardUpdateOperationsTest extends TestCase
 
         $response = $this->actingAs(factory(User::class)->create(), 'api')->patch("/api/posts/{$post->id}", $payload);
 
-        $this->assertSuccessfulUpdateResponse($response);
+        $this->assertSuccessfulUpdateResponse($response, $post, ['title' => 'test post title updated']);
         $this->assertDatabaseMissing('posts', ['tracking_id' => 'test tracking id']);
         $updatedPost = Post::query()->first();
         $response->assertJson(['data' => $updatedPost->toArray()]);
@@ -60,7 +60,7 @@ class HandlesStandardUpdateOperationsTest extends TestCase
 
         $response = $this->patch("/api/tags/{$tag->id}", $payload);
 
-        $this->assertSuccessfulUpdateResponse($response);
+        $this->assertSuccessfulUpdateResponse($response, $tag, $payload);
     }
 
     /** @test */
@@ -83,7 +83,7 @@ class HandlesStandardUpdateOperationsTest extends TestCase
 
         $response = $this->actingAs(factory(User::class)->create(), 'api')->patch("/api/posts/{$post->id}", $payload);
 
-        $this->assertSuccessfulUpdateResponse($response);
+        $this->assertSuccessfulUpdateResponse($response, $post, $payload);
     }
 
     /** @test */
@@ -94,7 +94,7 @@ class HandlesStandardUpdateOperationsTest extends TestCase
 
         $response = $this->patch("/api/tag_meta/{$tagMeta->id}", $payload);
 
-        $this->assertSuccessfulUpdateResponse($response);
+        $this->assertSuccessfulUpdateResponse($response, $tagMeta, $payload);
         $tagMeta = TagMeta::query()->first();
         $response->assertJson(['data' => array_merge($tagMeta->toArray(), ['test-field-from-resource' => 'test-value'])]);
     }

@@ -57,11 +57,14 @@ abstract class TestCase extends BaseTestCase
 
     /**
      * @param TestResponse $response
+     * @param Model $originalResource
+     * @param array $updates
      */
-    protected function assertSuccessfulUpdateResponse($response)
+    protected function assertSuccessfulUpdateResponse($response, $originalResource, $updates)
     {
         $response->assertStatus(200);
         $response->assertJsonStructure(['data']);
+        $this->assertDatabaseHas($originalResource->getTable(), $updates);
     }
 
     /**
