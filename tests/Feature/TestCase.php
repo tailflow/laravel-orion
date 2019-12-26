@@ -2,6 +2,7 @@
 
 namespace Orion\Tests\Feature;
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\TestResponse;
 use Orion\Tests\TestCase as BaseTestCase;
 
@@ -61,6 +62,22 @@ abstract class TestCase extends BaseTestCase
     {
         $response->assertStatus(200);
         $response->assertJsonStructure(['data']);
+    }
+
+    /**
+     * @param TestResponse $response
+     * @param Model $resource
+     * @param bool $trashed
+     */
+    protected function assertSuccessfulDeleteResponse($response, $resource, $trashed = false)
+    {
+        $response->assertStatus(200);
+        $response->assertJsonStructure(['data']);
+        if ($trashed) {
+            $this->assertDatabaseHas($resource->getTable(), [$resource->getKeyName() => $resource->getKey()]);
+        } else {
+            $this->assertDatabaseMissing($resource->getTable(), [$resource->getKeyName() => $resource->getKey()]);
+        }
     }
 
     /**

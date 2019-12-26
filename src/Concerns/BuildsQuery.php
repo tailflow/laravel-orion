@@ -342,6 +342,6 @@ trait BuildsQuery
     protected function softDeletes()
     {
         $modelClass = $this->getResourceModel();
-        return method_exists(new $modelClass, 'initializeSoftDeletes');
+        return method_exists(new $modelClass, 'trashed');
     }
 }

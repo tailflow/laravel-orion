@@ -180,6 +180,10 @@ trait HandlesStandardOperations
 
         $forceDeletes = $softDeletes && $request->get('force');
 
+        if (!$forceDeletes && $softDeletes && $entity->trashed()) {
+            abort(404);
+        }
+
         if ($this->authorizationRequired()) {
             $this->authorize($forceDeletes ? 'forceDelete' : 'delete', $entity);
         }
