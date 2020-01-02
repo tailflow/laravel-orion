@@ -23,6 +23,6 @@ class TeamsController extends Controller
      */
     public function sortableBy()
     {
-        return ['supplierHistory~code'];
+        return ['supplierHistory.code'];
     }
 }

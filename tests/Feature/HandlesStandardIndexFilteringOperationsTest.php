@@ -18,7 +18,11 @@ class HandlesStandardIndexFilteringOperationsTest extends TestCase
         $matchingTag = factory(Tag::class)->create(['name' => 'match'])->refresh();
         factory(Tag::class)->create(['name' => 'not match'])->refresh();
 
-        $response = $this->get('/api/tags?name=match');
+        $response = $this->post('/api/tags/search', [
+            'filter' => [
+                ['field' => 'name', 'operation' => '=', 'value' => 'match']
+            ]
+        ]);
 
         $this->assertResourceListed($response, 1, 1, 1, 15, 1, 1);
 
@@ -39,7 +43,11 @@ class HandlesStandardIndexFilteringOperationsTest extends TestCase
         $notMatchingTag = factory(Tag::class)->create()->refresh();
         $notMatchingTag->meta()->save(factory(TagMeta::class)->make(['key' => 'not match']));
 
-        $response = $this->get('/api/tags?meta~key=match');
+        $response = $this->post('/api/tags/search', [
+            'filter' => [
+                ['field' => 'meta.key', 'operation' => '=', 'value' => 'match']
+            ]
+        ]);
 
         $this->assertResourceListed($response, 1, 1, 1, 15, 1, 1);
 
@@ -58,7 +66,11 @@ class HandlesStandardIndexFilteringOperationsTest extends TestCase
         $matchingTagA = factory(Tag::class)->create(['description' => 'match'])->refresh();
         $notMatchingTagB = factory(Tag::class)->create(['description' => 'not match'])->refresh();
 
-        $response = $this->get('/api/tags?description=match');
+        $response = $this->post('/api/tags/search', [
+            'filter' => [
+                ['field' => 'description', 'operation' => '=', 'value' => 'match']
+            ]
+        ]);
 
         $this->assertResourceListed($response, 1, 1, 1, 15, 2, 2);
 
@@ -77,7 +89,11 @@ class HandlesStandardIndexFilteringOperationsTest extends TestCase
         $matchingSupplierA = factory(Supplier::class)->create(['name' => 'match'])->refresh();
         factory(Supplier::class)->create(['name' => 'not match'])->refresh();
 
-        $response = $this->get('/api/suppliers?name=match');
+        $response = $this->post('/api/suppliers/search', [
+            'filter' => [
+                ['field' => 'name', 'operation' => '=', 'value' => 'match']
+            ]
+        ]);
 
         $this->assertResourceListed($response, 1, 1, 1, 15, 1, 1);
 
@@ -98,7 +114,11 @@ class HandlesStandardIndexFilteringOperationsTest extends TestCase
         $notMatchingSupplierBTeam = factory(Team::class)->create(['name' => 'not match']);
         factory(Supplier::class)->create(['team_id' => $notMatchingSupplierBTeam->id])->refresh();
 
-        $response = $this->get('/api/suppliers?team~name=match');
+        $response = $this->post('/api/suppliers/search', [
+            'filter' => [
+                ['field' => 'team.name', 'operation' => '=', 'value' => 'match']
+            ]
+        ]);
 
         $this->assertResourceListed($response, 1, 1, 1, 15, 1, 1);
 

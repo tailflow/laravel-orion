@@ -33,6 +33,7 @@ class Orion
             $paramName = Str::singular($name);
             Route::post("{$name}/{{$paramName}}/restore", $controller.'@restore')->name("$name.restore");
         }
+        Route::post("{$name}/search", $controller.'@index')->name("$name.search");
 
         return Route::apiResource($name, $controller, $options);
     }
@@ -57,6 +58,7 @@ class Orion
 
         if (!in_array($relationType, [HasOne::class, BelongsTo::class, HasOneThrough::class, MorphOne::class], true)) {
             Route::get($baseUri, $controller.'@index')->name("$resource.relation.$relation.index");
+            Route::post("$baseUri/search", $controller.'@index')->name("$resource.relation.$relation.search");
             $completeUri = "$baseUri/{{$relationParamName}}";
         }
 

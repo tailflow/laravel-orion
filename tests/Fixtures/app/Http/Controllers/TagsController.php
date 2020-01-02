@@ -28,7 +28,7 @@ class TagsController extends Controller
      */
     public function sortableBy()
     {
-        return ['name', 'meta~key', 'team~name'];
+        return ['name', 'meta.key', 'team.name'];
     }
 
     /**
@@ -36,7 +36,7 @@ class TagsController extends Controller
      */
     public function filterableBy()
     {
-        return ['name', 'meta~key'];
+        return ['name', 'meta.key'];
     }
 
     /**
@@ -44,7 +44,7 @@ class TagsController extends Controller
      */
     public function searchableBy()
     {
-        return ['name', 'meta~key'];
+        return ['name', 'meta.key'];
     }
 
     /**

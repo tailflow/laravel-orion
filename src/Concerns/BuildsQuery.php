@@ -24,12 +24,14 @@ trait BuildsQuery
          * @var Builder $query
          */
         $query = static::$model::query();
+        [, $action] = explode('@', $request->route()->getActionName());
 
-        // only for index method (well, and show method also, but it does not make sense to sort, filter or search data in the show method via query parameters...)
-        if ($request->isMethod('GET')) {
-            $this->applyFiltersToQuery($request, $query);
-            $this->applySearchingToQuery($request, $query);
-            $this->applySortingToQuery($request, $query);
+        if (in_array($action, ['index', 'show'])) {
+            if ($action === 'index') {
+                $this->applyFiltersToQuery($request, $query);
+                $this->applySearchingToQuery($request, $query);
+                $this->applySortingToQuery($request, $query);
+            }
             $this->applySoftDeletesToQuery($request, $query);
         }
 
@@ -93,11 +95,15 @@ trait BuildsQuery
      */
     protected function applySortingToQuery(Request $request, $query)
     {
-        if (!$requestedSortableDescriptorsStr = $request->get('sort')) {
+        if (!$requestedSortableDescriptors = $request->get('sort')) {
             return;
         }
 
-        $requestedSortableDescriptors = explode(',', $requestedSortableDescriptorsStr);
+        $this->validate($request, [
+            'sort' => ['sometimes', 'array'],
+            'sort.*' => ['required_with:sort', 'regex:/^[\w.]+\|?(asc|desc)*$/']
+        ]);
+
         $allowedSortables = $this->sortableBy();
 
         $validatedSortableDescriptors = array_filter($requestedSortableDescriptors, function ($sortableDescriptor) use ($allowedSortables) {
@@ -114,7 +120,7 @@ trait BuildsQuery
         foreach ($validatedSortableDescriptors as $sortableDescriptor) {
             [$sortable, $direction] = explode('|', $sortableDescriptor);
 
-            if (strpos($sortable, '~') !== false) {
+            if (strpos($sortable, '.') !== false) {
                 $relation = $this->relationFromParamConstraint($sortable);
                 $relationField = $this->relationFieldFromParamConstraint($sortable);
 
@@ -145,26 +151,36 @@ trait BuildsQuery
      */
     protected function applyFiltersToQuery(Request $request, $query)
     {
-        $requestedFilterables = $request->query();
+        if (!$requestedFilterDescriptors = $request->get('filter')) {
+            return;
+        }
+
+        $this->validate($request, [
+            'filter' => ['sometimes', 'array'],
+            'filter.*.field' => ['required_with:filter', 'regex:/^[\w.]+$/'],
+            'filter.*.operation' => ['required_with:filter', 'in:<,<=,>,>=,=,!='],
+            'filter.*.value' => ['required_with:filter', 'nullable']
+        ]);
+
         $allowedFilterables = $this->filterableBy();
 
-        $validatedFilterables = array_filter($requestedFilterables, function ($filterable) use ($allowedFilterables) {
-            return $this->validParamConstraint($filterable, $allowedFilterables);
-        }, ARRAY_FILTER_USE_KEY);
+        $validatedFilterables = array_filter($requestedFilterDescriptors, function ($filterable) use ($allowedFilterables) {
+            return $this->validParamConstraint($filterable['field'], $allowedFilterables);
+        });
 
-        foreach ($validatedFilterables as $filterable => $filterValue) {
-            if (strpos($filterable, '~') !== false) {
-                $relation = $this->relationFromParamConstraint($filterable);
-                $relationField = $this->relationFieldFromParamConstraint($filterable);
+        foreach ($validatedFilterables as $filterable) {
+            if (strpos($filterable['field'], '.') !== false) {
+                $relation = $this->relationFromParamConstraint($filterable['field']);
+                $relationField = $this->relationFieldFromParamConstraint($filterable['field']);
 
-                $query->whereHas($relation, function ($relationQuery) use ($relationField, $filterValue) {
+                $query->whereHas($relation, function ($relationQuery) use ($relationField, $filterable) {
                     /**
                      * @var \Illuminate\Database\Query\Builder $relationQuery
                      */
-                    return $relationQuery->where($relationField, $filterValue);
+                    return $relationQuery->where($relationField, $filterable['value']);
                 });
             } else {
-                $query->where($filterable, $filterValue);
+                $query->where($filterable['field'], $filterable['value']);
             }
         }
     }
@@ -177,32 +193,39 @@ trait BuildsQuery
      */
     protected function applySearchingToQuery(Request $request, $query)
     {
-        if (!$requestedSearchStr = $request->get('q')) {
+        if (!$requestedSearchDescriptor = $request->get('search')) {
             return;
         }
+
+        $this->validate($request, [
+            'search' => ['sometimes', 'array'],
+            'search.q' => ['string', 'nullable']
+        ]);
 
         $searchables = $this->searchableBy();
         if (!count($searchables)) {
             return;
         }
 
-        $query->where(function ($whereQuery) use ($searchables, $requestedSearchStr) {
+
+        $query->where(function ($whereQuery) use ($searchables, $requestedSearchDescriptor) {
+            $requestedSearchString = $requestedSearchDescriptor['q'];
             /**
              * @var Builder $whereQuery
              */
             foreach ($searchables as $searchable) {
-                if (strpos($searchable, '~') !== false) {
+                if (strpos($searchable, '.') !== false) {
                     $relation = $this->relationFromParamConstraint($searchable);
                     $relationField = $this->relationFieldFromParamConstraint($searchable);
 
-                    $whereQuery->orWhereHas($relation, function ($relationQuery) use ($relationField, $requestedSearchStr) {
+                    $whereQuery->orWhereHas($relation, function ($relationQuery) use ($relationField, $requestedSearchString) {
                         /**
                          * @var \Illuminate\Database\Query\Builder $relationQuery
                          */
-                        return $relationQuery->where($relationField, 'like', '%'.$requestedSearchStr.'%');
+                        return $relationQuery->where($relationField, 'like', '%'.$requestedSearchString.'%');
                     });
                 } else {
-                    $whereQuery->orWhere($searchable, 'like', '%'.$requestedSearchStr.'%');
+                    $whereQuery->orWhere($searchable, 'like', '%'.$requestedSearchString.'%');
                 }
             }
         });
@@ -243,26 +266,26 @@ trait BuildsQuery
             return true;
         }
 
-        if (strpos($paramConstraint, '~') === false) {
+        if (strpos($paramConstraint, '.') === false) {
             return false;
         }
 
         $allowedNestedParamConstraints = array_filter($allowedParamConstraints, function ($allowedParamConstraint) {
-            return strpos($allowedParamConstraint, '~*') !== false;
+            return strpos($allowedParamConstraint, '.*') !== false;
         });
 
-        $paramConstraintNestingLevel = substr_count($paramConstraint, '~');
+        $paramConstraintNestingLevel = substr_count($paramConstraint, '.');
 
         foreach ($allowedNestedParamConstraints as $allowedNestedParamConstraint) {
-            $allowedNestedParamConstraintNestingLevel = substr_count($allowedNestedParamConstraint, '~');
-            $allowedNestedParamConstraintReduced = explode('~*', $allowedNestedParamConstraint)[0];
+            $allowedNestedParamConstraintNestingLevel = substr_count($allowedNestedParamConstraint, '.');
+            $allowedNestedParamConstraintReduced = explode('.*', $allowedNestedParamConstraint)[0];
 
             for ($i = 0; $i < $allowedNestedParamConstraintNestingLevel; $i++) {
-                $allowedNestedParamConstraintReduced = implode('~', array_slice(explode('~', $allowedNestedParamConstraintReduced), -$i));
+                $allowedNestedParamConstraintReduced = implode('.', array_slice(explode('.', $allowedNestedParamConstraintReduced), -$i));
 
                 $paramConstraintReduced = $paramConstraint;
                 for ($k = 1; $k < $paramConstraintNestingLevel; $k++) {
-                    $paramConstraintReduced = implode('~', array_slice(explode('~', $paramConstraintReduced), -$i));
+                    $paramConstraintReduced = implode('.', array_slice(explode('.', $paramConstraintReduced), -$i));
                     if ($paramConstraintReduced === $allowedNestedParamConstraintReduced) {
                         return true;
                     }
@@ -281,12 +304,12 @@ trait BuildsQuery
      */
     protected function relationFromParamConstraint(string $paramConstraint)
     {
-        $paramConstraintParts = explode('~', $paramConstraint);
+        $paramConstraintParts = explode('.', $paramConstraint);
         if (count($paramConstraintParts) === 2) {
             return Arr::first($paramConstraintParts);
         }
 
-        return implode('~', array_slice($paramConstraintParts, -1));
+        return implode('.', array_slice($paramConstraintParts, -1));
     }
 
     /**
@@ -297,7 +320,7 @@ trait BuildsQuery
      */
     protected function relationFieldFromParamConstraint(string $paramConstraint)
     {
-        return Arr::last(explode('~', $paramConstraint));
+        return Arr::last(explode('.', $paramConstraint));
     }
 
     /**
@@ -308,7 +331,7 @@ trait BuildsQuery
      */
     protected function relationForeignKeyFromRelationInstance($relationInstance)
     {
-        $laravelVersion = (float)app()->version();
+        $laravelVersion = (float) app()->version();
 
         return $laravelVersion > 5.7 || get_class($relationInstance) === HasOne::class ? $relationInstance->getQualifiedForeignKeyName() : $relationInstance->getQualifiedForeignKey();
     }
