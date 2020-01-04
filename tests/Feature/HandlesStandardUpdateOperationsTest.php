@@ -45,7 +45,7 @@ class HandlesStandardUpdateOperationsTest extends TestCase
         $tag = factory(Tag::class)->create();
         $payload = ['name' => 'test tag name updated'];
 
-        $response = $this->patch("/api/tags/{$tag->id}", $payload, ['Accept' => 'application/json']);
+        $response = $this->patch("/api/tags/{$tag->id}", $payload);
 
         $response->assertStatus(422);
         $response->assertJsonStructure(['message', 'errors' => ['description']]);
@@ -70,7 +70,7 @@ class HandlesStandardUpdateOperationsTest extends TestCase
         $history = factory(History::class)->create(['supplier_id' => $supplier->id]);
         $payload = ['code' => 'test history updated'];
 
-        $response = $this->patch("/api/history/{$history->id}", $payload, ['Accept' => 'application/json']);
+        $response = $this->patch("/api/history/{$history->id}", $payload);
 
         $this->assertUnauthorizedResponse($response);
     }

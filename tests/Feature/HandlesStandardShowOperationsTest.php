@@ -28,7 +28,7 @@ class HandlesStandardShowOperationsTest extends TestCase
     {
         $trashedTeam = factory(Team::class)->state('trashed')->create();
 
-        $response = $this->get("/api/teams/{$trashedTeam->id}", ['Accept' => 'application/json']);
+        $response = $this->get("/api/teams/{$trashedTeam->id}");
 
         $response->assertNotFound();
         $response->assertJsonStructure(['message']);
@@ -61,7 +61,7 @@ class HandlesStandardShowOperationsTest extends TestCase
         $supplier = factory(Supplier::class)->create();
         $history = factory(History::class)->create(['supplier_id' => $supplier]);
 
-        $response = $this->get("/api/history/{$history->id}", ['Accept' => 'application/json']);
+        $response = $this->get("/api/history/{$history->id}");
 
         $this->assertUnauthorizedResponse($response);
     }

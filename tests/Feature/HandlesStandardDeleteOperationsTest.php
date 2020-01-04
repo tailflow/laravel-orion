@@ -28,7 +28,7 @@ class HandlesStandardDeleteOperationsTest extends TestCase
     {
         $team = factory(Team::class)->create();
 
-        $response = $this->delete("/api/teams/{$team->id}", [], ['Accept' => 'application/json']);
+        $response = $this->delete("/api/teams/{$team->id}");
 
         $this->assertResourceTrashed($response, $team);
         $response->assertJson(['data' => $team->toArray()]);
@@ -39,7 +39,7 @@ class HandlesStandardDeleteOperationsTest extends TestCase
     {
         $team = factory(Team::class)->create();
 
-        $response = $this->delete("/api/teams/{$team->id}?force=true", [], ['Accept' => 'application/json']);
+        $response = $this->delete("/api/teams/{$team->id}?force=true");
 
         $this->assertResourceDeleted($response, $team);
         $response->assertJson(['data' => $team->toArray()]);
@@ -50,7 +50,7 @@ class HandlesStandardDeleteOperationsTest extends TestCase
     {
         $trashedTeam = factory(Team::class)->state('trashed')->create();
 
-        $response = $this->delete("/api/teams/{$trashedTeam->id}", [], ['Accept' => 'application/json']);
+        $response = $this->delete("/api/teams/{$trashedTeam->id}");
 
         $response->assertNotFound();
         $response->assertJsonStructure(['message']);
@@ -62,7 +62,7 @@ class HandlesStandardDeleteOperationsTest extends TestCase
     {
         $trashedTeam = factory(Team::class)->state('trashed')->create();
 
-        $response = $this->delete("/api/teams/{$trashedTeam->id}?with_trashed=true", [], ['Accept' => 'application/json']);
+        $response = $this->delete("/api/teams/{$trashedTeam->id}?with_trashed=true");
 
         $response->assertNotFound();
         $response->assertJsonStructure(['message']);
@@ -74,7 +74,7 @@ class HandlesStandardDeleteOperationsTest extends TestCase
     {
         $trashedTeam = factory(Team::class)->state('trashed')->create();
 
-        $response = $this->delete("/api/teams/{$trashedTeam->id}?force=true", [], ['Accept' => 'application/json']);
+        $response = $this->delete("/api/teams/{$trashedTeam->id}?force=true");
 
         $this->assertResourceDeleted($response, $trashedTeam);
         $response->assertJson(['data' => $trashedTeam->toArray()]);
@@ -96,7 +96,7 @@ class HandlesStandardDeleteOperationsTest extends TestCase
         $supplier = factory(Supplier::class)->create();
         $history = factory(History::class)->create(['supplier_id' => $supplier->id]);
 
-        $response = $this->delete("/api/history/{$history->id}", [], ['Accept' => 'application/json']);
+        $response = $this->delete("/api/history/{$history->id}");
 
         $this->assertUnauthorizedResponse($response);
     }

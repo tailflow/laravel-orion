@@ -24,10 +24,10 @@ trait BuildsQuery
          * @var Builder $query
          */
         $query = static::$model::query();
-        [, $action] = explode('@', $request->route()->getActionName());
+        $actionMethod = $request->route()->getActionMethod();
 
-        if (in_array($action, ['index', 'show'])) {
-            if ($action === 'index') {
+        if (in_array($actionMethod, ['index', 'show'])) {
+            if ($actionMethod === 'index') {
                 $this->applyFiltersToQuery($request, $query);
                 $this->applySearchingToQuery($request, $query);
                 $this->applySortingToQuery($request, $query);
@@ -229,7 +229,6 @@ trait BuildsQuery
         if (!count($searchables)) {
             return;
         }
-
 
         $query->where(function ($whereQuery) use ($searchables, $requestedSearchDescriptor) {
             $requestedSearchString = $requestedSearchDescriptor['q'];

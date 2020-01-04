@@ -38,7 +38,7 @@ class HandlesStandardStoreOperationsTest extends TestCase
     {
         $payload = ['description' => 'test tag description'];
 
-        $response = $this->post('/api/tags', $payload, ['Accept' => 'application/json']);
+        $response = $this->post('/api/tags', $payload);
 
         $response->assertStatus(422);
         $response->assertJsonStructure(['message', 'errors' => ['name']]);
@@ -61,7 +61,7 @@ class HandlesStandardStoreOperationsTest extends TestCase
         $supplier = factory(Supplier::class)->create();
         $payload = ['code' => 'test history', 'supplier_id' => $supplier->id];
 
-        $response = $this->post('/api/history', $payload, ['Accept' => 'application/json']);
+        $response = $this->post('/api/history', $payload);
 
         $this->assertUnauthorizedResponse($response);
     }

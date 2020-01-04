@@ -140,7 +140,7 @@ class HandlesStandardIndexOperationsTest extends TestCase
         $supplier = factory(Supplier::class)->create();
         factory(History::class)->times(5)->create(['supplier_id' => $supplier]);
 
-        $response = $this->get('/api/history', ['Accept' => 'application/json']);
+        $response = $this->get('/api/history');
 
         $this->assertUnauthorizedResponse($response);
     }
