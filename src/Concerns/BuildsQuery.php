@@ -158,7 +158,7 @@ trait BuildsQuery
         $this->validate($request, [
             'filter' => ['sometimes', 'array'],
             'filter.*.field' => ['required_with:filter', 'regex:/^[\w.]+$/'],
-            'filter.*.operation' => ['required_with:filter', 'in:<,<=,>,>=,=,!='],
+            'filter.*.operator' => ['required_with:filter', 'in:<,<=,>,>=,=,!=,like,not like,in,not in'],
             'filter.*.value' => ['required_with:filter', 'nullable']
         ]);
 
@@ -177,12 +177,31 @@ trait BuildsQuery
                     /**
                      * @var \Illuminate\Database\Query\Builder $relationQuery
                      */
-                    return $relationQuery->where($relationField, $filterable['value']);
+                    $this->buildFilterWhereClause($relationField, $filterable, $relationQuery);
                 });
             } else {
-                $query->where($filterable['field'], $filterable['value']);
+                $this->buildFilterWhereClause($filterable['field'], $filterable, $query);
             }
         }
+    }
+
+    /**
+     * Builds filter's query where clause based on the given filterable.
+     *
+     * @param string $field
+     * @param array $filterable
+     * @param Builder|\Illuminate\Database\Query\Builder $query
+     * @return Builder|Relation
+     */
+    protected function buildFilterWhereClause($field, $filterable, $query)
+    {
+        if (!is_array($filterable['value'])) {
+            $query->where($field, $filterable['operator'], $filterable['value']);
+        } else {
+            $query->whereIn($field, $filterable['value'], 'and', $filterable['operator'] === 'not in');
+        }
+
+        return $query;
     }
 
     /**

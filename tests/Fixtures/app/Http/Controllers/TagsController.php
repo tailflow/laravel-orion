@@ -36,7 +36,7 @@ class TagsController extends Controller
      */
     public function filterableBy()
     {
-        return ['name', 'meta.key'];
+        return ['name', 'priority', 'meta.key'];
     }
 
     /**

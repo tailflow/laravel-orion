@@ -12,6 +12,7 @@ use Orion\Tests\Fixtures\App\Http\Resources\TagMetaResource;
  *
  * @property string $name
  * @property string|null $description
+ * @property int|null $priority
  */
 class Tag extends Model
 {

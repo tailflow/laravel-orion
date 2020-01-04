@@ -19,6 +19,7 @@ class CreateTagsTable extends Migration
             $table->text('description')->nullable();
             $table->unsignedBigInteger('team_id')->nullable();
             $table->foreign('team_id')->references('id')->on('teams')->onDelete('cascade');
+            $table->unsignedInteger('priority')->nullable();
             $table->timestamps();
         });
     }

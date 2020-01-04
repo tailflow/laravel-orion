@@ -20,7 +20,209 @@ class HandlesStandardIndexFilteringOperationsTest extends TestCase
 
         $response = $this->post('/api/tags/search', [
             'filter' => [
-                ['field' => 'name', 'operation' => '=', 'value' => 'match']
+                ['field' => 'name', 'operator' => '=', 'value' => 'match']
+            ]
+        ]);
+
+        $this->assertResourceListed($response, 1, 1, 1, 15, 1, 1);
+
+        $response->assertJson([
+            'data' => [$matchingTag->toArray()]
+        ]);
+    }
+
+    /** @test */
+    public function can_get_a_list_of_filtered_by_model_field_resources_not_equal_operator()
+    {
+        /**
+         * @var Tag $matchingTag
+         */
+        $matchingTag = factory(Tag::class)->create(['priority' => 1])->refresh();
+        factory(Tag::class)->create(['priority' => 2])->refresh();
+
+        $response = $this->post('/api/tags/search', [
+            'filter' => [
+                ['field' => 'priority', 'operator' => '!=', 'value' => 2]
+            ]
+        ]);
+
+        $this->assertResourceListed($response, 1, 1, 1, 15, 1, 1);
+
+        $response->assertJson([
+            'data' => [$matchingTag->toArray()]
+        ]);
+    }
+
+    /** @test */
+    public function can_get_a_list_of_filtered_by_model_field_resources_using_less_than_operator()
+    {
+        /**
+         * @var Tag $matchingTag
+         */
+        $matchingTag = factory(Tag::class)->create(['priority' => 1])->refresh();
+        factory(Tag::class)->create(['priority' => 2])->refresh();
+
+        $response = $this->post('/api/tags/search', [
+            'filter' => [
+                ['field' => 'priority', 'operator' => '<', 'value' => 2]
+            ]
+        ]);
+
+        $this->assertResourceListed($response, 1, 1, 1, 15, 1, 1);
+
+        $response->assertJson([
+            'data' => [$matchingTag->toArray()]
+        ]);
+    }
+
+    /** @test */
+    public function can_get_a_list_of_filtered_by_model_field_resources_using_less_than_or_equal_operator()
+    {
+        /**
+         * @var Tag $matchingTag
+         * @var Tag $anotherMatchingTag
+         */
+        $matchingTag = factory(Tag::class)->create(['priority' => 1])->refresh();
+        $anotherMatchingTag = factory(Tag::class)->create(['priority' => 2])->refresh();
+
+        $response = $this->post('/api/tags/search', [
+            'filter' => [
+                ['field' => 'priority', 'operator' => '<=', 'value' => 2]
+            ]
+        ]);
+
+        $this->assertResourceListed($response, 1, 1, 1, 15, 2, 2);
+
+        $response->assertJson([
+            'data' => [$matchingTag->toArray(), $anotherMatchingTag->toArray()]
+        ]);
+    }
+
+    /** @test */
+    public function can_get_a_list_of_filtered_by_model_field_resources_using_more_than_operator()
+    {
+        /**
+         * @var Tag $matchingTag
+         */
+        $matchingTag = factory(Tag::class)->create(['priority' => 3])->refresh();
+        factory(Tag::class)->create(['priority' => 2])->refresh();
+
+        $response = $this->post('/api/tags/search', [
+            'filter' => [
+                ['field' => 'priority', 'operator' => '>', 'value' => 2]
+            ]
+        ]);
+
+        $this->assertResourceListed($response, 1, 1, 1, 15, 1, 1);
+
+        $response->assertJson([
+            'data' => [$matchingTag->toArray()]
+        ]);
+    }
+
+    /** @test */
+    public function can_get_a_list_of_filtered_by_model_field_resources_using_more_than_or_equal_operator()
+    {
+        /**
+         * @var Tag $matchingTag
+         * @var Tag $anotherMatchingTag
+         */
+        $matchingTag = factory(Tag::class)->create(['priority' => 3])->refresh();
+        $anotherMatchingTag = factory(Tag::class)->create(['priority' => 2])->refresh();
+
+        $response = $this->post('/api/tags/search', [
+            'filter' => [
+                ['field' => 'priority', 'operator' => '>=', 'value' => 2]
+            ]
+        ]);
+
+        $this->assertResourceListed($response, 1, 1, 1, 15, 2, 2);
+
+        $response->assertJson([
+            'data' => [$matchingTag->toArray(), $anotherMatchingTag->toArray()]
+        ]);
+    }
+
+    /** @test */
+    public function can_get_a_list_of_filtered_by_model_field_resources_using_like_operator()
+    {
+        /**
+         * @var Tag $matchingTag
+         * @var Tag $anotherMatchingTag
+         */
+        $matchingTag = factory(Tag::class)->create(['name' => 'match'])->refresh();
+        $anotherMatchingTag = factory(Tag::class)->create(['name' => 'another match'])->refresh();
+
+        $response = $this->post('/api/tags/search', [
+            'filter' => [
+                ['field' => 'name', 'operator' => 'like', 'value' => '%match%']
+            ]
+        ]);
+
+        $this->assertResourceListed($response, 1, 1, 1, 15, 2, 2);
+
+        $response->assertJson([
+            'data' => [$matchingTag->toArray(), $anotherMatchingTag->toArray()]
+        ]);
+    }
+
+    /** @test */
+    public function can_get_a_list_of_filtered_by_model_field_resources_using_not_like_operator()
+    {
+        /**
+         * @var Tag $matchingTag
+         */
+        $matchingTag = factory(Tag::class)->create(['name' => 'another match'])->refresh();
+        factory(Tag::class)->create(['name' => 'match'])->refresh();
+
+        $response = $this->post('/api/tags/search', [
+            'filter' => [
+                ['field' => 'name', 'operator' => 'not like', 'value' => 'match%']
+            ]
+        ]);
+
+        $this->assertResourceListed($response, 1, 1, 1, 15, 1, 1);
+
+        $response->assertJson([
+            'data' => [$matchingTag->toArray()]
+        ]);
+    }
+
+    /** @test */
+    public function can_get_a_list_of_filtered_by_model_field_resources_using_in_operator()
+    {
+        /**
+         * @var Tag $matchingTag
+         * @var Tag $anotherMatchingTag
+         */
+        $matchingTag = factory(Tag::class)->create(['name' => 'match A'])->refresh();
+        $anotherMatchingTag = factory(Tag::class)->create(['name' => 'match B'])->refresh();
+
+        $response = $this->post('/api/tags/search', [
+            'filter' => [
+                ['field' => 'name', 'operator' => 'in', 'value' => ['match A', 'match B']]
+            ]
+        ]);
+
+        $this->assertResourceListed($response, 1, 1, 1, 15, 2, 2);
+
+        $response->assertJson([
+            'data' => [$matchingTag->toArray(), $anotherMatchingTag->toArray()]
+        ]);
+    }
+
+    /** @test */
+    public function can_get_a_list_of_filtered_by_model_field_resources_using_not_in_operator()
+    {
+        /**
+         * @var Tag $matchingTag
+         */
+        $matchingTag = factory(Tag::class)->create(['name' => 'match A'])->refresh();
+        factory(Tag::class)->create(['name' => 'match B'])->refresh();
+
+        $response = $this->post('/api/tags/search', [
+            'filter' => [
+                ['field' => 'name', 'operator' => 'not in', 'value' => ['match B']]
             ]
         ]);
 
@@ -45,7 +247,7 @@ class HandlesStandardIndexFilteringOperationsTest extends TestCase
 
         $response = $this->post('/api/tags/search', [
             'filter' => [
-                ['field' => 'meta.key', 'operation' => '=', 'value' => 'match']
+                ['field' => 'meta.key', 'operator' => '=', 'value' => 'match']
             ]
         ]);
 
@@ -68,7 +270,7 @@ class HandlesStandardIndexFilteringOperationsTest extends TestCase
 
         $response = $this->post('/api/tags/search', [
             'filter' => [
-                ['field' => 'description', 'operation' => '=', 'value' => 'match']
+                ['field' => 'description', 'operator' => '=', 'value' => 'match']
             ]
         ]);
 
@@ -91,7 +293,7 @@ class HandlesStandardIndexFilteringOperationsTest extends TestCase
 
         $response = $this->post('/api/suppliers/search', [
             'filter' => [
-                ['field' => 'name', 'operation' => '=', 'value' => 'match']
+                ['field' => 'name', 'operator' => '=', 'value' => 'match']
             ]
         ]);
 
@@ -116,7 +318,7 @@ class HandlesStandardIndexFilteringOperationsTest extends TestCase
 
         $response = $this->post('/api/suppliers/search', [
             'filter' => [
-                ['field' => 'team.name', 'operation' => '=', 'value' => 'match']
+                ['field' => 'team.name', 'operator' => '=', 'value' => 'match']
             ]
         ]);
 
