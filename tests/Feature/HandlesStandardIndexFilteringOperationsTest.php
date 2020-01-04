@@ -32,6 +32,31 @@ class HandlesStandardIndexFilteringOperationsTest extends TestCase
     }
 
     /** @test */
+    public function can_get_a_list_of_filtered_by_model_field_resources_using_or_type()
+    {
+        /**
+         * @var Tag $matchingTag
+         * @var Tag $anotherMatchingTag
+         */
+        $matchingTag = factory(Tag::class)->create(['name' => 'match'])->refresh();
+        $anotherMatchingTag = factory(Tag::class)->create(['priority' => 2])->refresh();
+        factory(Tag::class)->create(['priority' => 3])->refresh();
+
+        $response = $this->post('/api/tags/search', [
+            'filter' => [
+                ['field' => 'name', 'operator' => '=', 'value' => 'match'],
+                ['type' => 'or','field' => 'priority', 'operator' => '=', 'value' => 2]
+            ]
+        ]);
+
+        $this->assertResourceListed($response, 1, 1, 1, 15, 2, 2);
+
+        $response->assertJson([
+            'data' => [$matchingTag->toArray(), $anotherMatchingTag->toArray()]
+        ]);
+    }
+
+    /** @test */
     public function can_get_a_list_of_filtered_by_model_field_resources_not_equal_operator()
     {
         /**

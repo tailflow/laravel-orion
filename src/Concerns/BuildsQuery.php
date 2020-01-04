@@ -157,6 +157,7 @@ trait BuildsQuery
 
         $this->validate($request, [
             'filter' => ['sometimes', 'array'],
+            'filter.*.type' => ['sometimes', 'in:and,or'],
             'filter.*.field' => ['required_with:filter', 'regex:/^[\w.]+$/'],
             'filter.*.operator' => ['required_with:filter', 'in:<,<=,>,>=,=,!=,like,not like,in,not in'],
             'filter.*.value' => ['required_with:filter', 'nullable']
@@ -169,18 +170,20 @@ trait BuildsQuery
         });
 
         foreach ($validatedFilterables as $filterable) {
+            $or = Arr::get($filterable, 'type', 'and') === 'or';
+
             if (strpos($filterable['field'], '.') !== false) {
                 $relation = $this->relationFromParamConstraint($filterable['field']);
                 $relationField = $this->relationFieldFromParamConstraint($filterable['field']);
 
-                $query->whereHas($relation, function ($relationQuery) use ($relationField, $filterable) {
+                $query->{$or ? 'orWhereHas' : 'whereHas'}($relation, function ($relationQuery) use ($relationField, $filterable) {
                     /**
                      * @var \Illuminate\Database\Query\Builder $relationQuery
                      */
-                    $this->buildFilterWhereClause($relationField, $filterable, $relationQuery);
+                    $this->buildFilterQueryWhereClause($relationField, $filterable, $relationQuery);
                 });
             } else {
-                $this->buildFilterWhereClause($filterable['field'], $filterable, $query);
+                $this->buildFilterQueryWhereClause($filterable['field'], $filterable, $query, $or);
             }
         }
     }
@@ -191,14 +194,15 @@ trait BuildsQuery
      * @param string $field
      * @param array $filterable
      * @param Builder|\Illuminate\Database\Query\Builder $query
+     * @param bool $or
      * @return Builder|Relation
      */
-    protected function buildFilterWhereClause($field, $filterable, $query)
+    protected function buildFilterQueryWhereClause($field, $filterable, $query, $or = false)
     {
         if (!is_array($filterable['value'])) {
-            $query->where($field, $filterable['operator'], $filterable['value']);
+            $query->{$or ? 'orWhere' : 'where'}($field, $filterable['operator'], $filterable['value']);
         } else {
-            $query->whereIn($field, $filterable['value'], 'and', $filterable['operator'] === 'not in');
+            $query->{$or ? 'orWhereIn' : 'whereIn'}($field, $filterable['value'], 'and', $filterable['operator'] === 'not in');
         }
 
         return $query;
