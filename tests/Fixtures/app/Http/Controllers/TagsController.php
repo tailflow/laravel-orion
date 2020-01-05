@@ -47,6 +47,11 @@ class TagsController extends Controller
         return ['name', 'meta.key'];
     }
 
+    public function exposedScopes()
+    {
+        return ['withPriority'];
+    }
+
     /**
      * The relations that are allowed to be included together with a resource.
      *

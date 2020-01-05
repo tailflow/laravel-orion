@@ -28,6 +28,7 @@ trait BuildsQuery
 
         if (in_array($actionMethod, ['index', 'show'])) {
             if ($actionMethod === 'index') {
+                $this->applyScopesToQuery($request, $query);
                 $this->applyFiltersToQuery($request, $query);
                 $this->applySearchingToQuery($request, $query);
                 $this->applySortingToQuery($request, $query);
@@ -101,24 +102,21 @@ trait BuildsQuery
 
         $this->validate($request, [
             'sort' => ['sometimes', 'array'],
-            'sort.*' => ['required_with:sort', 'regex:/^[\w.]+\|?(asc|desc)*$/']
+            'sort.*.field' => ['required_with:sort', 'regex:/^[\w.]+$/'],
+            'sort.*.direction' => ['sometimes', 'in:asc,desc']
         ]);
 
         $allowedSortables = $this->sortableBy();
 
         $validatedSortableDescriptors = array_filter($requestedSortableDescriptors, function ($sortableDescriptor) use ($allowedSortables) {
-            $sortableDescriptorParams = array_filter(explode('|', $sortableDescriptor));
-            if (count($sortableDescriptorParams) !== 2) {
-                return false;
-            }
+            $sortable = $sortableDescriptor['field'];
 
-            [$sortable, $direction] = $sortableDescriptorParams;
-
-            return in_array($direction, ['asc', 'desc'], true) && $this->validParamConstraint($sortable, $allowedSortables);
+            return $this->validParamConstraint($sortable, $allowedSortables);
         });
 
         foreach ($validatedSortableDescriptors as $sortableDescriptor) {
-            [$sortable, $direction] = explode('|', $sortableDescriptor);
+            $sortable = $sortableDescriptor['field'];
+            $direction = Arr::get($sortableDescriptor, 'direction', 'asc');
 
             if (strpos($sortable, '.') !== false) {
                 $relation = $this->relationFromParamConstraint($sortable);
@@ -144,6 +142,28 @@ trait BuildsQuery
     }
 
     /**
+     * Apply scopes to the given query builder based on the query parameters.
+     *
+     * @param Request $request
+     * @param Builder|Relation $query
+     */
+    protected function applyScopesToQuery(Request $request, $query)
+    {
+        if (!$requestedScopeDescriptors = $request->get('scopes')) {
+            return;
+        }
+
+        $this->validate($request, [
+            'scopes' => ['sometimes', 'array'],
+            'scopes.*.name' => ['required_with:scopes', 'in:'.implode(',', $this->exposedScopes())],
+        ]);
+
+        foreach ($requestedScopeDescriptors as $scopeDescriptor) {
+            $query->{$scopeDescriptor['name']}();
+        }
+    }
+
+    /**
      * Apply filters to the given query builder based on the query parameters.
      *
      * @param Request $request
@@ -151,16 +171,16 @@ trait BuildsQuery
      */
     protected function applyFiltersToQuery(Request $request, $query)
     {
-        if (!$requestedFilterDescriptors = $request->get('filter')) {
+        if (!$requestedFilterDescriptors = $request->get('filters')) {
             return;
         }
 
         $this->validate($request, [
-            'filter' => ['sometimes', 'array'],
-            'filter.*.type' => ['sometimes', 'in:and,or'],
-            'filter.*.field' => ['required_with:filter', 'regex:/^[\w.]+$/'],
-            'filter.*.operator' => ['required_with:filter', 'in:<,<=,>,>=,=,!=,like,not like,in,not in'],
-            'filter.*.value' => ['required_with:filter', 'nullable']
+            'filters' => ['sometimes', 'array'],
+            'filters.*.type' => ['sometimes', 'in:and,or'],
+            'filters.*.field' => ['required_with:filters', 'regex:/^[\w.]+$/'],
+            'filters.*.operator' => ['required_with:filters', 'in:<,<=,>,>=,=,!=,like,not like,in,not in'],
+            'filters.*.value' => ['required_with:filters', 'nullable']
         ]);
 
         $allowedFilterables = $this->filterableBy();
@@ -222,7 +242,7 @@ trait BuildsQuery
 
         $this->validate($request, [
             'search' => ['sometimes', 'array'],
-            'search.q' => ['string', 'nullable']
+            'search.value' => ['string', 'nullable']
         ]);
 
         $searchables = $this->searchableBy();
@@ -231,7 +251,7 @@ trait BuildsQuery
         }
 
         $query->where(function ($whereQuery) use ($searchables, $requestedSearchDescriptor) {
-            $requestedSearchString = $requestedSearchDescriptor['q'];
+            $requestedSearchString = $requestedSearchDescriptor['value'];
             /**
              * @var Builder $whereQuery
              */

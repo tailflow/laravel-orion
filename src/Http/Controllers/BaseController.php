@@ -61,11 +61,11 @@ abstract class BaseController extends \Illuminate\Routing\Controller
     }
 
     /**
-     * The attributes that are used for sorting.
+     * The list of available query scopes.
      *
      * @return array
      */
-    protected function sortableBy()
+    protected function exposedScopes()
     {
         return [];
     }
@@ -86,6 +86,16 @@ abstract class BaseController extends \Illuminate\Routing\Controller
      * @return array
      */
     protected function searchableBy()
+    {
+        return [];
+    }
+
+    /**
+     * The attributes that are used for sorting.
+     *
+     * @return array
+     */
+    protected function sortableBy()
     {
         return [];
     }

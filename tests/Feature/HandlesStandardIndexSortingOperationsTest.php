@@ -18,7 +18,9 @@ class HandlesStandardIndexSortingOperationsTest extends TestCase
         $tagA = factory(Tag::class)->create(['name' => 'A'])->refresh();
 
         $response = $this->post('/api/tags/search', [
-            'sort' => ['name|asc']
+            'sort' => [
+                ['field' => 'name', 'direction' => 'asc']
+            ]
         ]);
 
         $this->assertResourceListed($response, 1, 1, 1, 15, 3, 3);
@@ -36,7 +38,9 @@ class HandlesStandardIndexSortingOperationsTest extends TestCase
         $tagC = factory(Tag::class)->create(['name' => 'C'])->refresh();
 
         $response = $this->post('/api/tags/search', [
-            'sort' => ['name']
+            'sort' => [
+                ['field' => 'name']
+            ]
         ]);
 
         $this->assertResourceListed($response, 1, 1, 1, 15, 3, 3);
@@ -54,7 +58,9 @@ class HandlesStandardIndexSortingOperationsTest extends TestCase
         $tagC = factory(Tag::class)->create(['name' => 'C'])->refresh();
 
         $response = $this->post('/api/tags/search',[
-            'sort' => ['name|desc']
+            'sort' => [
+                ['field' => 'name', 'direction' => 'desc']
+            ]
         ]);
 
         $this->assertResourceListed($response, 1, 1, 1, 15, 3, 3);
@@ -72,7 +78,9 @@ class HandlesStandardIndexSortingOperationsTest extends TestCase
         $tagA = factory(Tag::class)->create(['description' => 'A'])->refresh();
 
         $response = $this->post('/api/tags/search', [
-            'sort' => ['description|asc']
+            'sort' => [
+                ['field' => 'description', 'direction' => 'asc']
+            ]
         ]);
 
         $this->assertResourceListed($response, 1, 1, 1, 15, 3, 3);
@@ -89,7 +97,7 @@ class HandlesStandardIndexSortingOperationsTest extends TestCase
         $tagC = factory(Tag::class)->create(['name' => 'C'])->refresh();
 
         $response = $this->post('/api/tags/search', [
-            'sort' => ''
+            'sort' => []
         ]);
 
         $this->assertResourceListed($response, 1, 1, 1, 15, 3, 3);
@@ -115,7 +123,9 @@ class HandlesStandardIndexSortingOperationsTest extends TestCase
         $tagC->meta()->save(factory(TagMeta::class)->make(['key' => 'C']));
 
         $response = $this->post('/api/tags/search', [
-            'sort' => ['meta.key|desc']
+            'sort' => [
+                ['field' => 'meta.key', 'direction' => 'desc']
+            ]
         ]);
 
         $this->assertResourceListed($response, 1, 1, 1, 15, 3, 3);
@@ -138,7 +148,9 @@ class HandlesStandardIndexSortingOperationsTest extends TestCase
         $tagC = factory(Tag::class)->create(['team_id' => factory(Team::class)->create(['name' => 'C'])->id])->refresh();
 
         $response = $this->post('/api/tags/search', [
-            'sort' => ['team.name|desc']
+            'sort' => [
+                ['field' => 'team.name', 'direction' => 'desc']
+            ]
         ]);
 
         $this->assertResourceListed($response, 1, 1, 1, 15, 3, 3);
@@ -171,7 +183,9 @@ class HandlesStandardIndexSortingOperationsTest extends TestCase
         factory(History::class)->create(['code' => 'C', 'supplier_id' => $supplierC->id]);
 
         $response = $this->post('/api/teams/search', [
-            'sort' => ['supplierHistory.code|desc']
+            'sort' => [
+                ['field' => 'supplierHistory', 'direction' => 'desc']
+            ]
         ]);
 
         $this->assertResourceListed($response, 1, 1, 1, 15, 3, 3);

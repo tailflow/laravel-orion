@@ -19,7 +19,7 @@ class HandlesStandardIndexFilteringOperationsTest extends TestCase
         factory(Tag::class)->create(['name' => 'not match'])->refresh();
 
         $response = $this->post('/api/tags/search', [
-            'filter' => [
+            'filters' => [
                 ['field' => 'name', 'operator' => '=', 'value' => 'match']
             ]
         ]);
@@ -43,7 +43,7 @@ class HandlesStandardIndexFilteringOperationsTest extends TestCase
         factory(Tag::class)->create(['priority' => 3])->refresh();
 
         $response = $this->post('/api/tags/search', [
-            'filter' => [
+            'filters' => [
                 ['field' => 'name', 'operator' => '=', 'value' => 'match'],
                 ['type' => 'or','field' => 'priority', 'operator' => '=', 'value' => 2]
             ]
@@ -66,7 +66,7 @@ class HandlesStandardIndexFilteringOperationsTest extends TestCase
         factory(Tag::class)->create(['priority' => 2])->refresh();
 
         $response = $this->post('/api/tags/search', [
-            'filter' => [
+            'filters' => [
                 ['field' => 'priority', 'operator' => '!=', 'value' => 2]
             ]
         ]);
@@ -88,7 +88,7 @@ class HandlesStandardIndexFilteringOperationsTest extends TestCase
         factory(Tag::class)->create(['priority' => 2])->refresh();
 
         $response = $this->post('/api/tags/search', [
-            'filter' => [
+            'filters' => [
                 ['field' => 'priority', 'operator' => '<', 'value' => 2]
             ]
         ]);
@@ -111,7 +111,7 @@ class HandlesStandardIndexFilteringOperationsTest extends TestCase
         $anotherMatchingTag = factory(Tag::class)->create(['priority' => 2])->refresh();
 
         $response = $this->post('/api/tags/search', [
-            'filter' => [
+            'filters' => [
                 ['field' => 'priority', 'operator' => '<=', 'value' => 2]
             ]
         ]);
@@ -133,7 +133,7 @@ class HandlesStandardIndexFilteringOperationsTest extends TestCase
         factory(Tag::class)->create(['priority' => 2])->refresh();
 
         $response = $this->post('/api/tags/search', [
-            'filter' => [
+            'filters' => [
                 ['field' => 'priority', 'operator' => '>', 'value' => 2]
             ]
         ]);
@@ -156,7 +156,7 @@ class HandlesStandardIndexFilteringOperationsTest extends TestCase
         $anotherMatchingTag = factory(Tag::class)->create(['priority' => 2])->refresh();
 
         $response = $this->post('/api/tags/search', [
-            'filter' => [
+            'filters' => [
                 ['field' => 'priority', 'operator' => '>=', 'value' => 2]
             ]
         ]);
@@ -179,7 +179,7 @@ class HandlesStandardIndexFilteringOperationsTest extends TestCase
         $anotherMatchingTag = factory(Tag::class)->create(['name' => 'another match'])->refresh();
 
         $response = $this->post('/api/tags/search', [
-            'filter' => [
+            'filters' => [
                 ['field' => 'name', 'operator' => 'like', 'value' => '%match%']
             ]
         ]);
@@ -201,7 +201,7 @@ class HandlesStandardIndexFilteringOperationsTest extends TestCase
         factory(Tag::class)->create(['name' => 'match'])->refresh();
 
         $response = $this->post('/api/tags/search', [
-            'filter' => [
+            'filters' => [
                 ['field' => 'name', 'operator' => 'not like', 'value' => 'match%']
             ]
         ]);
@@ -224,7 +224,7 @@ class HandlesStandardIndexFilteringOperationsTest extends TestCase
         $anotherMatchingTag = factory(Tag::class)->create(['name' => 'match B'])->refresh();
 
         $response = $this->post('/api/tags/search', [
-            'filter' => [
+            'filters' => [
                 ['field' => 'name', 'operator' => 'in', 'value' => ['match A', 'match B']]
             ]
         ]);
@@ -246,7 +246,7 @@ class HandlesStandardIndexFilteringOperationsTest extends TestCase
         factory(Tag::class)->create(['name' => 'match B'])->refresh();
 
         $response = $this->post('/api/tags/search', [
-            'filter' => [
+            'filters' => [
                 ['field' => 'name', 'operator' => 'not in', 'value' => ['match B']]
             ]
         ]);
@@ -271,7 +271,7 @@ class HandlesStandardIndexFilteringOperationsTest extends TestCase
         $notMatchingTag->meta()->save(factory(TagMeta::class)->make(['key' => 'not match']));
 
         $response = $this->post('/api/tags/search', [
-            'filter' => [
+            'filters' => [
                 ['field' => 'meta.key', 'operator' => '=', 'value' => 'match']
             ]
         ]);
@@ -294,7 +294,7 @@ class HandlesStandardIndexFilteringOperationsTest extends TestCase
         $notMatchingTagB = factory(Tag::class)->create(['description' => 'not match'])->refresh();
 
         $response = $this->post('/api/tags/search', [
-            'filter' => [
+            'filters' => [
                 ['field' => 'description', 'operator' => '=', 'value' => 'match']
             ]
         ]);
@@ -317,7 +317,7 @@ class HandlesStandardIndexFilteringOperationsTest extends TestCase
         factory(Supplier::class)->create(['name' => 'not match'])->refresh();
 
         $response = $this->post('/api/suppliers/search', [
-            'filter' => [
+            'filters' => [
                 ['field' => 'name', 'operator' => '=', 'value' => 'match']
             ]
         ]);
@@ -342,7 +342,7 @@ class HandlesStandardIndexFilteringOperationsTest extends TestCase
         factory(Supplier::class)->create(['team_id' => $notMatchingSupplierBTeam->id])->refresh();
 
         $response = $this->post('/api/suppliers/search', [
-            'filter' => [
+            'filters' => [
                 ['field' => 'team.name', 'operator' => '=', 'value' => 'match']
             ]
         ]);

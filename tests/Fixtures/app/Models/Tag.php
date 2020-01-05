@@ -3,8 +3,7 @@
 namespace Orion\Tests\Fixtures\App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Orion\Tests\Fixtures\App\Http\Resources\SupplierCollectionResource;
-use Orion\Tests\Fixtures\App\Http\Resources\TagMetaResource;
+use Illuminate\Database\Query\Builder;
 
 /**
  * Class Tag
@@ -24,16 +23,6 @@ class Tag extends Model
     protected $fillable = [
         'name', 'description', 'team_id'
     ];
-
-    /**
-     * @var string $resource
-     */
-    protected static $resource = TagMetaResource::class;
-
-    /**
-     * @var string $collectionResource
-     */
-    protected static $collectionResource = SupplierCollectionResource::class;
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\MorphToMany
@@ -57,5 +46,23 @@ class Tag extends Model
     public function team()
     {
         return $this->belongsTo(Team::class);
+    }
+
+    /**
+     * @param Builder $query
+     * @return Builder
+     */
+    public function scopeWithPriority($query)
+    {
+        return $query->whereNotNull('priority');
+    }
+
+    /**
+     * @param Builder $query
+     * @return Builder
+     */
+    public function scopeWithoutPriority($query)
+    {
+        return $query->whereNull('priority');
     }
 }

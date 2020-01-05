@@ -17,7 +17,7 @@ class HandlesStandardIndexSearchingOperationsTest extends TestCase
         factory(Tag::class)->create(['name' => 'test'])->refresh();
 
         $response = $this->post('/api/tags/search', [
-            'search' => ['q' => 'match']
+            'search' => ['value' => 'match']
         ]);
 
         $this->assertResourceListed($response, 1, 1, 1, 15, 1, 1);
@@ -40,7 +40,7 @@ class HandlesStandardIndexSearchingOperationsTest extends TestCase
         $notMatchingTag->meta()->save(factory(TagMeta::class)->make(['key' => 'test']));
 
         $response = $this->post('/api/tags/search', [
-            'search' => ['q' => 'match']
+            'search' => ['value' => 'match']
         ]);
 
         $this->assertResourceListed($response, 1, 1, 1, 15, 1, 1);
@@ -60,7 +60,7 @@ class HandlesStandardIndexSearchingOperationsTest extends TestCase
         $matchingTagB = factory(Tag::class)->create(['name' => 'test'])->refresh();
 
         $response = $this->post('/api/tags/search', [
-            'search' => ['q' => '']
+            'search' => ['value' => '']
         ]);
 
         $this->assertResourceListed($response, 1, 1, 1, 15, 2, 2);
