@@ -184,7 +184,7 @@ class HandlesStandardIndexSortingOperationsTest extends TestCase
 
         $response = $this->post('/api/teams/search', [
             'sort' => [
-                ['field' => 'supplierHistory', 'direction' => 'desc']
+                ['field' => 'supplierHistory.code', 'direction' => 'desc']
             ]
         ]);
 
