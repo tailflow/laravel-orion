@@ -65,4 +65,13 @@ class Tag extends Model
     {
         return $query->whereNull('priority');
     }
+
+    /**
+     * @param Builder $query
+     * @return Builder
+     */
+    public function scopeWhereNameAndPriority($query, $name, $priority)
+    {
+        return $query->where('name', $name)->where('priority', $priority);
+    }
 }

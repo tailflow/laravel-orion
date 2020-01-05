@@ -49,7 +49,7 @@ class TagsController extends Controller
 
     public function exposedScopes()
     {
-        return ['withPriority'];
+        return ['withPriority', 'whereNameAndPriority'];
     }
 
     /**

@@ -8,7 +8,7 @@ use Orion\Tests\Fixtures\App\Models\Tag;
 class HandlesStandardIndexScopingOperationsTest extends TestCase
 {
     /** @test */
-    public function can_get_a_list_of_scoped_resources()
+    public function can_get_a_list_of_scoped_resources_without_parameters()
     {
         /**
          * @var Tag $matchingTag
@@ -19,6 +19,28 @@ class HandlesStandardIndexScopingOperationsTest extends TestCase
         $response = $this->post('/api/tags/search', [
             'scopes' => [
                 ['name' => 'withPriority']
+            ]
+        ]);
+
+        $this->assertResourceListed($response, 1, 1, 1, 15, 1, 1);
+
+        $response->assertJson([
+            'data' => [$matchingTag->toArray()]
+        ]);
+    }
+
+    /** @test */
+    public function can_get_a_list_of_scoped_resources_with_parameters()
+    {
+        /**
+         * @var Tag $matchingTag
+         */
+        $matchingTag = factory(Tag::class)->create(['name' => 'match', 'priority' => 1])->refresh();
+        factory(Tag::class)->create(['name' => 'match'])->refresh();
+
+        $response = $this->post('/api/tags/search', [
+            'scopes' => [
+                ['name' => 'whereNameAndPriority', 'parameters' => ['match', 1]]
             ]
         ]);
 

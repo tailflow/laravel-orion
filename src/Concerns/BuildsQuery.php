@@ -156,10 +156,11 @@ trait BuildsQuery
         $this->validate($request, [
             'scopes' => ['sometimes', 'array'],
             'scopes.*.name' => ['required_with:scopes', 'in:'.implode(',', $this->exposedScopes())],
+            'scopes.*.parameters' => ['sometimes', 'array']
         ]);
 
         foreach ($requestedScopeDescriptors as $scopeDescriptor) {
-            $query->{$scopeDescriptor['name']}();
+            $query->{$scopeDescriptor['name']}(...Arr::get($scopeDescriptor, 'parameters', []));
         }
     }
 
