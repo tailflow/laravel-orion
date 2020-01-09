@@ -73,9 +73,9 @@ class HandlesStandardIndexSortingOperationsTest extends TestCase
     /** @test */
     public function cannot_get_a_list_of_resources_sorted_by_not_whitelisted_field()
     {
-        $tagC = factory(Tag::class)->create(['description' => 'C'])->refresh();
-        $tagB = factory(Tag::class)->create(['description' => 'B'])->refresh();
-        $tagA = factory(Tag::class)->create(['description' => 'A'])->refresh();
+        factory(Tag::class)->create(['description' => 'C'])->refresh();
+        factory(Tag::class)->create(['description' => 'B'])->refresh();
+        factory(Tag::class)->create(['description' => 'A'])->refresh();
 
         $response = $this->post('/api/tags/search', [
             'sort' => [
@@ -83,10 +83,8 @@ class HandlesStandardIndexSortingOperationsTest extends TestCase
             ]
         ]);
 
-        $this->assertResourceListed($response, 1, 1, 1, 15, 3, 3);
-        $this->assertEquals($tagC->toArray(), $response->json('data.0'));
-        $this->assertEquals($tagB->toArray(), $response->json('data.1'));
-        $this->assertEquals($tagA->toArray(), $response->json('data.2'));
+        $response->assertStatus(422);
+        $response->assertJsonStructure(['message', 'errors' => ['sort.0.field']]);
     }
 
     /** @test */

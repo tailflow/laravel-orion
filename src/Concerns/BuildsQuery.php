@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Arr;
 use Orion\Http\Requests\Request;
+use Orion\Http\Rules\WhitelistedField;
 
 trait BuildsQuery
 {
@@ -102,25 +103,19 @@ trait BuildsQuery
 
         $this->validate($request, [
             'sort' => ['sometimes', 'array'],
-            'sort.*.field' => ['required_with:sort', 'regex:/^[\w.]+$/'],
+            'sort.*.field' => ['required_with:sort', 'regex:/^[\w.]+$/', new WhitelistedField($this->sortableBy())],
             'sort.*.direction' => ['sometimes', 'in:asc,desc']
         ]);
 
-        $allowedSortables = $this->sortableBy();
+        $sortableDescriptors = $request->get('sort');
 
-        $validatedSortableDescriptors = array_filter($requestedSortableDescriptors, function ($sortableDescriptor) use ($allowedSortables) {
-            $sortable = $sortableDescriptor['field'];
+        foreach ($sortableDescriptors as $sortable) {
+            $sortableField = $sortable['field'];
+            $direction = Arr::get($sortable, 'direction', 'asc');
 
-            return $this->validParamConstraint($sortable, $allowedSortables);
-        });
-
-        foreach ($validatedSortableDescriptors as $sortableDescriptor) {
-            $sortable = $sortableDescriptor['field'];
-            $direction = Arr::get($sortableDescriptor, 'direction', 'asc');
-
-            if (strpos($sortable, '.') !== false) {
-                $relation = $this->relationFromParamConstraint($sortable);
-                $relationField = $this->relationFieldFromParamConstraint($sortable);
+            if (strpos($sortableField, '.') !== false) {
+                $relation = $this->relationFromParamConstraint($sortableField);
+                $relationField = $this->relationFieldFromParamConstraint($sortableField);
 
                 $model = $this->getResourceModel();
                 /**
@@ -136,7 +131,7 @@ trait BuildsQuery
                     ->orderBy("$relationTable.$relationField", $direction)
                     ->select((new $model)->getTable().'.*');
             } else {
-                $query->orderBy($sortable, $direction);
+                $query->orderBy($sortableField, $direction);
             }
         }
     }
@@ -179,18 +174,14 @@ trait BuildsQuery
         $this->validate($request, [
             'filters' => ['sometimes', 'array'],
             'filters.*.type' => ['sometimes', 'in:and,or'],
-            'filters.*.field' => ['required_with:filters', 'regex:/^[\w.]+$/'],
+            'filters.*.field' => ['required_with:filters', 'regex:/^[\w.]+$/', new WhitelistedField($this->filterableBy())],
             'filters.*.operator' => ['required_with:filters', 'in:<,<=,>,>=,=,!=,like,not like,in,not in'],
             'filters.*.value' => ['required_with:filters', 'nullable']
         ]);
 
-        $allowedFilterables = $this->filterableBy();
+        $filterableDescriptors = $request->get('filters');
 
-        $validatedFilterables = array_filter($requestedFilterDescriptors, function ($filterable) use ($allowedFilterables) {
-            return $this->validParamConstraint($filterable['field'], $allowedFilterables);
-        });
-
-        foreach ($validatedFilterables as $filterable) {
+        foreach ($filterableDescriptors as $filterable) {
             $or = Arr::get($filterable, 'type', 'and') === 'or';
 
             if (strpos($filterable['field'], '.') !== false) {
@@ -291,52 +282,6 @@ trait BuildsQuery
         } elseif ($request->has('only_trashed')) {
             $query->onlyTrashed();
         }
-    }
-
-    /**
-     * Validate the param constraint against allowed param constraints.
-     *
-     * @param string $paramConstraint
-     * @param array $allowedParamConstraints
-     * @return bool
-     */
-    protected function validParamConstraint(string $paramConstraint, array $allowedParamConstraints)
-    {
-        if (in_array('*', $allowedParamConstraints, true)) {
-            return true;
-        }
-        if (in_array($paramConstraint, $allowedParamConstraints, true)) {
-            return true;
-        }
-
-        if (strpos($paramConstraint, '.') === false) {
-            return false;
-        }
-
-        $allowedNestedParamConstraints = array_filter($allowedParamConstraints, function ($allowedParamConstraint) {
-            return strpos($allowedParamConstraint, '.*') !== false;
-        });
-
-        $paramConstraintNestingLevel = substr_count($paramConstraint, '.');
-
-        foreach ($allowedNestedParamConstraints as $allowedNestedParamConstraint) {
-            $allowedNestedParamConstraintNestingLevel = substr_count($allowedNestedParamConstraint, '.');
-            $allowedNestedParamConstraintReduced = explode('.*', $allowedNestedParamConstraint)[0];
-
-            for ($i = 0; $i < $allowedNestedParamConstraintNestingLevel; $i++) {
-                $allowedNestedParamConstraintReduced = implode('.', array_slice(explode('.', $allowedNestedParamConstraintReduced), -$i));
-
-                $paramConstraintReduced = $paramConstraint;
-                for ($k = 1; $k < $paramConstraintNestingLevel; $k++) {
-                    $paramConstraintReduced = implode('.', array_slice(explode('.', $paramConstraintReduced), -$i));
-                    if ($paramConstraintReduced === $allowedNestedParamConstraintReduced) {
-                        return true;
-                    }
-                }
-            }
-        }
-
-        return false;
     }
 
     /**

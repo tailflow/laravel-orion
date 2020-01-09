@@ -286,12 +286,8 @@ class HandlesStandardIndexFilteringOperationsTest extends TestCase
     /** @test */
     public function cannot_get_a_list_of_resources_filtered_by_not_whitelisted_field()
     {
-        /**
-         * @var Tag $matchingTagA
-         * @var Tag $notMatchingTagB
-         */
-        $matchingTagA = factory(Tag::class)->create(['description' => 'match'])->refresh();
-        $notMatchingTagB = factory(Tag::class)->create(['description' => 'not match'])->refresh();
+        factory(Tag::class)->create(['description' => 'match'])->refresh();
+        factory(Tag::class)->create(['description' => 'not match'])->refresh();
 
         $response = $this->post('/api/tags/search', [
             'filters' => [
@@ -299,11 +295,8 @@ class HandlesStandardIndexFilteringOperationsTest extends TestCase
             ]
         ]);
 
-        $this->assertResourceListed($response, 1, 1, 1, 15, 2, 2);
-
-        $response->assertJson([
-            'data' => [$matchingTagA->toArray(), $notMatchingTagB->toArray()]
-        ]);
+        $response->assertStatus(422);
+        $response->assertJsonStructure(['message', 'errors' => ['filters.0.field']]);
     }
 
     /** @test */
