@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Orion\Orion;
+use Orion\Facades\Orion;
 use Orion\Tests\Fixtures\App\Http\Controllers\HistoryController;
 use Orion\Tests\Fixtures\App\Http\Controllers\PostsController;
 use Orion\Tests\Fixtures\App\Http\Controllers\SuppliersController;

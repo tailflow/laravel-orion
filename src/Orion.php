@@ -27,7 +27,7 @@ class Orion
      * @param array $options
      * @return \Illuminate\Routing\PendingResourceRegistration
      */
-    public static function resource($name, $controller, $options = [])
+    public function resource($name, $controller, $options = [])
     {
         if (Arr::get($options, 'softDeletes')) {
             $paramName = Str::singular($name);
@@ -48,7 +48,7 @@ class Orion
      * @param array $options
      * @return bool
      */
-    public static function resourceRelation($resource, $relation, $controller, $relationType, $options = [])
+    public function resourceRelation($resource, $relation, $controller, $relationType, $options = [])
     {
         $resourceParamName = Str::singular($resource);
         $relationParamName = Str::singular($relation);
@@ -100,9 +100,9 @@ class Orion
      * @param array $options
      * @return bool
      */
-    public static function hasOneResource($resource, $relation, $controller, $options = [])
+    public function hasOneResource($resource, $relation, $controller, $options = [])
     {
-        return static::resourceRelation($resource, $relation, $controller, HasOne::class, $options);
+        return $this->resourceRelation($resource, $relation, $controller, HasOne::class, $options);
     }
 
     /**
@@ -114,9 +114,9 @@ class Orion
      * @param array $options
      * @return bool
      */
-    public static function belongsToResource($resource, $relation, $controller, $options = [])
+    public function belongsToResource($resource, $relation, $controller, $options = [])
     {
-        return static::resourceRelation($resource, $relation, $controller, BelongsTo::class, $options);
+        return $this->resourceRelation($resource, $relation, $controller, BelongsTo::class, $options);
     }
 
     /**
@@ -128,9 +128,9 @@ class Orion
      * @param array $options
      * @return bool
      */
-    public static function hasManyResource($resource, $relation, $controller, $options = [])
+    public function hasManyResource($resource, $relation, $controller, $options = [])
     {
-        return static::resourceRelation($resource, $relation, $controller, HasMany::class, $options);
+        return $this->resourceRelation($resource, $relation, $controller, HasMany::class, $options);
     }
 
     /**
@@ -142,9 +142,9 @@ class Orion
      * @param array $options
      * @return bool
      */
-    public static function belongsToManyResource($resource, $relation, $controller, $options = [])
+    public function belongsToManyResource($resource, $relation, $controller, $options = [])
     {
-        return static::resourceRelation($resource, $relation, $controller, BelongsToMany::class, $options);
+        return $this->resourceRelation($resource, $relation, $controller, BelongsToMany::class, $options);
     }
 
     /**
@@ -156,9 +156,9 @@ class Orion
      * @param array $options
      * @return bool
      */
-    public static function hasOneThroughResource($resource, $relation, $controller, $options = [])
+    public function hasOneThroughResource($resource, $relation, $controller, $options = [])
     {
-        return static::resourceRelation($resource, $relation, $controller, HasOneThrough::class, $options);
+        return $this->resourceRelation($resource, $relation, $controller, HasOneThrough::class, $options);
     }
 
     /**
@@ -170,9 +170,9 @@ class Orion
      * @param array $options
      * @return bool
      */
-    public static function hasManyThroughResource($resource, $relation, $controller, $options = [])
+    public function hasManyThroughResource($resource, $relation, $controller, $options = [])
     {
-        return static::resourceRelation($resource, $relation, $controller, HasManyThrough::class, $options);
+        return $this->resourceRelation($resource, $relation, $controller, HasManyThrough::class, $options);
     }
 
     /**
@@ -184,9 +184,9 @@ class Orion
      * @param array $options
      * @return bool
      */
-    public static function morphOneResource($resource, $relation, $controller, $options = [])
+    public function morphOneResource($resource, $relation, $controller, $options = [])
     {
-        return static::resourceRelation($resource, $relation, $controller, MorphOne::class, $options);
+        return $this->resourceRelation($resource, $relation, $controller, MorphOne::class, $options);
     }
 
     /**
@@ -198,9 +198,9 @@ class Orion
      * @param array $options
      * @return bool
      */
-    public static function morphManyResource($resource, $relation, $controller, $options = [])
+    public function morphManyResource($resource, $relation, $controller, $options = [])
     {
-        return static::resourceRelation($resource, $relation, $controller, MorphMany::class, $options);
+        return $this->resourceRelation($resource, $relation, $controller, MorphMany::class, $options);
     }
 
     /**
@@ -212,8 +212,8 @@ class Orion
      * @param array $options
      * @return bool
      */
-    public static function morphToManyResource($resource, $relation, $controller, $options = [])
+    public function morphToManyResource($resource, $relation, $controller, $options = [])
     {
-        return static::resourceRelation($resource, $relation, $controller, MorphToMany::class, $options);
+        return $this->resourceRelation($resource, $relation, $controller, MorphToMany::class, $options);
     }
 }

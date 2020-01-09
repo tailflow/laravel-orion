@@ -49,7 +49,10 @@
         "laravel": {
             "providers": [
                 "Orion\\OrionServiceProvider"
-            ]
+            ],
+            "aliases": {
+                "Orion": "Orion\\Facades\\Orion"
+            }
         }
     },
     "config": {
