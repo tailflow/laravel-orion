@@ -74,6 +74,6 @@ class WhitelistedField implements Rule
      */
     public function message()
     {
-        return 'The :attribute is not whitelisted.';
+        return 'The :input field is not whitelisted.';
     }
 }
