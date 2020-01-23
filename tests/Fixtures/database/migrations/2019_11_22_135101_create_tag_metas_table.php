@@ -19,6 +19,7 @@ class CreateTagMetasTable extends Migration
             $table->bigInteger('tag_id');
             $table->foreign('tag_id')->references('id')->on('tags')->onDelete('cascade');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

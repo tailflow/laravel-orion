@@ -94,6 +94,17 @@ abstract class TestCase extends BaseTestCase
 
     /**
      * @param TestResponse $response
+     * @param Model $resource
+     */
+    protected function assertResourceRestored($response, $resource)
+    {
+        $response->assertStatus(200);
+        $response->assertJsonStructure(['data']);
+        $this->assertDatabaseHas($resource->getTable(), [$resource->getDeletedAtColumn() => null]);
+    }
+
+    /**
+     * @param TestResponse $response
      */
     protected function assertUnauthorizedResponse($response)
     {

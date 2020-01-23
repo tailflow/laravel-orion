@@ -46,7 +46,7 @@ class HandlesStandardDeleteOperationsTest extends TestCase
     }
 
     /** @test */
-    public function cannot_not_deleted_a_trashed_resource_without_trashed_query_parameter()
+    public function cannot_delete_a_trashed_resource_without_trashed_query_parameter()
     {
         $trashedTeam = factory(Team::class)->state('trashed')->create();
 
@@ -116,7 +116,7 @@ class HandlesStandardDeleteOperationsTest extends TestCase
     {
         $tagMeta  = factory(TagMeta::class)->create(['tag_id' => factory(Tag::class)->create()->id]);
 
-        $response = $this->delete("/api/tag_meta/{$tagMeta->id}");
+        $response = $this->delete("/api/tag_meta/{$tagMeta->id}?force=true");
 
         $this->assertResourceDeleted($response, $tagMeta);
         $response->assertJson(['data' => array_merge($tagMeta->toArray(), ['test-field-from-resource' => 'test-value'])]);

@@ -20,4 +20,14 @@ class TagMetaController extends Controller
      * @var string $resource
      */
     protected static $resource = TagMetaResource::class;
+
+    /**
+     * The relations that are allowed to be included together with a resource.
+     *
+     * @return array
+     */
+    protected function includes()
+    {
+        return ['tag'];
+    }
 }

@@ -8,3 +8,9 @@ $factory->define(TagMeta::class, function (Faker $faker) {
         'key' => $faker->words(5, true)
     ];
 });
+
+$factory->state(TagMeta::class, 'trashed', function (Faker $faker) {
+    return [
+        'deleted_at' => \Carbon\Carbon::now()
+    ];
+});

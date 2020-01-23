@@ -8,3 +8,9 @@ $factory->define(History::class, function (Faker $faker) {
         'code' => $faker->word,
     ];
 });
+
+$factory->state(History::class, 'trashed', function(Faker $faker) {
+    return [
+        'deleted_at' => \Carbon\Carbon::now()
+    ];
+});
