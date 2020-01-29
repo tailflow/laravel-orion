@@ -11,8 +11,6 @@ use Orion\Http\Requests\Request;
 
 trait HandlesStandardOperations
 {
-    use BuildsQuery;
-
     /**
      * Fetch the list of resources.
      *
@@ -30,7 +28,7 @@ trait HandlesStandardOperations
             $this->authorize('viewAny', static::$model);
         }
 
-        $entities = $this->buildMethodQuery($request)->with($this->relationsFromIncludes($request))->paginate($this->resolvePaginationLimit($request));
+        $entities = $this->queryBuilder->buildMethodQuery($this->newQuery(), $request)->with($this->relationsResolver->requestedRelations($request))->paginate($this->resolvePaginationLimit($request));
 
         $afterHookResult = $this->afterIndex($request, $entities);
         if ($this->hookResponds($afterHookResult)) {
@@ -69,7 +67,7 @@ trait HandlesStandardOperations
         }
 
         $entity->save();
-        $entity = $entity->fresh($this->relationsFromIncludes($request));
+        $entity = $entity->fresh($this->relationsResolver->requestedRelations($request));
         $entity->wasRecentlyCreated = true;
 
         $afterSaveHookResult = $this->afterSave($request, $entity);
@@ -99,7 +97,10 @@ trait HandlesStandardOperations
             return $beforeHookResult;
         }
 
-        $entity = $this->buildMethodQuery($request)->with($this->relationsFromIncludes($request))->findOrFail($id);
+        /**
+         * @var Model $entity
+         */
+        $entity = $this->queryBuilder->buildMethodQuery($this->newQuery(), $request)->with($this->relationsResolver->requestedRelations($request))->findOrFail($id);
         if ($this->authorizationRequired()) {
             $this->authorize('view', $entity);
         }
@@ -126,7 +127,11 @@ trait HandlesStandardOperations
             return $beforeHookResult;
         }
 
-        $entity = $this->buildMethodQuery($request)->with($this->relationsFromIncludes($request))->findOrFail($id);
+        /**
+         * @var Model $entity
+         */
+        $entity = $this->queryBuilder->buildMethodQuery($this->newQuery(), $request)->with($this->relationsResolver->requestedRelations($request))->findOrFail($id);
+
         if ($this->authorizationRequired()) {
             $this->authorize('update', $entity);
         }
@@ -140,7 +145,7 @@ trait HandlesStandardOperations
 
         $entity->save();
 
-        $entity->load($this->relationsFromIncludes($request));
+        $entity->load($this->relationsResolver->requestedRelations($request));
 
         $afterSaveHookResult = $this->afterSave($request, $entity);
         if ($this->hookResponds($afterSaveHookResult)) {
@@ -172,7 +177,7 @@ trait HandlesStandardOperations
 
         $softDeletes = $this->softDeletes();
 
-        $query = $this->buildMethodQuery($request)->with($this->relationsFromIncludes($request));
+        $query = $this->queryBuilder->buildMethodQuery($this->newQuery(), $request)->with($this->relationsResolver->requestedRelations($request));
         if ($softDeletes) {
             $query->withTrashed();
         }
@@ -217,7 +222,7 @@ trait HandlesStandardOperations
             return $beforeHookResult;
         }
 
-        $entity = $this->buildMethodQuery($request)->with($this->relationsFromIncludes($request))->withTrashed()->findOrFail($id);
+        $entity = $this->queryBuilder->buildMethodQuery($this->newQuery(), $request)->with($this->relationsResolver->requestedRelations($request))->withTrashed()->findOrFail($id);
         if ($this->authorizationRequired()) {
             $this->authorize('restore', $entity);
         }

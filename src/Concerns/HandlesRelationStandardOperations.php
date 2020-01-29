@@ -35,7 +35,7 @@ trait HandlesRelationStandardOperations
             $this->authorize('viewAny', $relationModelClass);
         }
 
-        $resourceEntity = $this->buildMethodQuery($request)->with($this->relationsFromIncludes($request))->findOrFail($resourceID);
+        $resourceEntity = $this->queryBuilder->buildMethodQuery($this->newQuery(), $request)->with($this->relationsFromIncludes($request))->findOrFail($resourceID);
         $entities = $this->buildRelationMethodQuery($request, $resourceEntity)->with($this->relationsFromIncludes($request))->paginate();
 
         if (count($this->pivotJson)) {
@@ -75,7 +75,7 @@ trait HandlesRelationStandardOperations
         /**
          * @var Model $entity
          */
-        $resourceEntity = $this->buildMethodQuery($request)->with($this->relationsFromIncludes($request))->findOrFail($resourceID);
+        $resourceEntity = $this->buildMethodQuery($this->newQuery(), $request)->with($this->relationsFromIncludes($request))->findOrFail($resourceID);
 
         $entity = new $relationModelClass();
         $entity->fill($request->only($entity->getFillable()));
@@ -126,7 +126,7 @@ trait HandlesRelationStandardOperations
             return $beforeHookResult;
         }
 
-        $resourceEntity = $this->buildMethodQuery($request)->with($this->relationsFromIncludes($request))->findOrFail($resourceID);
+        $resourceEntity = $this->buildMethodQuery($this->newQuery(), $request)->with($this->relationsFromIncludes($request))->findOrFail($resourceID);
 
         if ($this->isOneToOneRelation($resourceEntity)) {
             $entity = $this->buildRelationMethodQuery($request, $resourceEntity)->with($this->relationsFromIncludes($request))->firstOrFail();
@@ -166,7 +166,7 @@ trait HandlesRelationStandardOperations
             return $beforeHookResult;
         }
 
-        $resourceEntity = $this->buildMethodQuery($request)->with($this->relationsFromIncludes($request))->findOrFail($resourceID);
+        $resourceEntity = $this->buildMethodQuery($this->newQuery(), $request)->with($this->relationsFromIncludes($request))->findOrFail($resourceID);
 
         if ($this->isOneToOneRelation($resourceEntity)) {
             $entity = $this->buildRelationMethodQuery($request, $resourceEntity)->with($this->relationsFromIncludes($request))->firstOrFail();
@@ -233,7 +233,7 @@ trait HandlesRelationStandardOperations
             return $beforeHookResult;
         }
 
-        $resourceEntity = $this->buildMethodQuery($request)->with($this->relationsFromIncludes($request))->findOrFail($resourceID);
+        $resourceEntity = $this->buildMethodQuery($this->newQuery(), $request)->with($this->relationsFromIncludes($request))->findOrFail($resourceID);
 
         $relationEntityQuery = $this->buildRelationMethodQuery($request, $resourceEntity)->with($this->relationsFromIncludes($request));
         $softDeletes = $this->softDeletes();
@@ -287,7 +287,7 @@ trait HandlesRelationStandardOperations
             return $beforeHookResult;
         }
 
-        $resourceEntity = $this->buildMethodQuery($request)->with($this->relationsFromIncludes($request))->findOrFail($resourceID);
+        $resourceEntity = $this->buildMethodQuery($this->newQuery(), $request)->with($this->relationsFromIncludes($request))->findOrFail($resourceID);
 
         $relationEntityQuery = $this->buildRelationMethodQuery($request, $resourceEntity)->with($this->relationsFromIncludes($request))->withTrashed();
 

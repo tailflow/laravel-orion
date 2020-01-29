@@ -2,14 +2,14 @@
 
 namespace Orion\Http\Controllers;
 
-use Orion\Concerns\BuildsRelationsQuery;
+use Illuminate\Database\Eloquent\Builder;
 use Orion\Concerns\HandlesRelationManyToManyOperations;
 use Orion\Concerns\HandlesRelationOneToManyOperations;
 use Orion\Concerns\HandlesRelationStandardOperations;
 
 class RelationController extends BaseController
 {
-    use BuildsRelationsQuery, HandlesRelationStandardOperations, HandlesRelationOneToManyOperations, HandlesRelationManyToManyOperations;
+    use HandlesRelationStandardOperations, HandlesRelationOneToManyOperations, HandlesRelationManyToManyOperations;
 
     /**
      * @var string|null $relation
@@ -40,8 +40,16 @@ class RelationController extends BaseController
      *
      * @return string
      */
-    protected function getResourceModel()
+    protected function resolveResourceModelClass() : string
     {
         return get_class((new static::$model)->{static::$relation}()->getRelated());
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function newRelationQuery(): Builder
+    {
+        return static::$model::{static::$relation}()->getQuery();
     }
 }

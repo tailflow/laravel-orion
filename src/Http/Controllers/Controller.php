@@ -13,7 +13,7 @@ class Controller extends BaseController
      *
      * @return string
      */
-    protected function getResourceModel()
+    protected function resolveResourceModelClass() : string
     {
         return static::$model;
     }

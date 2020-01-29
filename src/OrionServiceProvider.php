@@ -3,6 +3,10 @@
 namespace Orion;
 
 use Illuminate\Support\ServiceProvider;
+use Orion\Contracts\ParamsValidator;
+use Orion\Contracts\QueryBuilder;
+use Orion\Contracts\RelationsResolver;
+use Orion\Contracts\SearchBuilder;
 use Orion\Http\Middleware\EnforceExpectsJson;
 
 class OrionServiceProvider extends ServiceProvider
@@ -15,6 +19,10 @@ class OrionServiceProvider extends ServiceProvider
     public function register()
     {
         $this->app->bind('orion', Orion::class);
+        $this->app->bind(QueryBuilder::class, Drivers\Standard\QueryBuilder::class);
+        $this->app->bind(RelationsResolver::class, Drivers\Standard\RelationsResolver::class);
+        $this->app->bind(ParamsValidator::class, Drivers\Standard\ParamsValidator::class);
+        $this->app->bind(SearchBuilder::class, Drivers\Standard\SearchBuilder::class);
     }
 
     /**

@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Orion\Concerns;
 
 use Exception;
@@ -25,7 +24,7 @@ trait HandlesRelationOneToManyOperations
 
         $relatedID = $request->get('related_id');
 
-        $resourceEntity = $this->buildMethodQuery($request)->with($this->relationsFromIncludes($request))->findOrFail($resourceID);
+        $resourceEntity = $this->buildMethodQuery($this->newQuery(), $request)->with($this->relationsFromIncludes($request))->findOrFail($resourceID);
         $entity = $resourceEntity->{static::$relation}()->getRelated()->findOrFail($relatedID);
 
         $beforeHookResult = $this->beforeAssociate($request, $resourceEntity, $entity);
@@ -65,7 +64,7 @@ trait HandlesRelationOneToManyOperations
             throw new Exception('$associatingRelation property is not set on '.static::class);
         }
 
-        $resourceEntity = $this->buildMethodQuery($request)->with($this->relationsFromIncludes($request))->findOrFail($resourceID);
+        $resourceEntity = $this->buildMethodQuery($this->newQuery(), $request)->with($this->relationsFromIncludes($request))->findOrFail($resourceID);
         $entity = $this->buildRelationMethodQuery($request, $resourceEntity)->with($this->relationsFromIncludes($request))->findOrFail($relatedID);
 
         $beforeHookResult = $this->beforeDissociate($request, $resourceEntity, $entity);
