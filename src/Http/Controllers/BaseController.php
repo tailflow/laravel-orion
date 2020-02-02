@@ -7,39 +7,53 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
-use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Http\Response;
 use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\Auth;
+use Orion\Concerns\HandlesAuthentication;
+use Orion\Concerns\HandlesAuthorization;
+use Orion\Concerns\InteractsWithHooks;
+use Orion\Concerns\InteractsWithSoftDeletes;
+use Orion\Contracts\ComponentsResolver;
+use Orion\Contracts\Paginator;
 use Orion\Contracts\ParamsValidator;
 use Orion\Contracts\QueryBuilder;
 use Orion\Contracts\RelationsResolver;
 use Orion\Contracts\SearchBuilder;
-use Orion\Http\Requests\Request;
+use Orion\Exceptions\BindingException;
 
 abstract class BaseController extends \Illuminate\Routing\Controller
 {
-    use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
+    use AuthorizesRequests,
+        DispatchesJobs,
+        ValidatesRequests,
+        HandlesAuthentication,
+        HandlesAuthorization,
+        InteractsWithHooks,
+        InteractsWithSoftDeletes;
 
     /**
-     * @var string|null $model
+     * @var string $model
      */
-    protected static $model = null;
+    protected static $model;
 
     /**
      * @var string $request
      */
-    protected static $request = null;
+    protected static $request;
 
     /**
      * @var string $resource
      */
-    protected static $resource = null;
+    protected static $resource;
 
     /**
-     * @var string $collectionResource
+     * @var string|null $collectionResource
      */
-    protected static $collectionResource = null;
+    protected static $collectionResource;
+
+    /**
+     * @var ComponentsResolver $componentsResolver
+     */
+    protected $componentsResolver;
 
     /**
      * @var ParamsValidator $paramsValidator
@@ -50,6 +64,11 @@ abstract class BaseController extends \Illuminate\Routing\Controller
      * @var RelationsResolver $relationsResolver
      */
     protected $relationsResolver;
+
+    /**
+     * @var Paginator $paginator
+     */
+    protected $paginator;
 
     /**
      * @var SearchBuilder $searchBuilder
@@ -69,21 +88,12 @@ abstract class BaseController extends \Illuminate\Routing\Controller
     public function __construct()
     {
         if (!static::$model) {
-            throw new Exception('Model is not defined for '.static::class);
+            throw new BindingException('Model is not defined for '.static::class);
         }
 
-        if (!static::$request) {
-            $this->resolveRequest();
-        }
-        $this->bindRequestClass();
-
-        if (!static::$resource) {
-            $this->resolveResource();
-        }
-        if (!static::$collectionResource) {
-            $this->resolveCollectionResource();
-        }
-
+        $this->componentsResolver = App::makeWith(ComponentsResolver::class, [
+            'resourceModelClass' => $this->resolveResourceModelClass()
+        ]);
         $this->paramsValidator = App::makeWith(ParamsValidator::class, [
             'exposedScopes' => $this->exposedScopes(),
             'filterableBy' => $this->filterableBy(),
@@ -93,15 +103,90 @@ abstract class BaseController extends \Illuminate\Routing\Controller
             'includableRelations' => $this->includes(),
             'alwaysIncludedRelations' => $this->alwaysIncludes()
         ]);
+        $this->paginator = App::makeWith(Paginator::class, [
+            'defaultLimit' => $this->limit()
+        ]);
         $this->searchBuilder = App::makeWith(SearchBuilder::class, [
             'searchableBy' => $this->searchableBy()
         ]);
         $this->queryBuilder = App::makeWith(QueryBuilder::class, [
-            'modelClass' => $this->resolveResourceModelClass(),
+            'resourceModelClass' => $this->resolveResourceModelClass(),
             'paramsValidator' => $this->paramsValidator,
             'relationsResolver' => $this->relationsResolver,
             'searchBuilder' => $this->searchBuilder
         ]);
+
+        $this->resolveComponents();
+        $this->bindComponents();
+    }
+
+    /**
+     * Resolves request, resource and collection resource classes.
+     */
+    protected function resolveComponents(): void
+    {
+        if (!static::$request) {
+            static::$request = $this->componentsResolver->resolveRequestClass();
+        }
+
+        if (!static::$resource) {
+            static::$resource = $this->componentsResolver->resolveResourceClass();
+        }
+
+        if (!static::$collectionResource) {
+            static::$collectionResource = $this->componentsResolver->resolveCollectionResourceClass();
+        }
+    }
+
+    /**
+     * Binds resolved request class to the container.
+     */
+    protected function bindComponents(): void
+    {
+        $this->componentsResolver->bindRequestClass(static::$request);
+    }
+
+    /**
+     * Creates a new Eloquent query builder of the model.
+     *
+     * @return Builder
+     */
+    protected function newQuery(): Builder
+    {
+        return static::$model::query();
+    }
+
+    /**
+     * Authorize a given action for the current user.
+     *
+     * @param string $ability
+     * @param array $arguments
+     * @return \Illuminate\Auth\Access\Response
+     * @throws \Illuminate\Auth\Access\AuthorizationException
+     */
+    protected function authorize($ability, $arguments = [])
+    {
+        $user = $this->resolveUser();
+
+        return $this->authorizeForUser($user, $ability, $arguments);
+    }
+
+    /**
+     * Get the map of resource methods to ability names.
+     *
+     * @return array
+     */
+    protected function resourceAbilityMap()
+    {
+        return [
+            'index' => 'viewAny',
+            'show' => 'view',
+            'create' => 'create',
+            'store' => 'create',
+            'edit' => 'update',
+            'update' => 'update',
+            'destroy' => 'delete',
+        ];
     }
 
     /**
@@ -172,147 +257,6 @@ abstract class BaseController extends \Illuminate\Routing\Controller
     protected function limit()
     {
         return 15;
-    }
-
-    /**
-     * Determine whether authorization is required or not to perform the action.
-     *
-     * @return bool
-     */
-    protected function authorizationRequired()
-    {
-        return !property_exists($this, 'authorizationDisabled');
-    }
-
-    /**
-     * Determine whether hook returns a response or not.
-     *
-     * @param mixed $hookResult
-     * @return bool
-     */
-    protected function hookResponds($hookResult)
-    {
-        return $hookResult instanceof Response;
-    }
-
-    /**
-     * Get the map of resource methods to ability names.
-     *
-     * @return array
-     */
-    protected function resourceAbilityMap()
-    {
-        return [
-            'index' => 'viewAny',
-            'show' => 'view',
-            'create' => 'create',
-            'store' => 'create',
-            'edit' => 'update',
-            'update' => 'update',
-            'destroy' => 'delete',
-        ];
-    }
-
-    /**
-     * Guesses request class based on the resource model.
-     */
-    protected function resolveRequest()
-    {
-        $requestClassName = 'App\\Http\\Requests\\'.class_basename($this->resolveResourceModelClass()).'Request';
-        if (class_exists($requestClassName)) {
-            static::$request = $requestClassName;
-        } else {
-            static::$request = Request::class;
-        }
-    }
-
-    /**
-     * Contextually binds resolved request class on current controller.
-     */
-    protected function bindRequestClass()
-    {
-        App::bind(Request::class, static::$request);
-    }
-
-    /**
-     * Guesses resource class based on the resource model.
-     */
-    protected function resolveResource()
-    {
-        $resourceClassName = 'App\\Http\\Resources\\'.class_basename($this->resolveResourceModelClass()).'Resource';
-        if (class_exists($resourceClassName)) {
-            static::$resource = $resourceClassName;
-        } else {
-            static::$resource = JsonResource::class;
-        }
-    }
-
-    /**
-     * Guesses collection resource class based on the resource model.
-     */
-    protected function resolveCollectionResource()
-    {
-        $collectionResourceClassName = 'App\\Http\\Resources\\'.class_basename($this->resolveResourceModelClass()).'CollectionResource';
-        if (class_exists($collectionResourceClassName)) {
-            static::$collectionResource = $collectionResourceClassName;
-        }
-    }
-
-    /**
-     * Determine the pagination limit based on the "limit" query parameter or the default, specified by developer.
-     *
-     * @param Request $request
-     * @return int
-     */
-    protected function resolvePaginationLimit(Request $request)
-    {
-        $limit = (int) $request->get('limit', $this->limit());
-        return $limit > 0 ? $limit : $this->limit();
-    }
-
-    /**
-     * Determine whether the resource model uses soft deletes.
-     *
-     * @return bool
-     */
-    protected function softDeletes()
-    {
-        $modelClass = $this->resolveResourceModelClass();
-        return method_exists(new $modelClass, 'trashed');
-    }
-
-    /**
-     * Authorize a given action for the current user.
-     *
-     * @param string $ability
-     * @param array $arguments
-     * @return \Illuminate\Auth\Access\Response
-     * @throws \Illuminate\Auth\Access\AuthorizationException
-     */
-    protected function authorize($ability, $arguments = [])
-    {
-        $user = $this->resolveUser();
-        return $this->authorizeForUser($user, $ability, $arguments);
-    }
-
-    /**
-     * Retrieves currently authenticated user based on the guard.
-     *
-     * @return \Illuminate\Foundation\Auth\User|null
-     */
-    protected function resolveUser()
-    {
-        return Auth::guard('api')->user();
-    }
-
-    /**
-     * Creates a new Eloquent query builder of the model.
-     *
-     * @return Builder
-     */
-    protected function newQuery(): Builder
-    {
-        return static::$model::query();
     }
 
     /**

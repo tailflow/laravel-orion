@@ -5,6 +5,8 @@ namespace Orion\Tests\Fixtures\App\Providers;
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
+use Orion\Contracts\ComponentsResolver;
+use Orion\Contracts\Paginator;
 use Orion\Contracts\ParamsValidator;
 use Orion\Contracts\QueryBuilder;
 use Orion\Contracts\RelationsResolver;
@@ -28,7 +30,9 @@ class OrionServiceProvider extends ServiceProvider
         $this->app->bind(QueryBuilder::class, \Orion\Drivers\Standard\QueryBuilder::class);
         $this->app->bind(RelationsResolver::class, \Orion\Drivers\Standard\RelationsResolver::class);
         $this->app->bind(ParamsValidator::class, \Orion\Drivers\Standard\ParamsValidator::class);
+        $this->app->bind(Paginator::class, \Orion\Drivers\Standard\Paginator::class);
         $this->app->bind(SearchBuilder::class, \Orion\Drivers\Standard\SearchBuilder::class);
+        $this->app->bind(ComponentsResolver::class, \Orion\Drivers\Standard\ComponentsResolver::class);
     }
 
     /**

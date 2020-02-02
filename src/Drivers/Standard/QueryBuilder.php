@@ -12,22 +12,22 @@ use Orion\Http\Requests\Request;
 class QueryBuilder implements \Orion\Contracts\QueryBuilder
 {
     /**
-     * @var string
+     * @var string $resourceModelClass
      */
-    private $modelClass;
+    private $resourceModelClass;
 
     /**
-     * @var \Orion\Contracts\ParamsValidator
+     * @var \Orion\Contracts\ParamsValidator $paramsValidator
      */
     private $paramsValidator;
 
     /**
-     * @var \Orion\Contracts\RelationsResolver
+     * @var \Orion\Contracts\RelationsResolver $relationsResolver
      */
     private $relationsResolver;
 
     /**
-     * @var \Orion\Contracts\SearchBuilder
+     * @var \Orion\Contracts\SearchBuilder $searchBuilder
      */
     private $searchBuilder;
 
@@ -35,12 +35,12 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
      * @inheritDoc
      */
     public function __construct(
-        string $modelClass,
+        string $resourceModelClass,
         \Orion\Contracts\ParamsValidator $paramsValidator,
         \Orion\Contracts\RelationsResolver $relationsResolver,
         \Orion\Contracts\SearchBuilder $searchBuilder
     ) {
-        $this->modelClass = $modelClass;
+        $this->resourceModelClass = $resourceModelClass;
         $this->paramsValidator = $paramsValidator;
         $this->relationsResolver = $relationsResolver;
         $this->searchBuilder = $searchBuilder;
@@ -59,12 +59,12 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
 
         if (in_array($actionMethod, ['index', 'show'])) {
             if ($actionMethod === 'index') {
-                $this->applyScopesToQuery($request, $query);
-                $this->applyFiltersToQuery($request, $query);
-                $this->applySearchingToQuery($request, $query);
-                $this->applySortingToQuery($request, $query);
+                $this->applyScopesToQuery($query, $request);
+                $this->applyFiltersToQuery($query, $request);
+                $this->applySearchingToQuery($query, $request);
+                $this->applySortingToQuery($query, $request);
             }
-            $this->applySoftDeletesToQuery($request, $query);
+            $this->applySoftDeletesToQuery($query, $request);
         }
 
         return $query;
@@ -91,10 +91,10 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
     /**
      * Apply scopes to the given query builder based on the query parameters.
      *
-     * @param Request $request
      * @param Builder|Relation $query
+     * @param Request $request
      */
-    public function applyScopesToQuery(Request $request, Builder $query): void
+    public function applyScopesToQuery(Builder $query, Request $request): void
     {
         if (!$requestedScopeDescriptors = $request->get('scopes')) {
             return;
@@ -110,10 +110,10 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
     /**
      * Apply filters to the given query builder based on the query parameters.
      *
-     * @param Request $request
      * @param Builder|Relation $query
+     * @param Request $request
      */
-    public function applyFiltersToQuery(Request $request, Builder $query): void
+    public function applyFiltersToQuery(Builder $query, Request $request): void
     {
         if (!$filterableDescriptors = $request->get('filters')) {
             return;
@@ -163,10 +163,10 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
     /**
      * Apply search query to the given query builder based on the "q" query parameter.
      *
-     * @param Request $request
      * @param Builder|Relation $query
+     * @param Request $request
      */
-    public function applySearchingToQuery(Request $request, Builder $query): void
+    public function applySearchingToQuery(Builder $query, Request $request): void
     {
         if (!$requestedSearchDescriptor = $request->get('search')) {
             return;
@@ -205,10 +205,10 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
     /**
      * Apply sorting to the given query builder based on the "sort" query parameter.
      *
-     * @param Request $request
      * @param Builder|Relation $query
+     * @param Request $request
      */
-    public function applySortingToQuery(Request $request, Builder $query): void
+    public function applySortingToQuery(Builder $query, Request $request): void
     {
         if (!$sortableDescriptors = $request->get('sort')) {
             return;
@@ -227,7 +227,7 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
                 /**
                  * @var BelongsTo|HasOne|HasOneThrough $relationInstance
                  */
-                $relationInstance = (new $this->modelClass)->{$relation}();
+                $relationInstance = (new $this->resourceModelClass)->{$relation}();
                 $relationTable = $relationInstance->getModel()->getTable();
 
                 $relationForeignKey = $this->relationsResolver->relationForeignKeyFromRelationInstance($relationInstance);
@@ -235,7 +235,7 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
 
                 $query->leftJoin($relationTable, $relationForeignKey, '=', $relationLocalKey)
                     ->orderBy("$relationTable.$relationField", $direction)
-                    ->select((new $this->modelClass)->getTable().'.*');
+                    ->select((new $this->resourceModelClass)->getTable().'.*');
             } else {
                 $query->orderBy($sortableField, $direction);
             }
@@ -245,10 +245,10 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
     /**
      * Apply "soft deletes" query to the given query builder based on either "with_trashed" or "only_trashed" query parameters.
      *
-     * @param Request $request
      * @param Builder|Relation $query
+     * @param Request $request
      */
-    public function applySoftDeletesToQuery(Request $request, Builder $query): void
+    public function applySoftDeletesToQuery(Builder $query, Request $request): void
     {
         if (!$query->getMacro('withTrashed')) {
             return;

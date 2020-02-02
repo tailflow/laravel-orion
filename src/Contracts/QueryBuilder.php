@@ -10,24 +10,24 @@ interface QueryBuilder
     /**
      * QueryBuilder constructor.
      *
-     * @param string $modelClass
+     * @param string $resourceModelClass
      * @param ParamsValidator $paramsValidator
      * @param RelationsResolver $relationsResolver
      * @param SearchBuilder $searchBuilder
      */
-    public function __construct(string $modelClass, ParamsValidator $paramsValidator, RelationsResolver $relationsResolver, SearchBuilder $searchBuilder);
+    public function __construct(string $resourceModelClass, ParamsValidator $paramsValidator, RelationsResolver $relationsResolver, SearchBuilder $searchBuilder);
 
     public function buildQuery(Builder $query, Request $request): Builder;
 
     public function buildMethodQuery(Builder $query, Request $request): Builder;
 
-    public function applyScopesToQuery(Request $request, Builder $query): void;
+    public function applyScopesToQuery(Builder $query, Request $request): void;
 
-    public function applyFiltersToQuery(Request $request, Builder $query): void;
+    public function applyFiltersToQuery(Builder $query, Request $request): void;
 
-    public function applySearchingToQuery(Request $request, Builder $query): void;
+    public function applySearchingToQuery(Builder $query, Request $request): void;
 
-    public function applySortingToQuery(Request $request, Builder $query): void;
+    public function applySortingToQuery(Builder $query, Request $request): void;
 
-    public function applySoftDeletesToQuery(Request $request, Builder $query): void;
+    public function applySoftDeletesToQuery(Builder $query, Request $request): void;
 }

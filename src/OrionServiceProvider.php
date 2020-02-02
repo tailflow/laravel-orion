@@ -3,6 +3,8 @@
 namespace Orion;
 
 use Illuminate\Support\ServiceProvider;
+use Orion\Contracts\ComponentsResolver;
+use Orion\Contracts\Paginator;
 use Orion\Contracts\ParamsValidator;
 use Orion\Contracts\QueryBuilder;
 use Orion\Contracts\RelationsResolver;
@@ -22,7 +24,9 @@ class OrionServiceProvider extends ServiceProvider
         $this->app->bind(QueryBuilder::class, Drivers\Standard\QueryBuilder::class);
         $this->app->bind(RelationsResolver::class, Drivers\Standard\RelationsResolver::class);
         $this->app->bind(ParamsValidator::class, Drivers\Standard\ParamsValidator::class);
+        $this->app->bind(Paginator::class, Drivers\Standard\Paginator::class);
         $this->app->bind(SearchBuilder::class, Drivers\Standard\SearchBuilder::class);
+        $this->app->bind(ComponentsResolver::class, Drivers\Standard\ComponentsResolver::class);
     }
 
     /**

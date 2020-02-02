@@ -28,7 +28,7 @@ trait HandlesStandardOperations
             $this->authorize('viewAny', static::$model);
         }
 
-        $entities = $this->queryBuilder->buildMethodQuery($this->newQuery(), $request)->with($this->relationsResolver->requestedRelations($request))->paginate($this->resolvePaginationLimit($request));
+        $entities = $this->queryBuilder->buildMethodQuery($this->newQuery(), $request)->with($this->relationsResolver->requestedRelations($request))->paginate($this->paginator->resolvePaginationLimit($request));
 
         $afterHookResult = $this->afterIndex($request, $entities);
         if ($this->hookResponds($afterHookResult)) {
@@ -175,7 +175,7 @@ trait HandlesStandardOperations
             return $beforeHookResult;
         }
 
-        $softDeletes = $this->softDeletes();
+        $softDeletes = $this->softDeletes($this->resolveResourceModelClass());
 
         $query = $this->queryBuilder->buildMethodQuery($this->newQuery(), $request)->with($this->relationsResolver->requestedRelations($request));
         if ($softDeletes) {
@@ -208,7 +208,7 @@ trait HandlesStandardOperations
     }
 
     /**
-     * Restore previously deleted a resource.
+     * Restore previously deleted resource.
      *
      * @param Request $request
      * @param int $id

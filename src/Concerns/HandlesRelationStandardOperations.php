@@ -236,7 +236,7 @@ trait HandlesRelationStandardOperations
         $resourceEntity = $this->buildMethodQuery($this->newQuery(), $request)->with($this->relationsFromIncludes($request))->findOrFail($resourceID);
 
         $relationEntityQuery = $this->buildRelationMethodQuery($request, $resourceEntity)->with($this->relationsFromIncludes($request));
-        $softDeletes = $this->softDeletes();
+        $softDeletes = $this->softDeletes($this->resolveResourceModelClass());
         if ($softDeletes) {
             $relationEntityQuery->withTrashed();
         }
