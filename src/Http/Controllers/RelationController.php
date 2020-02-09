@@ -3,18 +3,22 @@
 namespace Orion\Http\Controllers;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\App;
 use Orion\Concerns\HandlesRelationManyToManyOperations;
 use Orion\Concerns\HandlesRelationOneToManyOperations;
 use Orion\Concerns\HandlesRelationStandardOperations;
+use Orion\Contracts\QueryBuilder;
+use Orion\Exceptions\BindingException;
 
 class RelationController extends BaseController
 {
     use HandlesRelationStandardOperations, HandlesRelationOneToManyOperations, HandlesRelationManyToManyOperations;
 
     /**
-     * @var string|null $relation
+     * @var string $relation
      */
-    protected static $relation = null;
+    protected static $relation;
 
     /**
      * @var string|null $relation
@@ -36,20 +40,49 @@ class RelationController extends BaseController
     protected $pivotJson = [];
 
     /**
+     * @var QueryBuilder $relationQueryBuilder
+     */
+    protected $relationQueryBuilder;
+
+    /**
+     * RelationController constructor.
+     *
+     * @throws BindingException
+     */
+    public function __construct()
+    {
+        if (!static::$relation) {
+            throw new BindingException('Relation is not defined for '.static::class);
+        }
+
+        parent::__construct();
+
+        $this->relationQueryBuilder = App::makeWith(QueryBuilder::class, [
+            'resourceModelClass' => $this->resolveResourceModelClass(),
+            'paramsValidator' => $this->paramsValidator,
+            'relationsResolver' => $this->relationsResolver,
+            'searchBuilder' => $this->searchBuilder
+        ]);
+    }
+
+    /**
      * Retrieves model related to resource.
      *
      * @return string
      */
-    protected function resolveResourceModelClass() : string
+    protected function resolveResourceModelClass(): string
     {
         return get_class((new static::$model)->{static::$relation}()->getRelated());
     }
 
     /**
-     * @inheritDoc
+     * Creates new Eloquent query builder of the relation on the given parent model.
+     *
+     * @param Model $parentEntity
+     * @return Builder
      */
-    protected function newRelationQuery(): Builder
+    protected function newRelationQuery(Model $parentEntity): Builder
     {
-        return static::$model::{static::$relation}()->getQuery();
+        return $parentEntity->{static::$relation}()->getQuery();
     }
 }

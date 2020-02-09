@@ -2,8 +2,8 @@
 
 namespace Orion\Concerns;
 
-use Exception;
 use Illuminate\Database\Eloquent\Model;
+use Orion\Exceptions\BindingException;
 use Orion\Http\Requests\Request;
 
 trait HandlesRelationOneToManyOperations
@@ -12,30 +12,32 @@ trait HandlesRelationOneToManyOperations
      * Associates resource with another resource.
      *
      * @param Request $request
-     * @param int $resourceID
+     * @param int|string $parentKey
      * @return Resource
-     * @throws Exception
+     * @throws BindingException
      */
-    public function associate(Request $request, $resourceID)
+    public function associate(Request $request, $parentKey)
     {
         if (!static::$associatingRelation) {
-            throw new Exception('$associatingRelation property is not set on '.static::class);
+            throw new BindingException('$associatingRelation property is not set on '.static::class);
         }
 
-        $relatedID = $request->get('related_id');
+        $parentEntity = $this->queryBuilder->buildMethodQuery($this->newModelQuery(), $request)
+            ->findOrFail($parentKey);
 
-        $resourceEntity = $this->buildMethodQuery($this->newQuery(), $request)->with($this->relationsFromIncludes($request))->findOrFail($resourceID);
-        $entity = $resourceEntity->{static::$relation}()->getRelated()->findOrFail($relatedID);
+        $entity = $this->relationQueryBuilder->buildMethodQuery($this->newRelationQuery($parentEntity), $request)
+            ->with($this->relationQueryBuilder->requestedRelations($request))
+            ->findOrFail($request->get('related_key'));
 
-        $beforeHookResult = $this->beforeAssociate($request, $resourceEntity, $entity);
+        $beforeHookResult = $this->beforeAssociate($request, $parentEntity, $entity);
         if ($this->hookResponds($beforeHookResult)) {
             return $beforeHookResult;
         }
 
-        $entity->{static::$associatingRelation}()->associate($resourceEntity);
+        $entity->{static::$associatingRelation}()->associate($parentEntity);
 
         if ($this->authorizationRequired()) {
-            $this->authorize('view', $resourceEntity);
+            $this->authorize('view', $parentEntity);
             $this->authorize('update', $entity);
         }
 
@@ -53,21 +55,25 @@ trait HandlesRelationOneToManyOperations
      * Disassociates resource from another resource.
      *
      * @param Request $request
-     * @param int $resourceID
-     * @param int $relatedID
+     * @param int|string $parentKey
+     * @param int|string $relatedKey
      * @return Resource
-     * @throws Exception
+     * @throws BindingException
      */
-    public function dissociate(Request $request, $resourceID, $relatedID)
+    public function dissociate(Request $request, $parentKey, $relatedKey)
     {
         if (!static::$associatingRelation) {
-            throw new Exception('$associatingRelation property is not set on '.static::class);
+            throw new BindingException('$associatingRelation property is not set on '.static::class);
         }
 
-        $resourceEntity = $this->buildMethodQuery($this->newQuery(), $request)->with($this->relationsFromIncludes($request))->findOrFail($resourceID);
-        $entity = $this->buildRelationMethodQuery($request, $resourceEntity)->with($this->relationsFromIncludes($request))->findOrFail($relatedID);
+        $parentEntity = $this->queryBuilder->buildMethodQuery($this->newModelQuery(), $request)
+            ->findOrFail($parentKey);
 
-        $beforeHookResult = $this->beforeDissociate($request, $resourceEntity, $entity);
+        $entity = $this->relationQueryBuilder->buildMethodQuery($this->newRelationQuery($parentEntity), $request)
+            ->with($this->relationQueryBuilder->requestedRelations($request))
+            ->findOrFail($relatedKey);
+
+        $beforeHookResult = $this->beforeDissociate($request, $parentEntity, $entity);
         if ($this->hookResponds($beforeHookResult)) {
             return $beforeHookResult;
         }
@@ -91,11 +97,11 @@ trait HandlesRelationOneToManyOperations
      * The hook is executed before associating relation resource.
      *
      * @param Request $request
-     * @param Model $resourceEntity
+     * @param Model $parentEntity
      * @param Model $entity
      * @return mixed
      */
-    protected function beforeAssociate(Request $request, $resourceEntity, $entity)
+    protected function beforeAssociate(Request $request, $parentEntity, $entity)
     {
         return null;
     }
@@ -116,11 +122,11 @@ trait HandlesRelationOneToManyOperations
      * The hook is executed before dissociating relation resource.
      *
      * @param Request $request
-     * @param Model $resourceEntity
+     * @param Model $parentEntity
      * @param Model $entity
      * @return mixed
      */
-    protected function beforeDissociate(Request $request, $resourceEntity, $entity)
+    protected function beforeDissociate(Request $request, $parentEntity, $entity)
     {
         return null;
     }

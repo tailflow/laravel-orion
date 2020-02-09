@@ -2,7 +2,6 @@
 
 namespace Orion\Http\Controllers;
 
-use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
@@ -48,7 +47,7 @@ abstract class BaseController extends \Illuminate\Routing\Controller
     /**
      * @var string|null $collectionResource
      */
-    protected static $collectionResource;
+    protected static $collectionResource = null;
 
     /**
      * @var ComponentsResolver $componentsResolver
@@ -83,7 +82,7 @@ abstract class BaseController extends \Illuminate\Routing\Controller
     /**
      * Controller constructor.
      *
-     * @throws Exception
+     * @throws BindingException
      */
     public function __construct()
     {
@@ -110,7 +109,7 @@ abstract class BaseController extends \Illuminate\Routing\Controller
             'searchableBy' => $this->searchableBy()
         ]);
         $this->queryBuilder = App::makeWith(QueryBuilder::class, [
-            'resourceModelClass' => $this->resolveResourceModelClass(),
+            'resourceModelClass' => $this->resolveModelClass(),
             'paramsValidator' => $this->paramsValidator,
             'relationsResolver' => $this->relationsResolver,
             'searchBuilder' => $this->searchBuilder
@@ -144,16 +143,6 @@ abstract class BaseController extends \Illuminate\Routing\Controller
     protected function bindComponents(): void
     {
         $this->componentsResolver->bindRequestClass(static::$request);
-    }
-
-    /**
-     * Creates a new Eloquent query builder of the model.
-     *
-     * @return Builder
-     */
-    protected function newQuery(): Builder
-    {
-        return static::$model::query();
     }
 
     /**
@@ -257,6 +246,26 @@ abstract class BaseController extends \Illuminate\Routing\Controller
     protected function limit()
     {
         return 15;
+    }
+
+    /**
+     * Creates new Eloquent query builder of the model.
+     *
+     * @return Builder
+     */
+    protected function newModelQuery(): Builder
+    {
+        return $this->resolveModelClass()::query();
+    }
+
+    /**
+     * Get controller's model class.
+     *
+     * @return string
+     */
+    protected function resolveModelClass(): string
+    {
+        return static::$model;
     }
 
     /**

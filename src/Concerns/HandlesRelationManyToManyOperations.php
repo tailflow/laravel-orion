@@ -15,27 +15,29 @@ trait HandlesRelationManyToManyOperations
      * Attach resource to the relation.
      *
      * @param Request $request
-     * @param int $resourceID
+     * @param int|string $parentKey
      * @return JsonResponse
      */
-    public function attach(Request $request, $resourceID)
+    public function attach(Request $request, $parentKey)
     {
-        $beforeHookResult = $this->beforeAttach($request, $resourceID);
+        $beforeHookResult = $this->beforeAttach($request, $parentKey);
         if ($this->hookResponds($beforeHookResult)) {
             return $beforeHookResult;
         }
 
-        $resourceEntity = $this->buildMethodQuery($request)->with($this->relationsFromIncludes($request))->findOrFail($resourceID);
+        $parentEntity = $this->queryBuilder->buildMethodQuery($this->newModelQuery(), $request)
+            ->findOrFail($parentKey);
+
         if ($this->authorizationRequired()) {
-            $this->authorize('update', $resourceEntity);
+            $this->authorize('update', $parentEntity);
         }
 
         if ($request->get('duplicates')) {
-            $attachResult = $resourceEntity->{static::$relation}()->attach(
+            $attachResult = $parentEntity->{static::$relation}()->attach(
                 $this->prepareResourcePivotFields($this->preparePivotResources($request->get('resources')))
             );
         } else {
-            $attachResult = $resourceEntity->{static::$relation}()->sync(
+            $attachResult = $parentEntity->{static::$relation}()->sync(
                 $this->prepareResourcePivotFields($this->preparePivotResources($request->get('resources'))),
                 false
             );
@@ -55,22 +57,24 @@ trait HandlesRelationManyToManyOperations
      * Detach resource to the relation.
      *
      * @param Request $request
-     * @param int $resourceID
+     * @param int|string $parentKey
      * @return JsonResponse
      */
-    public function detach(Request $request, $resourceID)
+    public function detach(Request $request, $parentKey)
     {
-        $beforeHookResult = $this->beforeDetach($request, $resourceID);
+        $beforeHookResult = $this->beforeDetach($request, $parentKey);
         if ($this->hookResponds($beforeHookResult)) {
             return $beforeHookResult;
         }
 
-        $resourceEntity = $this->buildMethodQuery($request)->with($this->relationsFromIncludes($request))->findOrFail($resourceID);
+        $parentEntity = $this->queryBuilder->buildMethodQuery($this->newModelQuery(), $request)
+            ->findOrFail($parentKey);
+
         if ($this->authorizationRequired()) {
-            $this->authorize('update', $resourceEntity);
+            $this->authorize('update', $parentEntity);
         }
 
-        $detachResult = $resourceEntity->{static::$relation}()->detach(
+        $detachResult = $parentEntity->{static::$relation}()->detach(
             $this->prepareResourcePivotFields($this->preparePivotResources($request->get('resources')))
         );
 
@@ -88,22 +92,24 @@ trait HandlesRelationManyToManyOperations
      * Sync relation resources.
      *
      * @param Request $request
-     * @param int $resourceID
+     * @param int|string $parentKey
      * @return JsonResponse
      */
-    public function sync(Request $request, $resourceID)
+    public function sync(Request $request, $parentKey)
     {
-        $beforeHookResult = $this->beforeSync($request, $resourceID);
+        $beforeHookResult = $this->beforeSync($request, $parentKey);
         if ($this->hookResponds($beforeHookResult)) {
             return $beforeHookResult;
         }
 
-        $resourceEntity = $this->buildMethodQuery($request)->with($this->relationsFromIncludes($request))->findOrFail($resourceID);
+        $parentEntity = $this->queryBuilder->buildMethodQuery($this->newModelQuery(), $request)
+            ->findOrFail($parentKey);
+
         if ($this->authorizationRequired()) {
-            $this->authorize('update', $resourceEntity);
+            $this->authorize('update', $parentEntity);
         }
 
-        $syncResult = $resourceEntity->{static::$relation}()->sync(
+        $syncResult = $parentEntity->{static::$relation}()->sync(
             $this->prepareResourcePivotFields($this->preparePivotResources($request->get('resources'))), $request->get('detaching', true)
         );
 
@@ -121,54 +127,58 @@ trait HandlesRelationManyToManyOperations
      * Toggle relation resources.
      *
      * @param Request $request
-     * @param int $resourceID
+     * @param int|string $parentKey
      * @return JsonResponse
      */
-    public function toggle(Request $request, $resourceID)
+    public function toggle(Request $request, $parentKey)
     {
-        $beforeHookResult = $this->beforeToggle($request, $resourceID);
+        $beforeHookResult = $this->beforeToggle($request, $parentKey);
         if ($this->hookResponds($beforeHookResult)) {
             return $beforeHookResult;
         }
 
-        $resourceEntity = $this->buildMethodQuery($request)->with($this->relationsFromIncludes($request))->findOrFail($resourceID);
+        $parentEntity = $this->queryBuilder->buildMethodQuery($this->newModelQuery(), $request)
+            ->findOrFail($parentKey);
+
         if ($this->authorizationRequired()) {
-            $this->authorize('update', $resourceEntity);
+            $this->authorize('update', $parentEntity);
         }
 
-        $togleResult = $resourceEntity->{static::$relation}()->toggle(
+        $toggleResult = $parentEntity->{static::$relation}()->toggle(
             $this->prepareResourcePivotFields($this->preparePivotResources($request->get('resources')))
         );
 
-        $afterHookResult = $this->afterToggle($request, $togleResult);
+        $afterHookResult = $this->afterToggle($request, $toggleResult);
         if ($this->hookResponds($afterHookResult)) {
             return $afterHookResult;
         }
 
-        return response()->json($togleResult);
+        return response()->json($toggleResult);
     }
 
     /**
      * Update relation resource pivot.
      *
      * @param Request $request
-     * @param int $resourceID
-     * @param int $relationID
+     * @param int|string $parentKey
+     * @param int|string $relatedKey
      * @return JsonResponse
      */
-    public function updatePivot(Request $request, $resourceID, $relationID)
+    public function updatePivot(Request $request, $parentKey, $relatedKey)
     {
-        $beforeHookResult = $this->beforeUpdatePivot($request, $relationID);
+        $beforeHookResult = $this->beforeUpdatePivot($request, $relatedKey);
         if ($this->hookResponds($beforeHookResult)) {
             return $beforeHookResult;
         }
 
-        $resourceEntity = $this->buildMethodQuery($request)->with($this->relationsFromIncludes($request))->findOrFail($resourceID);
+        $parentEntity = $this->queryBuilder->buildMethodQuery($this->newModelQuery(), $request)
+            ->findOrFail($parentKey);
+
         if ($this->authorizationRequired()) {
-            $this->authorize('update', $resourceEntity);
+            $this->authorize('update', $parentEntity);
         }
 
-        $updateResult = $resourceEntity->{static::$relation}()->updateExistingPivot($relationID, $this->preparePivotFields($request->get('pivot', [])));
+        $updateResult = $parentEntity->{static::$relation}()->updateExistingPivot($relatedKey, $this->preparePivotFields($request->get('pivot', [])));
 
         $afterHookResult = $this->afterUpdatePivot($request, $updateResult);
         if ($this->hookResponds($afterHookResult)) {
@@ -176,7 +186,7 @@ trait HandlesRelationManyToManyOperations
         }
 
         return response()->json([
-            'updated' => [is_numeric($relationID) ? (int) $relationID : $relationID]
+            'updated' => [is_numeric($relatedKey) ? (int) $relatedKey : $relatedKey]
         ]);
     }
 
@@ -189,13 +199,15 @@ trait HandlesRelationManyToManyOperations
     protected function preparePivotResources($resources)
     {
         $resources = $this->standardizePivotResourcesArray($resources);
-        $resourceModels = (new static::$model)->{static::$relation}()->getModel()->whereIn('id', array_keys($resources))->get();
+        $resourceModel = (new static::$model)->{static::$relation}()->getModel();
+        $resourceKeyName = $resourceModel->getKeyName();
+        $resourceModels = $resourceModel->whereIn($resourceKeyName, array_keys($resources))->get();
 
-        $resources = array_filter($resources, function ($resourceID) use ($resourceModels) {
+        $resources = array_filter($resources, function ($resourceKey) use ($resourceModels, $resourceKeyName) {
             /**
              * @var Collection $resourceModels
              */
-            $resourceModel = $resourceModels->where('id', $resourceID)->first();
+            $resourceModel = $resourceModels->where($resourceKeyName, $resourceKey)->first();
 
             return $resourceModel && (!$this->authorizationRequired() || Gate::forUser($this->resolveUser())->allows('view', $resourceModel));
         }, ARRAY_FILTER_USE_KEY);
@@ -287,10 +299,10 @@ trait HandlesRelationManyToManyOperations
      * The hook is executed before syncing relation resources.
      *
      * @param Request $request
-     * @param int $id
+     * @param int|string $parentKey
      * @return mixed
      */
-    protected function beforeSync(Request $request, $id)
+    protected function beforeSync(Request $request, $parentKey)
     {
         return null;
     }
@@ -311,10 +323,10 @@ trait HandlesRelationManyToManyOperations
      * The hook is executed before toggling relation resources.
      *
      * @param Request $request
-     * @param int $id
+     * @param int|string $parentKey
      * @return mixed
      */
-    protected function beforeToggle(Request $request, $id)
+    protected function beforeToggle(Request $request, $parentKey)
     {
         return null;
     }
@@ -335,10 +347,10 @@ trait HandlesRelationManyToManyOperations
      * The hook is executed before attaching relation resource.
      *
      * @param Request $request
-     * @param int $id
+     * @param int|string $parentKey
      * @return mixed
      */
-    protected function beforeAttach(Request $request, $id)
+    protected function beforeAttach(Request $request, $parentKey)
     {
         return null;
     }
@@ -359,10 +371,10 @@ trait HandlesRelationManyToManyOperations
      * The hook is executed before detaching relation resource.
      *
      * @param Request $request
-     * @param int $id
+     * @param int|string $parentKey
      * @return mixed
      */
-    protected function beforeDetach(Request $request, $id)
+    protected function beforeDetach(Request $request, $parentKey)
     {
         return null;
     }
@@ -383,10 +395,10 @@ trait HandlesRelationManyToManyOperations
      * The hook is executed before updating relation resource pivot.
      *
      * @param Request $request
-     * @param int $id
+     * @param int|string $relatedKey
      * @return mixed
      */
-    protected function beforeUpdatePivot(Request $request, $id)
+    protected function beforeUpdatePivot(Request $request, $relatedKey)
     {
         return null;
     }

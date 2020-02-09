@@ -3,7 +3,7 @@
 namespace Orion\Concerns;
 
 use Exception;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Contracts\Pagination\Paginator;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Resources\Json\Resource;
 use Illuminate\Http\Resources\Json\ResourceCollection;
@@ -25,10 +25,12 @@ trait HandlesStandardOperations
         }
 
         if ($this->authorizationRequired()) {
-            $this->authorize('viewAny', static::$model);
+            $this->authorize('viewAny', $this->resolveResourceModelClass());
         }
 
-        $entities = $this->queryBuilder->buildMethodQuery($this->newQuery(), $request)->with($this->relationsResolver->requestedRelations($request))->paginate($this->paginator->resolvePaginationLimit($request));
+        $entities = $this->queryBuilder->buildMethodQuery($this->newModelQuery(), $request)
+            ->with($this->relationsResolver->requestedRelations($request))
+            ->paginate($this->paginator->resolvePaginationLimit($request));
 
         $afterHookResult = $this->afterIndex($request, $entities);
         if ($this->hookResponds($afterHookResult)) {
@@ -51,14 +53,16 @@ trait HandlesStandardOperations
             return $beforeHookResult;
         }
 
+        $resourceModelClass = $this->resolveResourceModelClass();
+
         if ($this->authorizationRequired()) {
-            $this->authorize('create', static::$model);
+            $this->authorize('create', $resourceModelClass);
         }
 
         /**
          * @var Model $entity
          */
-        $entity = new static::$model;
+        $entity = new $resourceModelClass;
         $entity->fill($request->only($entity->getFillable()));
 
         $beforeSaveHookResult = $this->beforeSave($request, $entity);
@@ -87,12 +91,12 @@ trait HandlesStandardOperations
      * Fetch resource.
      *
      * @param Request $request
-     * @param int $id
+     * @param int|string $key
      * @return Resource
      */
-    public function show(Request $request, $id)
+    public function show(Request $request, $key)
     {
-        $beforeHookResult = $this->beforeShow($request, $id);
+        $beforeHookResult = $this->beforeShow($request, $key);
         if ($this->hookResponds($beforeHookResult)) {
             return $beforeHookResult;
         }
@@ -100,7 +104,10 @@ trait HandlesStandardOperations
         /**
          * @var Model $entity
          */
-        $entity = $this->queryBuilder->buildMethodQuery($this->newQuery(), $request)->with($this->relationsResolver->requestedRelations($request))->findOrFail($id);
+        $entity = $this->queryBuilder->buildMethodQuery($this->newModelQuery(), $request)
+            ->with($this->relationsResolver->requestedRelations($request))
+            ->findOrFail($key);
+
         if ($this->authorizationRequired()) {
             $this->authorize('view', $entity);
         }
@@ -117,12 +124,12 @@ trait HandlesStandardOperations
      * Update a resource.
      *
      * @param Request $request
-     * @param int $id
+     * @param int|string $key
      * @return Resource
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, $key)
     {
-        $beforeHookResult = $this->beforeUpdate($request, $id);
+        $beforeHookResult = $this->beforeUpdate($request, $key);
         if ($this->hookResponds($beforeHookResult)) {
             return $beforeHookResult;
         }
@@ -130,7 +137,9 @@ trait HandlesStandardOperations
         /**
          * @var Model $entity
          */
-        $entity = $this->queryBuilder->buildMethodQuery($this->newQuery(), $request)->with($this->relationsResolver->requestedRelations($request))->findOrFail($id);
+        $entity = $this->queryBuilder->buildMethodQuery($this->newModelQuery(), $request)
+            ->with($this->relationsResolver->requestedRelations($request))
+            ->findOrFail($key);
 
         if ($this->authorizationRequired()) {
             $this->authorize('update', $entity);
@@ -144,8 +153,6 @@ trait HandlesStandardOperations
         }
 
         $entity->save();
-
-        $entity->load($this->relationsResolver->requestedRelations($request));
 
         $afterSaveHookResult = $this->afterSave($request, $entity);
         if ($this->hookResponds($afterSaveHookResult)) {
@@ -164,24 +171,25 @@ trait HandlesStandardOperations
      * Delete a resource.
      *
      * @param Request $request
-     * @param int $id
+     * @param int|string $key
      * @return Resource
      * @throws Exception
      */
-    public function destroy(Request $request, $id)
+    public function destroy(Request $request, $key)
     {
-        $beforeHookResult = $this->beforeDestroy($request, $id);
+        $beforeHookResult = $this->beforeDestroy($request, $key);
         if ($this->hookResponds($beforeHookResult)) {
             return $beforeHookResult;
         }
 
         $softDeletes = $this->softDeletes($this->resolveResourceModelClass());
 
-        $query = $this->queryBuilder->buildMethodQuery($this->newQuery(), $request)->with($this->relationsResolver->requestedRelations($request));
-        if ($softDeletes) {
-            $query->withTrashed();
-        }
-        $entity = $query->findOrFail($id);
+        $entity = $this->queryBuilder->buildMethodQuery($this->newModelQuery(), $request)
+            ->with($this->relationsResolver->requestedRelations($request))
+            ->when($softDeletes, function ($query) {
+                $query->withTrashed();
+            })
+            ->findOrFail($key);
 
         $forceDeletes = $softDeletes && $request->get('force');
 
@@ -211,18 +219,22 @@ trait HandlesStandardOperations
      * Restore previously deleted resource.
      *
      * @param Request $request
-     * @param int $id
+     * @param int|string $key
      * @return Resource
      * @throws Exception
      */
-    public function restore(Request $request, $id)
+    public function restore(Request $request, $key)
     {
-        $beforeHookResult = $this->beforeRestore($request, $id);
+        $beforeHookResult = $this->beforeRestore($request, $key);
         if ($this->hookResponds($beforeHookResult)) {
             return $beforeHookResult;
         }
 
-        $entity = $this->queryBuilder->buildMethodQuery($this->newQuery(), $request)->with($this->relationsResolver->requestedRelations($request))->withTrashed()->findOrFail($id);
+        $entity = $this->queryBuilder->buildMethodQuery($this->newModelQuery(), $request)
+            ->with($this->relationsResolver->requestedRelations($request))
+            ->withTrashed()
+            ->findOrFail($key);
+
         if ($this->authorizationRequired()) {
             $this->authorize('restore', $entity);
         }
@@ -252,10 +264,10 @@ trait HandlesStandardOperations
      * The hooks is executed after fetching the list of resources.
      *
      * @param Request $request
-     * @param LengthAwarePaginator $entities
+     * @param Paginator $entities
      * @return mixed
      */
-    protected function afterIndex(Request $request, LengthAwarePaginator $entities)
+    protected function afterIndex(Request $request, Paginator $entities)
     {
         return null;
     }
@@ -287,10 +299,10 @@ trait HandlesStandardOperations
      * The hook is executed before fetching a resource.
      *
      * @param Request $request
-     * @param int $id
+     * @param int|string $key
      * @return mixed
      */
-    protected function beforeShow(Request $request, int $id)
+    protected function beforeShow(Request $request, $key)
     {
         return null;
     }
@@ -311,10 +323,10 @@ trait HandlesStandardOperations
      * The hook is executed before updating a resource.
      *
      * @param Request $request
-     * @param int $id
+     * @param int|string $key
      * @return mixed
      */
-    protected function beforeUpdate(Request $request, int $id)
+    protected function beforeUpdate(Request $request, $key)
     {
         return null;
     }
@@ -335,10 +347,10 @@ trait HandlesStandardOperations
      * The hook is executed before deleting a resource.
      *
      * @param Request $request
-     * @param int $id
+     * @param int|string $key
      * @return mixed
      */
-    protected function beforeDestroy(Request $request, int $id)
+    protected function beforeDestroy(Request $request, $key)
     {
         return null;
     }
@@ -359,10 +371,10 @@ trait HandlesStandardOperations
      * The hook is executed before force restoring a previously deleted resource.
      *
      * @param Request $request
-     * @param int $id
+     * @param int|string $key
      * @return mixed
      */
-    protected function beforeRestore(Request $request, int $id)
+    protected function beforeRestore(Request $request, $key)
     {
         return null;
     }

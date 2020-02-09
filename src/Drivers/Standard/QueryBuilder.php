@@ -91,7 +91,7 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
     /**
      * Apply scopes to the given query builder based on the query parameters.
      *
-     * @param Builder|Relation $query
+     * @param Builder $query
      * @param Request $request
      */
     public function applyScopesToQuery(Builder $query, Request $request): void
@@ -110,7 +110,7 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
     /**
      * Apply filters to the given query builder based on the query parameters.
      *
-     * @param Builder|Relation $query
+     * @param Builder $query
      * @param Request $request
      */
     public function applyFiltersToQuery(Builder $query, Request $request): void
@@ -147,9 +147,9 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
      * @param array $filterable
      * @param Builder|\Illuminate\Database\Query\Builder $query
      * @param bool $or
-     * @return Builder|Relation
+     * @return Builder
      */
-    protected function buildFilterQueryWhereClause(string $field, array $filterable, $query, bool $or = false)
+    protected function buildFilterQueryWhereClause(string $field, array $filterable, $query, bool $or = false) : Builder
     {
         if (!is_array($filterable['value'])) {
             $query->{$or ? 'orWhere' : 'where'}($field, $filterable['operator'], $filterable['value']);
@@ -163,7 +163,7 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
     /**
      * Apply search query to the given query builder based on the "q" query parameter.
      *
-     * @param Builder|Relation $query
+     * @param Builder $query
      * @param Request $request
      */
     public function applySearchingToQuery(Builder $query, Request $request): void
@@ -205,7 +205,7 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
     /**
      * Apply sorting to the given query builder based on the "sort" query parameter.
      *
-     * @param Builder|Relation $query
+     * @param Builder $query
      * @param Request $request
      */
     public function applySortingToQuery(Builder $query, Request $request): void
@@ -245,7 +245,7 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
     /**
      * Apply "soft deletes" query to the given query builder based on either "with_trashed" or "only_trashed" query parameters.
      *
-     * @param Builder|Relation $query
+     * @param Builder $query
      * @param Request $request
      */
     public function applySoftDeletesToQuery(Builder $query, Request $request): void

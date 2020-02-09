@@ -3,7 +3,7 @@
 namespace Orion\Concerns;
 
 use Exception;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Contracts\Pagination\Paginator;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -20,10 +20,10 @@ trait HandlesRelationStandardOperations
      * Fetch the list of relation resources.
      *
      * @param Request $request
-     * @param int $resourceID
+     * @param int|string $parentKey
      * @return ResourceCollection
      */
-    public function index(Request $request, $resourceID)
+    public function index(Request $request, $parentKey)
     {
         $beforeHookResult = $this->beforeIndex($request);
         if ($this->hookResponds($beforeHookResult)) {
@@ -31,12 +31,15 @@ trait HandlesRelationStandardOperations
         }
 
         if ($this->authorizationRequired()) {
-            $relationModelClass = $this->getRelationModelClass();
-            $this->authorize('viewAny', $relationModelClass);
+            $this->authorize('viewAny', $this->resolveResourceModelClass());
         }
 
-        $resourceEntity = $this->queryBuilder->buildMethodQuery($this->newQuery(), $request)->with($this->relationsFromIncludes($request))->findOrFail($resourceID);
-        $entities = $this->buildRelationMethodQuery($request, $resourceEntity)->with($this->relationsFromIncludes($request))->paginate();
+        $parentEntity = $this->queryBuilder->buildMethodQuery($this->newModelQuery(), $request)
+            ->findOrFail($parentKey);
+
+        $entities = $this->relationQueryBuilder->buildMethodQuery($this->newRelationQuery($parentEntity), $request)
+            ->with($this->relationsResolver->requestedRelations($request))
+            ->paginate($this->paginator->resolvePaginationLimit($request));
 
         if (count($this->pivotJson)) {
             $entities->getCollection()->transform(function ($entity) {
@@ -56,28 +59,29 @@ trait HandlesRelationStandardOperations
      * Create new relation resource.
      *
      * @param Request $request
-     * @param int $resourceID
+     * @param int|string $parentKey
      * @return Resource
      */
-    public function store(Request $request, $resourceID)
+    public function store(Request $request, $parentKey)
     {
         $beforeHookResult = $this->beforeStore($request);
         if ($this->hookResponds($beforeHookResult)) {
             return $beforeHookResult;
         }
 
-        $relationModelClass = $this->getRelationModelClass();
+        $resourceModelClass = $this->resolveResourceModelClass();
 
         if ($this->authorizationRequired()) {
-            $this->authorize('create', $relationModelClass);
+            $this->authorize('create', $resourceModelClass);
         }
 
         /**
          * @var Model $entity
          */
-        $resourceEntity = $this->buildMethodQuery($this->newQuery(), $request)->with($this->relationsFromIncludes($request))->findOrFail($resourceID);
+        $parentEntity = $this->queryBuilder->buildMethodQuery($this->newModelQuery(), $request)
+            ->findOrFail($parentKey);
 
-        $entity = new $relationModelClass();
+        $entity = new $resourceModelClass;
         $entity->fill($request->only($entity->getFillable()));
 
         $beforeSaveHookResult = $this->beforeSave($request, $entity);
@@ -85,14 +89,15 @@ trait HandlesRelationStandardOperations
             return $beforeSaveHookResult;
         }
 
-        if (!$resourceEntity->{static::$relation}() instanceof BelongsTo) {
-            $resourceEntity->{static::$relation}()->save($entity, $this->preparePivotFields($request->get('pivot', [])));
+        if (!$parentEntity->{static::$relation}() instanceof BelongsTo) {
+            $parentEntity->{static::$relation}()->save($entity, $this->preparePivotFields($request->get('pivot', [])));
         } else {
             $entity->save();
-            $resourceEntity->{static::$relation}()->associate($entity);
+            $parentEntity->{static::$relation}()->associate($entity);
         }
 
-        $entity = $this->buildRelationMethodQuery($request, $resourceEntity)->with($this->relationsFromIncludes($request))->findOrFail($entity->getKey());
+        $entity = $entity->fresh($this->relationsResolver->requestedRelations($request));
+        $entity->wasRecentlyCreated = true;
 
         if (count($this->pivotJson)) {
             $entity = $this->castPivotJsonFields($entity);
@@ -115,24 +120,28 @@ trait HandlesRelationStandardOperations
      * Fetch a relation resource.
      *
      * @param Request $request
-     * @param int $resourceID
-     * @param int|null $relatedID
+     * @param int|string $parentKey
+     * @param int|string|null $relatedKey
      * @return Resource
      */
-    public function show(Request $request, $resourceID, $relatedID = null)
+    public function show(Request $request, $parentKey, $relatedKey = null)
     {
-        $beforeHookResult = $this->beforeShow($request, $relatedID);
+        $beforeHookResult = $this->beforeShow($request, $relatedKey);
         if ($this->hookResponds($beforeHookResult)) {
             return $beforeHookResult;
         }
 
-        $resourceEntity = $this->buildMethodQuery($this->newQuery(), $request)->with($this->relationsFromIncludes($request))->findOrFail($resourceID);
+        $parentEntity = $this->queryBuilder->buildMethodQuery($this->newModelQuery(), $request)
+            ->findOrFail($parentKey);
 
-        if ($this->isOneToOneRelation($resourceEntity)) {
-            $entity = $this->buildRelationMethodQuery($request, $resourceEntity)->with($this->relationsFromIncludes($request))->firstOrFail();
+        $query = $this->relationQueryBuilder->buildMethodQuery($this->newRelationQuery($parentEntity), $request)
+            ->with($this->relationsResolver->requestedRelations($request));
+
+        if ($this->isOneToOneRelation($parentEntity)) {
+            $entity = $query->firstOrFail();
         } else {
-            $this->abortIfMissingRelatedID($relatedID);
-            $entity = $this->buildRelationMethodQuery($request, $resourceEntity)->with($this->relationsFromIncludes($request))->findOrFail($relatedID);
+            $this->abortIfMissingRelatedID($relatedKey);
+            $entity = $query->findOrFail($relatedKey);
         }
 
         if ($this->authorizationRequired()) {
@@ -155,24 +164,28 @@ trait HandlesRelationStandardOperations
      * Update a relation resource.
      *
      * @param Request $request
-     * @param int $resourceID
-     * @param int|null $relatedID
+     * @param int|string $parentKey
+     * @param int|string|null $relatedKey
      * @return Resource
      */
-    public function update(Request $request, $resourceID, $relatedID = null)
+    public function update(Request $request, $parentKey, $relatedKey = null)
     {
-        $beforeHookResult = $this->beforeUpdate($request, $relatedID);
+        $beforeHookResult = $this->beforeUpdate($request, $relatedKey);
         if ($this->hookResponds($beforeHookResult)) {
             return $beforeHookResult;
         }
 
-        $resourceEntity = $this->buildMethodQuery($this->newQuery(), $request)->with($this->relationsFromIncludes($request))->findOrFail($resourceID);
+        $parentEntity = $this->queryBuilder->buildMethodQuery($this->newModelQuery(), $request)
+            ->findOrFail($parentKey);
 
-        if ($this->isOneToOneRelation($resourceEntity)) {
-            $entity = $this->buildRelationMethodQuery($request, $resourceEntity)->with($this->relationsFromIncludes($request))->firstOrFail();
+        $query = $this->relationQueryBuilder->buildMethodQuery($this->newRelationQuery($parentEntity), $request)
+            ->with($this->relationsResolver->requestedRelations($request));
+
+        if ($this->isOneToOneRelation($parentEntity)) {
+            $entity = $query->firstOrFail();
         } else {
-            $this->abortIfMissingRelatedID($relatedID);
-            $entity = $this->buildRelationMethodQuery($request, $resourceEntity)->with($this->relationsFromIncludes($request))->findOrFail($relatedID);
+            $this->abortIfMissingRelatedID($relatedKey);
+            $entity = $query->findOrFail($relatedKey);
         }
 
         if ($this->authorizationRequired()) {
@@ -188,16 +201,11 @@ trait HandlesRelationStandardOperations
 
         $entity->save();
 
-        $relation = $resourceEntity->{static::$relation}();
+        $relation = $parentEntity->{static::$relation}();
         if ($relation instanceof BelongsToMany || $relation instanceof MorphToMany) {
-            $relation->updateExistingPivot($relatedID, $this->preparePivotFields($request->get('pivot', [])));
+            $relation->updateExistingPivot($relatedKey, $this->preparePivotFields($request->get('pivot', [])));
 
-            if ($this->isOneToOneRelation($resourceEntity)) {
-                $entity = $this->buildRelationMethodQuery($request, $resourceEntity)->with($this->relationsFromIncludes($request))->firstOrFail();
-            } else {
-                $this->abortIfMissingRelatedID($relatedID);
-                $entity = $this->buildRelationMethodQuery($request, $resourceEntity)->with($this->relationsFromIncludes($request))->findOrFail($relatedID);
-            }
+            $entity = $entity->fresh($this->relationsResolver->requestedRelations($request));
         }
 
         if (count($this->pivotJson)) {
@@ -221,31 +229,34 @@ trait HandlesRelationStandardOperations
      * Delete a relation resource.
      *
      * @param Request $request
-     * @param int $resourceID
-     * @param int|null $relatedID
+     * @param int|string $parentKey
+     * @param int|string|null $relatedKey
      * @return Resource
      * @throws Exception
      */
-    public function destroy(Request $request, $resourceID, $relatedID = null)
+    public function destroy(Request $request, $parentKey, $relatedKey = null)
     {
-        $beforeHookResult = $this->beforeDestroy($request, $relatedID);
+        $beforeHookResult = $this->beforeDestroy($request, $relatedKey);
         if ($this->hookResponds($beforeHookResult)) {
             return $beforeHookResult;
         }
 
-        $resourceEntity = $this->buildMethodQuery($this->newQuery(), $request)->with($this->relationsFromIncludes($request))->findOrFail($resourceID);
+        $parentEntity = $this->queryBuilder->buildMethodQuery($this->newModelQuery(), $request)
+            ->findOrFail($parentKey);
 
-        $relationEntityQuery = $this->buildRelationMethodQuery($request, $resourceEntity)->with($this->relationsFromIncludes($request));
         $softDeletes = $this->softDeletes($this->resolveResourceModelClass());
-        if ($softDeletes) {
-            $relationEntityQuery->withTrashed();
-        }
 
-        if ($this->isOneToOneRelation($resourceEntity)) {
-            $entity = $relationEntityQuery->firstOrFail();
+        $query = $this->relationQueryBuilder->buildMethodQuery($this->newRelationQuery($parentEntity), $request)
+            ->with($this->relationsResolver->requestedRelations($request))
+            ->when($softDeletes, function ($query) {
+                $query->withTrashed();
+            });
+
+        if ($this->isOneToOneRelation($parentEntity)) {
+            $entity = $query->firstOrFail();
         } else {
-            $this->abortIfMissingRelatedID($relatedID);
-            $entity = $relationEntityQuery->findOrFail($relatedID);
+            $this->abortIfMissingRelatedID($relatedKey);
+            $entity = $query->findOrFail($relatedKey);
         }
 
         $forceDeletes = $softDeletes && $request->get('force');
@@ -276,26 +287,29 @@ trait HandlesRelationStandardOperations
      * Restores a previously deleted relation resource.
      *
      * @param Request $request
-     * @param int $resourceID
-     * @param int|null $relatedID
+     * @param int|string $parentKey
+     * @param int|string|null $relatedKey
      * @return Resource
      */
-    public function restore(Request $request, $resourceID, $relatedID = null)
+    public function restore(Request $request, $parentKey, $relatedKey = null)
     {
-        $beforeHookResult = $this->beforeRestore($request, $relatedID);
+        $beforeHookResult = $this->beforeRestore($request, $relatedKey);
         if ($this->hookResponds($beforeHookResult)) {
             return $beforeHookResult;
         }
 
-        $resourceEntity = $this->buildMethodQuery($this->newQuery(), $request)->with($this->relationsFromIncludes($request))->findOrFail($resourceID);
+        $parentEntity = $this->queryBuilder->buildMethodQuery($this->newModelQuery(), $request)
+            ->findOrFail($parentKey);
 
-        $relationEntityQuery = $this->buildRelationMethodQuery($request, $resourceEntity)->with($this->relationsFromIncludes($request))->withTrashed();
+        $relationEntityQuery = $this->relationQueryBuilder->buildMethodQuery($this->newRelationQuery($parentEntity), $request)
+            ->with($this->relationsResolver->requestedRelations($request))
+            ->withTrashed();
 
-        if ($this->isOneToOneRelation($resourceEntity)) {
+        if ($this->isOneToOneRelation($parentEntity)) {
             $entity = $relationEntityQuery->firstOrFail();
         } else {
-            $this->abortIfMissingRelatedID($relatedID);
-            $entity = $relationEntityQuery->findOrFail($relatedID);
+            $this->abortIfMissingRelatedID($relatedKey);
+            $entity = $relationEntityQuery->findOrFail($relatedKey);
         }
 
         if ($this->authorizationRequired()) {
@@ -327,25 +341,14 @@ trait HandlesRelationStandardOperations
     /**
      * Throws exception, if related ID is undefined and relation type is not one-to-one.
      *
-     * @param int|null $relatedID
+     * @param int|string|null $relatedKey
      */
-    protected function abortIfMissingRelatedID($relatedID)
+    protected function abortIfMissingRelatedID($relatedKey)
     {
-        if ($relatedID) {
+        if ($relatedKey) {
             return;
         }
-        throw new InvalidArgumentException('Relation ID is required, if relation type is not one-to-one');
-    }
-
-
-    /**
-     * Get relation model class from the relation.
-     *
-     * @return string
-     */
-    protected function getRelationModelClass()
-    {
-        return get_class(with(new static::$model)->{static::$relation}()->getModel());
+        throw new InvalidArgumentException('Relation key is required, if relation type is not one-to-one');
     }
 
     /**
@@ -363,10 +366,10 @@ trait HandlesRelationStandardOperations
      * The hooks is executed after fetching the list of relation resources.
      *
      * @param Request $request
-     * @param LengthAwarePaginator $entities
+     * @param Paginator $entities
      * @return mixed
      */
-    protected function afterIndex(Request $request, LengthAwarePaginator $entities)
+    protected function afterIndex(Request $request, Paginator $entities)
     {
         return null;
     }
@@ -398,10 +401,10 @@ trait HandlesRelationStandardOperations
      * The hook is executed before fetching relation resource.
      *
      * @param Request $request
-     * @param int|null $id
+     * @param int|string|null $key
      * @return mixed
      */
-    protected function beforeShow(Request $request, $id)
+    protected function beforeShow(Request $request, $key)
     {
         return null;
     }
@@ -422,10 +425,10 @@ trait HandlesRelationStandardOperations
      * The hook is executed before updating a relation resource.
      *
      * @param Request $request
-     * @param int|null $id
+     * @param int|string|null $key
      * @return mixed
      */
-    protected function beforeUpdate(Request $request, $id)
+    protected function beforeUpdate(Request $request, $key)
     {
         return null;
     }
@@ -446,10 +449,10 @@ trait HandlesRelationStandardOperations
      * The hook is executed before deleting a relation resource.
      *
      * @param Request $request
-     * @param int|null $id
+     * @param int|string|null $key
      * @return mixed
      */
-    protected function beforeDestroy(Request $request, $id)
+    protected function beforeDestroy(Request $request, $key)
     {
         return null;
     }
@@ -470,10 +473,10 @@ trait HandlesRelationStandardOperations
      * The hook is executed before restoring a relation resource.
      *
      * @param Request $request
-     * @param int|null $id
+     * @param int|string|null $key
      * @return mixed
      */
-    protected function beforeRestore(Request $request, $id)
+    protected function beforeRestore(Request $request, $key)
     {
         return null;
     }
