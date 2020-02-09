@@ -12,7 +12,7 @@ trait InteractsWithHooks
      * @param mixed $hookResult
      * @return bool
      */
-    protected function hookResponds($hookResult)
+    public function hookResponds($hookResult)
     {
         return $hookResult instanceof Response;
     }

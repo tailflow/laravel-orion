@@ -14,7 +14,7 @@ trait ExtendsResources
      * @param array $mergeData
      * @return array
      */
-    protected function toArrayWithMerge($request, $mergeData)
+    public function toArrayWithMerge($request, $mergeData)
     {
         return array_merge(parent::toArray($request), $mergeData);
     }

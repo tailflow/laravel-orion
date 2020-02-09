@@ -70,7 +70,7 @@ class RelationController extends BaseController
      *
      * @return string
      */
-    protected function resolveResourceModelClass(): string
+    public function resolveResourceModelClass(): string
     {
         return get_class((new static::$model)->{static::$relation}()->getRelated());
     }
@@ -81,7 +81,7 @@ class RelationController extends BaseController
      * @param Model $parentEntity
      * @return Builder
      */
-    protected function newRelationQuery(Model $parentEntity): Builder
+    public function newRelationQuery(Model $parentEntity): Builder
     {
         return $parentEntity->{static::$relation}()->getQuery();
     }

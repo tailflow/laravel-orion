@@ -153,7 +153,7 @@ abstract class BaseController extends \Illuminate\Routing\Controller
      * @return \Illuminate\Auth\Access\Response
      * @throws \Illuminate\Auth\Access\AuthorizationException
      */
-    protected function authorize($ability, $arguments = [])
+    public function authorize($ability, $arguments = [])
     {
         $user = $this->resolveUser();
 
@@ -253,7 +253,7 @@ abstract class BaseController extends \Illuminate\Routing\Controller
      *
      * @return Builder
      */
-    protected function newModelQuery(): Builder
+    public function newModelQuery(): Builder
     {
         return $this->resolveModelClass()::query();
     }
@@ -263,7 +263,7 @@ abstract class BaseController extends \Illuminate\Routing\Controller
      *
      * @return string
      */
-    protected function resolveModelClass(): string
+    public function resolveModelClass(): string
     {
         return static::$model;
     }
@@ -273,5 +273,5 @@ abstract class BaseController extends \Illuminate\Routing\Controller
      *
      * @return string
      */
-    abstract protected function resolveResourceModelClass(): string;
+    abstract public function resolveResourceModelClass(): string;
 }

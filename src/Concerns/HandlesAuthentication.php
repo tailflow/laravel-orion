@@ -12,7 +12,7 @@ trait HandlesAuthentication
      *
      * @return \Illuminate\Foundation\Auth\User|null
      */
-    protected function resolveUser()
+    public function resolveUser()
     {
         return Auth::guard('api')->user();
     }
