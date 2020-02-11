@@ -249,6 +249,51 @@ abstract class BaseController extends \Illuminate\Routing\Controller
     }
 
     /**
+     * @return ComponentsResolver
+     */
+    public function getComponentsResolver(): ComponentsResolver
+    {
+        return $this->componentsResolver;
+    }
+
+    /**
+     * @return ParamsValidator
+     */
+    public function getParamsValidator(): ParamsValidator
+    {
+        return $this->paramsValidator;
+    }
+
+    public function getRelationsResolver(): RelationsResolver
+    {
+        return $this->relationsResolver;
+    }
+
+    /**
+     * @return Paginator
+     */
+    public function getPaginator(): Paginator
+    {
+        return $this->paginator;
+    }
+
+    /**
+     * @return SearchBuilder
+     */
+    public function getSearchBuilder(): SearchBuilder
+    {
+        return $this->searchBuilder;
+    }
+
+    /**
+     * @return QueryBuilder
+     */
+    public function getQueryBuilder(): QueryBuilder
+    {
+        return $this->queryBuilder;
+    }
+
+    /**
      * Creates new Eloquent query builder of the model.
      *
      * @return Builder

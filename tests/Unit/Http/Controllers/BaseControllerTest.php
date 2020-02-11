@@ -3,16 +3,98 @@
 namespace Orion\Tests\Unit\Http\Controllers;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\App;
 use Mockery;
-use Orion\Http\Controllers\BaseController;
+use Orion\Drivers\Standard\ComponentsResolver;
+use Orion\Drivers\Standard\Paginator;
+use Orion\Drivers\Standard\ParamsValidator;
+use Orion\Drivers\Standard\QueryBuilder;
+use Orion\Drivers\Standard\RelationsResolver;
+use Orion\Drivers\Standard\SearchBuilder;
+use Orion\Exceptions\BindingException;
 use Orion\Tests\Fixtures\App\Http\Requests\TagRequest;
 use Orion\Tests\Fixtures\App\Models\Post;
 use Orion\Tests\Fixtures\App\Models\Tag;
 use Orion\Tests\Fixtures\App\Models\User;
+use Orion\Tests\Unit\Http\Controllers\Stubs\BaseControllerStub;
+use Orion\Tests\Unit\Http\Controllers\Stubs\BaseControllerStubWithoutModel;
+use Orion\Tests\Unit\Http\Controllers\Stubs\BaseControllerStubWithWhitelistedFieldsAndRelations;
 use Orion\Tests\Unit\TestCase;
 
 class BaseControllerTest extends TestCase
 {
+
+    /** @test */
+    public function binding_exception_is_thrown_if_model_is_not_set()
+    {
+        $this->expectException(BindingException::class);
+        $this->expectExceptionMessage('Model is not defined for '.BaseControllerStubWithoutModel::class);
+
+        $stub = new BaseControllerStubWithoutModel();
+    }
+
+    /** @test */
+    public function dependencies_are_resolved_correctly()
+    {
+        $fakeComponentsResolver = new ComponentsResolver(Tag::class);
+        $fakeParamsValidator = new ParamsValidator();
+        $fakeRelationsResolver = new RelationsResolver([], []);
+        $fakePaginator = new Paginator(15);
+        $fakeSearchBuilder = new SearchBuilder([]);
+        $fakeQueryBuilder = new QueryBuilder(Tag::class, $fakeParamsValidator, $fakeRelationsResolver, $fakeSearchBuilder);
+
+        App::shouldReceive('makeWith')->with(\Orion\Contracts\ComponentsResolver::class, [
+            'resourceModelClass' => Post::class
+        ])->once()->andReturn($fakeComponentsResolver);
+
+        App::shouldReceive('makeWith')->with(\Orion\Contracts\ParamsValidator::class, [
+            'exposedScopes' => ['testScope'],
+            'filterableBy' => ['test_filterable_field'],
+            'sortableBy' => ['test_sortable_field']
+        ])->once()->andReturn($fakeParamsValidator);
+
+        App::shouldReceive('makeWith')->with(\Orion\Contracts\RelationsResolver::class, [
+            'includableRelations' => ['testRelation'],
+            'alwaysIncludedRelations' => ['testAlwaysIncludedRelation'],
+        ])->once()->andReturn($fakeRelationsResolver);
+
+        App::shouldReceive('makeWith')->with(\Orion\Contracts\Paginator::class, [
+            'defaultLimit' => 15,
+        ])->once()->andReturn($fakePaginator);
+
+        App::shouldReceive('makeWith')->with(\Orion\Contracts\SearchBuilder::class, [
+            'searchableBy' => ['test_searchable_field']
+        ])->once()->andReturn($fakeSearchBuilder);
+
+        App::shouldReceive('makeWith')->with(\Orion\Contracts\QueryBuilder::class, [
+            'resourceModelClass' => Tag::class,
+            'paramsValidator' => $fakeParamsValidator,
+            'relationsResolver' => $fakeRelationsResolver,
+            'searchBuilder' => $fakeSearchBuilder
+        ])->once()->andReturn($fakeQueryBuilder);
+
+        $stub = new BaseControllerStubWithWhitelistedFieldsAndRelations();
+        $this->assertEquals($fakeComponentsResolver, $stub->getComponentsResolver());
+        $this->assertEquals($fakeParamsValidator, $stub->getParamsValidator());
+        $this->assertEquals($fakeRelationsResolver, $stub->getRelationsResolver());
+        $this->assertEquals($fakePaginator, $stub->getPaginator());
+        $this->assertEquals($fakeSearchBuilder, $stub->getSearchBuilder());
+        $this->assertEquals($fakeQueryBuilder, $stub->getQueryBuilder());
+    }
+
+    /** @test */
+    public function binding_components()
+    {
+        App::bind(\Orion\Contracts\ComponentsResolver::class, function () {
+            $componentsResolverMock = Mockery::mock(ComponentsResolver::class)->makePartial();
+            $componentsResolverMock->shouldReceive('bindRequestClass')->with(TagRequest::class)->once();
+
+            return $componentsResolverMock;
+        });
+
+        $stub = new BaseControllerStub();
+    }
+
     /** @test */
     public function authorize()
     {
@@ -44,20 +126,5 @@ class BaseControllerTest extends TestCase
         $stub = new BaseControllerStub();
 
         $this->assertEquals(Tag::class, $stub->resolveModelClass());
-    }
-}
-
-class BaseControllerStub extends BaseController
-{
-    protected static $model = Tag::class;
-
-    protected static $request = TagRequest::class;
-
-    /**
-     * @inheritDoc
-     */
-    public function resolveResourceModelClass(): string
-    {
-        return Post::class;
     }
 }

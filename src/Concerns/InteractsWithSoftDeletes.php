@@ -10,7 +10,7 @@ trait InteractsWithSoftDeletes
      * @param string $resourceModelClass
      * @return bool
      */
-    public function softDeletes(string $resourceModelClass)
+    protected function softDeletes(string $resourceModelClass)
     {
         return method_exists(new $resourceModelClass, 'trashed');
     }

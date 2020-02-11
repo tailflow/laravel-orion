@@ -9,7 +9,7 @@ trait HandlesAuthorization
      *
      * @return bool
      */
-    public function authorizationRequired()
+    protected function authorizationRequired()
     {
         return !property_exists($this, 'authorizationDisabled');
     }
