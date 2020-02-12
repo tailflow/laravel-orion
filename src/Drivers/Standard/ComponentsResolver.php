@@ -2,7 +2,7 @@
 
 namespace Orion\Drivers\Standard;
 
-use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Http\Resources\Json\Resource;
 use Illuminate\Support\Facades\App;
 use Orion\Http\Requests\Request;
 
@@ -49,7 +49,7 @@ class ComponentsResolver implements \Orion\Contracts\ComponentsResolver
             return $resourceClassName;
         }
 
-        return JsonResource::class;
+        return Resource::class;
     }
 
     /**

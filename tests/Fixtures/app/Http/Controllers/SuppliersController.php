@@ -14,12 +14,12 @@ class SuppliersController extends Controller
     /**
      * @var string|null $model
      */
-    protected static $model = Supplier::class;
+    protected $model = Supplier::class;
 
     /**
      * @var string $collectionResource
      */
-    protected static $collectionResource = SupplierCollectionResource::class;
+    protected $collectionResource = SupplierCollectionResource::class;
 
     /**
      * The attributes that are used for sorting.

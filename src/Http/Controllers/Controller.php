@@ -4,7 +4,7 @@ namespace Orion\Http\Controllers;
 
 use Orion\Concerns\HandlesStandardOperations;
 
-class Controller extends BaseController
+abstract class Controller extends BaseController
 {
     use HandlesStandardOperations;
 
@@ -15,6 +15,6 @@ class Controller extends BaseController
      */
     public function resolveResourceModelClass(): string
     {
-        return static::$model;
+        return $this->getModel();
     }
 }

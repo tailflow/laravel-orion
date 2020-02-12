@@ -48,7 +48,7 @@ trait HandlesRelationOneToManyOperations
             return $afterHookResult;
         }
 
-        return new static::$resource($entity);
+        return $this->entityResponse($entity);
     }
 
     /**
@@ -90,7 +90,7 @@ trait HandlesRelationOneToManyOperations
             return $afterHookResult;
         }
 
-        return new static::$resource($entity);
+        return $this->entityResponse($entity);
     }
 
     /**

@@ -2,10 +2,9 @@
 
 namespace Orion\Http\Resources;
 
-use Illuminate\Http\Resources\Json\JsonResource;
 use Orion\Concerns\ExtendsResources;
 
-class Resource extends JsonResource
+class Resource extends \Illuminate\Http\Resources\Json\Resource
 {
     use ExtendsResources;
 }

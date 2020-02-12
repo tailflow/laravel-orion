@@ -52,7 +52,7 @@ trait HandlesRelationStandardOperations
             return $afterHookResult;
         }
 
-        return static::$collectionResource ? new static::$collectionResource($entities) : static::$resource::collection($entities);
+        return $this->collectionResponse($entities);
     }
 
     /**
@@ -113,7 +113,7 @@ trait HandlesRelationStandardOperations
             return $afterHookResult;
         }
 
-        return new static::$resource($entity);
+        return $this->entityResponse($entity);
     }
 
     /**
@@ -157,7 +157,7 @@ trait HandlesRelationStandardOperations
             return $afterHookResult;
         }
 
-        return new static::$resource($entity);
+        return $this->entityResponse($entity);
     }
 
     /**
@@ -222,7 +222,7 @@ trait HandlesRelationStandardOperations
             return $afterHookResult;
         }
 
-        return new static::$resource($entity);
+        return $this->entityResponse($entity);
     }
 
     /**
@@ -280,7 +280,7 @@ trait HandlesRelationStandardOperations
             return $afterHookResult;
         }
 
-        return new static::$resource($entity);
+        return $this->entityResponse($entity);
     }
 
     /**
@@ -323,7 +323,7 @@ trait HandlesRelationStandardOperations
             return $afterHookResult;
         }
 
-        return new static::$resource($entity);
+        return $this->entityResponse($entity);
     }
 
     /**

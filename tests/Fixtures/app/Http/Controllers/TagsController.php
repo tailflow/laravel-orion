@@ -14,12 +14,12 @@ class TagsController extends Controller
     /**
      * @var string|null $model
      */
-    protected static $model = Tag::class;
+    protected $model = Tag::class;
 
     /**
      * @var string $request
      */
-    protected static $request = TagRequest::class;
+    protected $request = TagRequest::class;
 
     /**
      * The attributes that are used for sorting.

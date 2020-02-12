@@ -11,24 +11,24 @@ use Orion\Concerns\HandlesRelationStandardOperations;
 use Orion\Contracts\QueryBuilder;
 use Orion\Exceptions\BindingException;
 
-class RelationController extends BaseController
+abstract class RelationController extends BaseController
 {
     use HandlesRelationStandardOperations, HandlesRelationOneToManyOperations, HandlesRelationManyToManyOperations;
 
     /**
      * @var string $relation
      */
-    protected static $relation;
+    protected $relation;
 
     /**
      * @var string|null $relation
      */
-    protected static $associatingRelation = null;
+    protected $associatingRelation = null;
 
     /**
      * The list of pivot fields that can be set upon relation resource creation or update.
      *
-     * @var bool
+     * @var array
      */
     protected $pivotFillable = [];
 
@@ -51,7 +51,7 @@ class RelationController extends BaseController
      */
     public function __construct()
     {
-        if (!static::$relation) {
+        if (!$this->relation) {
             throw new BindingException('Relation is not defined for '.static::class);
         }
 
@@ -72,7 +72,9 @@ class RelationController extends BaseController
      */
     public function resolveResourceModelClass(): string
     {
-        return get_class((new static::$model)->{static::$relation}()->getRelated());
+        $model = $this->getModel();
+
+        return get_class((new $model)->{$this->getRelation()}()->getRelated());
     }
 
     /**
@@ -83,6 +85,101 @@ class RelationController extends BaseController
      */
     public function newRelationQuery(Model $parentEntity): Builder
     {
-        return $parentEntity->{static::$relation}()->getQuery();
+        return $parentEntity->{$this->getRelation()}()->getQuery();
+    }
+
+    /**
+     * @param string $relation
+     * @return $this
+     */
+    public function setRelation(string $relation): self
+    {
+        $this->relation = $relation;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getRelation(): string
+    {
+        return $this->relation;
+    }
+
+    /**
+     * @param string|null $associatingRelation
+     * @return $this
+     */
+    public function setAssociatingRelation(?string $associatingRelation): self
+    {
+        $this->associatingRelation = $associatingRelation;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getAssociatingRelation(): ?string
+    {
+        return $this->associatingRelation;
+    }
+
+    /**
+     * @param array $pivotFillable
+     * @return $this
+     */
+    public function setPivotFillable(array $pivotFillable): self
+    {
+        $this->pivotFillable = $pivotFillable;
+
+        return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function getPivotFillable(): array
+    {
+        return $this->pivotFillable;
+    }
+
+    /**
+     * @param array $pivotJson
+     * @return $this
+     */
+    public function setPivotJson(array $pivotJson): self
+    {
+        $this->pivotJson = $pivotJson;
+
+        return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function getPivotJson(): array
+    {
+        return $this->pivotJson;
+    }
+
+    /**
+     * @param QueryBuilder $relationQueryBuilder
+     * @return $this
+     */
+    public function setRelationQueryBuilder(QueryBuilder $relationQueryBuilder): self
+    {
+        $this->relationQueryBuilder = $relationQueryBuilder;
+
+        return $this;
+    }
+
+    /**
+     * @return QueryBuilder
+     */
+    public function getRelationQueryBuilder(): QueryBuilder
+    {
+        return $this->relationQueryBuilder;
     }
 }

@@ -11,10 +11,10 @@ class HistoryController extends Controller
     /**
      * @var string|null $model
      */
-    protected static $model = History::class;
+    protected $model = History::class;
 
     /**
      * @var string $resource
      */
-    protected static $resource = TagMetaResource::class;
+    protected $resource = TagMetaResource::class;
 }

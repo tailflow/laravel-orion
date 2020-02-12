@@ -37,7 +37,7 @@ trait HandlesStandardOperations
             return $afterHookResult;
         }
 
-        return static::$collectionResource ? new static::$collectionResource($entities) : static::$resource::collection($entities);
+        return $this->collectionResponse($entities);
     }
 
     /**
@@ -84,7 +84,7 @@ trait HandlesStandardOperations
             return $afterHookResult;
         }
 
-        return new static::$resource($entity);
+        return $this->entityResponse($entity);
     }
 
     /**
@@ -117,7 +117,7 @@ trait HandlesStandardOperations
             return $afterHookResult;
         }
 
-        return new static::$resource($entity);
+        return $this->entityResponse($entity);
     }
 
     /**
@@ -164,7 +164,7 @@ trait HandlesStandardOperations
             return $afterHookResult;
         }
 
-        return new static::$resource($entity);
+        return $this->entityResponse($entity);
     }
 
     /**
@@ -212,7 +212,7 @@ trait HandlesStandardOperations
             return $afterHookResult;
         }
 
-        return new static::$resource($entity);
+        return $this->entityResponse($entity);
     }
 
     /**
@@ -246,7 +246,7 @@ trait HandlesStandardOperations
             return $afterHookResult;
         }
 
-        return new static::$resource($entity);
+        return $this->entityResponse($entity);
     }
 
     /**

@@ -13,10 +13,12 @@ use Orion\Drivers\Standard\RelationsResolver;
 use Orion\Drivers\Standard\SearchBuilder;
 use Orion\Exceptions\BindingException;
 use Orion\Tests\Fixtures\App\Http\Requests\TagRequest;
-use Orion\Tests\Fixtures\App\Models\Post;
+use Orion\Tests\Fixtures\App\Http\Resources\TagCollectionResource;
+use Orion\Tests\Fixtures\App\Http\Resources\TagResource;
 use Orion\Tests\Fixtures\App\Models\Tag;
 use Orion\Tests\Fixtures\App\Models\User;
 use Orion\Tests\Unit\Http\Controllers\Stubs\BaseControllerStub;
+use Orion\Tests\Unit\Http\Controllers\Stubs\BaseControllerStubWithoutComponents;
 use Orion\Tests\Unit\Http\Controllers\Stubs\BaseControllerStubWithoutModel;
 use Orion\Tests\Unit\Http\Controllers\Stubs\BaseControllerStubWithWhitelistedFieldsAndRelations;
 use Orion\Tests\Unit\TestCase;
@@ -44,7 +46,7 @@ class BaseControllerTest extends TestCase
         $fakeQueryBuilder = new QueryBuilder(Tag::class, $fakeParamsValidator, $fakeRelationsResolver, $fakeSearchBuilder);
 
         App::shouldReceive('makeWith')->with(\Orion\Contracts\ComponentsResolver::class, [
-            'resourceModelClass' => Post::class
+            'resourceModelClass' => Tag::class
         ])->once()->andReturn($fakeComponentsResolver);
 
         App::shouldReceive('makeWith')->with(\Orion\Contracts\ParamsValidator::class, [
@@ -80,6 +82,42 @@ class BaseControllerTest extends TestCase
         $this->assertEquals($fakePaginator, $stub->getPaginator());
         $this->assertEquals($fakeSearchBuilder, $stub->getSearchBuilder());
         $this->assertEquals($fakeQueryBuilder, $stub->getQueryBuilder());
+    }
+
+    /** @test */
+    public function using_predefined_components()
+    {
+        App::bind(\Orion\Contracts\ComponentsResolver::class, function () {
+            $componentsResolverMock = Mockery::mock(ComponentsResolver::class)->makePartial();
+            $componentsResolverMock->shouldReceive('resolveRequestClass')->never();
+            $componentsResolverMock->shouldReceive('resolveResourceClass')->never();
+            $componentsResolverMock->shouldReceive('resolveCollectionResourceClass')->never();
+
+            return $componentsResolverMock;
+        });
+
+        $stub = new BaseControllerStub();
+        $this->assertEquals(TagRequest::class, $stub->getRequest());
+        $this->assertEquals(TagResource::class, $stub->getResource());
+        $this->assertEquals(TagCollectionResource::class, $stub->getCollectionResource());
+    }
+
+    /** @test */
+    public function resolving_components()
+    {
+        App::bind(\Orion\Contracts\ComponentsResolver::class, function () {
+            $componentsResolverMock = Mockery::mock(ComponentsResolver::class)->makePartial();
+            $componentsResolverMock->shouldReceive('resolveRequestClass')->once()->withNoArgs()->andReturn('testRequestClass');
+            $componentsResolverMock->shouldReceive('resolveResourceClass')->once()->withNoArgs()->andReturn('testResourceClass');
+            $componentsResolverMock->shouldReceive('resolveCollectionResourceClass')->once()->withNoArgs()->andReturn('testCollectionResourceClass');
+
+            return $componentsResolverMock;
+        });
+
+        $stub = new BaseControllerStubWithoutComponents();
+        $this->assertEquals('testRequestClass', $stub->getRequest());
+        $this->assertEquals('testResourceClass', $stub->getResource());
+        $this->assertEquals('testCollectionResourceClass', $stub->getCollectionResource());
     }
 
     /** @test */
@@ -125,6 +163,6 @@ class BaseControllerTest extends TestCase
     {
         $stub = new BaseControllerStub();
 
-        $this->assertEquals(Tag::class, $stub->resolveModelClass());
+        $this->assertEquals(Tag::class, $stub->getModel());
     }
 }

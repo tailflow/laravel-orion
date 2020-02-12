@@ -14,7 +14,7 @@ class TeamsController extends Controller
     /**
      * @var string|null $model
      */
-    protected static $model = Team::class;
+    protected $model = Team::class;
 
     /**
      * The attributes that are used for sorting.

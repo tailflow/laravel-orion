@@ -14,12 +14,12 @@ class TagMetaController extends Controller
     /**
      * @var string|null $model
      */
-    protected static $model = TagMeta::class;
+    protected $model = TagMeta::class;
 
     /**
      * @var string $resource
      */
-    protected static $resource = TagMetaResource::class;
+    protected $resource = TagMetaResource::class;
 
     /**
      * The relations that are allowed to be included together with a resource.

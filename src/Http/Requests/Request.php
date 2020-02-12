@@ -33,14 +33,14 @@ class Request extends FormRequest
 
         if ($this->route()->getActionMethod() === 'associate') {
             return array_merge([
-                'related_id' => 'required'
+                'related_key' => 'required'
             ], $this->associateRules());
         }
 
         if ($this->route()->getActionMethod() === 'attach') {
             return array_merge([
                 'resources' => 'present',
-                'duplicates' => 'sometimes|boolean'
+                'duplicates' => ['sometimes', 'boolean']
             ], $this->attachRules());
         }
 
@@ -53,7 +53,7 @@ class Request extends FormRequest
         if ($this->route()->getActionMethod() === 'sync') {
             return array_merge([
                 'resources' => 'present',
-                'detaching' => 'sometimes|boolean'
+                'detaching' => ['sometimes', 'boolean']
             ], $this->syncRules());
         }
 
@@ -65,7 +65,7 @@ class Request extends FormRequest
 
         if ($this->route()->getActionMethod() === 'updatePivot') {
             return array_merge([
-                'pivot' => 'required|array'
+                'pivot' => ['required', 'array']
             ], $this->updatePivotRules());
         }
 

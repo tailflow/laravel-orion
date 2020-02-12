@@ -2,15 +2,20 @@
 
 namespace Orion\Tests\Unit\Http\Controllers\Stubs;
 
-use Orion\Http\Controllers\BaseController;
-use Orion\Tests\Fixtures\App\Http\Requests\TagRequest;
+use Orion\Http\Controllers\RelationController;
 use Orion\Tests\Fixtures\App\Models\Tag;
 
-class BaseControllerStubWithWhitelistedFieldsAndRelations extends BaseController
+class RelationControllerStub extends RelationController
 {
+    /**
+     * @var string $model
+     */
     protected $model = Tag::class;
 
-    protected $request = TagRequest::class;
+    /**
+     * @var string $relation
+     */
+    protected $relation = 'meta';
 
     protected function exposedScopes()
     {
@@ -40,14 +45,6 @@ class BaseControllerStubWithWhitelistedFieldsAndRelations extends BaseController
     protected function alwaysIncludes()
     {
         return ['testAlwaysIncludedRelation'];
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function resolveResourceModelClass(): string
-    {
-        return $this->getModel();
     }
 
     protected function bindComponents(): void

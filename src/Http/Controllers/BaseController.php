@@ -7,6 +7,7 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Support\Facades\App;
+use Orion\Concerns\BuildsResponses;
 use Orion\Concerns\HandlesAuthentication;
 use Orion\Concerns\HandlesAuthorization;
 use Orion\Concerns\InteractsWithHooks;
@@ -27,27 +28,28 @@ abstract class BaseController extends \Illuminate\Routing\Controller
         HandlesAuthentication,
         HandlesAuthorization,
         InteractsWithHooks,
-        InteractsWithSoftDeletes;
+        InteractsWithSoftDeletes,
+        BuildsResponses;
 
     /**
      * @var string $model
      */
-    protected static $model;
+    protected $model;
 
     /**
      * @var string $request
      */
-    protected static $request;
+    protected $request;
 
     /**
      * @var string $resource
      */
-    protected static $resource;
+    protected $resource;
 
     /**
      * @var string|null $collectionResource
      */
-    protected static $collectionResource = null;
+    protected $collectionResource = null;
 
     /**
      * @var ComponentsResolver $componentsResolver
@@ -86,7 +88,7 @@ abstract class BaseController extends \Illuminate\Routing\Controller
      */
     public function __construct()
     {
-        if (!static::$model) {
+        if (!$this->model) {
             throw new BindingException('Model is not defined for '.static::class);
         }
 
@@ -109,7 +111,7 @@ abstract class BaseController extends \Illuminate\Routing\Controller
             'searchableBy' => $this->searchableBy()
         ]);
         $this->queryBuilder = App::makeWith(QueryBuilder::class, [
-            'resourceModelClass' => $this->resolveModelClass(),
+            'resourceModelClass' => $this->getModel(),
             'paramsValidator' => $this->paramsValidator,
             'relationsResolver' => $this->relationsResolver,
             'searchBuilder' => $this->searchBuilder
@@ -124,16 +126,16 @@ abstract class BaseController extends \Illuminate\Routing\Controller
      */
     protected function resolveComponents(): void
     {
-        if (!static::$request) {
-            static::$request = $this->componentsResolver->resolveRequestClass();
+        if (!$this->request) {
+            $this->setRequest($this->componentsResolver->resolveRequestClass());
         }
 
-        if (!static::$resource) {
-            static::$resource = $this->componentsResolver->resolveResourceClass();
+        if (!$this->resource) {
+            $this->setResource($this->componentsResolver->resolveResourceClass());
         }
 
-        if (!static::$collectionResource) {
-            static::$collectionResource = $this->componentsResolver->resolveCollectionResourceClass();
+        if (!$this->collectionResource) {
+            $this->setCollectionResource($this->componentsResolver->resolveCollectionResourceClass());
         }
     }
 
@@ -142,7 +144,7 @@ abstract class BaseController extends \Illuminate\Routing\Controller
      */
     protected function bindComponents(): void
     {
-        $this->componentsResolver->bindRequestClass(static::$request);
+        $this->componentsResolver->bindRequestClass($this->getRequest());
     }
 
     /**
@@ -249,11 +251,109 @@ abstract class BaseController extends \Illuminate\Routing\Controller
     }
 
     /**
+     * @param string $modelClass
+     * @return $this
+     */
+    public function setModel(string $modelClass): self
+    {
+        $this->model = $modelClass;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getModel(): string
+    {
+        return $this->model;
+    }
+
+    /**
+     * @param string $requestClass
+     * @return $this
+     */
+    public function setRequest(string $requestClass): self
+    {
+        $this->request = $requestClass;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getRequest(): string
+    {
+        return $this->request;
+    }
+
+    /**
+     * @param string $resourceClass
+     * @return $this
+     */
+    public function setResource(string $resourceClass): self
+    {
+        $this->resource = $resourceClass;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getResource(): string
+    {
+        return $this->resource;
+    }
+
+    /**
+     * @param string|null $collectionResourceClass
+     * @return $this
+     */
+    public function setCollectionResource(?string $collectionResourceClass): self
+    {
+        $this->collectionResource = $collectionResourceClass;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getCollectionResource(): ?string
+    {
+        return $this->collectionResource;
+    }
+
+    /**
+     * @param ComponentsResolver $componentsResolver
+     * @return $this
+     */
+    public function setComponentsResolver(ComponentsResolver $componentsResolver): self
+    {
+        $this->componentsResolver = $componentsResolver;
+
+        return $this;
+    }
+
+    /**
      * @return ComponentsResolver
      */
     public function getComponentsResolver(): ComponentsResolver
     {
         return $this->componentsResolver;
+    }
+
+    /**
+     * @param ParamsValidator $paramsValidator
+     * @return $this
+     */
+    public function setParamsValidator(ParamsValidator $paramsValidator): self
+    {
+        $this->paramsValidator = $paramsValidator;
+
+        return $this;
     }
 
     /**
@@ -264,9 +364,34 @@ abstract class BaseController extends \Illuminate\Routing\Controller
         return $this->paramsValidator;
     }
 
+    /**
+     * @param RelationsResolver $relationsResolver
+     * @return $this
+     */
+    public function setRelationsResolver(RelationsResolver $relationsResolver): self
+    {
+        $this->relationsResolver = $relationsResolver;
+
+        return $this;
+    }
+
+    /**
+     * @return RelationsResolver
+     */
     public function getRelationsResolver(): RelationsResolver
     {
         return $this->relationsResolver;
+    }
+
+    /**
+     * @param Paginator $paginator
+     * @return $this
+     */
+    public function setPaginator(Paginator $paginator): self
+    {
+        $this->paginator = $paginator;
+
+        return $this;
     }
 
     /**
@@ -278,11 +403,33 @@ abstract class BaseController extends \Illuminate\Routing\Controller
     }
 
     /**
+     * @param SearchBuilder $searchBuilder
+     * @return $this
+     */
+    public function setSearchBuilder(SearchBuilder $searchBuilder): self
+    {
+        $this->searchBuilder = $searchBuilder;
+
+        return $this;
+    }
+
+    /**
      * @return SearchBuilder
      */
     public function getSearchBuilder(): SearchBuilder
     {
         return $this->searchBuilder;
+    }
+
+    /**
+     * @param QueryBuilder $queryBuilder
+     * @return $this
+     */
+    public function setQueryBuilder(QueryBuilder $queryBuilder): self
+    {
+        $this->queryBuilder = $queryBuilder;
+
+        return $this;
     }
 
     /**
@@ -300,17 +447,7 @@ abstract class BaseController extends \Illuminate\Routing\Controller
      */
     public function newModelQuery(): Builder
     {
-        return $this->resolveModelClass()::query();
-    }
-
-    /**
-     * Get controller's model class.
-     *
-     * @return string
-     */
-    public function resolveModelClass(): string
-    {
-        return static::$model;
+        return $this->getModel()::query();
     }
 
     /**
