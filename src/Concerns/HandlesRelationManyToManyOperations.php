@@ -249,7 +249,7 @@ trait HandlesRelationManyToManyOperations
             if (!is_array($pivotFields)) {
                 continue;
             }
-            $pivotFields = Arr::only($pivotFields, $this->pivotFillable);
+            $pivotFields = Arr::only($pivotFields, $this->getPivotFillable());
             $pivotFields = $this->preparePivotFields($pivotFields);
         }
 
@@ -285,7 +285,9 @@ trait HandlesRelationManyToManyOperations
             return $entity;
         }
 
-        foreach ($this->pivotJson as $pivotJsonField) {
+        $pivotJsonFields = $this->getPivotJson();
+
+        foreach ($pivotJsonFields as $pivotJsonField) {
             if (!$entity->pivot->{$pivotJsonField}) {
                 continue;
             }

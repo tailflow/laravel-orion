@@ -7,18 +7,18 @@ use Illuminate\Contracts\Validation\Rule;
 class WhitelistedField implements Rule
 {
     /**
-     * @var array $allowedConstraints
+     * @var array $constraints
      */
-    protected $allowedConstraints;
+    protected $constraints;
 
     /**
      * ValidField constructor.
      *
-     * @param $allowedConstraints
+     * @param $constraints
      */
-    public function __construct(array $allowedConstraints)
+    public function __construct(array $constraints)
     {
-        $this->allowedConstraints = $allowedConstraints;
+        $this->constraints = $constraints;
     }
 
     /**
@@ -30,10 +30,10 @@ class WhitelistedField implements Rule
      */
     public function passes($_, $field)
     {
-        if (in_array('*', $this->allowedConstraints, true)) {
+        if (in_array('*', $this->constraints, true)) {
             return true;
         }
-        if (in_array($field, $this->allowedConstraints, true)) {
+        if (in_array($field, $this->constraints, true)) {
             return true;
         }
 
@@ -41,30 +41,26 @@ class WhitelistedField implements Rule
             return false;
         }
 
-        $allowedNestedParamConstraints = array_filter($field, function ($allowedParamConstraint) {
-            return strpos($allowedParamConstraint, '.*') !== false;
+        $nestedParamConstraints = array_filter($this->constraints, function ($paramConstraint) {
+            return strpos($paramConstraint, '.*') !== false;
         });
 
-        $paramConstraintNestingLevel = substr_count($field, '.');
-
-        foreach ($allowedNestedParamConstraints as $allowedNestedParamConstraint) {
-            $allowedNestedParamConstraintNestingLevel = substr_count($allowedNestedParamConstraint, '.');
-            $allowedNestedParamConstraintReduced = explode('.*', $allowedNestedParamConstraint)[0];
-
-            for ($i = 0; $i < $allowedNestedParamConstraintNestingLevel; $i++) {
-                $allowedNestedParamConstraintReduced = implode('.', array_slice(explode('.', $allowedNestedParamConstraintReduced), -$i));
-
-                $paramConstraintReduced = $field;
-                for ($k = 1; $k < $paramConstraintNestingLevel; $k++) {
-                    $paramConstraintReduced = implode('.', array_slice(explode('.', $paramConstraintReduced), -$i));
-                    if ($paramConstraintReduced === $allowedNestedParamConstraintReduced) {
-                        return true;
-                    }
-                }
+        foreach ($nestedParamConstraints as $nestedParamConstraint) {
+            if (preg_match($this->convertConstraintToRegex($nestedParamConstraint), $field)) {
+                return true;
             }
         }
 
         return false;
+    }
+
+    /**
+     * @param string $constraint
+     * @return string
+     */
+    protected function convertConstraintToRegex(string $constraint) : string
+    {
+        return '/'.str_replace('.*', '\.(\w+)', $constraint).'/';
     }
 
     /**

@@ -41,7 +41,7 @@ trait HandlesRelationStandardOperations
             ->with($this->relationsResolver->requestedRelations($request))
             ->paginate($this->paginator->resolvePaginationLimit($request));
 
-        if (count($this->pivotJson)) {
+        if (count($this->getPivotJson())) {
             $entities->getCollection()->transform(function ($entity) {
                 return $this->castPivotJsonFields($entity);
             });
@@ -99,7 +99,7 @@ trait HandlesRelationStandardOperations
         $entity = $entity->fresh($this->relationsResolver->requestedRelations($request));
         $entity->wasRecentlyCreated = true;
 
-        if (count($this->pivotJson)) {
+        if (count($this->getPivotJson())) {
             $entity = $this->castPivotJsonFields($entity);
         }
 
@@ -148,7 +148,7 @@ trait HandlesRelationStandardOperations
             $this->authorize('view', $entity);
         }
 
-        if (count($this->pivotJson)) {
+        if (count($this->getPivotJson())) {
             $entity = $this->castPivotJsonFields($entity);
         }
 
@@ -208,7 +208,7 @@ trait HandlesRelationStandardOperations
             $entity = $entity->fresh($this->relationsResolver->requestedRelations($request));
         }
 
-        if (count($this->pivotJson)) {
+        if (count($this->getPivotJson())) {
             $entity = $this->castPivotJsonFields($entity);
         }
 
@@ -271,7 +271,7 @@ trait HandlesRelationStandardOperations
             $entity->forceDelete();
         }
 
-        if (count($this->pivotJson)) {
+        if (count($this->getPivotJson())) {
             $entity = $this->castPivotJsonFields($entity);
         }
 
