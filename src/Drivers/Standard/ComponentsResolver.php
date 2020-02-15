@@ -2,9 +2,9 @@
 
 namespace Orion\Drivers\Standard;
 
-use Illuminate\Http\Resources\Json\Resource;
 use Illuminate\Support\Facades\App;
 use Orion\Http\Requests\Request;
+use Orion\Http\Resources\Resource;
 
 class ComponentsResolver implements \Orion\Contracts\ComponentsResolver
 {
@@ -13,6 +13,15 @@ class ComponentsResolver implements \Orion\Contracts\ComponentsResolver
      */
     protected $resourceModelClass;
 
+    /**
+     * @var string $requestClassesNamespace
+     */
+    protected $requestClassesNamespace = 'App\\Http\\Requests\\';
+
+    /**
+     * @var string $resourceClassesNamespace
+     */
+    protected $resourceClassesNamespace = 'App\\Http\\Resources\\';
 
     /**
      * ComponentsResolver constructor.
@@ -29,7 +38,7 @@ class ComponentsResolver implements \Orion\Contracts\ComponentsResolver
      */
     public function resolveRequestClass(): string
     {
-        $requestClassName = 'App\\Http\\Requests\\'.class_basename($this->resourceModelClass).'Request';
+        $requestClassName = $this->getRequestClassesNamespace().class_basename($this->resourceModelClass).'Request';
 
         if (class_exists($requestClassName)) {
             return $requestClassName;
@@ -43,7 +52,7 @@ class ComponentsResolver implements \Orion\Contracts\ComponentsResolver
      */
     public function resolveResourceClass(): string
     {
-        $resourceClassName = 'App\\Http\\Resources\\'.class_basename($this->resourceModelClass).'Resource';
+        $resourceClassName = $this->getResourceClassesNamespace().class_basename($this->resourceModelClass).'Resource';
 
         if (class_exists($resourceClassName)) {
             return $resourceClassName;
@@ -57,7 +66,7 @@ class ComponentsResolver implements \Orion\Contracts\ComponentsResolver
      */
     public function resolveCollectionResourceClass(): ?string
     {
-        $collectionResourceClassName = 'App\\Http\\Resources\\'.class_basename($this->resourceModelClass).'CollectionResource';
+        $collectionResourceClassName = $this->getResourceClassesNamespace().class_basename($this->resourceModelClass).'CollectionResource';
 
         if (class_exists($collectionResourceClassName)) {
             return $collectionResourceClassName;
@@ -74,5 +83,41 @@ class ComponentsResolver implements \Orion\Contracts\ComponentsResolver
     public function bindRequestClass(string $requestClass): void
     {
         App::bind(Request::class, $requestClass);
+    }
+
+    /**
+     * @param string $requestClassesNamespace
+     * @return $this
+     */
+    public function setRequestClassesNamespace(string $requestClassesNamespace): self
+    {
+        $this->requestClassesNamespace = $requestClassesNamespace;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getRequestClassesNamespace(): string
+    {
+        return $this->requestClassesNamespace;
+    }
+
+    /**
+     * @param string $resourceClassesNamespace
+     * @return $this
+     */
+    public function setResourceClassesNamespace(string $resourceClassesNamespace): self
+    {
+        $this->resourceClassesNamespace = $resourceClassesNamespace;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getResourceClassesNamespace(): string
+    {
+        return $this->resourceClassesNamespace;
     }
 }

@@ -23,6 +23,10 @@ class Request extends FormRequest
      */
     public function rules()
     {
+        if (!$this->route()) {
+            return [];
+        }
+
         if ($this->route()->getActionMethod() === 'store') {
             return array_merge($this->commonRules(), $this->storeRules());
         }
