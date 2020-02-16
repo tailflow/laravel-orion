@@ -22,10 +22,10 @@ trait HandlesRelationOneToManyOperations
             throw new BindingException('$associatingRelation property is not set on '.static::class);
         }
 
-        $parentEntity = $this->queryBuilder->buildMethodQuery($this->newModelQuery(), $request)
+        $parentEntity = $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
             ->findOrFail($parentKey);
 
-        $entity = $this->relationQueryBuilder->buildMethodQuery($this->newRelationQuery($parentEntity), $request)
+        $entity = $this->relationQueryBuilder->buildQuery($this->newRelationQuery($parentEntity), $request)
             ->with($this->relationQueryBuilder->requestedRelations($request))
             ->findOrFail($request->get('related_key'));
 
@@ -66,10 +66,10 @@ trait HandlesRelationOneToManyOperations
             throw new BindingException('$associatingRelation property is not set on '.static::class);
         }
 
-        $parentEntity = $this->queryBuilder->buildMethodQuery($this->newModelQuery(), $request)
+        $parentEntity = $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
             ->findOrFail($parentKey);
 
-        $entity = $this->relationQueryBuilder->buildMethodQuery($this->newRelationQuery($parentEntity), $request)
+        $entity = $this->relationQueryBuilder->buildQuery($this->newRelationQuery($parentEntity), $request)
             ->with($this->relationQueryBuilder->requestedRelations($request))
             ->findOrFail($relatedKey);
 

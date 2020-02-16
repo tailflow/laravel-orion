@@ -25,7 +25,7 @@ trait HandlesRelationManyToManyOperations
             return $beforeHookResult;
         }
 
-        $parentEntity = $this->queryBuilder->buildMethodQuery($this->newModelQuery(), $request)
+        $parentEntity = $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
             ->findOrFail($parentKey);
 
         if ($this->authorizationRequired()) {
@@ -67,7 +67,7 @@ trait HandlesRelationManyToManyOperations
             return $beforeHookResult;
         }
 
-        $parentEntity = $this->queryBuilder->buildMethodQuery($this->newModelQuery(), $request)
+        $parentEntity = $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
             ->findOrFail($parentKey);
 
         if ($this->authorizationRequired()) {
@@ -102,7 +102,7 @@ trait HandlesRelationManyToManyOperations
             return $beforeHookResult;
         }
 
-        $parentEntity = $this->queryBuilder->buildMethodQuery($this->newModelQuery(), $request)
+        $parentEntity = $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
             ->findOrFail($parentKey);
 
         if ($this->authorizationRequired()) {
@@ -137,7 +137,7 @@ trait HandlesRelationManyToManyOperations
             return $beforeHookResult;
         }
 
-        $parentEntity = $this->queryBuilder->buildMethodQuery($this->newModelQuery(), $request)
+        $parentEntity = $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
             ->findOrFail($parentKey);
 
         if ($this->authorizationRequired()) {
@@ -171,7 +171,7 @@ trait HandlesRelationManyToManyOperations
             return $beforeHookResult;
         }
 
-        $parentEntity = $this->queryBuilder->buildMethodQuery($this->newModelQuery(), $request)
+        $parentEntity = $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
             ->findOrFail($parentKey);
 
         if ($this->authorizationRequired()) {

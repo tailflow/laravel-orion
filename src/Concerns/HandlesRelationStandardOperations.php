@@ -34,10 +34,10 @@ trait HandlesRelationStandardOperations
             $this->authorize('viewAny', $this->resolveResourceModelClass());
         }
 
-        $parentEntity = $this->queryBuilder->buildMethodQuery($this->newModelQuery(), $request)
+        $parentEntity = $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
             ->findOrFail($parentKey);
 
-        $entities = $this->relationQueryBuilder->buildMethodQuery($this->newRelationQuery($parentEntity), $request)
+        $entities = $this->relationQueryBuilder->buildQuery($this->newRelationQuery($parentEntity), $request)
             ->with($this->relationsResolver->requestedRelations($request))
             ->paginate($this->paginator->resolvePaginationLimit($request));
 
@@ -78,7 +78,7 @@ trait HandlesRelationStandardOperations
         /**
          * @var Model $entity
          */
-        $parentEntity = $this->queryBuilder->buildMethodQuery($this->newModelQuery(), $request)
+        $parentEntity = $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
             ->findOrFail($parentKey);
 
         $entity = new $resourceModelClass;
@@ -131,10 +131,10 @@ trait HandlesRelationStandardOperations
             return $beforeHookResult;
         }
 
-        $parentEntity = $this->queryBuilder->buildMethodQuery($this->newModelQuery(), $request)
+        $parentEntity = $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
             ->findOrFail($parentKey);
 
-        $query = $this->relationQueryBuilder->buildMethodQuery($this->newRelationQuery($parentEntity), $request)
+        $query = $this->relationQueryBuilder->buildQuery($this->newRelationQuery($parentEntity), $request)
             ->with($this->relationsResolver->requestedRelations($request));
 
         if ($this->isOneToOneRelation($parentEntity)) {
@@ -175,10 +175,10 @@ trait HandlesRelationStandardOperations
             return $beforeHookResult;
         }
 
-        $parentEntity = $this->queryBuilder->buildMethodQuery($this->newModelQuery(), $request)
+        $parentEntity = $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
             ->findOrFail($parentKey);
 
-        $query = $this->relationQueryBuilder->buildMethodQuery($this->newRelationQuery($parentEntity), $request)
+        $query = $this->relationQueryBuilder->buildQuery($this->newRelationQuery($parentEntity), $request)
             ->with($this->relationsResolver->requestedRelations($request));
 
         if ($this->isOneToOneRelation($parentEntity)) {
@@ -241,12 +241,12 @@ trait HandlesRelationStandardOperations
             return $beforeHookResult;
         }
 
-        $parentEntity = $this->queryBuilder->buildMethodQuery($this->newModelQuery(), $request)
+        $parentEntity = $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
             ->findOrFail($parentKey);
 
         $softDeletes = $this->softDeletes($this->resolveResourceModelClass());
 
-        $query = $this->relationQueryBuilder->buildMethodQuery($this->newRelationQuery($parentEntity), $request)
+        $query = $this->relationQueryBuilder->buildQuery($this->newRelationQuery($parentEntity), $request)
             ->with($this->relationsResolver->requestedRelations($request))
             ->when($softDeletes, function ($query) {
                 $query->withTrashed();
@@ -298,10 +298,10 @@ trait HandlesRelationStandardOperations
             return $beforeHookResult;
         }
 
-        $parentEntity = $this->queryBuilder->buildMethodQuery($this->newModelQuery(), $request)
+        $parentEntity = $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
             ->findOrFail($parentKey);
 
-        $relationEntityQuery = $this->relationQueryBuilder->buildMethodQuery($this->newRelationQuery($parentEntity), $request)
+        $relationEntityQuery = $this->relationQueryBuilder->buildQuery($this->newRelationQuery($parentEntity), $request)
             ->with($this->relationsResolver->requestedRelations($request))
             ->withTrashed();
 

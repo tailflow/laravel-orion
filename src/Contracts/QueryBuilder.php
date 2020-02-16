@@ -19,8 +19,6 @@ interface QueryBuilder
 
     public function buildQuery(Builder $query, Request $request): Builder;
 
-    public function buildMethodQuery(Builder $query, Request $request): Builder;
-
     public function applyScopesToQuery(Builder $query, Request $request): void;
 
     public function applyFiltersToQuery(Builder $query, Request $request): void;

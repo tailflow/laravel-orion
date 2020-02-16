@@ -28,7 +28,7 @@ trait HandlesStandardOperations
             $this->authorize('viewAny', $this->resolveResourceModelClass());
         }
 
-        $entities = $this->queryBuilder->buildMethodQuery($this->newModelQuery(), $request)
+        $entities = $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
             ->with($this->relationsResolver->requestedRelations($request))
             ->paginate($this->paginator->resolvePaginationLimit($request));
 
@@ -104,7 +104,7 @@ trait HandlesStandardOperations
         /**
          * @var Model $entity
          */
-        $entity = $this->queryBuilder->buildMethodQuery($this->newModelQuery(), $request)
+        $entity = $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
             ->with($this->relationsResolver->requestedRelations($request))
             ->findOrFail($key);
 
@@ -137,7 +137,7 @@ trait HandlesStandardOperations
         /**
          * @var Model $entity
          */
-        $entity = $this->queryBuilder->buildMethodQuery($this->newModelQuery(), $request)
+        $entity = $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
             ->with($this->relationsResolver->requestedRelations($request))
             ->findOrFail($key);
 
@@ -184,7 +184,7 @@ trait HandlesStandardOperations
 
         $softDeletes = $this->softDeletes($this->resolveResourceModelClass());
 
-        $entity = $this->queryBuilder->buildMethodQuery($this->newModelQuery(), $request)
+        $entity = $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
             ->with($this->relationsResolver->requestedRelations($request))
             ->when($softDeletes, function ($query) {
                 $query->withTrashed();
@@ -230,7 +230,7 @@ trait HandlesStandardOperations
             return $beforeHookResult;
         }
 
-        $entity = $this->queryBuilder->buildMethodQuery($this->newModelQuery(), $request)
+        $entity = $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
             ->with($this->relationsResolver->requestedRelations($request))
             ->withTrashed()
             ->findOrFail($key);

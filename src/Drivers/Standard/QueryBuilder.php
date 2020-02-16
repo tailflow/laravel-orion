@@ -71,24 +71,6 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
     }
 
     /**
-     * Get custom query builder, if any, otherwise use default; apply filters, searching and sorting.
-     *
-     * @param Builder $query
-     * @param Request $request
-     * @return Builder
-     */
-    public function buildMethodQuery(Builder $query, Request $request): Builder
-    {
-        $method = debug_backtrace()[1]['function'];
-        $customQueryMethod = 'build'.ucfirst($method).'Query';
-
-        if (method_exists($this, $customQueryMethod)) {
-            return $this->{$customQueryMethod}($request);
-        }
-        return $this->buildQuery($query, $request);
-    }
-
-    /**
      * Apply scopes to the given query builder based on the query parameters.
      *
      * @param Builder $query
@@ -96,13 +78,10 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
      */
     public function applyScopesToQuery(Builder $query, Request $request): void
     {
-        if (!$requestedScopeDescriptors = $request->get('scopes')) {
-            return;
-        }
-
         $this->paramsValidator->validateScopes($request);
+        $scopeDescriptors = $request->get('scopes', []);
 
-        foreach ($requestedScopeDescriptors as $scopeDescriptor) {
+        foreach ($scopeDescriptors as $scopeDescriptor) {
             $query->{$scopeDescriptor['name']}(...Arr::get($scopeDescriptor, 'parameters', []));
         }
     }
@@ -115,27 +94,24 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
      */
     public function applyFiltersToQuery(Builder $query, Request $request): void
     {
-        if (!$filterableDescriptors = $request->get('filters')) {
-            return;
-        }
-
         $this->paramsValidator->validateFilters($request);
+        $filterDescriptors = $request->get('filters', []);
 
-        foreach ($filterableDescriptors as $filterable) {
-            $or = Arr::get($filterable, 'type', 'and') === 'or';
+        foreach ($filterDescriptors as $filterDescriptor) {
+            $or = Arr::get($filterDescriptor, 'type', 'and') === 'or';
 
-            if (strpos($filterable['field'], '.') !== false) {
-                $relation = $this->relationsResolver->relationFromParamConstraint($filterable['field']);
-                $relationField = $this->relationsResolver->relationFieldFromParamConstraint($filterable['field']);
+            if (strpos($filterDescriptor['field'], '.') !== false) {
+                $relation = $this->relationsResolver->relationFromParamConstraint($filterDescriptor['field']);
+                $relationField = $this->relationsResolver->relationFieldFromParamConstraint($filterDescriptor['field']);
 
-                $query->{$or ? 'orWhereHas' : 'whereHas'}($relation, function ($relationQuery) use ($relationField, $filterable) {
+                $query->{$or ? 'orWhereHas' : 'whereHas'}($relation, function ($relationQuery) use ($relationField, $filterDescriptor) {
                     /**
                      * @var \Illuminate\Database\Query\Builder $relationQuery
                      */
-                    $this->buildFilterQueryWhereClause($relationField, $filterable, $relationQuery);
+                    $this->buildFilterQueryWhereClause($relationField, $filterDescriptor, $relationQuery);
                 });
             } else {
-                $this->buildFilterQueryWhereClause($filterable['field'], $filterable, $query, $or);
+                $this->buildFilterQueryWhereClause($filterDescriptor['field'], $filterDescriptor, $query, $or);
             }
         }
     }
@@ -144,17 +120,17 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
      * Builds filter's query where clause based on the given filterable.
      *
      * @param string $field
-     * @param array $filterable
+     * @param array $filterDescriptor
      * @param Builder|\Illuminate\Database\Query\Builder $query
      * @param bool $or
      * @return Builder
      */
-    protected function buildFilterQueryWhereClause(string $field, array $filterable, $query, bool $or = false) : Builder
+    protected function buildFilterQueryWhereClause(string $field, array $filterDescriptor, $query, bool $or = false): Builder
     {
-        if (!is_array($filterable['value'])) {
-            $query->{$or ? 'orWhere' : 'where'}($field, $filterable['operator'], $filterable['value']);
+        if (!is_array($filterDescriptor['value'])) {
+            $query->{$or ? 'orWhere' : 'where'}($field, $filterDescriptor['operator'], $filterDescriptor['value']);
         } else {
-            $query->{$or ? 'orWhereIn' : 'whereIn'}($field, $filterable['value'], 'and', $filterable['operator'] === 'not in');
+            $query->{$or ? 'orWhereIn' : 'whereIn'}($field, $filterDescriptor['value'], 'and', $filterDescriptor['operator'] === 'not in');
         }
 
         return $query;
