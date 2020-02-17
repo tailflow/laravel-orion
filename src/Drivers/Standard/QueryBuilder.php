@@ -151,9 +151,6 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
         $this->paramsValidator->validateSearch($request);
 
         $searchables = $this->searchBuilder->searchableBy();
-        if (!count($searchables)) {
-            return;
-        }
 
         $query->where(function ($whereQuery) use ($searchables, $requestedSearchDescriptor) {
             $requestedSearchString = $requestedSearchDescriptor['value'];
@@ -186,11 +183,8 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
      */
     public function applySortingToQuery(Builder $query, Request $request): void
     {
-        if (!$sortableDescriptors = $request->get('sort')) {
-            return;
-        }
-
         $this->paramsValidator->validateSort($request);
+        $sortableDescriptors = $request->get('sort', []);
 
         foreach ($sortableDescriptors as $sortable) {
             $sortableField = $sortable['field'];

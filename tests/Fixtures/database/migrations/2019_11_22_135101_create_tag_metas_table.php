@@ -16,6 +16,7 @@ class CreateTagMetasTable extends Migration
         Schema::create('tag_metas', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('key');
+            $table->string('value')->nullable();
             $table->bigInteger('tag_id');
             $table->foreign('tag_id')->references('id')->on('tags')->onDelete('cascade');
             $table->timestamps();

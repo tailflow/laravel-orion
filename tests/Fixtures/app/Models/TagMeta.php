@@ -14,7 +14,7 @@ class TagMeta extends Model
      *
      * @var array
      */
-    protected $fillable = ['key', 'tag_id'];
+    protected $fillable = ['key', 'value', 'tag_id'];
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
