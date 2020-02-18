@@ -9,6 +9,8 @@ use Orion\Drivers\Standard\QueryBuilder;
 use Orion\Drivers\Standard\RelationsResolver;
 use Orion\Drivers\Standard\SearchBuilder;
 use Orion\Http\Requests\Request;
+use Orion\Tests\Fixtures\App\Models\History;
+use Orion\Tests\Fixtures\App\Models\Supplier;
 use Orion\Tests\Fixtures\App\Models\Tag;
 use Orion\Tests\Fixtures\App\Models\TagMeta;
 use Orion\Tests\Unit\Drivers\Standard\Stubs\ControllerStub;
@@ -244,7 +246,7 @@ class QueryBuilderTest extends TestCase
     }
 
     /** @test */
-    public function applying_search_query_on_model_fields()
+    public function searching_on_model_fields()
     {
         $request = $this->makeRequestWithSearch([
             'value' => 'example'
@@ -277,7 +279,7 @@ class QueryBuilderTest extends TestCase
     }
 
     /** @test */
-    public function applying_search_query_on_relation_fields()
+    public function searching_on_relation_fields()
     {
         $request = $this->makeRequestWithSearch([
             'value' => 'example'
@@ -315,7 +317,7 @@ class QueryBuilderTest extends TestCase
     }
 
     /** @test */
-    public function search_query_is_not_applied_if_descriptor_is_missing_in_request()
+    public function search_query_constraints_are_not_applied_if_descriptor_is_missing_in_request()
     {
         $request = new Request();
         $request->setRouteResolver(function () {
@@ -339,6 +341,208 @@ class QueryBuilderTest extends TestCase
         $this->assertCount(3, $tags);
     }
 
+    /** @test */
+    public function default_sorting_based_on_model_fields()
+    {
+        $request = $this->makeRequestWithSort([
+            ['field' => 'name']
+        ]);
+
+        $tagA = factory(Tag::class)->create(['name' => 'tagA']);
+        $tagB = factory(Tag::class)->create(['name' => 'tagB']);
+        $tagC = factory(Tag::class)->create(['name' => 'tagC']);
+
+        $query = Tag::query();
+
+        $queryBuilder = new QueryBuilder(
+            Tag::class,
+            new ParamsValidator([], [], ['name']),
+            new RelationsResolver([], []),
+            new SearchBuilder([])
+        );
+        $queryBuilder->applySortingToQuery($query, $request);
+
+        $tags = $query->get();
+
+        $this->assertEquals($tagA->id, $tags[0]->id);
+        $this->assertEquals($tagB->id, $tags[1]->id);
+        $this->assertEquals($tagC->id, $tags[2]->id);
+    }
+
+    /** @test */
+    public function desc_sorting_based_on_model_fields()
+    {
+        $request = $this->makeRequestWithSort([
+            ['field' => 'name', 'direction' => 'desc']
+        ]);
+
+        $tagA = factory(Tag::class)->create(['name' => 'tagA']);
+        $tagB = factory(Tag::class)->create(['name' => 'tagB']);
+        $tagC = factory(Tag::class)->create(['name' => 'tagC']);
+
+        $query = Tag::query();
+
+        $queryBuilder = new QueryBuilder(
+            Tag::class,
+            new ParamsValidator([], [], ['name']),
+            new RelationsResolver([], []),
+            new SearchBuilder([])
+        );
+        $queryBuilder->applySortingToQuery($query, $request);
+
+        $tags = $query->get();
+
+        $this->assertEquals($tagC->id, $tags[0]->id);
+        $this->assertEquals($tagB->id, $tags[1]->id);
+        $this->assertEquals($tagA->id, $tags[2]->id);
+    }
+
+    //TODO: test sorting on different relation types
+
+    /** @test */
+    public function default_sorting_based_on_relation_fields()
+    {
+        $request = $this->makeRequestWithSort([
+            ['field' => 'meta.key']
+        ]);
+
+        $tagA = factory(Tag::class)->create();
+        factory(TagMeta::class)->create(['tag_id' => $tagA->id, 'key' => 'metaA']);
+        $tagB = factory(Tag::class)->create();
+        factory(TagMeta::class)->create(['tag_id' => $tagB->id, 'key' => 'metaB']);
+        $tagC = factory(Tag::class)->create();
+        factory(TagMeta::class)->create(['tag_id' => $tagC->id, 'key' => 'metaC']);
+
+        $query = Tag::query();
+
+        $queryBuilder = new QueryBuilder(
+            Tag::class,
+            new ParamsValidator([], [], ['meta.key']),
+            new RelationsResolver([], []),
+            new SearchBuilder([])
+        );
+        $queryBuilder->applySortingToQuery($query, $request);
+
+        $tags = $query->get();
+
+        $this->assertEquals($tagA->id, $tags[0]->id);
+        $this->assertEquals($tagB->id, $tags[1]->id);
+        $this->assertEquals($tagC->id, $tags[2]->id);
+    }
+
+    /** @test */
+    public function desc_sorting_based_on_relation_fields()
+    {
+        $request = $this->makeRequestWithSort([
+            ['field' => 'meta.key', 'direction' => 'desc']
+        ]);
+
+        $tagA = factory(Tag::class)->create();
+        factory(TagMeta::class)->create(['tag_id' => $tagA->id, 'key' => 'metaA']);
+        $tagB = factory(Tag::class)->create();
+        factory(TagMeta::class)->create(['tag_id' => $tagB->id, 'key' => 'metaB']);
+        $tagC = factory(Tag::class)->create();
+        factory(TagMeta::class)->create(['tag_id' => $tagC->id, 'key' => 'metaC']);
+
+        $query = Tag::query();
+
+        $queryBuilder = new QueryBuilder(
+            Tag::class,
+            new ParamsValidator([], [], ['meta.key']),
+            new RelationsResolver([], []),
+            new SearchBuilder([])
+        );
+        $queryBuilder->applySortingToQuery($query, $request);
+
+        $tags = $query->get();
+
+        $this->assertEquals($tagC->id, $tags[0]->id);
+        $this->assertEquals($tagB->id, $tags[1]->id);
+        $this->assertEquals($tagA->id, $tags[2]->id);
+    }
+
+    /** @test */
+    public function soft_deletes_query_constraints_are_not_applied_if_model_is_not_soft_deletable()
+    {
+        $request = new Request();
+        $request->setRouteResolver(function () {
+            return new Route('GET', '/api/tags', [ControllerStub::class, 'index']);
+        });
+
+        $queryMock = Mockery::mock(Tag::query())->makePartial();
+        $queryMock->shouldNotReceive('withTrashed');
+        $queryMock->shouldNotReceive('onlyTrashed');
+
+        $queryBuilder = new QueryBuilder(
+            Tag::class,
+            new ParamsValidator([], []),
+            new RelationsResolver([], []),
+            new SearchBuilder([])
+        );
+
+        $this->assertFalse($queryBuilder->applySoftDeletesToQuery($queryMock, $request));
+    }
+
+    /** @test */
+    public function trashed_models_are_returned_when_requested()
+    {
+        $request = new Request();
+        $request->setRouteResolver(function () {
+            return new Route('GET', '/api/history', [ControllerStub::class, 'index']);
+        });
+        $request->query->set('with_trashed', true);
+
+        $supplier = factory(Supplier::class)->create();
+        $history = factory(History::class)->create(['supplier_id' => $supplier->id]);
+        $softDeletedHistory = factory(History::class)->state('trashed')->create(['supplier_id' => $supplier->id]);
+
+        $query = History::query();
+
+        $queryBuilder = new QueryBuilder(
+            History::class,
+            new ParamsValidator([], []),
+            new RelationsResolver([], []),
+            new SearchBuilder([])
+        );
+        $this->assertTrue($queryBuilder->applySoftDeletesToQuery($query, $request));
+
+        $historyEntities = $query->get();
+
+        $this->assertCount(2, $historyEntities);
+        $this->assertTrue($historyEntities->contains('id', $history->id));
+        $this->assertTrue($historyEntities->contains('id', $softDeletedHistory->id));
+    }
+
+    /** @test */
+    public function only_trashed_models_are_returned_when_requested()
+    {
+        $request = new Request();
+        $request->setRouteResolver(function () {
+            return new Route('GET', '/api/history', [ControllerStub::class, 'index']);
+        });
+        $request->query->set('only_trashed', true);
+
+        $supplier = factory(Supplier::class)->create();
+        $history = factory(History::class)->create(['supplier_id' => $supplier->id]);
+        $softDeletedHistory = factory(History::class)->state('trashed')->create(['supplier_id' => $supplier->id]);
+
+        $query = History::query();
+
+        $queryBuilder = new QueryBuilder(
+            History::class,
+            new ParamsValidator([], []),
+            new RelationsResolver([], []),
+            new SearchBuilder([])
+        );
+        $this->assertTrue($queryBuilder->applySoftDeletesToQuery($query, $request));
+
+        $historyEntities = $query->get();
+
+        $this->assertCount(1, $historyEntities);
+        $this->assertFalse($historyEntities->contains('id', $history->id));
+        $this->assertTrue($historyEntities->contains('id', $softDeletedHistory->id));
+    }
+
     protected function makeRequestWithFilters(array $filters)
     {
         $request = new Request();
@@ -357,6 +561,17 @@ class QueryBuilderTest extends TestCase
             return new Route('GET', '/api/tags', [ControllerStub::class, 'index']);
         });
         $request->query->set('search', $search);
+
+        return $request;
+    }
+
+    protected function makeRequestWithSort(array $sort)
+    {
+        $request = new Request();
+        $request->setRouteResolver(function () {
+            return new Route('GET', '/api/tags', [ControllerStub::class, 'index']);
+        });
+        $request->query->set('sort', $sort);
 
         return $request;
     }

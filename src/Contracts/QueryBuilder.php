@@ -27,5 +27,5 @@ interface QueryBuilder
 
     public function applySortingToQuery(Builder $query, Request $request): void;
 
-    public function applySoftDeletesToQuery(Builder $query, Request $request): void;
+    public function applySoftDeletesToQuery(Builder $query, Request $request): bool;
 }

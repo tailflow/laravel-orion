@@ -217,11 +217,12 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
      *
      * @param Builder $query
      * @param Request $request
+     * @return bool
      */
-    public function applySoftDeletesToQuery(Builder $query, Request $request): void
+    public function applySoftDeletesToQuery(Builder $query, Request $request): bool
     {
         if (!$query->getMacro('withTrashed')) {
-            return;
+            return false;
         }
 
         if ($request->has('with_trashed')) {
@@ -229,5 +230,7 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
         } elseif ($request->has('only_trashed')) {
             $query->onlyTrashed();
         }
+
+        return true;
     }
 }
