@@ -72,7 +72,8 @@ class BaseControllerTest extends TestCase
             'resourceModelClass' => Tag::class,
             'paramsValidator' => $fakeParamsValidator,
             'relationsResolver' => $fakeRelationsResolver,
-            'searchBuilder' => $fakeSearchBuilder
+            'searchBuilder' => $fakeSearchBuilder,
+            'intermediateMode' => false
         ])->once()->andReturn($fakeQueryBuilder);
 
         $stub = new BaseControllerStubWithWhitelistedFieldsAndRelations();

@@ -114,7 +114,8 @@ abstract class BaseController extends \Illuminate\Routing\Controller
             'resourceModelClass' => $this->getModel(),
             'paramsValidator' => $this->paramsValidator,
             'relationsResolver' => $this->relationsResolver,
-            'searchBuilder' => $this->searchBuilder
+            'searchBuilder' => $this->searchBuilder,
+            'intermediateMode' => $this instanceof RelationController
         ]);
 
         $this->resolveComponents();

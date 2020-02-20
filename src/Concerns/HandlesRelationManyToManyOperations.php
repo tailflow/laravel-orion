@@ -33,11 +33,11 @@ trait HandlesRelationManyToManyOperations
         }
 
         if ($request->get('duplicates')) {
-            $attachResult = $parentEntity->{static::$relation}()->attach(
+            $attachResult = $parentEntity->{$this->getRelation()}()->attach(
                 $this->prepareResourcePivotFields($this->preparePivotResources($request->get('resources')))
             );
         } else {
-            $attachResult = $parentEntity->{static::$relation}()->sync(
+            $attachResult = $parentEntity->{$this->getRelation()}()->sync(
                 $this->prepareResourcePivotFields($this->preparePivotResources($request->get('resources'))),
                 false
             );
@@ -74,8 +74,8 @@ trait HandlesRelationManyToManyOperations
             $this->authorize('update', $parentEntity);
         }
 
-        $detachResult = $parentEntity->{static::$relation}()->detach(
-            $this->prepareResourcePivotFields($this->preparePivotResources($request->get('resources')))
+        $detachResult = $parentEntity->{$this->getRelation()}()->detach(
+            array_keys($this->prepareResourcePivotFields($this->preparePivotResources($request->get('resources'))))
         );
 
         $afterHookResult = $this->afterDetach($request, $detachResult);
@@ -109,7 +109,7 @@ trait HandlesRelationManyToManyOperations
             $this->authorize('update', $parentEntity);
         }
 
-        $syncResult = $parentEntity->{static::$relation}()->sync(
+        $syncResult = $parentEntity->{$this->getRelation()}()->sync(
             $this->prepareResourcePivotFields($this->preparePivotResources($request->get('resources'))), $request->get('detaching', true)
         );
 
@@ -144,7 +144,7 @@ trait HandlesRelationManyToManyOperations
             $this->authorize('update', $parentEntity);
         }
 
-        $toggleResult = $parentEntity->{static::$relation}()->toggle(
+        $toggleResult = $parentEntity->{$this->getRelation()}()->toggle(
             $this->prepareResourcePivotFields($this->preparePivotResources($request->get('resources')))
         );
 
@@ -178,7 +178,7 @@ trait HandlesRelationManyToManyOperations
             $this->authorize('update', $parentEntity);
         }
 
-        $updateResult = $parentEntity->{static::$relation}()->updateExistingPivot($relatedKey, $this->preparePivotFields($request->get('pivot', [])));
+        $updateResult = $parentEntity->{$this->getRelation()}()->updateExistingPivot($relatedKey, $this->preparePivotFields($request->get('pivot', [])));
 
         $afterHookResult = $this->afterUpdatePivot($request, $updateResult);
         if ($this->hookResponds($afterHookResult)) {
@@ -198,8 +198,9 @@ trait HandlesRelationManyToManyOperations
      */
     protected function preparePivotResources($resources)
     {
+        $model = $this->getModel();
         $resources = $this->standardizePivotResourcesArray($resources);
-        $resourceModel = (new static::$model)->{static::$relation}()->getModel();
+        $resourceModel = (new $model)->{$this->getRelation()}()->getModel();
         $resourceKeyName = $resourceModel->getKeyName();
         $resourceModels = $resourceModel->whereIn($resourceKeyName, array_keys($resources))->get();
 

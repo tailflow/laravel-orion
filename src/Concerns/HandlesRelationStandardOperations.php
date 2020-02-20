@@ -89,11 +89,11 @@ trait HandlesRelationStandardOperations
             return $beforeSaveHookResult;
         }
 
-        if (!$parentEntity->{static::$relation}() instanceof BelongsTo) {
-            $parentEntity->{static::$relation}()->save($entity, $this->preparePivotFields($request->get('pivot', [])));
+        if (!$parentEntity->{$this->getRelation()}() instanceof BelongsTo) {
+            $parentEntity->{$this->getRelation()}()->save($entity, $this->preparePivotFields($request->get('pivot', [])));
         } else {
             $entity->save();
-            $parentEntity->{static::$relation}()->associate($entity);
+            $parentEntity->{$this->getRelation()}()->associate($entity);
         }
 
         $entity = $entity->fresh($this->relationsResolver->requestedRelations($request));
@@ -201,7 +201,7 @@ trait HandlesRelationStandardOperations
 
         $entity->save();
 
-        $relation = $parentEntity->{static::$relation}();
+        $relation = $parentEntity->{$this->getRelation()}();
         if ($relation instanceof BelongsToMany || $relation instanceof MorphToMany) {
             $relation->updateExistingPivot($relatedKey, $this->preparePivotFields($request->get('pivot', [])));
 
@@ -334,7 +334,7 @@ trait HandlesRelationStandardOperations
      */
     protected function isOneToOneRelation($resourceEntity)
     {
-        $relation = $resourceEntity->{static::$relation}();
+        $relation = $resourceEntity->{$this->getRelation()}();
         return $relation instanceof HasOne || $relation instanceof MorphOne || $relation instanceof BelongsTo;
     }
 

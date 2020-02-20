@@ -14,6 +14,8 @@ interface RelationsResolver
 
     public function relationFieldFromParamConstraint(string $paramConstraint): string;
 
+    public function relationTableFromRelationInstance($relationInstance) : string;
+
     public function relationForeignKeyFromRelationInstance($relationInstance): string;
 
     public function relationLocalKeyFromRelationInstance($relationInstance): string;

@@ -18,7 +18,7 @@ trait HandlesRelationOneToManyOperations
      */
     public function associate(Request $request, $parentKey)
     {
-        if (!static::$associatingRelation) {
+        if (!$this->getAssociatingRelation()) {
             throw new BindingException('$associatingRelation property is not set on '.static::class);
         }
 
@@ -26,7 +26,7 @@ trait HandlesRelationOneToManyOperations
             ->findOrFail($parentKey);
 
         $entity = $this->relationQueryBuilder->buildQuery($this->newRelationQuery($parentEntity), $request)
-            ->with($this->relationQueryBuilder->requestedRelations($request))
+            ->with($this->relationsResolver->requestedRelations($request))
             ->findOrFail($request->get('related_key'));
 
         $beforeHookResult = $this->beforeAssociate($request, $parentEntity, $entity);
@@ -34,7 +34,7 @@ trait HandlesRelationOneToManyOperations
             return $beforeHookResult;
         }
 
-        $entity->{static::$associatingRelation}()->associate($parentEntity);
+        $entity->{$this->getAssociatingRelation()}()->associate($parentEntity);
 
         if ($this->authorizationRequired()) {
             $this->authorize('view', $parentEntity);
@@ -62,7 +62,7 @@ trait HandlesRelationOneToManyOperations
      */
     public function dissociate(Request $request, $parentKey, $relatedKey)
     {
-        if (!static::$associatingRelation) {
+        if (!$this->getAssociatingRelation()) {
             throw new BindingException('$associatingRelation property is not set on '.static::class);
         }
 
@@ -70,7 +70,7 @@ trait HandlesRelationOneToManyOperations
             ->findOrFail($parentKey);
 
         $entity = $this->relationQueryBuilder->buildQuery($this->newRelationQuery($parentEntity), $request)
-            ->with($this->relationQueryBuilder->requestedRelations($request))
+            ->with($this->relationsResolver->requestedRelations($request))
             ->findOrFail($relatedKey);
 
         $beforeHookResult = $this->beforeDissociate($request, $parentEntity, $entity);
@@ -82,7 +82,7 @@ trait HandlesRelationOneToManyOperations
             $this->authorize('update', $entity);
         }
 
-        $entity->{static::$associatingRelation}()->dissociate();
+        $entity->{$this->getAssociatingRelation()}()->dissociate();
         $entity->save();
 
         $afterHookResult = $this->afterDissociate($request, $entity);

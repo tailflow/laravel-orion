@@ -3,9 +3,9 @@
 namespace Orion\Drivers\Standard;
 
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasOne;
-use Illuminate\Database\Eloquent\Relations\HasOneThrough;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Arr;
 use Orion\Http\Requests\Request;
 
@@ -32,32 +32,39 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
     private $searchBuilder;
 
     /**
+     * @var bool $intermediateMode
+     */
+    private $intermediateMode;
+
+    /**
      * @inheritDoc
      */
     public function __construct(
         string $resourceModelClass,
         \Orion\Contracts\ParamsValidator $paramsValidator,
         \Orion\Contracts\RelationsResolver $relationsResolver,
-        \Orion\Contracts\SearchBuilder $searchBuilder
+        \Orion\Contracts\SearchBuilder $searchBuilder,
+        bool $intermediateMode = false
     ) {
         $this->resourceModelClass = $resourceModelClass;
         $this->paramsValidator = $paramsValidator;
         $this->relationsResolver = $relationsResolver;
         $this->searchBuilder = $searchBuilder;
+        $this->intermediateMode = $intermediateMode;
     }
 
     /**
      * Get Eloquent query builder for the model and apply filters, searching and sorting.
      *
-     * @param Builder $query
+     * @param Builder|Relation $query
      * @param Request $request
-     * @return Builder
+     * @return Builder|Relation
      */
-    public function buildQuery(Builder $query, Request $request): Builder
+    public function buildQuery($query, Request $request)
     {
         $actionMethod = $request->route()->getActionMethod();
 
-        if (in_array($actionMethod, ['index', 'show'])) {
+        if (!$this->intermediateMode && in_array($actionMethod, ['index', 'show'])) {
             if ($actionMethod === 'index') {
                 $this->applyScopesToQuery($query, $request);
                 $this->applyFiltersToQuery($query, $request);
@@ -73,10 +80,10 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
     /**
      * Apply scopes to the given query builder based on the query parameters.
      *
-     * @param Builder $query
+     * @param Builder|Relation $query
      * @param Request $request
      */
-    public function applyScopesToQuery(Builder $query, Request $request): void
+    public function applyScopesToQuery($query, Request $request): void
     {
         $this->paramsValidator->validateScopes($request);
         $scopeDescriptors = $request->get('scopes', []);
@@ -89,10 +96,10 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
     /**
      * Apply filters to the given query builder based on the query parameters.
      *
-     * @param Builder $query
+     * @param Builder|Relation $query
      * @param Request $request
      */
-    public function applyFiltersToQuery(Builder $query, Request $request): void
+    public function applyFiltersToQuery($query, Request $request): void
     {
         $this->paramsValidator->validateFilters($request);
         $filterDescriptors = $request->get('filters', []);
@@ -121,11 +128,11 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
      *
      * @param string $field
      * @param array $filterDescriptor
-     * @param Builder|\Illuminate\Database\Query\Builder $query
+     * @param Builder|Relation $query
      * @param bool $or
-     * @return Builder
+     * @return Builder|Relation
      */
-    protected function buildFilterQueryWhereClause(string $field, array $filterDescriptor, $query, bool $or = false): Builder
+    protected function buildFilterQueryWhereClause(string $field, array $filterDescriptor, $query, bool $or = false)
     {
         if (!is_array($filterDescriptor['value'])) {
             $query->{$or ? 'orWhere' : 'where'}($field, $filterDescriptor['operator'], $filterDescriptor['value']);
@@ -139,10 +146,10 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
     /**
      * Apply search query to the given query builder based on the "q" query parameter.
      *
-     * @param Builder $query
+     * @param Builder|Relation $query
      * @param Request $request
      */
-    public function applySearchingToQuery(Builder $query, Request $request): void
+    public function applySearchingToQuery($query, Request $request): void
     {
         if (!$requestedSearchDescriptor = $request->get('search')) {
             return;
@@ -178,10 +185,10 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
     /**
      * Apply sorting to the given query builder based on the "sort" query parameter.
      *
-     * @param Builder $query
+     * @param Builder|Relation $query
      * @param Request $request
      */
-    public function applySortingToQuery(Builder $query, Request $request): void
+    public function applySortingToQuery($query, Request $request): void
     {
         $this->paramsValidator->validateSort($request);
         $sortableDescriptors = $request->get('sort', []);
@@ -195,11 +202,15 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
                 $relationField = $this->relationsResolver->relationFieldFromParamConstraint($sortableField);
 
                 /**
-                 * @var BelongsTo|HasOne|HasOneThrough $relationInstance
+                 * @var Relation $relationInstance
                  */
                 $relationInstance = (new $this->resourceModelClass)->{$relation}();
-                $relationTable = $relationInstance->getModel()->getTable();
 
+                if ($relationInstance instanceof MorphTo) {
+                    continue;
+                }
+
+                $relationTable = $this->relationsResolver->relationTableFromRelationInstance($relationInstance);
                 $relationForeignKey = $this->relationsResolver->relationForeignKeyFromRelationInstance($relationInstance);
                 $relationLocalKey = $this->relationsResolver->relationLocalKeyFromRelationInstance($relationInstance);
 
@@ -215,11 +226,11 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
     /**
      * Apply "soft deletes" query to the given query builder based on either "with_trashed" or "only_trashed" query parameters.
      *
-     * @param Builder $query
+     * @param Builder|Relation|SoftDeletes $query
      * @param Request $request
      * @return bool
      */
-    public function applySoftDeletesToQuery(Builder $query, Request $request): bool
+    public function applySoftDeletesToQuery($query, Request $request): bool
     {
         if (!$query->getMacro('withTrashed')) {
             return false;

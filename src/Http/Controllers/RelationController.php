@@ -4,7 +4,11 @@ namespace Orion\Http\Controllers;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\DB;
 use Orion\Concerns\HandlesRelationManyToManyOperations;
 use Orion\Concerns\HandlesRelationOneToManyOperations;
 use Orion\Concerns\HandlesRelationStandardOperations;
@@ -81,11 +85,11 @@ abstract class RelationController extends BaseController
      * Creates new Eloquent query builder of the relation on the given parent model.
      *
      * @param Model $parentEntity
-     * @return Builder
+     * @return Builder|Relation
      */
-    public function newRelationQuery(Model $parentEntity): Builder
+    public function newRelationQuery(Model $parentEntity)
     {
-        return $parentEntity->{$this->getRelation()}()->getQuery();
+        return $parentEntity->{$this->getRelation()}();
     }
 
     /**

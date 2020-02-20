@@ -2,7 +2,7 @@
 
 namespace Orion\Tests\Unit\Http\Controllers;
 
-use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\App;
 use Orion\Drivers\Standard\ComponentsResolver;
 use Orion\Drivers\Standard\Paginator;
@@ -66,7 +66,8 @@ class RelationControllerTest extends TestCase
             'resourceModelClass' => Tag::class,
             'paramsValidator' => $fakeParamsValidator,
             'relationsResolver' => $fakeRelationsResolver,
-            'searchBuilder' => $fakeSearchBuilder
+            'searchBuilder' => $fakeSearchBuilder,
+            'intermediateMode' => true
         ])->once()->andReturn($fakeQueryBuilder);
 
         App::shouldReceive('makeWith')->with(\Orion\Contracts\QueryBuilder::class, [
@@ -94,7 +95,7 @@ class RelationControllerTest extends TestCase
 
         $newRelationQuery = $stub->newRelationQuery($parentEntity);
 
-        $this->assertInstanceOf(Builder::class, $newRelationQuery);
+        $this->assertInstanceOf(Relation::class, $newRelationQuery);
         $this->assertInstanceOf(TagMeta::class, $newRelationQuery->getModel());
     }
 }

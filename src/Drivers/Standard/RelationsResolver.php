@@ -5,6 +5,9 @@ namespace Orion\Drivers\Standard;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasOneThrough;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Arr;
 use Orion\Http\Requests\Request;
 
@@ -77,9 +80,20 @@ class RelationsResolver implements \Orion\Contracts\RelationsResolver
     }
 
     /**
+     * Resolved relation table name from the given relation instance.
+     *
+     * @param Relation $relationInstance
+     * @return string
+     */
+    public function relationTableFromRelationInstance($relationInstance): string
+    {
+        return $relationInstance->getModel()->getTable();
+    }
+
+    /**
      * Resolves relation foreign key from the given relation instance.
      *
-     * @param BelongsTo|HasOne|HasOneThrough $relationInstance
+     * @param Relation $relationInstance
      * @return string
      */
     public function relationForeignKeyFromRelationInstance($relationInstance): string
@@ -92,16 +106,18 @@ class RelationsResolver implements \Orion\Contracts\RelationsResolver
     /**
      * Resolves relation local key from the given relation instance.
      *
-     * @param BelongsTo|HasOne|HasOneThrough $relationInstance
+     * @param Relation $relationInstance
      * @return string
      */
     public function relationLocalKeyFromRelationInstance($relationInstance): string
     {
         switch (get_class($relationInstance)) {
             case HasOne::class:
+            case MorphOne::class:
                 return $relationInstance->getParent()->getTable().'.'.$relationInstance->getLocalKeyName();
                 break;
             case BelongsTo::class:
+            case MorphTo::class:
                 return $relationInstance->getQualifiedOwnerKeyName();
                 break;
             default:
