@@ -1,6 +1,6 @@
 {
     "name": "laravel-orion/laravel-orion",
-    "description": "Laravel Orion allows you to build a fully featured REST API based on your Eloquent models and relationships with simplicity of Laravel as you love it.",
+    "description": "Laravel Orion allows you to build a fully featured REST API based on your Eloquent models and relationships with the simplicity of Laravel as you love it.",
     "keywords": [
         "laravel",
         "api"
