@@ -3,7 +3,6 @@
 namespace Orion\Concerns;
 
 use Illuminate\Database\Eloquent\Model;
-use Orion\Exceptions\BindingException;
 use Orion\Http\Requests\Request;
 
 trait HandlesRelationOneToManyOperations
@@ -14,18 +13,16 @@ trait HandlesRelationOneToManyOperations
      * @param Request $request
      * @param int|string $parentKey
      * @return Resource
-     * @throws BindingException
      */
     public function associate(Request $request, $parentKey)
     {
-        if (!$this->getAssociatingRelation()) {
-            throw new BindingException('$associatingRelation property is not set on '.static::class);
-        }
-
         $parentEntity = $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
             ->findOrFail($parentKey);
 
-        $entity = $this->relationQueryBuilder->buildQuery($this->newRelationQuery($parentEntity), $request)
+        $parentModel = $this->getModel();
+        $relatedModel = (new $parentModel)->{$this->getRelation()}()->getModel();
+
+        $entity = $this->relationQueryBuilder->buildQuery($relatedModel->query(), $request)
             ->with($this->relationsResolver->requestedRelations($request))
             ->findOrFail($request->get('related_key'));
 
@@ -34,14 +31,12 @@ trait HandlesRelationOneToManyOperations
             return $beforeHookResult;
         }
 
-        $entity->{$this->getAssociatingRelation()}()->associate($parentEntity);
-
         if ($this->authorizationRequired()) {
             $this->authorize('view', $parentEntity);
             $this->authorize('update', $entity);
         }
 
-        $entity->save();
+        $parentEntity->{$this->getRelation()}()->save($entity);
 
         $afterHookResult = $this->afterAssociate($request, $entity);
         if ($this->hookResponds($afterHookResult)) {
@@ -58,14 +53,9 @@ trait HandlesRelationOneToManyOperations
      * @param int|string $parentKey
      * @param int|string $relatedKey
      * @return Resource
-     * @throws BindingException
      */
     public function dissociate(Request $request, $parentKey, $relatedKey)
     {
-        if (!$this->getAssociatingRelation()) {
-            throw new BindingException('$associatingRelation property is not set on '.static::class);
-        }
-
         $parentEntity = $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
             ->findOrFail($parentKey);
 
@@ -82,7 +72,10 @@ trait HandlesRelationOneToManyOperations
             $this->authorize('update', $entity);
         }
 
-        $entity->{$this->getAssociatingRelation()}()->dissociate();
+        $parentModel = $this->getModel();
+        $foreignKeyName = (new $parentModel)->{$this->getRelation()}()->getForeignKeyName();
+
+        $entity->{$foreignKeyName} = null;
         $entity->save();
 
         $afterHookResult = $this->afterDissociate($request, $entity);

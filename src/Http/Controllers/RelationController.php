@@ -4,11 +4,8 @@ namespace Orion\Http\Controllers;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\DB;
 use Orion\Concerns\HandlesRelationManyToManyOperations;
 use Orion\Concerns\HandlesRelationOneToManyOperations;
 use Orion\Concerns\HandlesRelationStandardOperations;
@@ -23,11 +20,6 @@ abstract class RelationController extends BaseController
      * @var string $relation
      */
     protected $relation;
-
-    /**
-     * @var string|null $relation
-     */
-    protected $associatingRelation = null;
 
     /**
      * The list of pivot fields that can be set upon relation resource creation or update.
@@ -109,25 +101,6 @@ abstract class RelationController extends BaseController
     public function getRelation(): string
     {
         return $this->relation;
-    }
-
-    /**
-     * @param string|null $associatingRelation
-     * @return $this
-     */
-    public function setAssociatingRelation(?string $associatingRelation): self
-    {
-        $this->associatingRelation = $associatingRelation;
-
-        return $this;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getAssociatingRelation(): ?string
-    {
-        return $this->associatingRelation;
     }
 
     /**
