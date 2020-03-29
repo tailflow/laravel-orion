@@ -24,8 +24,6 @@ matrix:
       env: LARAVEL=^7.0
     - php: 7.4
       env: LARAVEL=5.7.*
-  allow_failures:
-    - env: LARAVEL=^7.0
 
 before_install:
   - phpenv config-rm xdebug.ini || true

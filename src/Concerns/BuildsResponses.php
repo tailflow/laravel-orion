@@ -3,16 +3,16 @@
 namespace Orion\Concerns;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Http\Resources\Json\Resource;
+use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 
 trait BuildsResponses
 {
     /**
      * @param Model $entity
-     * @return Resource
+     * @return JsonResource
      */
-    public function entityResponse(Model $entity): Resource
+    public function entityResponse(Model $entity): JsonResource
     {
         $resource = $this->getResource();
 

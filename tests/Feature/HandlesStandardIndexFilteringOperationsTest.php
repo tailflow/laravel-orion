@@ -18,6 +18,8 @@ class HandlesStandardIndexFilteringOperationsTest extends TestCase
         $matchingTag = factory(Tag::class)->create(['name' => 'match'])->refresh();
         factory(Tag::class)->create(['name' => 'not match'])->refresh();
 
+        $this->withoutExceptionHandling();
+
         $response = $this->post('/api/tags/search', [
             'filters' => [
                 ['field' => 'name', 'operator' => '=', 'value' => 'match']

@@ -2,7 +2,7 @@
 
 namespace Orion\Tests\Unit\Concerns;
 
-use Illuminate\Http\Resources\Json\Resource;
+use Illuminate\Http\Resources\Json\JsonResource;
 use Orion\Concerns\ExtendsResources;
 use Orion\Tests\Fixtures\App\Models\Tag;
 use Orion\Tests\TestCase;
@@ -22,7 +22,7 @@ class ExtendsResourcesTest extends TestCase
     }
 }
 
-class ExtendsResourcesStub extends Resource
+class ExtendsResourcesStub extends JsonResource
 {
     use ExtendsResources;
 }

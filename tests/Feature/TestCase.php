@@ -3,13 +3,12 @@
 namespace Orion\Tests\Feature;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Foundation\Testing\TestResponse;
 use Orion\Tests\TestCase as BaseTestCase;
 
 abstract class TestCase extends BaseTestCase
 {
     /**
-     * @param TestResponse $response
+     * @param \Illuminate\Testing\TestResponse|\Illuminate\Foundation\Testing\TestResponse $response
      * @param int $currentPage
      * @param int $from
      * @param int $lastPage
@@ -38,7 +37,7 @@ abstract class TestCase extends BaseTestCase
     }
 
     /**
-     * @param TestResponse $response
+     * @param \Illuminate\Testing\TestResponse|\Illuminate\Foundation\Testing\TestResponse $response
      */
     protected function assertResourceShown($response)
     {
@@ -47,7 +46,7 @@ abstract class TestCase extends BaseTestCase
     }
 
     /**
-     * @param TestResponse $response
+     * @param \Illuminate\Testing\TestResponse|\Illuminate\Foundation\Testing\TestResponse $response
      * @param string $table
      * @param array $payload
      */
@@ -59,7 +58,7 @@ abstract class TestCase extends BaseTestCase
     }
 
     /**
-     * @param TestResponse $response
+     * @param \Illuminate\Testing\TestResponse|\Illuminate\Foundation\Testing\TestResponse $response
      * @param Model $originalResource
      * @param array $updates
      */
@@ -71,7 +70,7 @@ abstract class TestCase extends BaseTestCase
     }
 
     /**
-     * @param TestResponse $response
+     * @param \Illuminate\Testing\TestResponse|\Illuminate\Foundation\Testing\TestResponse $response
      * @param Model $resource
      */
     protected function assertResourceDeleted($response, $resource)
@@ -82,7 +81,7 @@ abstract class TestCase extends BaseTestCase
     }
 
     /**
-     * @param TestResponse $response
+     * @param \Illuminate\Testing\TestResponse|\Illuminate\Foundation\Testing\TestResponse $response
      * @param Model $resource
      */
     protected function assertResourceTrashed($response, $resource)
@@ -93,7 +92,7 @@ abstract class TestCase extends BaseTestCase
     }
 
     /**
-     * @param TestResponse $response
+     * @param \Illuminate\Testing\TestResponse|\Illuminate\Foundation\Testing\TestResponse $response
      * @param Model $resource
      */
     protected function assertResourceRestored($response, $resource)
@@ -104,7 +103,7 @@ abstract class TestCase extends BaseTestCase
     }
 
     /**
-     * @param TestResponse $response
+     * @param \Illuminate\Testing\TestResponse|\Illuminate\Foundation\Testing\TestResponse $response
      */
     protected function assertUnauthorizedResponse($response)
     {

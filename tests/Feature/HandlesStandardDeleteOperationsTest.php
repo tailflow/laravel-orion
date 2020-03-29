@@ -54,7 +54,7 @@ class HandlesStandardDeleteOperationsTest extends TestCase
 
         $response->assertNotFound();
         $response->assertJsonStructure(['message']);
-        $this->assertDatabaseHas('teams', $trashedTeam->toArray());
+        $this->assertDatabaseHas('teams', $trashedTeam->getAttributes());
     }
 
     /** @test */
@@ -66,7 +66,7 @@ class HandlesStandardDeleteOperationsTest extends TestCase
 
         $response->assertNotFound();
         $response->assertJsonStructure(['message']);
-        $this->assertDatabaseHas('teams', $trashedTeam->toArray());
+        $this->assertDatabaseHas('teams', $trashedTeam->getAttributes());
     }
 
     /** @test */
