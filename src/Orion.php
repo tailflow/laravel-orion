@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Route;
@@ -56,13 +57,13 @@ class Orion
         $baseUri = "{$resource}/{{$resourceParamName}}/{$relation}";
         $completeUri = "$baseUri/{{$relationParamName}?}";
 
-        if (!in_array($relationType, [HasOne::class, BelongsTo::class, HasOneThrough::class, MorphOne::class], true)) {
+        if (!in_array($relationType, [HasOne::class, HasOneThrough::class, MorphOne::class, BelongsTo::class, MorphTo::class], true)) {
             Route::get($baseUri, $controller.'@index')->name("$resource.relation.$relation.index");
             Route::post("$baseUri/search", $controller.'@index')->name("$resource.relation.$relation.search");
             $completeUri = "$baseUri/{{$relationParamName}}";
         }
 
-        if ($relationType !== BelongsTo::class) {
+        if (!in_array($relationType, [BelongsTo::class, MorphTo::class], true)) {
             Route::post($baseUri, $controller.'@store')->name("$resource.relation.$relation.store");
         }
 
@@ -204,6 +205,20 @@ class Orion
     }
 
     /**
+     * Register new resource for "morphTo" relation.
+     *
+     * @param string $resource
+     * @param string $relation
+     * @param string $controller
+     * @param array $options
+     * @return bool
+     */
+    public function morphToResource($resource, $relation, $controller, $options = [])
+    {
+        return $this->resourceRelation($resource, $relation, $controller, MorphTo::class, $options);
+    }
+
+    /**
      * Register new resource for "morphToMany" relation.
      *
      * @param string $resource
@@ -213,6 +228,20 @@ class Orion
      * @return bool
      */
     public function morphToManyResource($resource, $relation, $controller, $options = [])
+    {
+        return $this->resourceRelation($resource, $relation, $controller, MorphToMany::class, $options);
+    }
+
+    /**
+     * Register new resource for "morphedByMany" relation.
+     *
+     * @param string $resource
+     * @param string $relation
+     * @param string $controller
+     * @param array $options
+     * @return bool
+     */
+    public function morphedByManyResource($resource, $relation, $controller, $options = [])
     {
         return $this->resourceRelation($resource, $relation, $controller, MorphToMany::class, $options);
     }
