@@ -10,7 +10,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
-use Illuminate\Http\Resources\Json\ResourceCollection;
+use Orion\Http\Resources\Resource;
+use Orion\Http\Resources\CollectionResource;
 use InvalidArgumentException;
 use Orion\Http\Requests\Request;
 
@@ -21,7 +22,7 @@ trait HandlesRelationStandardOperations
      *
      * @param Request $request
      * @param int|string $parentKey
-     * @return ResourceCollection
+     * @return CollectionResource
      */
     public function index(Request $request, $parentKey)
     {

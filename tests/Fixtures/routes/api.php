@@ -11,9 +11,9 @@ use Orion\Tests\Fixtures\App\Http\Controllers\TeamsController;
 
 Route::group(['as' => 'api.', 'prefix' => 'api'], function () {
     Orion::resource('tags', TagsController::class);
-    Orion::resource('tag_meta', TagMetaController::class, ['softDeletes' => true]);
-    Orion::resource('teams', TeamsController::class, ['softDeletes' => true]);
+    Orion::resource('tag_meta', TagMetaController::class)->withSoftDeletes();
+    Orion::resource('teams', TeamsController::class)->withSoftDeletes();
     Orion::resource('suppliers', SuppliersController::class);
-    Orion::resource('history', HistoryController::class, ['softDeletes' => true]);
+    Orion::resource('history', HistoryController::class)->withSoftDeletes();
     Orion::resource('posts', PostsController::class);
 });

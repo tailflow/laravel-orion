@@ -5,8 +5,8 @@ namespace Orion\Concerns;
 use Exception;
 use Illuminate\Contracts\Pagination\Paginator;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Http\Resources\Json\Resource;
-use Illuminate\Http\Resources\Json\ResourceCollection;
+use Orion\Http\Resources\Resource;
+use Orion\Http\Resources\CollectionResource;
 use Orion\Http\Requests\Request;
 
 trait HandlesStandardOperations
@@ -15,7 +15,7 @@ trait HandlesStandardOperations
      * Fetch the list of resources.
      *
      * @param Request $request
-     * @return ResourceCollection
+     * @return CollectionResource
      */
     public function index(Request $request)
     {

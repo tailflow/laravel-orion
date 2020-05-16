@@ -15,11 +15,11 @@ use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
+use Orion\Http\Routing\PendingResourceRegistration;
+use Orion\Http\Routing\ResourceRegistrar;
 
 class Orion
 {
-    //TODO: use own registrar to define both resources and relation resources
-
     /**
      * Registers new standard resource.
      *
@@ -27,16 +27,19 @@ class Orion
      * @param string $controller
      * @param array $options
      * @return \Illuminate\Routing\PendingResourceRegistration
+     * @throws \Illuminate\Contracts\Container\BindingResolutionException
      */
     public function resource($name, $controller, $options = [])
     {
-        if (Arr::get($options, 'softDeletes')) {
-            $paramName = Str::singular($name);
-            Route::post("{$name}/{{$paramName}}/restore", $controller.'@restore')->name("$name.restore");
+        if (app()->bound(ResourceRegistrar::class)) {
+            $registrar = app()->make(ResourceRegistrar::class);
+        } else {
+            $registrar = new ResourceRegistrar(app('router'));
         }
-        Route::post("{$name}/search", $controller.'@index')->name("$name.search");
 
-        return Route::apiResource($name, $controller, $options);
+        return new PendingResourceRegistration(
+            $registrar, $name, $controller, $options
+        );
     }
 
     /**

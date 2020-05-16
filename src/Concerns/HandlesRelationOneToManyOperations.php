@@ -4,6 +4,7 @@ namespace Orion\Concerns;
 
 use Illuminate\Database\Eloquent\Model;
 use Orion\Http\Requests\Request;
+use Orion\Http\Resources\Resource;
 
 trait HandlesRelationOneToManyOperations
 {
