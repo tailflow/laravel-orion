@@ -13,7 +13,7 @@ class EnforceExpectsJsonTest extends TestCase
     {
         $request = Request::create('/api/posts');
 
-        (new EnforceExpectsJson())->handle($request, function($processedRequest) {
+        (new EnforceExpectsJson())->handle($request, function ($processedRequest) {
             $this->assertEquals('application/json', $processedRequest->header('Accept'));
         });
     }

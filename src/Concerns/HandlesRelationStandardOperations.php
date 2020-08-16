@@ -10,10 +10,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
-use Orion\Http\Resources\Resource;
-use Orion\Http\Resources\CollectionResource;
 use InvalidArgumentException;
 use Orion\Http\Requests\Request;
+use Orion\Http\Resources\CollectionResource;
+use Orion\Http\Resources\Resource;
 
 trait HandlesRelationStandardOperations
 {
@@ -42,11 +42,15 @@ trait HandlesRelationStandardOperations
             ->with($this->relationsResolver->requestedRelations($request))
             ->paginate($this->paginator->resolvePaginationLimit($request));
 
-        if (count($this->getPivotJson())) {
-            $entities->getCollection()->transform(function ($entity) {
-                return $this->castPivotJsonFields($entity);
-            });
-        }
+        $entities->getCollection()->transform(function ($entity) {
+            $entity = $this->cleanupEntity($entity);
+
+            if (count($this->getPivotJson())) {
+                $entity = $this->castPivotJsonFields($entity);
+            }
+
+            return $entity;
+        });
 
         $afterHookResult = $this->afterIndex($request, $entities);
         if ($this->hookResponds($afterHookResult)) {
@@ -100,6 +104,8 @@ trait HandlesRelationStandardOperations
         $entity = $entity->fresh($this->relationsResolver->requestedRelations($request));
         $entity->wasRecentlyCreated = true;
 
+        $entity = $this->cleanupEntity($entity);
+
         if (count($this->getPivotJson())) {
             $entity = $this->castPivotJsonFields($entity);
         }
@@ -148,6 +154,8 @@ trait HandlesRelationStandardOperations
         if ($this->authorizationRequired()) {
             $this->authorize('view', $entity);
         }
+
+        $entity = $this->cleanupEntity($entity);
 
         if (count($this->getPivotJson())) {
             $entity = $this->castPivotJsonFields($entity);
@@ -208,6 +216,8 @@ trait HandlesRelationStandardOperations
 
             $entity = $entity->fresh($this->relationsResolver->requestedRelations($request));
         }
+
+        $entity = $this->cleanupEntity($entity);
 
         if (count($this->getPivotJson())) {
             $entity = $this->castPivotJsonFields($entity);
@@ -272,6 +282,8 @@ trait HandlesRelationStandardOperations
             $entity->forceDelete();
         }
 
+        $entity = $this->cleanupEntity($entity);
+
         if (count($this->getPivotJson())) {
             $entity = $this->castPivotJsonFields($entity);
         }
@@ -319,6 +331,12 @@ trait HandlesRelationStandardOperations
 
         $entity->restore();
 
+        $entity = $this->cleanupEntity($entity);
+
+        if (count($this->getPivotJson())) {
+            $entity = $this->castPivotJsonFields($entity);
+        }
+
         $afterHookResult = $this->afterRestore($request, $entity);
         if ($this->hookResponds($afterHookResult)) {
             return $afterHookResult;
@@ -350,6 +368,19 @@ trait HandlesRelationStandardOperations
             return;
         }
         throw new InvalidArgumentException('Relation key is required, if relation type is not one-to-one');
+    }
+
+    /**
+     * Removes unrelated to model attributes, if any.
+     *
+     * @param Model $entity
+     * @return Model
+     */
+    protected function cleanupEntity(Model $entity)
+    {
+        $entity->makeHidden('laravel_through_key');
+
+        return $entity;
     }
 
     /**

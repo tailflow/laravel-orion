@@ -58,7 +58,7 @@ class WhitelistedField implements Rule
      * @param string $constraint
      * @return string
      */
-    protected function convertConstraintToRegex(string $constraint) : string
+    protected function convertConstraintToRegex(string $constraint): string
     {
         return '/'.str_replace('.*', '\.(\w+)', $constraint).'/';
     }

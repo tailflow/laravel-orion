@@ -47,7 +47,7 @@ class HandlesStandardIndexFilteringOperationsTest extends TestCase
         $response = $this->post('/api/tags/search', [
             'filters' => [
                 ['field' => 'name', 'operator' => '=', 'value' => 'match'],
-                ['type' => 'or','field' => 'priority', 'operator' => '=', 'value' => 2]
+                ['type' => 'or', 'field' => 'priority', 'operator' => '=', 'value' => 2]
             ]
         ]);
 

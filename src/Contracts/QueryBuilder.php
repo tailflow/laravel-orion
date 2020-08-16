@@ -20,7 +20,7 @@ interface QueryBuilder
     public function __construct(string $resourceModelClass, ParamsValidator $paramsValidator, RelationsResolver $relationsResolver, SearchBuilder $searchBuilder, bool $intermediateMode = false);
 
     /**
-     * @param Builder|Relation  $query
+     * @param Builder|Relation $query
      * @param Request $request
      * @return Builder|Relation
      */

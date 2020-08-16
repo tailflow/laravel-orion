@@ -7,5 +7,5 @@ interface SearchBuilder
 {
     public function __construct(array $searchableBy);
 
-    public function searchableBy() : array;
+    public function searchableBy(): array;
 }

@@ -10,7 +10,7 @@ class HandlesStandardRestoreRelationsInclusionOperationsTest extends TestCase
     /** @test */
     public function can_restore_single_resource_and_get_included_relation()
     {
-        $trashedTagMeta  = factory(TagMeta::class)->state('trashed')->create(['tag_id' => factory(Tag::class)->create()->id]);
+        $trashedTagMeta = factory(TagMeta::class)->state('trashed')->create(['tag_id' => factory(Tag::class)->create()->id]);
 
         $response = $this->post("/api/tag_meta/{$trashedTagMeta->id}/restore?include=tag");
 

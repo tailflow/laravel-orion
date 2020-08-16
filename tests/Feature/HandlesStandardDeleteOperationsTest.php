@@ -114,7 +114,7 @@ class HandlesStandardDeleteOperationsTest extends TestCase
     /** @test */
     public function can_delete_a_single_resource_transformed_by_resource()
     {
-        $tagMeta  = factory(TagMeta::class)->create(['tag_id' => factory(Tag::class)->create()->id]);
+        $tagMeta = factory(TagMeta::class)->create(['tag_id' => factory(Tag::class)->create()->id]);
 
         $response = $this->delete("/api/tag_meta/{$tagMeta->id}?force=true");
 

@@ -57,7 +57,7 @@ class HandlesStandardIndexSortingOperationsTest extends TestCase
         $tagB = factory(Tag::class)->create(['name' => 'B'])->refresh();
         $tagC = factory(Tag::class)->create(['name' => 'C'])->refresh();
 
-        $response = $this->post('/api/tags/search',[
+        $response = $this->post('/api/tags/search', [
             'sort' => [
                 ['field' => 'name', 'direction' => 'desc']
             ]

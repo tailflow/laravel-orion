@@ -13,7 +13,7 @@ class HandlesStandardIndexRelationsInclusionOperationsTest extends TestCase
     /** @test */
     public function can_get_a_list_of_resources_with_included_relation()
     {
-        $tags = factory(Tag::class)->times(5)->create()->each(function($tag) {
+        $tags = factory(Tag::class)->times(5)->create()->each(function ($tag) {
             /**
              * @var Tag $tag
              */
@@ -37,7 +37,7 @@ class HandlesStandardIndexRelationsInclusionOperationsTest extends TestCase
     /** @test */
     public function can_get_a_list_of_resources_with_multiple_included_relations()
     {
-        $tags = factory(Tag::class)->times(5)->create()->each(function($tag) {
+        $tags = factory(Tag::class)->times(5)->create()->each(function ($tag) {
             /**
              * @var Tag $tag
              */
@@ -63,7 +63,7 @@ class HandlesStandardIndexRelationsInclusionOperationsTest extends TestCase
     /** @test */
     public function cannot_get_included_relation_in_a_list_of_resources_if_not_whitelisted()
     {
-        $tags = factory(Tag::class)->times(5)->create()->each(function($tag) {
+        $tags = factory(Tag::class)->times(5)->create()->each(function ($tag) {
             /**
              * @var Tag $tag
              */
@@ -87,12 +87,12 @@ class HandlesStandardIndexRelationsInclusionOperationsTest extends TestCase
     /** @test */
     public function cat_get_a_list_of_resources_with_always_included_relations()
     {
-        $suppliers = factory(Supplier::class)->times(5)->create()->each(function($supplier) {
-           /**
-            * @var Supplier $supplier
-            */
-           $supplier->team()->associate(factory(Team::class)->create());
-           $supplier->save();
+        $suppliers = factory(Supplier::class)->times(5)->create()->each(function ($supplier) {
+            /**
+             * @var Supplier $supplier
+             */
+            $supplier->team()->associate(factory(Team::class)->create());
+            $supplier->save();
         });
 
         $response = $this->get('/api/suppliers');

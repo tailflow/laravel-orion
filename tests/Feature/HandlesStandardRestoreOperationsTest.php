@@ -44,7 +44,7 @@ class HandlesStandardRestoreOperationsTest extends TestCase
     /** @test */
     public function can_restore_a_single_resource_transformed_by_resource()
     {
-        $trashedTagMeta  = factory(TagMeta::class)->state('trashed')->create(['tag_id' => factory(Tag::class)->create()->id]);
+        $trashedTagMeta = factory(TagMeta::class)->state('trashed')->create(['tag_id' => factory(Tag::class)->create()->id]);
 
         $response = $this->post("/api/tag_meta/{$trashedTagMeta->id}/restore");
 

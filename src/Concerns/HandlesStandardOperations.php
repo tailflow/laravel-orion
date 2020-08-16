@@ -5,9 +5,9 @@ namespace Orion\Concerns;
 use Exception;
 use Illuminate\Contracts\Pagination\Paginator;
 use Illuminate\Database\Eloquent\Model;
-use Orion\Http\Resources\Resource;
-use Orion\Http\Resources\CollectionResource;
 use Orion\Http\Requests\Request;
+use Orion\Http\Resources\CollectionResource;
+use Orion\Http\Resources\Resource;
 
 trait HandlesStandardOperations
 {
