@@ -9,7 +9,7 @@ class ResourceRegistrar extends \Illuminate\Routing\ResourceRegistrar
      *
      * @var array
      */
-    protected $resourceDefaults = ['search', 'index', 'store', 'show', 'update', 'destroy', 'restore'];
+    protected $resourceDefaults = ['search', 'batchStore', 'batchUpdate', 'batchDestroy', 'batchRestore', 'index', 'store', 'show', 'update', 'destroy', 'restore'];
 
     /**
      * Add the search method for a resourceful route.
@@ -45,6 +45,78 @@ class ResourceRegistrar extends \Illuminate\Routing\ResourceRegistrar
         $uri = $this->getResourceUri($name).'/{'.$base.'}/restore';
 
         $action = $this->getResourceAction($name, $controller, 'restore', $options);
+
+        return $this->router->post($uri, $action);
+    }
+
+    /**
+     * Add the batch store method for a resourceful route.
+     *
+     * @param string $name
+     * @param string $base
+     * @param string $controller
+     * @param array $options
+     * @return \Illuminate\Routing\Route
+     */
+    protected function addResourceBatchStore($name, $base, $controller, $options)
+    {
+        $uri = $this->getResourceUri($name).'/batch';
+
+        $action = $this->getResourceAction($name, $controller, 'batchStore', $options);
+
+        return $this->router->post($uri, $action);
+    }
+
+    /**
+     * Add the batch update method for a resourceful route.
+     *
+     * @param string $name
+     * @param string $base
+     * @param string $controller
+     * @param array $options
+     * @return \Illuminate\Routing\Route
+     */
+    protected function addResourceBatchUpdate($name, $base, $controller, $options)
+    {
+        $uri = $this->getResourceUri($name).'/batch';
+
+        $action = $this->getResourceAction($name, $controller, 'batchUpdate', $options);
+
+        return $this->router->patch($uri, $action);
+    }
+
+    /**
+     * Add the batch destroy for a resourceful route.
+     *
+     * @param string $name
+     * @param string $base
+     * @param string $controller
+     * @param array $options
+     * @return \Illuminate\Routing\Route
+     */
+    protected function addResourceBatchDestroy($name, $base, $controller, $options)
+    {
+        $uri = $this->getResourceUri($name).'/batch';
+
+        $action = $this->getResourceAction($name, $controller, 'batchDestroy', $options);
+
+        return $this->router->delete($uri, $action);
+    }
+
+    /**
+     * Add the batch restore for a resourceful route.
+     *
+     * @param string $name
+     * @param string $base
+     * @param string $controller
+     * @param array $options
+     * @return \Illuminate\Routing\Route
+     */
+    protected function addResourceBatchRestore($name, $base, $controller, $options)
+    {
+        $uri = $this->getResourceUri($name).'/batch/restore';
+
+        $action = $this->getResourceAction($name, $controller, 'batchRestore', $options);
 
         return $this->router->post($uri, $action);
     }
