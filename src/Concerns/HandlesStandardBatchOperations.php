@@ -37,11 +37,10 @@ trait HandlesStandardBatchOperations
             /**
              * @var Model $entity
              */
-            $this->beforeStore($request);
-
             $entity = new $resourceModelClass;
             $entity->fill(Arr::only($resource, $entity->getFillable()));
 
+            $this->beforeStore($request, $entity);
             $this->beforeSave($request, $entity);
 
             $entity->save();
@@ -49,7 +48,6 @@ trait HandlesStandardBatchOperations
             $entity->wasRecentlyCreated = true;
 
             $this->afterSave($request, $entity);
-
             $this->afterStore($request, $entity);
 
             $entities->push($entity);
@@ -88,20 +86,18 @@ trait HandlesStandardBatchOperations
             /**
              * @var Model $entity
              */
-            $this->beforeUpdate($request, $entity->getKey());
-
             if ($this->authorizationRequired()) {
                 $this->authorize('update', $entity);
             }
 
             $entity->fill(Arr::only($request->input("resources.{$entity->getKey()}"), $entity->getFillable()));
 
+            $this->beforeUpdate($request, $entity);
             $this->beforeSave($request, $entity);
 
             $entity->save();
 
             $this->afterSave($request, $entity);
-
             $this->afterUpdate($request, $entity);
         }
 
@@ -143,11 +139,11 @@ trait HandlesStandardBatchOperations
             /**
              * @var Model $entity
              */
-            $this->beforeDestroy($request, $entity->getKey());
-
             if ($this->authorizationRequired()) {
                 $this->authorize($forceDeletes ? 'forceDelete' : 'delete', $entity);
             }
+
+            $this->beforeDestroy($request, $entity);
 
             if (!$forceDeletes) {
                 $entity->delete();
@@ -193,11 +189,11 @@ trait HandlesStandardBatchOperations
             /**
              * @var Model $entity
              */
-            $this->beforeRestore($request, $entity->getKey());
-
             if ($this->authorizationRequired()) {
                 $this->authorize('restore', $entity);
             }
+
+            $this->beforeRestore($request, $entity);
 
             $entity->restore();
 
