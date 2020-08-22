@@ -69,11 +69,6 @@ trait HandlesRelationStandardOperations
      */
     public function store(Request $request, $parentKey)
     {
-        $beforeHookResult = $this->beforeStore($request);
-        if ($this->hookResponds($beforeHookResult)) {
-            return $beforeHookResult;
-        }
-
         $resourceModelClass = $this->resolveResourceModelClass();
 
         if ($this->authorizationRequired()) {
@@ -88,6 +83,11 @@ trait HandlesRelationStandardOperations
 
         $entity = new $resourceModelClass;
         $entity->fill($request->only($entity->getFillable()));
+
+        $beforeHookResult = $this->beforeStore($request, $entity);
+        if ($this->hookResponds($beforeHookResult)) {
+            return $beforeHookResult;
+        }
 
         $beforeSaveHookResult = $this->beforeSave($request, $entity);
         if ($this->hookResponds($beforeSaveHookResult)) {
@@ -179,11 +179,6 @@ trait HandlesRelationStandardOperations
      */
     public function update(Request $request, $parentKey, $relatedKey = null)
     {
-        $beforeHookResult = $this->beforeUpdate($request, $relatedKey);
-        if ($this->hookResponds($beforeHookResult)) {
-            return $beforeHookResult;
-        }
-
         $parentEntity = $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
             ->findOrFail($parentKey);
 
@@ -202,6 +197,11 @@ trait HandlesRelationStandardOperations
         }
 
         $entity->fill($request->only($entity->getFillable()));
+
+        $beforeHookResult = $this->beforeUpdate($request, $entity);
+        if ($this->hookResponds($beforeHookResult)) {
+            return $beforeHookResult;
+        }
 
         $beforeSaveHookResult = $this->beforeSave($request, $entity);
         if ($this->hookResponds($beforeSaveHookResult)) {
@@ -247,11 +247,6 @@ trait HandlesRelationStandardOperations
      */
     public function destroy(Request $request, $parentKey, $relatedKey = null)
     {
-        $beforeHookResult = $this->beforeDestroy($request, $relatedKey);
-        if ($this->hookResponds($beforeHookResult)) {
-            return $beforeHookResult;
-        }
-
         $parentEntity = $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
             ->findOrFail($parentKey);
 
@@ -274,6 +269,11 @@ trait HandlesRelationStandardOperations
 
         if ($this->authorizationRequired()) {
             $this->authorize($forceDeletes ? 'forceDelete' : 'delete', $entity);
+        }
+
+        $beforeHookResult = $this->beforeDestroy($request, $entity);
+        if ($this->hookResponds($beforeHookResult)) {
+            return $beforeHookResult;
         }
 
         if (!$forceDeletes) {
@@ -306,11 +306,6 @@ trait HandlesRelationStandardOperations
      */
     public function restore(Request $request, $parentKey, $relatedKey = null)
     {
-        $beforeHookResult = $this->beforeRestore($request, $relatedKey);
-        if ($this->hookResponds($beforeHookResult)) {
-            return $beforeHookResult;
-        }
-
         $parentEntity = $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
             ->findOrFail($parentKey);
 
@@ -327,6 +322,11 @@ trait HandlesRelationStandardOperations
 
         if ($this->authorizationRequired()) {
             $this->authorize('restore', $entity);
+        }
+
+        $beforeHookResult = $this->beforeRestore($request, $entity);
+        if ($this->hookResponds($beforeHookResult)) {
+            return $beforeHookResult;
         }
 
         $entity->restore();
@@ -410,9 +410,10 @@ trait HandlesRelationStandardOperations
      * The hook is executed before creating new relation resource.
      *
      * @param Request $request
+     * @param Model $entity
      * @return mixed
      */
-    protected function beforeStore(Request $request)
+    protected function beforeStore(Request $request, $entity)
     {
         return null;
     }
@@ -457,10 +458,10 @@ trait HandlesRelationStandardOperations
      * The hook is executed before updating a relation resource.
      *
      * @param Request $request
-     * @param int|string|null $key
+     * @param Model $entity
      * @return mixed
      */
-    protected function beforeUpdate(Request $request, $key)
+    protected function beforeUpdate(Request $request, $entity)
     {
         return null;
     }
@@ -481,10 +482,10 @@ trait HandlesRelationStandardOperations
      * The hook is executed before deleting a relation resource.
      *
      * @param Request $request
-     * @param int|string|null $key
+     * @param Model $entity
      * @return mixed
      */
-    protected function beforeDestroy(Request $request, $key)
+    protected function beforeDestroy(Request $request, $entity)
     {
         return null;
     }
@@ -505,10 +506,10 @@ trait HandlesRelationStandardOperations
      * The hook is executed before restoring a relation resource.
      *
      * @param Request $request
-     * @param int|string|null $key
+     * @param Model $entity
      * @return mixed
      */
-    protected function beforeRestore(Request $request, $key)
+    protected function beforeRestore(Request $request, $entity)
     {
         return null;
     }
