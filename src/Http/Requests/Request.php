@@ -31,8 +31,16 @@ class Request extends FormRequest
             return array_merge($this->commonRules(), $this->storeRules());
         }
 
+        if ($this->route()->getActionMethod() === 'batchStore') {
+            return $this->buildBatchRules($this->storeRules(), $this->batchStoreRules());
+        }
+
         if ($this->route()->getActionMethod() === 'update') {
             return array_merge($this->commonRules(), $this->updateRules());
+        }
+
+        if ($this->route()->getActionMethod() === 'batchUpdate') {
+            return $this->buildBatchRules($this->updateRules(), $this->batchUpdateRules());
         }
 
         if ($this->route()->getActionMethod() === 'associate') {
@@ -76,6 +84,21 @@ class Request extends FormRequest
         return [];
     }
 
+    protected function buildBatchRules($definedRules, $definedBatchRules)
+    {
+        $batchRules = [
+            'resources' => ['array', 'required']
+        ];
+
+        $mergedRules = array_merge($this->commonRules(), $definedRules, $definedBatchRules);
+
+        foreach ($mergedRules as $ruleField => $fieldRules) {
+            $batchRules["resources.*.{$ruleField}"] = $fieldRules;
+        }
+
+        return $batchRules;
+    }
+
     /**
      * Default rules for the request.
      *
@@ -97,11 +120,31 @@ class Request extends FormRequest
     }
 
     /**
+     * Rules for the "batch store" (POST) endpoint.
+     *
+     * @return array
+     */
+    public function batchStoreRules()
+    {
+        return [];
+    }
+
+    /**
      * Rules for the "update" (PATCH|PUT) endpoint.
      *
      * @return array
      */
     public function updateRules()
+    {
+        return [];
+    }
+
+    /**
+     * Rules for the "batch update" (PATCH|PUT) endpoint.
+     *
+     * @return array
+     */
+    public function batchUpdateRules()
     {
         return [];
     }
