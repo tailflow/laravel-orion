@@ -4,20 +4,24 @@ namespace Orion\Concerns;
 
 use Exception;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Orion\Http\Requests\Request;
 use Orion\Http\Resources\CollectionResource;
 
-trait HandlesStandardBatchOperations
+trait HandlesRelationStandardBatchOperations
 {
     /**
-     * Creates a batch of new resources.
+     * Create a batch of new relation resources.
      *
      * @param Request $request
+     * @param int|string $parentKey
      * @return CollectionResource
      */
-    public function batchStore(Request $request)
+    public function batchStore(Request $request, $parentKey)
     {
         $beforeHookResult = $this->beforeBatchStore($request);
         if ($this->hookResponds($beforeHookResult)) {
@@ -30,22 +34,37 @@ trait HandlesStandardBatchOperations
             $this->authorize('create', $resourceModelClass);
         }
 
+        /**
+         * @var Model $entity
+         */
+        $parentEntity = $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
+            ->findOrFail($parentKey);
+
         $resources = $request->get('resources', []);
         $entities = collect([]);
 
         foreach ($resources as $resource) {
-            /**
-             * @var Model $entity
-             */
             $entity = new $resourceModelClass;
             $entity->fill(Arr::only($resource, $entity->getFillable()));
 
             $this->beforeStore($request, $entity);
             $this->beforeSave($request, $entity);
 
-            $entity->save();
+            if (!$parentEntity->{$this->getRelation()}() instanceof BelongsTo) {
+                $parentEntity->{$this->getRelation()}()->save($entity, $this->preparePivotFields(Arr::get($resource, 'pivot', [])));
+            } else {
+                $entity->save();
+                $parentEntity->{$this->getRelation()}()->associate($entity);
+            }
+
             $entity = $entity->fresh($this->relationsResolver->requestedRelations($request));
             $entity->wasRecentlyCreated = true;
+
+            $entity = $this->cleanupEntity($entity);
+
+            if (count($this->getPivotJson())) {
+                $entity = $this->castPivotJsonFields($entity);
+            }
 
             $this->afterSave($request, $entity);
             $this->afterStore($request, $entity);
@@ -62,22 +81,26 @@ trait HandlesStandardBatchOperations
     }
 
     /**
-     * Update a batch of resources.
+     * Updates a batch of relation resources.
      *
      * @param Request $request
+     * @param int|string $parentKey
      * @return CollectionResource
      */
-    public function batchUpdate(Request $request)
+    public function batchUpdate(Request $request, $parentKey)
     {
         $beforeHookResult = $this->beforeBatchUpdate($request);
         if ($this->hookResponds($beforeHookResult)) {
             return $beforeHookResult;
         }
 
+        $parentEntity = $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
+            ->findOrFail($parentKey);
+
         $resourceModelClass = $this->resolveResourceModelClass();
         $resourceKeyName = (new $resourceModelClass)->getKeyName();
 
-        $entities = $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
+        $entities = $this->relationQueryBuilder->buildQuery($this->newRelationQuery($parentEntity), $request)
             ->with($this->relationsResolver->requestedRelations($request))
             ->whereIn($resourceKeyName, array_keys($request->get('resources', [])))
             ->get();
@@ -90,12 +113,27 @@ trait HandlesStandardBatchOperations
                 $this->authorize('update', $entity);
             }
 
-            $entity->fill(Arr::only($request->input("resources.{$entity->getKey()}"), $entity->getFillable()));
+            $resource = $request->input("resources.{$entity->getKey()}");
+
+            $entity->fill(Arr::only($resource, $entity->getFillable()));
 
             $this->beforeUpdate($request, $entity);
             $this->beforeSave($request, $entity);
 
             $entity->save();
+
+            $relation = $parentEntity->{$this->getRelation()}();
+            if ($relation instanceof BelongsToMany || $relation instanceof MorphToMany) {
+                $relation->updateExistingPivot($entity->getKey(), $this->preparePivotFields(Arr::get($resource, 'pivot', [])));
+
+                $entity = $entity->fresh($this->relationsResolver->requestedRelations($request));
+            }
+
+            $entity = $this->cleanupEntity($entity);
+
+            if (count($this->getPivotJson())) {
+                $entity = $this->castPivotJsonFields($entity);
+            }
 
             $this->afterSave($request, $entity);
             $this->afterUpdate($request, $entity);
@@ -110,35 +148,42 @@ trait HandlesStandardBatchOperations
     }
 
     /**
-     * Deletes a batch of resources.
+     * Deletes a batch of relation resources.
      *
      * @param Request $request
+     * @param int|string $parentKey
      * @return CollectionResource
      * @throws Exception
      */
-    public function batchDestroy(Request $request)
+    public function batchDestroy(Request $request, $parentKey)
     {
         $beforeHookResult = $this->beforeBatchDestroy($request);
         if ($this->hookResponds($beforeHookResult)) {
             return $beforeHookResult;
         }
 
-        $softDeletes = $this->softDeletes($this->resolveResourceModelClass());
+        $parentEntity = $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
+            ->findOrFail($parentKey);
 
         $resourceModelClass = $this->resolveResourceModelClass();
         $resourceKeyName = (new $resourceModelClass)->getKeyName();
 
-        $entities = $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
+        $softDeletes = $this->softDeletes($this->resolveResourceModelClass());
+
+        $entities = $this->relationQueryBuilder->buildQuery($this->newRelationQuery($parentEntity), $request)
             ->with($this->relationsResolver->requestedRelations($request))
+            ->when($softDeletes, function ($query) {
+                $query->withTrashed();
+            })
             ->whereIn($resourceKeyName, $request->get('resources', []))
             ->get();
-
-        $forceDeletes = $softDeletes && $request->get('force');
 
         foreach ($entities as $entity) {
             /**
              * @var Model $entity
              */
+            $forceDeletes = $softDeletes && $request->get('force');
+
             if ($this->authorizationRequired()) {
                 $this->authorize($forceDeletes ? 'forceDelete' : 'delete', $entity);
             }
@@ -149,6 +194,12 @@ trait HandlesStandardBatchOperations
                 $entity->delete();
             } else {
                 $entity->forceDelete();
+            }
+
+            $entity = $this->cleanupEntity($entity);
+
+            if (count($this->getPivotJson())) {
+                $entity = $this->castPivotJsonFields($entity);
             }
 
             $this->afterDestroy($request, $entity);
@@ -163,23 +214,27 @@ trait HandlesStandardBatchOperations
     }
 
     /**
-     * Restores a batch of resources.
+     * Restores a batch of relation resources.
      *
      * @param Request $request
+     * @param int|string $parentKey
      * @return CollectionResource
      * @throws Exception
      */
-    public function batchRestore(Request $request)
+    public function batchRestore(Request $request, $parentKey)
     {
         $beforeHookResult = $this->beforeBatchRestore($request);
         if ($this->hookResponds($beforeHookResult)) {
             return $beforeHookResult;
         }
 
+        $parentEntity = $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
+            ->findOrFail($parentKey);
+
         $resourceModelClass = $this->resolveResourceModelClass();
         $resourceKeyName = (new $resourceModelClass)->getKeyName();
 
-        $entities = $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
+        $entities = $this->relationQueryBuilder->buildQuery($this->newRelationQuery($parentEntity), $request)
             ->with($this->relationsResolver->requestedRelations($request))
             ->whereIn($resourceKeyName, $request->get('resources', []))
             ->withTrashed()
@@ -196,6 +251,12 @@ trait HandlesStandardBatchOperations
             $this->beforeRestore($request, $entity);
 
             $entity->restore();
+
+            $entity = $this->cleanupEntity($entity);
+
+            if (count($this->getPivotJson())) {
+                $entity = $this->castPivotJsonFields($entity);
+            }
 
             $this->afterRestore($request, $entity);
         }

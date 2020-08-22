@@ -8,13 +8,14 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\App;
 use Orion\Concerns\HandlesRelationManyToManyOperations;
 use Orion\Concerns\HandlesRelationOneToManyOperations;
+use Orion\Concerns\HandlesRelationStandardBatchOperations;
 use Orion\Concerns\HandlesRelationStandardOperations;
 use Orion\Contracts\QueryBuilder;
 use Orion\Exceptions\BindingException;
 
 abstract class RelationController extends BaseController
 {
-    use HandlesRelationStandardOperations, HandlesRelationOneToManyOperations, HandlesRelationManyToManyOperations;
+    use HandlesRelationStandardOperations, HandlesRelationStandardBatchOperations, HandlesRelationOneToManyOperations, HandlesRelationManyToManyOperations;
 
     /**
      * @var string $relation
