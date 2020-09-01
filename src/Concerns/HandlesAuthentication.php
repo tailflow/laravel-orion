@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Auth;
 
 trait HandlesAuthentication
 {
+    protected $guard = 'api';
     /**
      * Retrieves currently authenticated user based on the guard.
      *
@@ -14,6 +15,6 @@ trait HandlesAuthentication
      */
     public function resolveUser()
     {
-        return Auth::guard('api')->user();
+        return Auth::guard($this->guard)->user();
     }
 }
