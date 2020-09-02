@@ -30,9 +30,7 @@ trait HandlesRelationStandardBatchOperations
 
         $resourceModelClass = $this->resolveResourceModelClass();
 
-        if ($this->authorizationRequired()) {
-            $this->authorize('create', $resourceModelClass);
-        }
+        $this->authorize('create', $resourceModelClass);
 
         /**
          * @var Model $entity
@@ -109,9 +107,7 @@ trait HandlesRelationStandardBatchOperations
             /**
              * @var Model $entity
              */
-            if ($this->authorizationRequired()) {
-                $this->authorize('update', $entity);
-            }
+            $this->authorize('update', $entity);
 
             $resource = $request->input("resources.{$entity->getKey()}");
 
@@ -184,9 +180,7 @@ trait HandlesRelationStandardBatchOperations
              */
             $forceDeletes = $softDeletes && $request->get('force');
 
-            if ($this->authorizationRequired()) {
-                $this->authorize($forceDeletes ? 'forceDelete' : 'delete', $entity);
-            }
+            $this->authorize($forceDeletes ? 'forceDelete' : 'delete', $entity);
 
             $this->beforeDestroy($request, $entity);
 
@@ -244,9 +238,7 @@ trait HandlesRelationStandardBatchOperations
             /**
              * @var Model $entity
              */
-            if ($this->authorizationRequired()) {
-                $this->authorize('restore', $entity);
-            }
+            $this->authorize('restore', $entity);
 
             $this->beforeRestore($request, $entity);
 

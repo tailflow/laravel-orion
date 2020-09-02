@@ -32,10 +32,8 @@ trait HandlesRelationOneToManyOperations
             return $beforeHookResult;
         }
 
-        if ($this->authorizationRequired()) {
-            $this->authorize('view', $parentEntity);
-            $this->authorize('update', $entity);
-        }
+        $this->authorize('view', $parentEntity);
+        $this->authorize('update', $entity);
 
         $parentEntity->{$this->getRelation()}()->save($entity);
 
@@ -69,9 +67,7 @@ trait HandlesRelationOneToManyOperations
             return $beforeHookResult;
         }
 
-        if ($this->authorizationRequired()) {
-            $this->authorize('update', $entity);
-        }
+        $this->authorize('update', $entity);
 
         $parentModel = $this->getModel();
         $foreignKeyName = (new $parentModel)->{$this->getRelation()}()->getForeignKeyName();

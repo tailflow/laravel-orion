@@ -26,9 +26,7 @@ trait HandlesStandardBatchOperations
 
         $resourceModelClass = $this->resolveResourceModelClass();
 
-        if ($this->authorizationRequired()) {
-            $this->authorize('create', $resourceModelClass);
-        }
+        $this->authorize('create', $resourceModelClass);
 
         $resources = $request->get('resources', []);
         $entities = collect([]);
@@ -86,9 +84,7 @@ trait HandlesStandardBatchOperations
             /**
              * @var Model $entity
              */
-            if ($this->authorizationRequired()) {
-                $this->authorize('update', $entity);
-            }
+            $this->authorize('update', $entity);
 
             $entity->fill(Arr::only($request->input("resources.{$entity->getKey()}"), $entity->getFillable()));
 
@@ -139,9 +135,7 @@ trait HandlesStandardBatchOperations
             /**
              * @var Model $entity
              */
-            if ($this->authorizationRequired()) {
-                $this->authorize($forceDeletes ? 'forceDelete' : 'delete', $entity);
-            }
+            $this->authorize($forceDeletes ? 'forceDelete' : 'delete', $entity);
 
             $this->beforeDestroy($request, $entity);
 
@@ -189,9 +183,7 @@ trait HandlesStandardBatchOperations
             /**
              * @var Model $entity
              */
-            if ($this->authorizationRequired()) {
-                $this->authorize('restore', $entity);
-            }
+            $this->authorize('restore', $entity);
 
             $this->beforeRestore($request, $entity);
 

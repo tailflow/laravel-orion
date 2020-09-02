@@ -28,9 +28,7 @@ trait HandlesRelationManyToManyOperations
         $parentEntity = $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
             ->findOrFail($parentKey);
 
-        if ($this->authorizationRequired()) {
-            $this->authorize('update', $parentEntity);
-        }
+        $this->authorize('update', $parentEntity);
 
         if ($request->get('duplicates')) {
             $attachResult = $parentEntity->{$this->getRelation()}()->attach(
@@ -70,9 +68,7 @@ trait HandlesRelationManyToManyOperations
         $parentEntity = $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
             ->findOrFail($parentKey);
 
-        if ($this->authorizationRequired()) {
-            $this->authorize('update', $parentEntity);
-        }
+        $this->authorize('update', $parentEntity);
 
         $detachResult = $parentEntity->{$this->getRelation()}()->detach(
             array_keys($this->prepareResourcePivotFields($this->preparePivotResources($request->get('resources'))))
@@ -105,9 +101,7 @@ trait HandlesRelationManyToManyOperations
         $parentEntity = $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
             ->findOrFail($parentKey);
 
-        if ($this->authorizationRequired()) {
-            $this->authorize('update', $parentEntity);
-        }
+        $this->authorize('update', $parentEntity);
 
         $syncResult = $parentEntity->{$this->getRelation()}()->sync(
             $this->prepareResourcePivotFields($this->preparePivotResources($request->get('resources'))), $request->get('detaching', true)
@@ -140,9 +134,7 @@ trait HandlesRelationManyToManyOperations
         $parentEntity = $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
             ->findOrFail($parentKey);
 
-        if ($this->authorizationRequired()) {
-            $this->authorize('update', $parentEntity);
-        }
+        $this->authorize('update', $parentEntity);
 
         $toggleResult = $parentEntity->{$this->getRelation()}()->toggle(
             $this->prepareResourcePivotFields($this->preparePivotResources($request->get('resources')))
@@ -174,9 +166,7 @@ trait HandlesRelationManyToManyOperations
         $parentEntity = $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
             ->findOrFail($parentKey);
 
-        if ($this->authorizationRequired()) {
-            $this->authorize('update', $parentEntity);
-        }
+        $this->authorize('update', $parentEntity);
 
         $updateResult = $parentEntity->{$this->getRelation()}()->updateExistingPivot($relatedKey, $this->preparePivotFields($request->get('pivot', [])));
 

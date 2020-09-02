@@ -7,8 +7,8 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Auth;
 use Orion\Concerns\BuildsResponses;
-use Orion\Concerns\HandlesAuthentication;
 use Orion\Concerns\HandlesAuthorization;
 use Orion\Concerns\InteractsWithHooks;
 use Orion\Concerns\InteractsWithSoftDeletes;
@@ -25,7 +25,6 @@ abstract class BaseController extends \Illuminate\Routing\Controller
     use AuthorizesRequests,
         DispatchesJobs,
         ValidatesRequests,
-        HandlesAuthentication,
         HandlesAuthorization,
         InteractsWithHooks,
         InteractsWithSoftDeletes,
@@ -155,12 +154,27 @@ abstract class BaseController extends \Illuminate\Routing\Controller
      * @param array $arguments
      * @return \Illuminate\Auth\Access\Response
      * @throws \Illuminate\Auth\Access\AuthorizationException
+     * @throws \Illuminate\Contracts\Container\BindingResolutionException
      */
     public function authorize($ability, $arguments = [])
     {
+        if (!$this->authorizationRequired()) {
+            return $this->authorized();
+        }
+
         $user = $this->resolveUser();
 
         return $this->authorizeForUser($user, $ability, $arguments);
+    }
+
+    /**
+     * Retrieves currently authenticated user based on the guard.
+     *
+     * @return \Illuminate\Contracts\Auth\Authenticatable|null
+     */
+    public function resolveUser()
+    {
+        return Auth::guard('api')->user();
     }
 
     /**

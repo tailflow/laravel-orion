@@ -31,9 +31,7 @@ trait HandlesRelationStandardOperations
             return $beforeHookResult;
         }
 
-        if ($this->authorizationRequired()) {
-            $this->authorize('viewAny', $this->resolveResourceModelClass());
-        }
+        $this->authorize('viewAny', $this->resolveResourceModelClass());
 
         $parentEntity = $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
             ->findOrFail($parentKey);
@@ -71,9 +69,7 @@ trait HandlesRelationStandardOperations
     {
         $resourceModelClass = $this->resolveResourceModelClass();
 
-        if ($this->authorizationRequired()) {
-            $this->authorize('create', $resourceModelClass);
-        }
+        $this->authorize('create', $resourceModelClass);
 
         /**
          * @var Model $entity
@@ -151,9 +147,7 @@ trait HandlesRelationStandardOperations
             $entity = $query->findOrFail($relatedKey);
         }
 
-        if ($this->authorizationRequired()) {
-            $this->authorize('view', $entity);
-        }
+        $this->authorize('view', $entity);
 
         $entity = $this->cleanupEntity($entity);
 
@@ -192,9 +186,7 @@ trait HandlesRelationStandardOperations
             $entity = $query->findOrFail($relatedKey);
         }
 
-        if ($this->authorizationRequired()) {
-            $this->authorize('update', $entity);
-        }
+        $this->authorize('update', $entity);
 
         $entity->fill($request->only($entity->getFillable()));
 
@@ -267,9 +259,7 @@ trait HandlesRelationStandardOperations
 
         $forceDeletes = $softDeletes && $request->get('force');
 
-        if ($this->authorizationRequired()) {
-            $this->authorize($forceDeletes ? 'forceDelete' : 'delete', $entity);
-        }
+        $this->authorize($forceDeletes ? 'forceDelete' : 'delete', $entity);
 
         $beforeHookResult = $this->beforeDestroy($request, $entity);
         if ($this->hookResponds($beforeHookResult)) {
@@ -320,9 +310,7 @@ trait HandlesRelationStandardOperations
             $entity = $relationEntityQuery->findOrFail($relatedKey);
         }
 
-        if ($this->authorizationRequired()) {
-            $this->authorize('restore', $entity);
-        }
+        $this->authorize('restore', $entity);
 
         $beforeHookResult = $this->beforeRestore($request, $entity);
         if ($this->hookResponds($beforeHookResult)) {

@@ -24,9 +24,7 @@ trait HandlesStandardOperations
             return $beforeHookResult;
         }
 
-        if ($this->authorizationRequired()) {
-            $this->authorize('viewAny', $this->resolveResourceModelClass());
-        }
+        $this->authorize('viewAny', $this->resolveResourceModelClass());
 
         $entities = $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
             ->with($this->relationsResolver->requestedRelations($request))
@@ -50,9 +48,7 @@ trait HandlesStandardOperations
     {
         $resourceModelClass = $this->resolveResourceModelClass();
 
-        if ($this->authorizationRequired()) {
-            $this->authorize('create', $resourceModelClass);
-        }
+        $this->authorize('create', $resourceModelClass);
 
         /**
          * @var Model $entity
@@ -108,9 +104,7 @@ trait HandlesStandardOperations
             ->with($this->relationsResolver->requestedRelations($request))
             ->findOrFail($key);
 
-        if ($this->authorizationRequired()) {
-            $this->authorize('view', $entity);
-        }
+        $this->authorize('view', $entity);
 
         $afterHookResult = $this->afterShow($request, $entity);
         if ($this->hookResponds($afterHookResult)) {
@@ -136,9 +130,7 @@ trait HandlesStandardOperations
             ->with($this->relationsResolver->requestedRelations($request))
             ->findOrFail($key);
 
-        if ($this->authorizationRequired()) {
-            $this->authorize('update', $entity);
-        }
+        $this->authorize('view', $entity);
 
         $entity->fill($request->only($entity->getFillable()));
 
@@ -192,9 +184,7 @@ trait HandlesStandardOperations
             abort(404);
         }
 
-        if ($this->authorizationRequired()) {
-            $this->authorize($forceDeletes ? 'forceDelete' : 'delete', $entity);
-        }
+        $this->authorize($forceDeletes ? 'forceDelete' : 'delete', $entity);
 
         $beforeHookResult = $this->beforeDestroy($request, $entity);
         if ($this->hookResponds($beforeHookResult)) {
@@ -230,9 +220,7 @@ trait HandlesStandardOperations
             ->withTrashed()
             ->findOrFail($key);
 
-        if ($this->authorizationRequired()) {
-            $this->authorize('restore', $entity);
-        }
+        $this->authorize('restore', $entity);
 
         $beforeHookResult = $this->beforeRestore($request, $entity);
         if ($this->hookResponds($beforeHookResult)) {
