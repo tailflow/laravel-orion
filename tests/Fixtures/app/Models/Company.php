@@ -4,7 +4,7 @@ namespace Orion\Tests\Fixtures\App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Team extends Model
+class Company extends Model
 {
     /**
      * The attributes that are mass assignable.
@@ -16,10 +16,10 @@ class Team extends Model
     ];
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
-    public function company()
+    public function teams()
     {
-        return $this->belongsTo(Company::class);
+        return $this->hasMany(Team::class);
     }
 }

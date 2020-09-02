@@ -3,19 +3,19 @@
 namespace Orion\Tests\Unit\Http\Controllers\Stubs;
 
 use Orion\Http\Controllers\RelationController;
-use Orion\Tests\Fixtures\App\Models\Tag;
+use Orion\Tests\Fixtures\App\Models\Post;
 
 class RelationControllerStub extends RelationController
 {
     /**
      * @var string $model
      */
-    protected $model = Tag::class;
+    protected $model = Post::class;
 
     /**
      * @var string $relation
      */
-    protected $relation = 'meta';
+    protected $relation = 'user';
 
     protected function exposedScopes()
     {

@@ -3,14 +3,14 @@
 namespace Orion\Tests\Unit\Http\Controllers\Stubs;
 
 use Orion\Http\Controllers\BaseController;
-use Orion\Tests\Fixtures\App\Http\Requests\TagRequest;
-use Orion\Tests\Fixtures\App\Models\Tag;
+use Orion\Tests\Fixtures\App\Http\Requests\PostRequest;
+use Orion\Tests\Fixtures\App\Models\Post;
 
 class BaseControllerStubWithWhitelistedFieldsAndRelations extends BaseController
 {
-    protected $model = Tag::class;
+    protected $model = Post::class;
 
-    protected $request = TagRequest::class;
+    protected $request = PostRequest::class;
 
     protected function exposedScopes()
     {

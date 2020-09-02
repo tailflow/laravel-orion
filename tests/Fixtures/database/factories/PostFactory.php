@@ -9,3 +9,9 @@ $factory->define(Post::class, function (Faker $faker) {
         'body' => $faker->text()
     ];
 });
+
+$factory->state(Post::class, 'trashed', function (Faker $faker) {
+    return [
+        'deleted_at' => \Carbon\Carbon::now()
+    ];
+});

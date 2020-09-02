@@ -4,7 +4,7 @@ namespace Orion\Tests\Fixtures\App\Http\Requests;
 
 use Orion\Http\Requests\Request;
 
-class TagRequest extends Request
+class PostRequest extends Request
 {
     /**
      * Default rules for the request.
@@ -23,7 +23,10 @@ class TagRequest extends Request
      */
     public function storeRules()
     {
-        return ['name' => 'string|required|max:255'];
+        return [
+            'title' => ['string', 'required', 'max:255'],
+            'body' => ['string', 'required']
+        ];
     }
 
     /**
@@ -33,6 +36,8 @@ class TagRequest extends Request
      */
     public function updateRules()
     {
-        return ['description' => 'string|required'];
+        return [
+            'title' => ['string', 'required', 'max:255']
+        ];
     }
 }

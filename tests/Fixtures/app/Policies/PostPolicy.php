@@ -21,17 +21,16 @@ class PostPolicy
         return true;
     }
 
-
     /**
      * Determine whether the user can view the post.
      *
      * @param $user
-     * @param \Orion\Tests\Fixtures\App\Models\Post $post
+     * @param Post $post
      * @return bool
      */
     public function view($user, Post $post)
     {
-        return true;
+        return (int) $post->user_id === $user->id;
     }
 
     /**
@@ -49,48 +48,48 @@ class PostPolicy
      * Determine whether the user can update the post.
      *
      * @param $user
-     * @param \Orion\Tests\Fixtures\App\Models\Post $post
+     * @param Post $post
      * @return bool
      */
     public function update($user, Post $post)
     {
-        return true;
+        return (int) $post->user_id === $user->id;
     }
 
     /**
      * Determine whether the user can delete the post.
      *
      * @param $user
-     * @param \Orion\Tests\Fixtures\App\Models\Post $post
+     * @param Post $post
      * @return bool
      */
     public function delete($user, Post $post)
     {
-        return true;
+        return (int) $post->user_id === $user->id;
     }
 
     /**
      * Determine whether the user can restore the post.
      *
      * @param $user
-     * @param \Orion\Tests\Fixtures\App\Models\Post $post
+     * @param Post $post
      * @return bool
      */
     public function restore($user, Post $post)
     {
-        return true;
+        return (int) $post->user_id === $user->id;
     }
 
     /**
      * Determine whether the user can permanently delete the post.
      *
      * @param $user
-     * @param \Orion\Tests\Fixtures\App\Models\Post $post
+     * @param Post $post
      * @return bool
      */
     public function forceDelete($user, Post $post)
     {
-        return true;
+        return (int) $post->user_id === $user->id;
     }
 }
 

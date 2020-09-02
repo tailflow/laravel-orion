@@ -3,32 +3,32 @@
 namespace Orion\Tests\Unit\Http\Controllers\Stubs;
 
 use Orion\Http\Controllers\BaseController;
-use Orion\Tests\Fixtures\App\Http\Requests\TagRequest;
-use Orion\Tests\Fixtures\App\Http\Resources\TagCollectionResource;
-use Orion\Tests\Fixtures\App\Http\Resources\TagResource;
-use Orion\Tests\Fixtures\App\Models\Tag;
+use Orion\Tests\Fixtures\App\Http\Requests\PostRequest;
+use Orion\Tests\Fixtures\App\Http\Resources\SampleCollectionResource;
+use Orion\Tests\Fixtures\App\Http\Resources\SampleResource;
+use Orion\Tests\Fixtures\App\Models\Post;
 
 class BaseControllerStub extends BaseController
 {
     /**
      * @var string $tag
      */
-    protected $model = Tag::class;
+    protected $model = Post::class;
 
     /**
      * @var string $request
      */
-    protected $request = TagRequest::class;
+    protected $request = PostRequest::class;
 
     /**
      * @var string $resource
      */
-    protected $resource = TagResource::class;
+    protected $resource = SampleResource::class;
 
     /**
      * @var string $collectionResource
      */
-    protected $collectionResource = TagCollectionResource::class;
+    protected $collectionResource = SampleCollectionResource::class;
 
     /**
      * @inheritDoc

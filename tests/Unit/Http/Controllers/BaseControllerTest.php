@@ -12,10 +12,10 @@ use Orion\Drivers\Standard\QueryBuilder;
 use Orion\Drivers\Standard\RelationsResolver;
 use Orion\Drivers\Standard\SearchBuilder;
 use Orion\Exceptions\BindingException;
-use Orion\Tests\Fixtures\App\Http\Requests\TagRequest;
-use Orion\Tests\Fixtures\App\Http\Resources\TagCollectionResource;
-use Orion\Tests\Fixtures\App\Http\Resources\TagResource;
-use Orion\Tests\Fixtures\App\Models\Tag;
+use Orion\Tests\Fixtures\App\Http\Requests\PostRequest;
+use Orion\Tests\Fixtures\App\Http\Resources\SampleCollectionResource;
+use Orion\Tests\Fixtures\App\Http\Resources\SampleResource;
+use Orion\Tests\Fixtures\App\Models\Post;
 use Orion\Tests\Fixtures\App\Models\User;
 use Orion\Tests\Unit\Http\Controllers\Stubs\BaseControllerStub;
 use Orion\Tests\Unit\Http\Controllers\Stubs\BaseControllerStubWithoutComponents;
@@ -38,15 +38,15 @@ class BaseControllerTest extends TestCase
     /** @test */
     public function dependencies_are_resolved_correctly()
     {
-        $fakeComponentsResolver = new ComponentsResolver(Tag::class);
+        $fakeComponentsResolver = new ComponentsResolver(Post::class);
         $fakeParamsValidator = new ParamsValidator();
         $fakeRelationsResolver = new RelationsResolver([], []);
         $fakePaginator = new Paginator(15);
         $fakeSearchBuilder = new SearchBuilder([]);
-        $fakeQueryBuilder = new QueryBuilder(Tag::class, $fakeParamsValidator, $fakeRelationsResolver, $fakeSearchBuilder);
+        $fakeQueryBuilder = new QueryBuilder(Post::class, $fakeParamsValidator, $fakeRelationsResolver, $fakeSearchBuilder);
 
         App::shouldReceive('makeWith')->with(\Orion\Contracts\ComponentsResolver::class, [
-            'resourceModelClass' => Tag::class
+            'resourceModelClass' => Post::class
         ])->once()->andReturn($fakeComponentsResolver);
 
         App::shouldReceive('makeWith')->with(\Orion\Contracts\ParamsValidator::class, [
@@ -69,7 +69,7 @@ class BaseControllerTest extends TestCase
         ])->once()->andReturn($fakeSearchBuilder);
 
         App::shouldReceive('makeWith')->with(\Orion\Contracts\QueryBuilder::class, [
-            'resourceModelClass' => Tag::class,
+            'resourceModelClass' => Post::class,
             'paramsValidator' => $fakeParamsValidator,
             'relationsResolver' => $fakeRelationsResolver,
             'searchBuilder' => $fakeSearchBuilder,
@@ -98,9 +98,9 @@ class BaseControllerTest extends TestCase
         });
 
         $stub = new BaseControllerStub();
-        $this->assertEquals(TagRequest::class, $stub->getRequest());
-        $this->assertEquals(TagResource::class, $stub->getResource());
-        $this->assertEquals(TagCollectionResource::class, $stub->getCollectionResource());
+        $this->assertEquals(PostRequest::class, $stub->getRequest());
+        $this->assertEquals(SampleResource::class, $stub->getResource());
+        $this->assertEquals(SampleCollectionResource::class, $stub->getCollectionResource());
     }
 
     /** @test */
@@ -126,7 +126,7 @@ class BaseControllerTest extends TestCase
     {
         App::bind(\Orion\Contracts\ComponentsResolver::class, function () {
             $componentsResolverMock = Mockery::mock(ComponentsResolver::class)->makePartial();
-            $componentsResolverMock->shouldReceive('bindRequestClass')->with(TagRequest::class)->once();
+            $componentsResolverMock->shouldReceive('bindRequestClass')->with(PostRequest::class)->once();
 
             return $componentsResolverMock;
         });
@@ -156,7 +156,7 @@ class BaseControllerTest extends TestCase
         $newModelQuery = $stub->newModelQuery();
 
         $this->assertInstanceOf(Builder::class, $newModelQuery);
-        $this->assertInstanceOf(Tag::class, $newModelQuery->getModel());
+        $this->assertInstanceOf(Post::class, $newModelQuery->getModel());
     }
 
     /** @test */
@@ -164,6 +164,30 @@ class BaseControllerTest extends TestCase
     {
         $stub = new BaseControllerStub();
 
-        $this->assertEquals(Tag::class, $stub->getModel());
+        $this->assertEquals(Post::class, $stub->getModel());
+    }
+
+    /** @test */
+    public function resolving_user_with_api_guard()
+    {
+        $user = new User(['name' => 'test user']);
+        $this->actingAs($user, 'api');
+
+        $stub = new BaseControllerStub();
+        $resolvedUser = $stub->resolveUser();
+
+        $this->assertTrue($user->is($resolvedUser));
+    }
+
+    /** @test */
+    public function resolving_user_with_other_guards()
+    {
+        $user = new User(['name' => 'test user']);
+        $this->actingAs($user, 'web');
+
+        $stub = new BaseControllerStub();
+        $resolvedUser = $stub->resolveUser();
+
+        $this->assertFalse($user->is($resolvedUser));
     }
 }

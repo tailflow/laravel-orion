@@ -3,7 +3,6 @@
 namespace Orion\Tests\Fixtures\App\Providers;
 
 use Illuminate\Contracts\Http\Kernel;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Orion\Contracts\ComponentsResolver;
 use Orion\Contracts\Paginator;
@@ -13,8 +12,6 @@ use Orion\Contracts\RelationsResolver;
 use Orion\Contracts\SearchBuilder;
 use Orion\Http\Middleware\EnforceExpectsJson;
 use Orion\Orion;
-use Orion\Tests\Fixtures\App\Models\Post;
-use Orion\Tests\Fixtures\App\Policies\PostPolicy;
 
 class OrionServiceProvider extends ServiceProvider
 {
@@ -46,7 +43,5 @@ class OrionServiceProvider extends ServiceProvider
         app()->make(Kernel::class)->pushMiddleware(EnforceExpectsJson::class);
 
         $this->loadRoutesFrom(__DIR__.'/../../routes/api.php');
-
-        Gate::policy(Post::class, PostPolicy::class);
     }
 }

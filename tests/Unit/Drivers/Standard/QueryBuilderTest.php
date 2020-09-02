@@ -9,10 +9,9 @@ use Orion\Drivers\Standard\QueryBuilder;
 use Orion\Drivers\Standard\RelationsResolver;
 use Orion\Drivers\Standard\SearchBuilder;
 use Orion\Http\Requests\Request;
-use Orion\Tests\Fixtures\App\Models\History;
-use Orion\Tests\Fixtures\App\Models\Supplier;
-use Orion\Tests\Fixtures\App\Models\Tag;
-use Orion\Tests\Fixtures\App\Models\TagMeta;
+use Orion\Tests\Fixtures\App\Models\Post;
+use Orion\Tests\Fixtures\App\Models\Team;
+use Orion\Tests\Fixtures\App\Models\User;
 use Orion\Tests\Unit\Drivers\Standard\Stubs\ControllerStub;
 use Orion\Tests\Unit\TestCase;
 
@@ -23,10 +22,10 @@ class QueryBuilderTest extends TestCase
     {
         $request = new Request();
         $request->setRouteResolver(function () {
-            return new Route('GET', '/api/tags', [ControllerStub::class, 'index']);
+            return new Route('GET', '/api/posts', [ControllerStub::class, 'index']);
         });
 
-        $query = Tag::query();
+        $query = Post::query();
 
         $queryBuilderMock = Mockery::mock(QueryBuilder::class)->makePartial();
         $queryBuilderMock->shouldReceive('applyScopesToQuery')->with($query, $request)->once();
@@ -43,10 +42,10 @@ class QueryBuilderTest extends TestCase
     {
         $request = new Request();
         $request->setRouteResolver(function () {
-            return new Route('GET', '/api/tags/1', [ControllerStub::class, 'show']);
+            return new Route('GET', '/api/posts/1', [ControllerStub::class, 'show']);
         });
 
-        $query = Tag::query();
+        $query = Post::query();
 
         $queryBuilderMock = Mockery::mock(QueryBuilder::class)->makePartial();
         $queryBuilderMock->shouldReceive('applyScopesToQuery')->with($query, $request)->never();
@@ -63,80 +62,80 @@ class QueryBuilderTest extends TestCase
     {
         $request = new Request();
         $request->setRouteResolver(function () {
-            return new Route('GET', '/api/tags', [ControllerStub::class, 'index']);
+            return new Route('GET', '/api/posts', [ControllerStub::class, 'index']);
         });
         $request->query->set('scopes', [
-            ['name' => 'withPriority'],
-            ['name' => 'whereNameAndPriority', 'parameters' => ['testTag', 1]]
+            ['name' => 'published'],
+            ['name' => 'publishedAt', 'parameters' => ['2019-01-01 09:35:14']]
         ]);
 
-        $tagA = factory(Tag::class)->create(['name' => 'testTag', 'priority' => 1]);
-        $tagB = factory(Tag::class)->create(['name' => 'testTag', 'priority' => null]);
-        $tagC = factory(Tag::class)->create();
+        $postA = factory(Post::class)->create(['publish_at' => '2019-01-01 09:35:14']);
+        $postB = factory(Post::class)->create(['publish_at' => '2020-02-01 09:35:14']);
+        $postC = factory(Post::class)->create();
 
-        $query = Tag::query();
+        $query = Post::query();
 
         $queryBuilder = new QueryBuilder(
-            Tag::class,
-            new ParamsValidator(['withPriority', 'whereNameAndPriority']),
+            Post::class,
+            new ParamsValidator(['published', 'publishedAt']),
             new RelationsResolver([], []),
             new SearchBuilder([])
         );
         $queryBuilder->applyScopesToQuery($query, $request);
 
-        $tags = $query->get();
+        $posts = $query->get();
 
-        $this->assertCount(1, $tags);
-        $this->assertSame($tagA->id, $tags->first()->id);
+        $this->assertCount(1, $posts);
+        $this->assertSame($postA->id, $posts->first()->id);
     }
 
     /** @test */
     public function applying_model_level_fields_filters_with_singular_values()
     {
         $request = $this->makeRequestWithFilters([
-            ['field' => 'name', 'operator' => '=', 'value' => 'testTag'],
-            ['type' => 'or', 'field' => 'priority', 'operator' => '=', 'value' => 5]
+            ['field' => 'title', 'operator' => '=', 'value' => 'test post'],
+            ['type' => 'or', 'field' => 'tracking_id', 'operator' => '=', 'value' => 5]
         ]);
 
-        $tagA = factory(Tag::class)->create(['name' => 'testTag', 'priority' => 1]);
-        $tagB = factory(Tag::class)->create(['name' => 'anotherTestTag', 'priority' => 5]);
-        $tagC = factory(Tag::class)->create(['name' => 'customTag', 'priority' => 10]);
+        $postA = factory(Post::class)->create(['title' => 'test post', 'tracking_id' => 1]);
+        $postB = factory(Post::class)->create(['title' => 'another test post', 'tracking_id' => 5]);
+        $postC = factory(Post::class)->create(['title' => 'different post', 'tracking_id' => 10]);
 
-        $query = Tag::query();
+        $query = Post::query();
 
         $queryBuilder = new QueryBuilder(
-            Tag::class,
-            new ParamsValidator([], ['name', 'priority']),
+            Post::class,
+            new ParamsValidator([], ['title', 'tracking_id']),
             new RelationsResolver([], []),
             new SearchBuilder([])
         );
         $queryBuilder->applyFiltersToQuery($query, $request);
 
-        $tags = $query->get();
+        $posts = $query->get();
 
-        $this->assertCount(2, $tags);
-        $this->assertTrue($tags->contains('id', $tagA->id));
-        $this->assertTrue($tags->contains('id', $tagB->id));
-        $this->assertFalse($tags->contains('id', $tagC->id));
+        $this->assertCount(2, $posts);
+        $this->assertTrue($posts->contains('id', $postA->id));
+        $this->assertTrue($posts->contains('id', $postB->id));
+        $this->assertFalse($posts->contains('id', $postC->id));
     }
 
     /** @test */
     public function applying_model_level_fields_filters_with_multiple_values()
     {
         $request = $this->makeRequestWithFilters([
-            ['field' => 'name', 'operator' => 'in', 'value' => ['testTagA', 'testTagB']],
-            ['type' => 'or', 'field' => 'priority', 'operator' => 'in', 'value' => [5, 10]]
+            ['field' => 'title', 'operator' => 'in', 'value' => ['test post', 'something else']],
+            ['type' => 'or', 'field' => 'tracking_id', 'operator' => 'in', 'value' => [5, 10]]
         ]);
 
-        $tagA = factory(Tag::class)->create(['name' => 'testTagA', 'priority' => 1]);
-        $tagB = factory(Tag::class)->create(['name' => 'anotherTestTag', 'priority' => 5]);
-        $tagC = factory(Tag::class)->create(['name' => 'customTag', 'priority' => 15]);
+        $postA = factory(Post::class)->create(['title' => 'test post', 'tracking_id' => 1]);
+        $postB = factory(Post::class)->create(['title' => 'another test post', 'tracking_id' => 10]);
+        $postC = factory(Post::class)->create(['title' => 'different post', 'tracking_id' => 15]);
 
-        $query = Tag::query();
+        $query = Post::query();
 
         $queryBuilder = new QueryBuilder(
-            Tag::class,
-            new ParamsValidator([], ['name', 'priority']),
+            Post::class,
+            new ParamsValidator([], ['title', 'tracking_id']),
             new RelationsResolver([], []),
             new SearchBuilder([])
         );
@@ -145,104 +144,108 @@ class QueryBuilderTest extends TestCase
         $tags = $query->get();
 
         $this->assertCount(2, $tags);
-        $this->assertTrue($tags->contains('id', $tagA->id));
-        $this->assertTrue($tags->contains('id', $tagB->id));
-        $this->assertFalse($tags->contains('id', $tagC->id));
+        $this->assertTrue($tags->contains('id', $postA->id));
+        $this->assertTrue($tags->contains('id', $postB->id));
+        $this->assertFalse($tags->contains('id', $postC->id));
     }
 
     /** @test */
     public function applying_relation_level_fields_filters_with_singular_values()
     {
         $request = $this->makeRequestWithFilters([
-            ['field' => 'meta.key', 'operator' => '=', 'value' => 'testKeyA'],
-            ['type' => 'or', 'field' => 'meta.key', 'operator' => '=', 'value' => 'testKeyB']
+            ['field' => 'user.name', 'operator' => '=', 'value' => 'test user A'],
+            ['type' => 'or', 'field' => 'user.name', 'operator' => '=', 'value' => 'test user B']
         ]);
 
-        $tagA = factory(Tag::class)->create(['name' => 'testTagA']);
-        factory(TagMeta::class)->create(['tag_id' => $tagA->id, 'key' => 'testKeyA']);
-        $tagB = factory(Tag::class)->create(['name' => 'testTagB']);
-        factory(TagMeta::class)->create(['tag_id' => $tagB->id, 'key' => 'testKeyB']);
-        $tagC = factory(Tag::class)->create(['name' => 'testTagC']);
-        factory(TagMeta::class)->create(['tag_id' => $tagC->id, 'key' => 'testKeyC']);
+        $postAUser = factory(User::class)->create(['name' => 'test user A']);
+        $postA = factory(Post::class)->create(['user_id' => $postAUser->id]);
 
-        $query = Tag::query();
+        $postBUser = factory(User::class)->create(['name' => 'test user B']);
+        $postB = factory(Post::class)->create(['user_id' => $postBUser->id]);
+
+        $postCUser = factory(User::class)->create(['name' => 'test user C']);
+        $postC = factory(Post::class)->create(['user_id' => $postCUser->id]);
+
+        $query = Post::query();
 
         $queryBuilder = new QueryBuilder(
-            Tag::class,
-            new ParamsValidator([], ['meta.key']),
+            Post::class,
+            new ParamsValidator([], ['user.name']),
             new RelationsResolver([], []),
             new SearchBuilder([])
         );
         $queryBuilder->applyFiltersToQuery($query, $request);
 
-        $tags = $query->get();
+        $posts = $query->get();
 
-        $this->assertCount(2, $tags);
-        $this->assertTrue($tags->contains('id', $tagA->id));
-        $this->assertTrue($tags->contains('id', $tagB->id));
-        $this->assertFalse($tags->contains('id', $tagC->id));
+        $this->assertCount(2, $posts);
+        $this->assertTrue($posts->contains('id', $postA->id));
+        $this->assertTrue($posts->contains('id', $postB->id));
+        $this->assertFalse($posts->contains('id', $postC->id));
     }
 
     /** @test */
     public function applying_relation_level_fields_filters_with_multiple_values()
     {
         $request = $this->makeRequestWithFilters([
-            ['field' => 'meta.key', 'operator' => 'in', 'value' => ['testKeyA', 'testKeyB']],
-            ['type' => 'or', 'field' => 'meta.key', 'operator' => 'in', 'value' => ['testKeyC']]
+            ['field' => 'user.name', 'operator' => 'in', 'value' => ['test user A', 'test user B']],
+            ['type' => 'or', 'field' => 'user.name', 'operator' => 'in', 'value' => ['test user C']]
         ]);
 
-        $tagA = factory(Tag::class)->create(['name' => 'testTagA']);
-        factory(TagMeta::class)->create(['tag_id' => $tagA->id, 'key' => 'testKeyA']);
-        $tagB = factory(Tag::class)->create(['name' => 'testTagB']);
-        factory(TagMeta::class)->create(['tag_id' => $tagB->id, 'key' => 'testKeyB']);
-        $tagC = factory(Tag::class)->create(['name' => 'testTagC']);
-        factory(TagMeta::class)->create(['tag_id' => $tagC->id, 'key' => 'testKeyC']);
+        $postAUser = factory(User::class)->create(['name' => 'test user A']);
+        $postA = factory(Post::class)->create(['user_id' => $postAUser->id]);
 
-        $query = Tag::query();
+        $postBUser = factory(User::class)->create(['name' => 'test user B']);
+        $postB = factory(Post::class)->create(['user_id' => $postBUser->id]);
+
+        $postCUser = factory(User::class)->create(['name' => 'test user C']);
+        $postC = factory(Post::class)->create(['user_id' => $postCUser->id]);
+
+        $query = Post::query();
 
         $queryBuilder = new QueryBuilder(
-            Tag::class,
-            new ParamsValidator([], ['meta.key']),
+            Post::class,
+            new ParamsValidator([], ['user.name']),
             new RelationsResolver([], []),
             new SearchBuilder([])
         );
         $queryBuilder->applyFiltersToQuery($query, $request);
 
-        $tags = $query->get();
+        $posts = $query->get();
 
-        $this->assertCount(3, $tags);
-        $this->assertTrue($tags->contains('id', $tagA->id));
-        $this->assertTrue($tags->contains('id', $tagB->id));
-        $this->assertTrue($tags->contains('id', $tagC->id));
+        $this->assertCount(3, $posts);
+        $this->assertTrue($posts->contains('id', $postA->id));
+        $this->assertTrue($posts->contains('id', $postB->id));
+        $this->assertTrue($posts->contains('id', $postC->id));
     }
 
     /** @test */
     public function applying_filters_with_not_in_operator()
     {
         $request = $this->makeRequestWithFilters([
-            ['field' => 'name', 'operator' => 'not in', 'value' => ['testTagA', 'testTagB']]
+            ['field' => 'title', 'operator' => 'not in', 'value' => ['test post A', 'test post B']]
         ]);
 
-        $tagA = factory(Tag::class)->create(['name' => 'testTagA']);
-        $tagB = factory(Tag::class)->create(['name' => 'testTagB']);
-        $tagC = factory(Tag::class)->create(['name' => 'testTagC']);
+        $postA = factory(Post::class)->create(['title' => 'test post A']);
+        $postB = factory(Post::class)->create(['title' => 'test post B']);
+        $postC = factory(Post::class)->create(['title' => 'test post C']);
 
-        $query = Tag::query();
+        $query = Post::query();
 
         $queryBuilder = new QueryBuilder(
-            Tag::class,
-            new ParamsValidator([], ['name']),
+            Post::class,
+            new ParamsValidator([], ['title']),
             new RelationsResolver([], []),
             new SearchBuilder([])
         );
         $queryBuilder->applyFiltersToQuery($query, $request);
 
-        $tags = $query->get();
+        $posts = $query->get();
 
-        $this->assertCount(1, $tags);
-        $this->assertFalse($tags->contains('id', $tagA->id));
-        $this->assertFalse($tags->contains('id', $tagB->id));
-        $this->assertTrue($tags->contains('id', $tagC->id));
+        $this->assertCount(1, $posts);
+        $this->assertFalse($posts->contains('id', $postA->id));
+        $this->assertFalse($posts->contains('id', $postB->id));
+        $this->assertTrue($posts->contains('id', $postC->id));
     }
 
     /** @test */
@@ -252,30 +255,30 @@ class QueryBuilderTest extends TestCase
             'value' => 'example'
         ]);
 
-        $tagA = factory(Tag::class)->create(['name' => 'name example']);
-        $tagB = factory(Tag::class)->create(['name' => 'example name']);
-        $tagC = factory(Tag::class)->create(['name' => 'name with example in the middle']);
-        $tagD = factory(Tag::class)->create(['name' => 'not matching name', 'description' => 'but matching example description']);
-        $tagE = factory(Tag::class)->create(['name' => 'not matching name']);
+        $postA = factory(Post::class)->create(['title' => 'title example']);
+        $postB = factory(Post::class)->create(['title' => 'example title']);
+        $postC = factory(Post::class)->create(['title' => 'title with example in the middle']);
+        $postD = factory(Post::class)->create(['title' => 'not matching title', 'body' => 'but matching example body']);
+        $postE = factory(Post::class)->create(['title' => 'not matching title']);
 
-        $query = Tag::query();
+        $query = Post::query();
 
         $queryBuilder = new QueryBuilder(
-            Tag::class,
+            Post::class,
             new ParamsValidator([], []),
             new RelationsResolver([], []),
-            new SearchBuilder(['name', 'description'])
+            new SearchBuilder(['title', 'body'])
         );
         $queryBuilder->applySearchingToQuery($query, $request);
 
-        $tags = $query->get();
+        $posts = $query->get();
 
-        $this->assertCount(4, $tags);
-        $this->assertTrue($tags->contains('id', $tagA->id));
-        $this->assertTrue($tags->contains('id', $tagB->id));
-        $this->assertTrue($tags->contains('id', $tagC->id));
-        $this->assertTrue($tags->contains('id', $tagD->id));
-        $this->assertFalse($tags->contains('id', $tagE->id));
+        $this->assertCount(4, $posts);
+        $this->assertTrue($posts->contains('id', $postA->id));
+        $this->assertTrue($posts->contains('id', $postB->id));
+        $this->assertTrue($posts->contains('id', $postC->id));
+        $this->assertTrue($posts->contains('id', $postD->id));
+        $this->assertFalse($posts->contains('id', $postE->id));
     }
 
     /** @test */
@@ -285,35 +288,39 @@ class QueryBuilderTest extends TestCase
             'value' => 'example'
         ]);
 
-        $tagA = factory(Tag::class)->create(['name' => 'testTagA']);
-        factory(TagMeta::class)->create(['tag_id' => $tagA->id, 'key' => 'key example']);
-        $tagB = factory(Tag::class)->create(['name' => 'testTagB']);
-        factory(TagMeta::class)->create(['tag_id' => $tagB->id, 'key' => 'example key']);
-        $tagC = factory(Tag::class)->create(['name' => 'testTagC']);
-        factory(TagMeta::class)->create(['tag_id' => $tagC->id, 'key' => 'key with example in the middle']);
-        $tagD = factory(Tag::class)->create(['name' => 'testTagD']);
-        factory(TagMeta::class)->create(['tag_id' => $tagD->id, 'key' => 'not matching key', 'value' => 'but matching example value']);
-        $tagE = factory(Tag::class)->create(['name' => 'testTagE']);
-        factory(TagMeta::class)->create(['tag_id' => $tagE->id, 'key' => 'not matching key']);
+        $postAUser = factory(User::class)->create(['name' => 'name example']);
+        $postA = factory(Post::class)->create(['user_id' => $postAUser->id]);
 
-        $query = Tag::query();
+        $postBUser = factory(User::class)->create(['name' => 'example name']);
+        $postB = factory(Post::class)->create(['user_id' => $postBUser->id]);
+
+        $postCUser = factory(User::class)->create(['name' => 'name with example in the middle']);
+        $postC = factory(Post::class)->create(['user_id' => $postCUser->id]);
+
+        $postDUser = factory(User::class)->create(['name' => 'not matching name', 'email' => 'but-matching-email@example.com']);
+        $postD = factory(Post::class)->create(['user_id' => $postDUser->id]);
+
+        $postEUser = factory(User::class)->create(['name' => 'not matching name', 'email' => 'test@domain.com']);
+        $postE = factory(Post::class)->create(['user_id' => $postEUser->id]);
+
+        $query = Post::query();
 
         $queryBuilder = new QueryBuilder(
-            Tag::class,
+            Post::class,
             new ParamsValidator([], []),
             new RelationsResolver([], []),
-            new SearchBuilder(['meta.key', 'meta.value'])
+            new SearchBuilder(['user.name', 'user.email'])
         );
         $queryBuilder->applySearchingToQuery($query, $request);
 
-        $tags = $query->get();
+        $posts = $query->get();
 
-        $this->assertCount(4, $tags);
-        $this->assertTrue($tags->contains('id', $tagA->id));
-        $this->assertTrue($tags->contains('id', $tagB->id));
-        $this->assertTrue($tags->contains('id', $tagC->id));
-        $this->assertTrue($tags->contains('id', $tagD->id));
-        $this->assertFalse($tags->contains('id', $tagE->id));
+        $this->assertCount(4, $posts);
+        $this->assertTrue($posts->contains('id', $postA->id));
+        $this->assertTrue($posts->contains('id', $postB->id));
+        $this->assertTrue($posts->contains('id', $postC->id));
+        $this->assertTrue($posts->contains('id', $postD->id));
+        $this->assertFalse($posts->contains('id', $postE->id));
     }
 
     /** @test */
@@ -321,80 +328,80 @@ class QueryBuilderTest extends TestCase
     {
         $request = new Request();
         $request->setRouteResolver(function () {
-            return new Route('GET', '/api/tags', [ControllerStub::class, 'index']);
+            return new Route('GET', '/api/posts', [ControllerStub::class, 'index']);
         });
 
-        factory(Tag::class)->times(3)->create(['name' => 'not matching']);
+        factory(Post::class)->times(3)->create(['title' => 'not matching']);
 
-        $query = Tag::query();
+        $query = Post::query();
 
         $queryBuilder = new QueryBuilder(
-            Tag::class,
+            Post::class,
             new ParamsValidator([], []),
             new RelationsResolver([], []),
-            new SearchBuilder(['name', 'description'])
+            new SearchBuilder(['title', 'body'])
         );
         $queryBuilder->applySearchingToQuery($query, $request);
 
-        $tags = $query->get();
+        $posts = $query->get();
 
-        $this->assertCount(3, $tags);
+        $this->assertCount(3, $posts);
     }
 
     /** @test */
     public function default_sorting_based_on_model_fields()
     {
         $request = $this->makeRequestWithSort([
-            ['field' => 'name']
+            ['field' => 'title']
         ]);
 
-        $tagA = factory(Tag::class)->create(['name' => 'tagA']);
-        $tagB = factory(Tag::class)->create(['name' => 'tagB']);
-        $tagC = factory(Tag::class)->create(['name' => 'tagC']);
+        $postA = factory(Post::class)->create(['title' => 'post A']);
+        $postB = factory(Post::class)->create(['title' => 'post B']);
+        $postC = factory(Post::class)->create(['title' => 'post C']);
 
-        $query = Tag::query();
+        $query = Post::query();
 
         $queryBuilder = new QueryBuilder(
-            Tag::class,
-            new ParamsValidator([], [], ['name']),
+            Post::class,
+            new ParamsValidator([], [], ['title']),
             new RelationsResolver([], []),
             new SearchBuilder([])
         );
         $queryBuilder->applySortingToQuery($query, $request);
 
-        $tags = $query->get();
+        $posts = $query->get();
 
-        $this->assertEquals($tagA->id, $tags[0]->id);
-        $this->assertEquals($tagB->id, $tags[1]->id);
-        $this->assertEquals($tagC->id, $tags[2]->id);
+        $this->assertEquals($postA->id, $posts[0]->id);
+        $this->assertEquals($postB->id, $posts[1]->id);
+        $this->assertEquals($postC->id, $posts[2]->id);
     }
 
     /** @test */
     public function desc_sorting_based_on_model_fields()
     {
         $request = $this->makeRequestWithSort([
-            ['field' => 'name', 'direction' => 'desc']
+            ['field' => 'title', 'direction' => 'desc']
         ]);
 
-        $tagA = factory(Tag::class)->create(['name' => 'tagA']);
-        $tagB = factory(Tag::class)->create(['name' => 'tagB']);
-        $tagC = factory(Tag::class)->create(['name' => 'tagC']);
+        $postA = factory(Post::class)->create(['title' => 'post A']);
+        $postB = factory(Post::class)->create(['title' => 'post B']);
+        $postC = factory(Post::class)->create(['title' => 'post C']);
 
-        $query = Tag::query();
+        $query = Post::query();
 
         $queryBuilder = new QueryBuilder(
-            Tag::class,
-            new ParamsValidator([], [], ['name']),
+            Post::class,
+            new ParamsValidator([], [], ['title']),
             new RelationsResolver([], []),
             new SearchBuilder([])
         );
         $queryBuilder->applySortingToQuery($query, $request);
 
-        $tags = $query->get();
+        $posts = $query->get();
 
-        $this->assertEquals($tagC->id, $tags[0]->id);
-        $this->assertEquals($tagB->id, $tags[1]->id);
-        $this->assertEquals($tagA->id, $tags[2]->id);
+        $this->assertEquals($postC->id, $posts[0]->id);
+        $this->assertEquals($postB->id, $posts[1]->id);
+        $this->assertEquals($postA->id, $posts[2]->id);
     }
 
     //TODO: test sorting on different relation types
@@ -403,62 +410,66 @@ class QueryBuilderTest extends TestCase
     public function default_sorting_based_on_relation_fields()
     {
         $request = $this->makeRequestWithSort([
-            ['field' => 'meta.key']
+            ['field' => 'user.name']
         ]);
 
-        $tagA = factory(Tag::class)->create();
-        factory(TagMeta::class)->create(['tag_id' => $tagA->id, 'key' => 'metaA']);
-        $tagB = factory(Tag::class)->create();
-        factory(TagMeta::class)->create(['tag_id' => $tagB->id, 'key' => 'metaB']);
-        $tagC = factory(Tag::class)->create();
-        factory(TagMeta::class)->create(['tag_id' => $tagC->id, 'key' => 'metaC']);
+        $postAUser = factory(User::class)->create(['name' => 'user A']);
+        $postA = factory(Post::class)->create(['user_id' => $postAUser->id]);
 
-        $query = Tag::query();
+        $postBUser = factory(User::class)->create(['name' => 'user B']);
+        $postB = factory(Post::class)->create(['user_id' => $postBUser->id]);
+
+        $postCUser = factory(User::class)->create(['name' => 'user C']);
+        $postC = factory(Post::class)->create(['user_id' => $postCUser->id]);
+
+        $query = Post::query();
 
         $queryBuilder = new QueryBuilder(
-            Tag::class,
-            new ParamsValidator([], [], ['meta.key']),
+            Post::class,
+            new ParamsValidator([], [], ['user.name']),
             new RelationsResolver([], []),
             new SearchBuilder([])
         );
         $queryBuilder->applySortingToQuery($query, $request);
 
-        $tags = $query->get();
+        $posts = $query->get();
 
-        $this->assertEquals($tagA->id, $tags[0]->id);
-        $this->assertEquals($tagB->id, $tags[1]->id);
-        $this->assertEquals($tagC->id, $tags[2]->id);
+        $this->assertEquals($postA->id, $posts[0]->id);
+        $this->assertEquals($postB->id, $posts[1]->id);
+        $this->assertEquals($postC->id, $posts[2]->id);
     }
 
     /** @test */
     public function desc_sorting_based_on_relation_fields()
     {
         $request = $this->makeRequestWithSort([
-            ['field' => 'meta.key', 'direction' => 'desc']
+            ['field' => 'user.name', 'direction' => 'desc']
         ]);
 
-        $tagA = factory(Tag::class)->create();
-        factory(TagMeta::class)->create(['tag_id' => $tagA->id, 'key' => 'metaA']);
-        $tagB = factory(Tag::class)->create();
-        factory(TagMeta::class)->create(['tag_id' => $tagB->id, 'key' => 'metaB']);
-        $tagC = factory(Tag::class)->create();
-        factory(TagMeta::class)->create(['tag_id' => $tagC->id, 'key' => 'metaC']);
+        $postAUser = factory(User::class)->create(['name' => 'user A']);
+        $postA = factory(Post::class)->create(['user_id' => $postAUser->id]);
 
-        $query = Tag::query();
+        $postBUser = factory(User::class)->create(['name' => 'user B']);
+        $postB = factory(Post::class)->create(['user_id' => $postBUser->id]);
+
+        $postCUser = factory(User::class)->create(['name' => 'user C']);
+        $postC = factory(Post::class)->create(['user_id' => $postCUser->id]);
+
+        $query = Post::query();
 
         $queryBuilder = new QueryBuilder(
-            Tag::class,
-            new ParamsValidator([], [], ['meta.key']),
+            Post::class,
+            new ParamsValidator([], [], ['user.name']),
             new RelationsResolver([], []),
             new SearchBuilder([])
         );
         $queryBuilder->applySortingToQuery($query, $request);
 
-        $tags = $query->get();
+        $posts = $query->get();
 
-        $this->assertEquals($tagC->id, $tags[0]->id);
-        $this->assertEquals($tagB->id, $tags[1]->id);
-        $this->assertEquals($tagA->id, $tags[2]->id);
+        $this->assertEquals($postC->id, $posts[0]->id);
+        $this->assertEquals($postB->id, $posts[1]->id);
+        $this->assertEquals($postA->id, $posts[2]->id);
     }
 
     /** @test */
@@ -466,15 +477,15 @@ class QueryBuilderTest extends TestCase
     {
         $request = new Request();
         $request->setRouteResolver(function () {
-            return new Route('GET', '/api/tags', [ControllerStub::class, 'index']);
+            return new Route('GET', '/api/teams', [ControllerStub::class, 'index']);
         });
 
-        $queryMock = Mockery::mock(Tag::query())->makePartial();
+        $queryMock = Mockery::mock(Team::query())->makePartial();
         $queryMock->shouldNotReceive('withTrashed');
         $queryMock->shouldNotReceive('onlyTrashed');
 
         $queryBuilder = new QueryBuilder(
-            Tag::class,
+            Team::class,
             new ParamsValidator([], []),
             new RelationsResolver([], []),
             new SearchBuilder([])
@@ -488,29 +499,28 @@ class QueryBuilderTest extends TestCase
     {
         $request = new Request();
         $request->setRouteResolver(function () {
-            return new Route('GET', '/api/history', [ControllerStub::class, 'index']);
+            return new Route('GET', '/api/posts', [ControllerStub::class, 'index']);
         });
         $request->query->set('with_trashed', true);
 
-        $supplier = factory(Supplier::class)->create();
-        $history = factory(History::class)->create(['supplier_id' => $supplier->id]);
-        $softDeletedHistory = factory(History::class)->state('trashed')->create(['supplier_id' => $supplier->id]);
+        $post = factory(Post::class)->create();
+        $softDeletedPost = factory(Post::class)->state('trashed')->create();
 
-        $query = History::query();
+        $query = Post::query();
 
         $queryBuilder = new QueryBuilder(
-            History::class,
+            Post::class,
             new ParamsValidator([], []),
             new RelationsResolver([], []),
             new SearchBuilder([])
         );
         $this->assertTrue($queryBuilder->applySoftDeletesToQuery($query, $request));
 
-        $historyEntities = $query->get();
+        $posts = $query->get();
 
-        $this->assertCount(2, $historyEntities);
-        $this->assertTrue($historyEntities->contains('id', $history->id));
-        $this->assertTrue($historyEntities->contains('id', $softDeletedHistory->id));
+        $this->assertCount(2, $posts);
+        $this->assertTrue($posts->contains('id', $post->id));
+        $this->assertTrue($posts->contains('id', $softDeletedPost->id));
     }
 
     /** @test */
@@ -518,29 +528,28 @@ class QueryBuilderTest extends TestCase
     {
         $request = new Request();
         $request->setRouteResolver(function () {
-            return new Route('GET', '/api/history', [ControllerStub::class, 'index']);
+            return new Route('GET', '/api/posts', [ControllerStub::class, 'index']);
         });
         $request->query->set('only_trashed', true);
 
-        $supplier = factory(Supplier::class)->create();
-        $history = factory(History::class)->create(['supplier_id' => $supplier->id]);
-        $softDeletedHistory = factory(History::class)->state('trashed')->create(['supplier_id' => $supplier->id]);
+        $post = factory(Post::class)->create();
+        $softDeletedPost = factory(Post::class)->state('trashed')->create();
 
-        $query = History::query();
+        $query = Post::query();
 
         $queryBuilder = new QueryBuilder(
-            History::class,
+            Post::class,
             new ParamsValidator([], []),
             new RelationsResolver([], []),
             new SearchBuilder([])
         );
         $this->assertTrue($queryBuilder->applySoftDeletesToQuery($query, $request));
 
-        $historyEntities = $query->get();
+        $posts = $query->get();
 
-        $this->assertCount(1, $historyEntities);
-        $this->assertFalse($historyEntities->contains('id', $history->id));
-        $this->assertTrue($historyEntities->contains('id', $softDeletedHistory->id));
+        $this->assertCount(1, $posts);
+        $this->assertFalse($posts->contains('id', $post->id));
+        $this->assertTrue($posts->contains('id', $softDeletedPost->id));
     }
 
     protected function makeRequestWithFilters(array $filters)

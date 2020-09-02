@@ -1,16 +1,16 @@
 <?php
 
-
 namespace Orion\Tests\Fixtures\App\Http\Resources;
 
+use Illuminate\Http\Request;
 use Orion\Http\Resources\CollectionResource;
 
-class SupplierCollectionResource extends CollectionResource
+class SampleCollectionResource extends CollectionResource
 {
     /**
      * Transform the resource collection into an array.
      *
-     * @param \Illuminate\Http\Request $request
+     * @param Request $request
      * @return array
      */
     public function toArray($request)

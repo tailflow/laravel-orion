@@ -11,8 +11,8 @@ use Orion\Drivers\Standard\QueryBuilder;
 use Orion\Drivers\Standard\RelationsResolver;
 use Orion\Drivers\Standard\SearchBuilder;
 use Orion\Exceptions\BindingException;
-use Orion\Tests\Fixtures\App\Models\Tag;
-use Orion\Tests\Fixtures\App\Models\TagMeta;
+use Orion\Tests\Fixtures\App\Models\Post;
+use Orion\Tests\Fixtures\App\Models\User;
 use Orion\Tests\Unit\Http\Controllers\Stubs\RelationControllerStub;
 use Orion\Tests\Unit\Http\Controllers\Stubs\RelationControllerStubWithoutRelation;
 use Orion\Tests\Unit\TestCase;
@@ -31,16 +31,16 @@ class RelationControllerTest extends TestCase
     /** @test */
     public function dependencies_are_resolved_correctly()
     {
-        $fakeComponentsResolver = new ComponentsResolver(Tag::class);
+        $fakeComponentsResolver = new ComponentsResolver(Post::class);
         $fakeParamsValidator = new ParamsValidator();
         $fakeRelationsResolver = new RelationsResolver([], []);
         $fakePaginator = new Paginator(15);
         $fakeSearchBuilder = new SearchBuilder([]);
-        $fakeQueryBuilder = new QueryBuilder(Tag::class, $fakeParamsValidator, $fakeRelationsResolver, $fakeSearchBuilder);
-        $fakeRelationQueryBuilder = new QueryBuilder(TagMeta::class, $fakeParamsValidator, $fakeRelationsResolver, $fakeSearchBuilder);
+        $fakeQueryBuilder = new QueryBuilder(Post::class, $fakeParamsValidator, $fakeRelationsResolver, $fakeSearchBuilder);
+        $fakeRelationQueryBuilder = new QueryBuilder(User::class, $fakeParamsValidator, $fakeRelationsResolver, $fakeSearchBuilder);
 
         App::shouldReceive('makeWith')->with(\Orion\Contracts\ComponentsResolver::class, [
-            'resourceModelClass' => TagMeta::class
+            'resourceModelClass' => User::class
         ])->once()->andReturn($fakeComponentsResolver);
 
         App::shouldReceive('makeWith')->with(\Orion\Contracts\ParamsValidator::class, [
@@ -63,7 +63,7 @@ class RelationControllerTest extends TestCase
         ])->once()->andReturn($fakeSearchBuilder);
 
         App::shouldReceive('makeWith')->with(\Orion\Contracts\QueryBuilder::class, [
-            'resourceModelClass' => Tag::class,
+            'resourceModelClass' => Post::class,
             'paramsValidator' => $fakeParamsValidator,
             'relationsResolver' => $fakeRelationsResolver,
             'searchBuilder' => $fakeSearchBuilder,
@@ -71,7 +71,7 @@ class RelationControllerTest extends TestCase
         ])->once()->andReturn($fakeQueryBuilder);
 
         App::shouldReceive('makeWith')->with(\Orion\Contracts\QueryBuilder::class, [
-            'resourceModelClass' => TagMeta::class,
+            'resourceModelClass' => User::class,
             'paramsValidator' => $fakeParamsValidator,
             'relationsResolver' => $fakeRelationsResolver,
             'searchBuilder' => $fakeSearchBuilder
@@ -90,12 +90,12 @@ class RelationControllerTest extends TestCase
     /** @test */
     public function creating_new_relation_query()
     {
-        $parentEntity = new Tag();
+        $parentEntity = new Post();
         $stub = new RelationControllerStub();
 
         $newRelationQuery = $stub->newRelationQuery($parentEntity);
 
         $this->assertInstanceOf(Relation::class, $newRelationQuery);
-        $this->assertInstanceOf(TagMeta::class, $newRelationQuery->getModel());
+        $this->assertInstanceOf(User::class, $newRelationQuery->getModel());
     }
 }
