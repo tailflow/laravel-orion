@@ -2,6 +2,8 @@
 
 namespace Orion\Contracts;
 
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
 use Orion\Http\Requests\Request;
 
 interface RelationsResolver
@@ -19,4 +21,8 @@ interface RelationsResolver
     public function relationForeignKeyFromRelationInstance($relationInstance): string;
 
     public function relationLocalKeyFromRelationInstance($relationInstance): string;
+
+    public function guardRelationsForCollection(Collection $entities, array $requestedRelations): Collection;
+
+    public function guardRelations(Model $entity, array $requestedRelations);
 }

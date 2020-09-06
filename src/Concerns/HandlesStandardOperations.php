@@ -26,14 +26,18 @@ trait HandlesStandardOperations
 
         $this->authorize('viewAny', $this->resolveResourceModelClass());
 
+        $requestedRelations = $this->relationsResolver->requestedRelations($request);
+
         $entities = $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
-            ->with($this->relationsResolver->requestedRelations($request))
+            ->with($requestedRelations)
             ->paginate($this->paginator->resolvePaginationLimit($request));
 
         $afterHookResult = $this->afterIndex($request, $entities);
         if ($this->hookResponds($afterHookResult)) {
             return $afterHookResult;
         }
+
+        $this->relationsResolver->guardRelationsForCollection($entities->getCollection(), $requestedRelations);
 
         return $this->collectionResponse($entities);
     }
@@ -66,8 +70,10 @@ trait HandlesStandardOperations
             return $beforeSaveHookResult;
         }
 
+        $requestedRelations = $this->relationsResolver->requestedRelations($request);
+
         $entity->save();
-        $entity = $entity->fresh($this->relationsResolver->requestedRelations($request));
+        $entity = $entity->fresh($requestedRelations);
         $entity->wasRecentlyCreated = true;
 
         $afterSaveHookResult = $this->afterSave($request, $entity);
@@ -79,6 +85,8 @@ trait HandlesStandardOperations
         if ($this->hookResponds($afterHookResult)) {
             return $afterHookResult;
         }
+
+        $entity = $this->relationsResolver->guardRelations($entity, $requestedRelations);
 
         return $this->entityResponse($entity);
     }
@@ -97,11 +105,13 @@ trait HandlesStandardOperations
             return $beforeHookResult;
         }
 
+        $requestedRelations = $this->relationsResolver->requestedRelations($request);
+
         /**
          * @var Model $entity
          */
         $entity = $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
-            ->with($this->relationsResolver->requestedRelations($request))
+            ->with($requestedRelations)
             ->findOrFail($key);
 
         $this->authorize('view', $entity);
@@ -110,6 +120,8 @@ trait HandlesStandardOperations
         if ($this->hookResponds($afterHookResult)) {
             return $afterHookResult;
         }
+
+        $entity = $this->relationsResolver->guardRelations($entity, $requestedRelations);
 
         return $this->entityResponse($entity);
     }
@@ -123,11 +135,13 @@ trait HandlesStandardOperations
      */
     public function update(Request $request, $key)
     {
+        $requestedRelations = $this->relationsResolver->requestedRelations($request);
+
         /**
          * @var Model $entity
          */
         $entity = $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
-            ->with($this->relationsResolver->requestedRelations($request))
+            ->with($requestedRelations)
             ->findOrFail($key);
 
         $this->authorize('view', $entity);
@@ -156,6 +170,8 @@ trait HandlesStandardOperations
             return $afterHookResult;
         }
 
+        $entity = $this->relationsResolver->guardRelations($entity, $requestedRelations);
+
         return $this->entityResponse($entity);
     }
 
@@ -170,9 +186,10 @@ trait HandlesStandardOperations
     public function destroy(Request $request, $key)
     {
         $softDeletes = $this->softDeletes($this->resolveResourceModelClass());
+        $requestedRelations = $this->relationsResolver->requestedRelations($request);
 
         $entity = $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
-            ->with($this->relationsResolver->requestedRelations($request))
+            ->with($requestedRelations)
             ->when($softDeletes, function ($query) {
                 $query->withTrashed();
             })
@@ -202,6 +219,8 @@ trait HandlesStandardOperations
             return $afterHookResult;
         }
 
+        $entity = $this->relationsResolver->guardRelations($entity, $requestedRelations);
+
         return $this->entityResponse($entity);
     }
 
@@ -215,8 +234,10 @@ trait HandlesStandardOperations
      */
     public function restore(Request $request, $key)
     {
+        $requestedRelations = $this->relationsResolver->requestedRelations($request);
+
         $entity = $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
-            ->with($this->relationsResolver->requestedRelations($request))
+            ->with($requestedRelations)
             ->withTrashed()
             ->findOrFail($key);
 
@@ -233,6 +254,8 @@ trait HandlesStandardOperations
         if ($this->hookResponds($afterHookResult)) {
             return $afterHookResult;
         }
+
+        $entity = $this->relationsResolver->guardRelations($entity, $requestedRelations);
 
         return $this->entityResponse($entity);
     }

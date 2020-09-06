@@ -2,12 +2,14 @@
 
 namespace Orion\Drivers\Standard;
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Collection;
 use Orion\Http\Requests\Request;
 
 class RelationsResolver implements \Orion\Contracts\RelationsResolver
@@ -123,5 +125,38 @@ class RelationsResolver implements \Orion\Contracts\RelationsResolver
                 return $relationInstance->getQualifiedLocalKeyName();
                 break;
         }
+    }
+
+    /**
+     * Removes loaded relations that were not requested and exposed on the given collection of entities.
+     *
+     * @param Collection $entities
+     * @param array $requestedRelations
+     * @return Collection
+     */
+    public function guardRelationsForCollection(Collection $entities, array $requestedRelations): Collection
+    {
+        return $entities->transform(function ($entity) use ($requestedRelations) {
+            return $this->guardRelations($entity, $requestedRelations);
+        });
+    }
+
+    /**
+     * Removes loaded relations that were not requested and exposed on the given entity.
+     *
+     * @param Model $entity
+     * @param array $requestedRelations
+     * @return Model
+     */
+    public function guardRelations(Model $entity, array $requestedRelations)
+    {
+        $relations = $entity->getRelations();
+        foreach ($relations as $relationName => $relation) {
+            if (!in_array($relationName, $requestedRelations, true)) {
+                $entity->unsetRelation($relationName);
+            }
+        }
+
+        return $entity;
     }
 }

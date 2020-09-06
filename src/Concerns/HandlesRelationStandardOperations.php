@@ -36,8 +36,10 @@ trait HandlesRelationStandardOperations
         $parentEntity = $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
             ->findOrFail($parentKey);
 
+        $requestedRelations = $this->relationsResolver->requestedRelations($request);
+
         $entities = $this->relationQueryBuilder->buildQuery($this->newRelationQuery($parentEntity), $request)
-            ->with($this->relationsResolver->requestedRelations($request))
+            ->with($requestedRelations)
             ->paginate($this->paginator->resolvePaginationLimit($request));
 
         $entities->getCollection()->transform(function ($entity) {
@@ -54,6 +56,8 @@ trait HandlesRelationStandardOperations
         if ($this->hookResponds($afterHookResult)) {
             return $afterHookResult;
         }
+
+        $this->relationsResolver->guardRelationsForCollection($entities->getCollection(), $requestedRelations);
 
         return $this->collectionResponse($entities);
     }
@@ -97,7 +101,9 @@ trait HandlesRelationStandardOperations
             $parentEntity->{$this->getRelation()}()->associate($entity);
         }
 
-        $entity = $entity->fresh($this->relationsResolver->requestedRelations($request));
+        $requestedRelations = $this->relationsResolver->requestedRelations($request);
+
+        $entity = $entity->fresh($requestedRelations);
         $entity->wasRecentlyCreated = true;
 
         $entity = $this->cleanupEntity($entity);
@@ -115,6 +121,8 @@ trait HandlesRelationStandardOperations
         if ($this->hookResponds($afterHookResult)) {
             return $afterHookResult;
         }
+
+        $entity = $this->relationsResolver->guardRelations($entity, $requestedRelations);
 
         return $this->entityResponse($entity);
     }
@@ -134,11 +142,13 @@ trait HandlesRelationStandardOperations
             return $beforeHookResult;
         }
 
+        $requestedRelations = $this->relationsResolver->requestedRelations($request);
+
         $parentEntity = $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
             ->findOrFail($parentKey);
 
         $query = $this->relationQueryBuilder->buildQuery($this->newRelationQuery($parentEntity), $request)
-            ->with($this->relationsResolver->requestedRelations($request));
+            ->with($requestedRelations);
 
         if ($this->isOneToOneRelation($parentEntity)) {
             $entity = $query->firstOrFail();
@@ -160,6 +170,8 @@ trait HandlesRelationStandardOperations
             return $afterHookResult;
         }
 
+        $entity = $this->relationsResolver->guardRelations($entity, $requestedRelations);
+
         return $this->entityResponse($entity);
     }
 
@@ -176,8 +188,10 @@ trait HandlesRelationStandardOperations
         $parentEntity = $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
             ->findOrFail($parentKey);
 
+        $requestedRelations = $this->relationsResolver->requestedRelations($request);
+
         $query = $this->relationQueryBuilder->buildQuery($this->newRelationQuery($parentEntity), $request)
-            ->with($this->relationsResolver->requestedRelations($request));
+            ->with($requestedRelations);
 
         if ($this->isOneToOneRelation($parentEntity)) {
             $entity = $query->firstOrFail();
@@ -206,7 +220,7 @@ trait HandlesRelationStandardOperations
         if ($relation instanceof BelongsToMany || $relation instanceof MorphToMany) {
             $relation->updateExistingPivot($relatedKey, $this->preparePivotFields($request->get('pivot', [])));
 
-            $entity = $entity->fresh($this->relationsResolver->requestedRelations($request));
+            $entity = $entity->fresh($requestedRelations);
         }
 
         $entity = $this->cleanupEntity($entity);
@@ -224,6 +238,8 @@ trait HandlesRelationStandardOperations
         if ($this->hookResponds($afterHookResult)) {
             return $afterHookResult;
         }
+
+        $entity = $this->relationsResolver->guardRelations($entity, $requestedRelations);
 
         return $this->entityResponse($entity);
     }
@@ -243,9 +259,10 @@ trait HandlesRelationStandardOperations
             ->findOrFail($parentKey);
 
         $softDeletes = $this->softDeletes($this->resolveResourceModelClass());
+        $requestedRelations = $this->relationsResolver->requestedRelations($request);
 
         $query = $this->relationQueryBuilder->buildQuery($this->newRelationQuery($parentEntity), $request)
-            ->with($this->relationsResolver->requestedRelations($request))
+            ->with($requestedRelations)
             ->when($softDeletes, function ($query) {
                 $query->withTrashed();
             });
@@ -283,6 +300,8 @@ trait HandlesRelationStandardOperations
             return $afterHookResult;
         }
 
+        $entity = $this->relationsResolver->guardRelations($entity, $requestedRelations);
+
         return $this->entityResponse($entity);
     }
 
@@ -299,8 +318,10 @@ trait HandlesRelationStandardOperations
         $parentEntity = $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
             ->findOrFail($parentKey);
 
+        $requestedRelations = $this->relationsResolver->requestedRelations($request);
+
         $relationEntityQuery = $this->relationQueryBuilder->buildQuery($this->newRelationQuery($parentEntity), $request)
-            ->with($this->relationsResolver->requestedRelations($request))
+            ->with($requestedRelations)
             ->withTrashed();
 
         if ($this->isOneToOneRelation($parentEntity)) {
@@ -329,6 +350,8 @@ trait HandlesRelationStandardOperations
         if ($this->hookResponds($afterHookResult)) {
             return $afterHookResult;
         }
+
+        $entity = $this->relationsResolver->guardRelations($entity, $requestedRelations);
 
         return $this->entityResponse($entity);
     }

@@ -31,6 +31,8 @@ trait HandlesStandardBatchOperations
         $resources = $request->get('resources', []);
         $entities = collect([]);
 
+        $requestedRelations = $this->relationsResolver->requestedRelations($request);
+
         foreach ($resources as $resource) {
             /**
              * @var Model $entity
@@ -42,7 +44,7 @@ trait HandlesStandardBatchOperations
             $this->beforeSave($request, $entity);
 
             $entity->save();
-            $entity = $entity->fresh($this->relationsResolver->requestedRelations($request));
+            $entity = $entity->fresh($requestedRelations);
             $entity->wasRecentlyCreated = true;
 
             $this->afterSave($request, $entity);
@@ -55,6 +57,8 @@ trait HandlesStandardBatchOperations
         if ($this->hookResponds($afterHookResult)) {
             return $afterHookResult;
         }
+
+        $this->relationsResolver->guardRelationsForCollection($entities, $requestedRelations);
 
         return $this->collectionResponse($entities);
     }
@@ -75,8 +79,10 @@ trait HandlesStandardBatchOperations
         $resourceModelClass = $this->resolveResourceModelClass();
         $resourceKeyName = (new $resourceModelClass)->getKeyName();
 
+        $requestedRelations = $this->relationsResolver->requestedRelations($request);
+
         $entities = $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
-            ->with($this->relationsResolver->requestedRelations($request))
+            ->with($requestedRelations)
             ->whereIn($resourceKeyName, array_keys($request->get('resources', [])))
             ->get();
 
@@ -102,6 +108,8 @@ trait HandlesStandardBatchOperations
             return $afterHookResult;
         }
 
+        $this->relationsResolver->guardRelationsForCollection($entities, $requestedRelations);
+
         return $this->collectionResponse($entities);
     }
 
@@ -124,8 +132,10 @@ trait HandlesStandardBatchOperations
         $resourceModelClass = $this->resolveResourceModelClass();
         $resourceKeyName = (new $resourceModelClass)->getKeyName();
 
+        $requestedRelations = $this->relationsResolver->requestedRelations($request);
+
         $entities = $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
-            ->with($this->relationsResolver->requestedRelations($request))
+            ->with($requestedRelations)
             ->whereIn($resourceKeyName, $request->get('resources', []))
             ->get();
 
@@ -153,6 +163,8 @@ trait HandlesStandardBatchOperations
             return $afterHookResult;
         }
 
+        $this->relationsResolver->guardRelationsForCollection($entities, $requestedRelations);
+
         return $this->collectionResponse($entities);
     }
 
@@ -173,8 +185,10 @@ trait HandlesStandardBatchOperations
         $resourceModelClass = $this->resolveResourceModelClass();
         $resourceKeyName = (new $resourceModelClass)->getKeyName();
 
+        $requestedRelations = $this->relationsResolver->requestedRelations($request);
+
         $entities = $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
-            ->with($this->relationsResolver->requestedRelations($request))
+            ->with($requestedRelations)
             ->whereIn($resourceKeyName, $request->get('resources', []))
             ->withTrashed()
             ->get();
@@ -196,6 +210,8 @@ trait HandlesStandardBatchOperations
         if ($this->hookResponds($afterHookResult)) {
             return $afterHookResult;
         }
+
+        $this->relationsResolver->guardRelationsForCollection($entities, $requestedRelations);
 
         return $this->collectionResponse($entities);
     }
