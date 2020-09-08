@@ -144,7 +144,7 @@ trait HandlesStandardOperations
             ->with($requestedRelations)
             ->findOrFail($key);
 
-        $this->authorize('view', $entity);
+        $this->authorize('update', $entity);
 
         $entity->fill($request->only($entity->getFillable()));
 
