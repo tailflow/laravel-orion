@@ -145,7 +145,7 @@ trait InteractsWithResources
     protected function resolveBasePath(LengthAwarePaginator $paginator): string
     {
         if ((float) app()->version() >= 6.0) {
-            return $this->resolvePath($paginator->path());
+            return $paginator->path();
         }
 
         $paginatorDescriptor = $paginator->toArray();
