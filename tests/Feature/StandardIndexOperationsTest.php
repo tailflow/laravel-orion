@@ -30,16 +30,20 @@ class StandardIndexOperationsTest extends TestCase
     /** @test */
     public function getting_a_list_of_resources_when_authorized()
     {
+        $user = factory(User::class)->create();
         /**
          * @var Collection $posts
          */
-        $posts = factory(Post::class)->times(5)->create();
+        $posts = factory(Post::class)->times(5)->create(['user_id' => $user->id]);
 
         Gate::policy(Post::class, PostPolicy::class);
 
-        $response = $this->requireAuthorization()->withAuth()->get('/api/posts');
+        $response = $this->requireAuthorization()->withAuth($user)->get('/api/posts');
 
-        $this->assertResourceListed($response, $posts);
+        $this->assertResourceListed(
+            $response,
+            $this->makePaginator($posts, 'posts')
+        );
     }
 
     /** @test */
@@ -54,8 +58,7 @@ class StandardIndexOperationsTest extends TestCase
 
         $this->assertResourceListed(
             $response,
-            $posts->forPage(2, 15)->values(),
-            2, 16, 3, 15, 30, 45
+            $this->makePaginator($posts, 'posts', 2)
         );
     }
 
@@ -72,8 +75,7 @@ class StandardIndexOperationsTest extends TestCase
 
         $this->assertResourceListed(
             $response,
-            $trashedPosts->merge($posts),
-            1, 1, 1, 15, 10, 10
+            $this->makePaginator($trashedPosts->merge($posts), 'posts')
         );
     }
 
@@ -88,7 +90,10 @@ class StandardIndexOperationsTest extends TestCase
 
         $response = $this->get('/api/posts?only_trashed=true');
 
-        $this->assertResourceListed($response, $trashedPosts);
+        $this->assertResourceListed(
+            $response,
+            $this->makePaginator($trashedPosts, 'posts')
+        );
     }
 
     /** @test */
@@ -102,7 +107,10 @@ class StandardIndexOperationsTest extends TestCase
 
         $response = $this->get('/api/posts');
 
-        $this->assertResourceListed($response, $posts);
+        $this->assertResourceListed(
+            $response,
+            $this->makePaginator($posts, 'posts')
+        );
         $response->assertJsonMissing([
             'data' => $trashedPosts->map(function ($post) {
                 /**
@@ -130,12 +138,11 @@ class StandardIndexOperationsTest extends TestCase
 
         $response = $this->get('/api/posts');
 
-        $this->assertResourceListed($response, $posts->map(function ($post) {
-            /**
-             * @var Post $post
-             */
-            return array_merge($post->toArray(), ['test-field-from-resource' => 'test-value']);
-        }));
+        $this->assertResourceListed(
+            $response,
+            $this->makePaginator($posts, 'posts'),
+            ['test-field-from-resource' => 'test-value']
+        );
     }
 
     /** @test */
@@ -155,7 +162,12 @@ class StandardIndexOperationsTest extends TestCase
 
         $response = $this->get('/api/posts');
 
-        $this->assertResourceListed($response, $posts);
+        $this->assertResourceListed(
+            $response,
+            $this->makePaginator($posts, 'posts'),
+            [],
+            false
+        );
         $response->assertJson([
             'test-field-from-resource' => 'test-value'
         ]);
@@ -164,16 +176,19 @@ class StandardIndexOperationsTest extends TestCase
     /** @test */
     public function getting_a_list_of_resources_with_included_relation()
     {
-        $posts = factory(Post::class)->times(5)->create()->each(function ($post) {
-            /**
-             * @var Post $post
-             */
+        $posts = factory(Post::class)->times(5)->create()->map(function (Post $post) {
             $post->user()->associate(factory(User::class)->create());
             $post->save();
+            $post->refresh();
+
+            return $post->toArray();
         });
 
         $response = $this->get('/api/posts?include=user');
 
-        $this->assertResourceListed($response, $posts);
+        $this->assertResourceListed(
+            $response,
+            $this->makePaginator($posts, 'posts')
+        );
     }
 }

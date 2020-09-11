@@ -19,7 +19,10 @@ class StandardIndexScopingOperationsTest extends TestCase
             ]
         ]);
 
-        $this->assertResourceListed($response, collect([$matchingPost]));
+        $this->assertResourceListed(
+            $response,
+            $this->makePaginator([$matchingPost], 'posts/search')
+        );
     }
 
     /** @test */
@@ -34,7 +37,10 @@ class StandardIndexScopingOperationsTest extends TestCase
             ]
         ]);
 
-        $this->assertResourceListed($response, collect([$matchingPost]));
+        $this->assertResourceListed(
+            $response,
+            $this->makePaginator([$matchingPost], 'posts/search')
+        );
     }
 
     /** @test */

@@ -20,7 +20,10 @@ class StandardIndexSortingOperationsTest extends TestCase
             ]
         ]);
 
-        $this->assertResourceListed($response, collect([$postA, $postB, $postC]));
+        $this->assertResourceListed(
+            $response,
+            $this->makePaginator([$postA, $postB, $postC], 'posts/search')
+        );
     }
 
     /** @test */
@@ -36,7 +39,10 @@ class StandardIndexSortingOperationsTest extends TestCase
             ]
         ]);
 
-        $this->assertResourceListed($response, collect([$postA, $postB, $postC]));
+        $this->assertResourceListed(
+            $response,
+            $this->makePaginator([$postA, $postB, $postC], 'posts/search')
+        );
     }
 
     /** @test */
@@ -52,7 +58,10 @@ class StandardIndexSortingOperationsTest extends TestCase
             ]
         ]);
 
-        $this->assertResourceListed($response, collect([$postC, $postB, $postA]));
+        $this->assertResourceListed(
+            $response,
+            $this->makePaginator([$postC, $postB, $postA], 'posts/search')
+        );
     }
 
     /** @test */
@@ -83,7 +92,10 @@ class StandardIndexSortingOperationsTest extends TestCase
             'sort' => []
         ]);
 
-        $this->assertResourceListed($response, collect([$postA, $postB, $postC]));
+        $this->assertResourceListed(
+            $response,
+            $this->makePaginator([$postA, $postB, $postC], 'posts/search')
+        );
     }
 
     /** @test */
@@ -99,6 +111,9 @@ class StandardIndexSortingOperationsTest extends TestCase
             ]
         ]);
 
-        $this->assertResourceListed($response, collect([$postA, $postB, $postC]));
+        $this->assertResourceListed(
+            $response,
+            $this->makePaginator([$postA, $postB, $postC], 'posts/search')
+        );
     }
 }

@@ -3,51 +3,56 @@
 namespace Orion\Testing;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 
 trait InteractsWithResources
 {
     /**
      * @param \Illuminate\Testing\TestResponse|\Illuminate\Foundation\Testing\TestResponse $response
-     * @param Collection|null $resources
-     * @param int $currentPage
-     * @param int $from
-     * @param int $lastPage
-     * @param int $perPage
-     * @param int|null $to
-     * @param int|null $total
+     * @param LengthAwarePaginator $paginator
+     * @param array $data
+     * @param bool $exact
      */
-    protected function assertResourceListed($response, $resources, $currentPage = 1, $from = 1, $lastPage = 1, $perPage = 15, $to = null, $total = null): void
+    protected function assertResourceListed($response, LengthAwarePaginator $paginator, array $data = [], bool $exact = true): void
     {
-        if (!$to) {
-            $to = $resources->count();
-        }
-
-        if (!$total) {
-            $total = $resources->count();
-        }
-
         $response->assertStatus(200);
         $response->assertJsonStructure([
             'data',
             'links' => ['first', 'last', 'prev', 'next'],
             'meta' => ['current_page', 'from', 'last_page', 'path', 'per_page', 'to', 'total']
         ]);
-        $response->assertJson([
-            'data' => $resources->map(function ($resource) {
-                return is_array($resource) ? $resource : $resource->toArray();
-            })->toArray()
-        ]);
-        $response->assertJson([
+
+        $expected = [
+            'data' => $paginator->forPage($paginator->currentPage(), $paginator->perPage())->values()->map(function ($resource) use ($data) {
+                $arrayRepresentation = is_array($resource) ? $resource : $resource->fresh()->toArray();
+                $arrayRepresentation = array_merge($arrayRepresentation, $data);
+
+                return $arrayRepresentation;
+            })->toArray(),
+            'links' => [
+                'first' => $this->resolveResourceLink($paginator, 1),
+                'last' => $this->resolveResourceLink($paginator, $paginator->lastPage()),
+                'prev' => $paginator->currentPage() > 1 ? $this->resolveResourceLink($paginator, $paginator->currentPage() - 1) : null,
+                'next' => $paginator->lastPage() > 1 ? $this->resolveResourceLink($paginator, $paginator->currentPage() + 1) : null,
+            ],
             'meta' => [
-                'current_page' => $currentPage,
-                'from' => $from,
-                'last_page' => $lastPage,
-                'per_page' => $perPage,
-                'to' => $to,
-                'total' => $total
+                'current_page' => $paginator->currentPage(),
+                'from' => $paginator->firstItem(),
+                'last_page' => $paginator->lastPage(),
+                'path' => $this->resolveBasePath($paginator->path()),
+                'per_page' => $paginator->perPage(),
+                'to' => $paginator->perPage() > $paginator->total() ? $paginator->total() : $paginator->currentPage() * $paginator->perPage(),
+                'total' => $paginator->total()
             ]
-        ]);
+        ];
+
+        if ($exact) {
+            $actual = json_decode($response->getContent(), true);
+            $this->assertSame($expected, $actual);
+        } else {
+            $response->assertJson($expected);
+        }
     }
 
     /**
@@ -129,5 +134,33 @@ trait InteractsWithResources
         $response->assertJsonStructure(['data']);
         $response->assertJson(['data' => array_merge($resource->toArray(), $data)]);
         $this->assertDatabaseHas($resource->getTable(), [$resource->getDeletedAtColumn() => null]);
+    }
+
+    protected function resolveResourceLink(LengthAwarePaginator $paginator, int $page): string
+    {
+        $basePath = $this->resolveBasePath($paginator->path());
+        return "{$basePath}?page={$page}";
+    }
+
+    protected function resolveBasePath(string $resourcePath): string
+    {
+        return config('app.url')."/api/$resourcePath";
+    }
+
+    /**
+     * @param Collection|array $items
+     * @param string $path
+     * @param int $currentPage
+     * @param int $perPage
+     * @param int|null $total
+     * @return LengthAwarePaginator
+     */
+    protected function makePaginator($items, string $path, int $currentPage = 1, int $perPage = 15, int $total = null): LengthAwarePaginator
+    {
+        if (is_array($items)) {
+            $items = collect($items);
+        }
+
+        return new LengthAwarePaginator($items, $total ?? $items->count(), $perPage, $currentPage, ['path' => $path]);
     }
 }

@@ -17,7 +17,10 @@ class StandardIndexSearchingOperationsTest extends TestCase
             'search' => ['value' => 'match']
         ]);
 
-        $this->assertResourceListed($response, collect([$matchingPost]));
+        $this->assertResourceListed(
+            $response,
+            $this->makePaginator([$matchingPost], 'posts/search')
+        );
     }
 
     /** @test */
@@ -33,7 +36,10 @@ class StandardIndexSearchingOperationsTest extends TestCase
             'search' => ['value' => 'match']
         ]);
 
-        $this->assertResourceListed($response, collect([$matchingPost]));
+        $this->assertResourceListed(
+            $response,
+            $this->makePaginator([$matchingPost], 'posts/search')
+        );
     }
 
     /** @test */
@@ -46,6 +52,9 @@ class StandardIndexSearchingOperationsTest extends TestCase
             'search' => ['value' => '']
         ]);
 
-        $this->assertResourceListed($response, collect([$matchingPost, $anotherMatchingPost]));
+        $this->assertResourceListed(
+            $response,
+            $this->makePaginator([$matchingPost, $anotherMatchingPost], 'posts/search')
+        );
     }
 }

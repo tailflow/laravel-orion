@@ -21,7 +21,10 @@ class StandardIndexFilteringOperationsTest extends TestCase
             ]
         ]);
 
-        $this->assertResourceListed($response, collect([$matchingPost]));
+        $this->assertResourceListed(
+            $response,
+            $this->makePaginator([$matchingPost], 'posts/search')
+        );
     }
 
     /** @test */
@@ -38,7 +41,10 @@ class StandardIndexFilteringOperationsTest extends TestCase
             ]
         ]);
 
-        $this->assertResourceListed($response, collect([$matchingPost, $anotherMatchingPost]));
+        $this->assertResourceListed(
+            $response,
+            $this->makePaginator([$matchingPost, $anotherMatchingPost], 'posts/search')
+        );
     }
 
     /** @test */
@@ -53,7 +59,10 @@ class StandardIndexFilteringOperationsTest extends TestCase
             ]
         ]);
 
-        $this->assertResourceListed($response, collect([$matchingPost]));
+        $this->assertResourceListed(
+            $response,
+            $this->makePaginator([$matchingPost], 'posts/search')
+        );
     }
 
     /** @test */
@@ -68,7 +77,10 @@ class StandardIndexFilteringOperationsTest extends TestCase
             ]
         ]);
 
-        $this->assertResourceListed($response, collect([$matchingPost]));
+        $this->assertResourceListed(
+            $response,
+            $this->makePaginator([$matchingPost], 'posts/search')
+        );
     }
 
     /** @test */
@@ -84,7 +96,10 @@ class StandardIndexFilteringOperationsTest extends TestCase
             ]
         ]);
 
-        $this->assertResourceListed($response, collect([$matchingPost, $anotherMatchingPost]));
+        $this->assertResourceListed(
+            $response,
+            $this->makePaginator([$matchingPost, $anotherMatchingPost], 'posts/search')
+        );
     }
 
     /** @test */
@@ -99,7 +114,10 @@ class StandardIndexFilteringOperationsTest extends TestCase
             ]
         ]);
 
-        $this->assertResourceListed($response, collect([$matchingPost]));
+        $this->assertResourceListed(
+            $response,
+            $this->makePaginator([$matchingPost], 'posts/search')
+        );
     }
 
     /** @test */
@@ -115,7 +133,10 @@ class StandardIndexFilteringOperationsTest extends TestCase
             ]
         ]);
 
-        $this->assertResourceListed($response, collect([$matchingPost, $anotherMatchingPost]));
+        $this->assertResourceListed(
+            $response,
+            $this->makePaginator([$matchingPost, $anotherMatchingPost], 'posts/search')
+        );
     }
 
     /** @test */
@@ -131,7 +152,10 @@ class StandardIndexFilteringOperationsTest extends TestCase
             ]
         ]);
 
-        $this->assertResourceListed($response, collect([$matchingPost, $anotherMatchingPost]));
+        $this->assertResourceListed(
+            $response,
+            $this->makePaginator([$matchingPost, $anotherMatchingPost], 'posts/search')
+        );
     }
 
     /** @test */
@@ -146,7 +170,10 @@ class StandardIndexFilteringOperationsTest extends TestCase
             ]
         ]);
 
-        $this->assertResourceListed($response, collect([$matchingPost]));
+        $this->assertResourceListed(
+            $response,
+            $this->makePaginator([$matchingPost], 'posts/search')
+        );
     }
 
     /** @test */
@@ -162,7 +189,10 @@ class StandardIndexFilteringOperationsTest extends TestCase
             ]
         ]);
 
-        $this->assertResourceListed($response, collect([$matchingPost, $anotherMatchingPost]));
+        $this->assertResourceListed(
+            $response,
+            $this->makePaginator([$matchingPost, $anotherMatchingPost], 'posts/search')
+        );
     }
 
     /** @test */
@@ -177,7 +207,10 @@ class StandardIndexFilteringOperationsTest extends TestCase
             ]
         ]);
 
-        $this->assertResourceListed($response, collect([$matchingPost]));
+        $this->assertResourceListed(
+            $response,
+            $this->makePaginator([$matchingPost], 'posts/search')
+        );
     }
 
     /** @test */
@@ -195,7 +228,10 @@ class StandardIndexFilteringOperationsTest extends TestCase
             ]
         ]);
 
-        $this->assertResourceListed($response, collect([$matchingPost]));
+        $this->assertResourceListed(
+            $response,
+            $this->makePaginator([$matchingPost], 'posts/search')
+        );
     }
 
     /** @test */
@@ -226,7 +262,10 @@ class StandardIndexFilteringOperationsTest extends TestCase
             ]
         ]);
 
-        $this->assertResourceListed($response, collect([$matchingTeam]));
+        $this->assertResourceListed(
+            $response,
+            $this->makePaginator([$matchingTeam], 'teams/search')
+        );
     }
 
     /** @test */
@@ -243,6 +282,9 @@ class StandardIndexFilteringOperationsTest extends TestCase
             ]
         ]);
 
-        $this->assertResourceListed($response, collect([$matchingTeam]));
+        $this->assertResourceListed(
+            $response,
+            $this->makePaginator([$matchingTeam], 'teams/search')
+        );
     }
 }

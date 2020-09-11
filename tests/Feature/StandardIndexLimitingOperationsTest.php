@@ -19,8 +19,7 @@ class StandardIndexLimitingOperationsTest extends TestCase
 
         $this->assertResourceListed(
             $response,
-            $posts->take(5)->values(),
-            1, 1, 3, 5, 5, 15
+            $this->makePaginator($posts, 'posts', 1, 5)
         );
     }
 
@@ -36,7 +35,7 @@ class StandardIndexLimitingOperationsTest extends TestCase
 
         $this->assertResourceListed(
             $response,
-            $posts
+            $this->makePaginator($posts, 'posts')
         );
     }
 
@@ -52,7 +51,7 @@ class StandardIndexLimitingOperationsTest extends TestCase
 
         $this->assertResourceListed(
             $response,
-            $posts
+            $this->makePaginator($posts, 'posts')
         );
     }
 
@@ -68,7 +67,7 @@ class StandardIndexLimitingOperationsTest extends TestCase
 
         $this->assertResourceListed(
             $response,
-            $posts
+            $this->makePaginator($posts, 'posts')
         );
     }
 
@@ -84,7 +83,7 @@ class StandardIndexLimitingOperationsTest extends TestCase
 
         $this->assertResourceListed(
             $response,
-            $posts
+            $this->makePaginator($posts, 'posts')
         );
     }
 }
