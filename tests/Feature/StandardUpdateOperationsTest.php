@@ -2,12 +2,14 @@
 
 namespace Orion\Tests\Feature;
 
+use Illuminate\Support\Facades\Gate;
 use Mockery;
 use Orion\Contracts\ComponentsResolver;
 use Orion\Tests\Fixtures\App\Http\Requests\PostRequest;
 use Orion\Tests\Fixtures\App\Http\Resources\SampleResource;
 use Orion\Tests\Fixtures\App\Models\Post;
 use Orion\Tests\Fixtures\App\Models\User;
+use Orion\Tests\Fixtures\App\Policies\PostPolicy;
 
 class StandardUpdateOperationsTest extends TestCase
 {
@@ -25,10 +27,13 @@ class StandardUpdateOperationsTest extends TestCase
     /** @test */
     public function updating_a_single_resource_when_authorized()
     {
-        $post = factory(Post::class)->create();
+        $user = factory(User::class)->create();
+        $post = factory(Post::class)->create(['user_id' => $user->id]);
         $payload = ['title' => 'test post title updated'];
 
-        $response = $this->patch("/api/posts/{$post->id}", $payload);
+        Gate::policy(Post::class, PostPolicy::class);
+
+        $response = $this->requireAuthorization()->withAuth($user)->patch("/api/posts/{$post->id}", $payload);
 
         $this->assertResourceUpdated($response,
             'posts',
