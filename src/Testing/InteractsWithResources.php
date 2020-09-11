@@ -40,7 +40,7 @@ trait InteractsWithResources
                 'current_page' => $paginator->currentPage(),
                 'from' => $paginator->firstItem(),
                 'last_page' => $paginator->lastPage(),
-                'path' => $this->resolveBasePath($paginator->path()),
+                'path' => $this->resolvePath($this->resolveBasePath($paginator)),
                 'per_page' => $paginator->perPage(),
                 'to' => $paginator->perPage() > $paginator->total() ? $paginator->total() : $paginator->currentPage() * $paginator->perPage(),
                 'total' => $paginator->total()
@@ -138,13 +138,23 @@ trait InteractsWithResources
 
     protected function resolveResourceLink(LengthAwarePaginator $paginator, int $page): string
     {
-        $basePath = $this->resolveBasePath($paginator->path());
-        return "{$basePath}?page={$page}";
+        $path = $this->resolvePath($this->resolveBasePath($paginator));
+        return "{$path}?page={$page}";
     }
 
-    protected function resolveBasePath(string $resourcePath): string
+    protected function resolveBasePath(LengthAwarePaginator $paginator): string
     {
-        return config('app.url')."/api/$resourcePath";
+        if ((float) app()->version() >= 6.0) {
+            return $this->resolvePath($paginator->path());
+        }
+
+        $paginatorDescriptor = $paginator->toArray();
+        return $paginatorDescriptor['path'];
+    }
+
+    protected function resolvePath(string $basePath): string
+    {
+        return config('app.url')."/api/$basePath";
     }
 
     /**
