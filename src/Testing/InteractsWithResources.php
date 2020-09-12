@@ -47,6 +47,13 @@ trait InteractsWithResources
             ]
         ];
 
+        if ((float) app()->version() >= 8.0) {
+            $expected['meta']['links'] = $this->buildMetaLinks($paginator);
+            $meta = $expected['meta'];
+            ksort($meta);
+            $expected['meta'] = $meta;
+        }
+
         if ($exact) {
             $actual = json_decode($response->getContent(), true);
             $this->assertSame($expected, $actual);
@@ -155,6 +162,42 @@ trait InteractsWithResources
     protected function resolvePath(string $basePath): string
     {
         return config('app.url')."/api/$basePath";
+    }
+
+    protected function buildMetaLinks(LengthAwarePaginator $paginator): array
+    {
+        $links = [
+            $this->buildMetaLink(
+                $paginator->currentPage() > 1 ? $this->resolveResourceLink($paginator, $paginator->currentPage() - 1) : null,
+                'Previous',
+                false
+            )
+        ];
+
+        for ($page = 1; $page <= $paginator->lastPage(); $page++) {
+            $links[] = $this->buildMetaLink(
+                $this->resolveResourceLink($paginator, $page),
+                $page,
+                $paginator->currentPage() === $page
+            );
+        }
+
+        $links[] = $this->buildMetaLink(
+            $paginator->lastPage() > 1 ? $this->resolveResourceLink($paginator, $paginator->currentPage() + 1) : null,
+            'Next',
+            false
+        );
+
+        return $links;
+    }
+
+    protected function buildMetaLink(?string $url, $label, bool $active): array
+    {
+        return [
+            'url' => $url,
+            'label' => $label,
+            'active' => $active
+        ];
     }
 
     /**

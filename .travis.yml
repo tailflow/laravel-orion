@@ -12,6 +12,7 @@ env:
     - LARAVEL=5.8.*
     - LARAVEL=^6.0
     - LARAVEL=^7.0
+    - LARAVEL=^8.0
 
 jobs:
   fast_finish: true
@@ -20,6 +21,10 @@ jobs:
       env: LARAVEL=^6.0
     - php: 7.1
       env: LARAVEL=^7.0
+    - php: 7.1
+      env: LARAVEL=^8.0
+    - php: 7.2
+      env: LARAVEL=^8.0
     - php: 7.4
       env: LARAVEL=5.7.*
 
@@ -28,6 +33,7 @@ before_install:
 
 install:
   - travis_retry composer require "illuminate/contracts=${LARAVEL}" --dev --prefer-dist --no-interaction --no-suggest
+  - if [ "${LARAVEL}" = "^8.0" ]; then composer require "laravel/legacy-factories"; fi
 
 before_script:
   - sleep 10
