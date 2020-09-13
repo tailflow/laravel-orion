@@ -152,6 +152,9 @@ class RelationsResolver implements \Orion\Contracts\RelationsResolver
     {
         $relations = $entity->getRelations();
         foreach ($relations as $relationName => $relation) {
+            if ($relationName === 'pivot') {
+                continue;
+            }
             if (!in_array($relationName, $requestedRelations, true)) {
                 $entity->unsetRelation($relationName);
             }

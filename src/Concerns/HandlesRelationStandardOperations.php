@@ -103,7 +103,7 @@ trait HandlesRelationStandardOperations
 
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
 
-        $entity = $entity->fresh($requestedRelations);
+        $entity = $this->newRelationQuery($parentEntity)->with($requestedRelations)->find($entity->id);
         $entity->wasRecentlyCreated = true;
 
         $entity = $this->cleanupEntity($entity);
@@ -221,7 +221,7 @@ trait HandlesRelationStandardOperations
             $relation->updateExistingPivot($relatedKey, $this->preparePivotFields($request->get('pivot', [])));
         }
 
-        $entity = $entity->fresh($requestedRelations);
+        $entity = $this->newRelationQuery($parentEntity)->with($requestedRelations)->find($entity->id);
 
         $entity = $this->cleanupEntity($entity);
 
@@ -286,7 +286,7 @@ trait HandlesRelationStandardOperations
         if (!$forceDeletes) {
             $entity->delete();
             if ($softDeletes) {
-                $entity = $entity->fresh($requestedRelations);
+                $entity = $this->newRelationQuery($parentEntity)->withTrashed()->with($requestedRelations)->find($entity->id);
             }
         } else {
             $entity->forceDelete();
@@ -342,7 +342,7 @@ trait HandlesRelationStandardOperations
         }
 
         $entity->restore();
-        $entity = $entity->fresh($requestedRelations);
+        $entity = $this->newRelationQuery($parentEntity)->with($requestedRelations)->find($entity->id);
 
         $entity = $this->cleanupEntity($entity);
 

@@ -57,7 +57,7 @@ trait HandlesRelationStandardBatchOperations
                 $parentEntity->{$this->getRelation()}()->associate($entity);
             }
 
-            $entity = $entity->fresh($requestedRelations);
+            $entity = $this->newRelationQuery($parentEntity)->with($requestedRelations)->find($entity->id);
             $entity->wasRecentlyCreated = true;
 
             $entity = $this->cleanupEntity($entity);
@@ -127,9 +127,9 @@ trait HandlesRelationStandardBatchOperations
             $relation = $parentEntity->{$this->getRelation()}();
             if ($relation instanceof BelongsToMany || $relation instanceof MorphToMany) {
                 $relation->updateExistingPivot($entity->getKey(), $this->preparePivotFields(Arr::get($resource, 'pivot', [])));
-
-                $entity = $entity->fresh($requestedRelations);
             }
+
+            $entity = $this->newRelationQuery($parentEntity)->with($requestedRelations)->find($entity->id);
 
             $entity = $this->cleanupEntity($entity);
 
@@ -195,6 +195,9 @@ trait HandlesRelationStandardBatchOperations
 
             if (!$forceDeletes) {
                 $entity->delete();
+                if ($softDeletes) {
+                    $entity = $this->newRelationQuery($parentEntity)->withTrashed()->with($requestedRelations)->find($entity->id);
+                }
             } else {
                 $entity->forceDelete();
             }
@@ -256,6 +259,7 @@ trait HandlesRelationStandardBatchOperations
             $this->beforeRestore($request, $entity);
 
             $entity->restore();
+            $entity = $this->newRelationQuery($parentEntity)->with($requestedRelations)->find($entity->id);
 
             $entity = $this->cleanupEntity($entity);
 
