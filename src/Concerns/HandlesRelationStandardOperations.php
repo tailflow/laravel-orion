@@ -219,9 +219,9 @@ trait HandlesRelationStandardOperations
         $relation = $parentEntity->{$this->getRelation()}();
         if ($relation instanceof BelongsToMany || $relation instanceof MorphToMany) {
             $relation->updateExistingPivot($relatedKey, $this->preparePivotFields($request->get('pivot', [])));
-
-            $entity = $entity->fresh($requestedRelations);
         }
+
+        $entity = $entity->fresh($requestedRelations);
 
         $entity = $this->cleanupEntity($entity);
 
@@ -285,6 +285,9 @@ trait HandlesRelationStandardOperations
 
         if (!$forceDeletes) {
             $entity->delete();
+            if ($softDeletes) {
+                $entity = $entity->fresh($requestedRelations);
+            }
         } else {
             $entity->forceDelete();
         }
@@ -339,6 +342,7 @@ trait HandlesRelationStandardOperations
         }
 
         $entity->restore();
+        $entity = $entity->fresh($requestedRelations);
 
         $entity = $this->cleanupEntity($entity);
 

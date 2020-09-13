@@ -53,13 +53,13 @@ class StandardDeleteOperationsTest extends TestCase
 
         $response = $this->requireAuthorization()->withAuth($post->user)->delete("/api/posts/{$post->id}");
 
-        $this->assertResourceTrashed($response, $post->fresh());
+        $this->assertResourceTrashed($response, $post);
     }
 
     /** @test */
     public function deleting_a_single_resource_when_authorized()
     {
-        $team = factory(Team::class)->create();
+        $team = factory(Team::class)->create()->fresh();
 
         Gate::policy(Team::class, TeamPolicy::class);
 
@@ -69,10 +69,10 @@ class StandardDeleteOperationsTest extends TestCase
     }
 
     /** @test */
-    public function force_deleting_a_single_resource_when_authorized()
+    public function force_deleting_a_single_trashed_resource_when_authorized()
     {
         $user = factory(User::class)->create();
-        $trashedPost = factory(Post::class)->state('trashed')->create(['user_id' => $user->id]);
+        $trashedPost = factory(Post::class)->state('trashed')->create(['user_id' => $user->id])->fresh();
 
         Gate::policy(Post::class, PostPolicy::class);
 
@@ -108,7 +108,7 @@ class StandardDeleteOperationsTest extends TestCase
     /** @test */
     public function deleting_a_single_trashed_resource_with_force_query_parameter()
     {
-        $trashedPost = factory(Post::class)->state('trashed')->create();
+        $trashedPost = factory(Post::class)->state('trashed')->create()->fresh();
 
         $response = $this->delete("/api/posts/{$trashedPost->id}?force=true");
 
@@ -118,7 +118,7 @@ class StandardDeleteOperationsTest extends TestCase
     /** @test */
     public function transforming_a_single_deleted_resource()
     {
-        $post = factory(Post::class)->create();
+        $post = factory(Post::class)->create()->fresh();
 
         app()->bind(ComponentsResolver::class, function () {
             $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
@@ -135,11 +135,11 @@ class StandardDeleteOperationsTest extends TestCase
     /** @test */
     public function deleting_a_single_resource_and_getting_included_relation()
     {
-        $post = factory(Post::class)->create(['user_id' => factory(User::class)->create()->id]);
+        $user = factory(User::class)->create()->fresh();
+        $post = factory(Post::class)->create(['user_id' => $user->id])->fresh();
 
         $response = $this->delete("/api/posts/{$post->id}?force=true&include=user");
 
-        $post->load('user');
-        $this->assertResourceDeleted($response, $post);
+        $this->assertResourceDeleted($response, $post, ['user' => $user->toArray()]);
     }
 }

@@ -36,9 +36,8 @@ class StandardUpdateOperationsTest extends TestCase
         $response = $this->requireAuthorization()->withAuth($user)->patch("/api/posts/{$post->id}", $payload);
 
         $this->assertResourceUpdated($response,
-            'posts',
+            Post::class,
             $post->toArray(),
-            $payload,
             $payload
         );
     }
@@ -52,9 +51,8 @@ class StandardUpdateOperationsTest extends TestCase
         $response = $this->patch("/api/posts/{$post->id}", $payload);
 
         $this->assertResourceUpdated($response,
-            'posts',
+            Post::class,
             $post->toArray(),
-            ['title' => 'test post title updated'],
             ['title' => 'test post title updated']
         );
         $this->assertDatabaseMissing('posts', ['tracking_id' => 'test tracking id']);
@@ -97,10 +95,10 @@ class StandardUpdateOperationsTest extends TestCase
         $response = $this->patch("/api/posts/{$post->id}", $payload);
 
         $this->assertResourceUpdated($response,
-            'posts',
+            Post::class,
             $post->toArray(),
             $payload,
-            array_merge($payload, ['test-field-from-resource' => 'test-value'])
+            ['test-field-from-resource' => 'test-value']
         );
     }
 
@@ -114,10 +112,10 @@ class StandardUpdateOperationsTest extends TestCase
         $response = $this->patch("/api/posts/{$post->id}?include=user", $payload);
 
         $this->assertResourceUpdated($response,
-            'posts',
+            Post::class,
             $post->toArray(),
             $payload,
-            $post->fresh('user')->toArray()
+            ['user' => $user->fresh()->toArray()]
         );
     }
 }

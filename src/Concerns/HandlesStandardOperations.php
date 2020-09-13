@@ -159,6 +159,7 @@ trait HandlesStandardOperations
         }
 
         $entity->save();
+        $entity = $entity->fresh($requestedRelations);
 
         $afterSaveHookResult = $this->afterSave($request, $entity);
         if ($this->hookResponds($afterSaveHookResult)) {
@@ -210,6 +211,9 @@ trait HandlesStandardOperations
 
         if (!$forceDeletes) {
             $entity->delete();
+            if ($softDeletes) {
+                $entity = $entity->fresh($requestedRelations);
+            }
         } else {
             $entity->forceDelete();
         }
@@ -249,6 +253,7 @@ trait HandlesStandardOperations
         }
 
         $entity->restore();
+        $entity = $entity->fresh($requestedRelations);
 
         $afterHookResult = $this->afterRestore($request, $entity);
         if ($this->hookResponds($afterHookResult)) {

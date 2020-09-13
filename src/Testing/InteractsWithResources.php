@@ -11,10 +11,10 @@ trait InteractsWithResources
     /**
      * @param \Illuminate\Testing\TestResponse|\Illuminate\Foundation\Testing\TestResponse $response
      * @param LengthAwarePaginator $paginator
-     * @param array $data
+     * @param array $mergeData
      * @param bool $exact
      */
-    protected function assertResourceListed($response, LengthAwarePaginator $paginator, array $data = [], bool $exact = true): void
+    protected function assertResourceListed($response, LengthAwarePaginator $paginator, array $mergeData = [], bool $exact = true): void
     {
         $response->assertStatus(200);
         $response->assertJsonStructure([
@@ -24,9 +24,9 @@ trait InteractsWithResources
         ]);
 
         $expected = [
-            'data' => $paginator->forPage($paginator->currentPage(), $paginator->perPage())->values()->map(function ($resource) use ($data) {
+            'data' => $paginator->forPage($paginator->currentPage(), $paginator->perPage())->values()->map(function ($resource) use ($mergeData) {
                 $arrayRepresentation = is_array($resource) ? $resource : $resource->fresh()->toArray();
-                $arrayRepresentation = array_merge($arrayRepresentation, $data);
+                $arrayRepresentation = array_merge($arrayRepresentation, $mergeData);
 
                 return $arrayRepresentation;
             })->toArray(),
@@ -54,93 +54,141 @@ trait InteractsWithResources
             $expected['meta'] = $meta;
         }
 
+        $this->assertResponseContent($expected, $response, $exact);
+    }
+
+    /**
+     * @param \Illuminate\Testing\TestResponse|\Illuminate\Foundation\Testing\TestResponse $response
+     * @param Model|array $resource
+     * @param array $mergeData
+     * @param bool $exact
+     */
+    protected function assertResourceShown($response, $resource, $mergeData = [], bool $exact = true): void
+    {
+        $response->assertStatus(200);
+        $response->assertJsonStructure(['data']);
+
+        $expected = ['data' => array_merge(is_array($resource) ? $resource : $resource->fresh()->toArray(), $mergeData)];
+
+        $this->assertResponseContent($expected, $response, $exact);
+    }
+
+    /**
+     * @param \Illuminate\Testing\TestResponse|\Illuminate\Foundation\Testing\TestResponse $response
+     * @param string $model
+     * @param array $databaseData
+     * @param array $mergeData
+     * @param bool $exact
+     */
+    protected function assertResourceStored($response, string $model, array $databaseData, array $mergeData = [], bool $exact = true): void
+    {
+        $this->assertDatabaseHas((new $model)->getTable(), $databaseData);
+
+        $response->assertStatus(201);
+        $response->assertJsonStructure(['data']);
+
+        $resource = $model::where($databaseData)->first();
+        $expected = ['data' => array_merge($resource->toArray(), $mergeData)];
+
+        $this->assertResponseContent($expected, $response, $exact);
+    }
+
+    /**
+     * @param \Illuminate\Testing\TestResponse|\Illuminate\Foundation\Testing\TestResponse $response
+     * @param string $model
+     * @param array $originalDatabaseData
+     * @param array $updatedDatabaseData
+     * @param array $mergeData
+     * @param bool $exact
+     */
+    protected function assertResourceUpdated($response, string $model, array $originalDatabaseData, array $updatedDatabaseData, array $mergeData = [], bool $exact = true): void
+    {
+        $table = (new $model)->getTable();
+        $this->assertDatabaseMissing($table, $originalDatabaseData);
+        $this->assertDatabaseHas($table, $updatedDatabaseData);
+
+        $response->assertStatus(200);
+        $response->assertJsonStructure(['data']);
+
+        $resource = $model::where($updatedDatabaseData)->first();
+        $expected = ['data' => array_merge($resource->toArray(), $mergeData)];
+
+        $this->assertResponseContent($expected, $response, $exact);
+    }
+
+    /**
+     * @param \Illuminate\Testing\TestResponse|\Illuminate\Foundation\Testing\TestResponse $response
+     * @param Model|array $resource
+     * @param array $data
+     * @param bool $exact
+     */
+    protected function assertResourceDeleted($response, $resource, $data = [], bool $exact = true): void
+    {
+        $this->assertDatabaseMissing($resource->getTable(), [$resource->getKeyName() => $resource->getKey()]);
+
+        $response->assertStatus(200);
+        $response->assertJsonStructure(['data']);
+
+        $expected = ['data' => array_merge(is_array($resource) ? $resource : $resource->toArray(), $data)];
+
+        $this->assertResponseContent($expected, $response, $exact);
+    }
+
+    /**
+     * @param \Illuminate\Testing\TestResponse|\Illuminate\Foundation\Testing\TestResponse $response
+     * @param Model|\Illuminate\Database\Eloquent\SoftDeletes|array $resource
+     * @param array $data
+     * @param bool $exact
+     */
+    protected function assertResourceTrashed($response, $resource, $data = [], bool $exact = true): void
+    {
+        $resource = $resource->fresh();
+        if (!$resource) {
+            $this->fail('The resource was deleted, not trashed.');
+        }
+        if (is_null($resource->{$resource->getDeletedAtColumn()})) {
+            $this->fail('The resource was not trashed.');
+        }
+
+        $response->assertStatus(200);
+        $response->assertJsonStructure(['data']);
+
+        $expected = ['data' => array_merge(is_array($resource) ? $resource : $resource->toArray(), $data)];
+
+        $this->assertResponseContent($expected, $response, $exact);
+    }
+
+    /**
+     * @param \Illuminate\Testing\TestResponse|\Illuminate\Foundation\Testing\TestResponse $response
+     * @param Model|\Illuminate\Database\Eloquent\SoftDeletes|array $resource
+     * @param array $data
+     * @param bool $exact
+     */
+    protected function assertResourceRestored($response, $resource, $data = [], bool $exact = true): void
+    {
+        $this->assertDatabaseHas($resource->getTable(), [$resource->getKeyName() => $resource->getKey(), $resource->getDeletedAtColumn() => null]);
+
+        $response->assertStatus(200);
+        $response->assertJsonStructure(['data']);
+
+        $expected = ['data' => array_merge(is_array($resource) ? $resource : $resource->fresh()->toArray(), $data)];
+
+        $this->assertResponseContent($expected, $response, $exact);
+    }
+
+    protected function assertResponseContent(array $expected, $response, bool $exact)
+    {
         if ($exact) {
-            $actual = json_decode($response->getContent(), true);
-            $this->assertSame($expected, $actual);
+            $this->assertJsonSame($expected, $response);
         } else {
             $response->assertJson($expected);
         }
     }
 
-    /**
-     * @param \Illuminate\Testing\TestResponse|\Illuminate\Foundation\Testing\TestResponse $response
-     * @param Model $resource
-     * @param array $data
-     */
-    protected function assertResourceShown($response, $resource, $data = []): void
+    protected function assertJsonSame(array $expected, $response): void
     {
-        $response->assertStatus(200);
-        $response->assertJsonStructure(['data']);
-        $response->assertJson(['data' => array_merge($resource->toArray(), $data)]);
-    }
-
-    /**
-     * @param \Illuminate\Testing\TestResponse|\Illuminate\Foundation\Testing\TestResponse $response
-     * @param string $table
-     * @param array $databaseData
-     * @param array $responseData
-     */
-    protected function assertResourceStored($response, string $table, array $databaseData, array $responseData): void
-    {
-        $response->assertStatus(201);
-        $response->assertJsonStructure(['data']);
-        $response->assertJson(['data' => $responseData]);
-        $this->assertDatabaseHas($table, $databaseData);
-    }
-
-    /**
-     * @param \Illuminate\Testing\TestResponse|\Illuminate\Foundation\Testing\TestResponse $response
-     * @param string $table
-     * @param array $originalDatabaseData
-     * @param array $updatedDatabaseData
-     * @param array $responseData
-     */
-    protected function assertResourceUpdated($response, string $table, array $originalDatabaseData, array $updatedDatabaseData, array $responseData): void
-    {
-        $response->assertStatus(200);
-        $response->assertJsonStructure(['data']);
-        $response->assertJson(['data' => $responseData]);
-        $this->assertDatabaseMissing($table, $originalDatabaseData);
-        $this->assertDatabaseHas($table, $updatedDatabaseData);
-    }
-
-    /**
-     * @param \Illuminate\Testing\TestResponse|\Illuminate\Foundation\Testing\TestResponse $response
-     * @param Model $resource
-     * @param array $data
-     */
-    protected function assertResourceDeleted($response, $resource, $data = []): void
-    {
-        $response->assertStatus(200);
-        $response->assertJsonStructure(['data']);
-        $response->assertJson(['data' => array_merge($resource->toArray(), $data)]);
-        $this->assertDatabaseMissing($resource->getTable(), [$resource->getKeyName() => $resource->getKey()]);
-    }
-
-    /**
-     * @param \Illuminate\Testing\TestResponse|\Illuminate\Foundation\Testing\TestResponse $response
-     * @param Model $resource
-     * @param array $data
-     */
-    protected function assertResourceTrashed($response, $resource, $data = []): void
-    {
-        $response->assertStatus(200);
-        $response->assertJsonStructure(['data']);
-        $response->assertJson(['data' => array_merge($resource->toArray(), $data)]);
-        $this->assertDatabaseHas($resource->getTable(), [$resource->getKeyName() => $resource->getKey()]);
-    }
-
-    /**
-     * @param \Illuminate\Testing\TestResponse|\Illuminate\Foundation\Testing\TestResponse $response
-     * @param Model|\Illuminate\Database\Eloquent\SoftDeletes $resource
-     * @param array $data
-     */
-    protected function assertResourceRestored($response, $resource, $data = []): void
-    {
-        $response->assertStatus(200);
-        $response->assertJsonStructure(['data']);
-        $response->assertJson(['data' => array_merge($resource->toArray(), $data)]);
-        $this->assertDatabaseHas($resource->getTable(), [$resource->getDeletedAtColumn() => null]);
+        $actual = json_decode($response->getContent(), true);
+        $this->assertSame($expected, $actual);
     }
 
     protected function resolveResourceLink(LengthAwarePaginator $paginator, int $page): string

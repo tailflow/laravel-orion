@@ -98,6 +98,7 @@ trait HandlesStandardBatchOperations
             $this->beforeSave($request, $entity);
 
             $entity->save();
+            $entity = $entity->fresh($requestedRelations);
 
             $this->afterSave($request, $entity);
             $this->afterUpdate($request, $entity);
@@ -151,6 +152,9 @@ trait HandlesStandardBatchOperations
 
             if (!$forceDeletes) {
                 $entity->delete();
+                if ($softDeletes) {
+                    $entity = $entity->fresh($requestedRelations);
+                }
             } else {
                 $entity->forceDelete();
             }
@@ -202,6 +206,7 @@ trait HandlesStandardBatchOperations
             $this->beforeRestore($request, $entity);
 
             $entity->restore();
+            $entity = $entity->fresh($requestedRelations);
 
             $this->afterRestore($request, $entity);
         }

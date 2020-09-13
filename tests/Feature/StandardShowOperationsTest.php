@@ -79,6 +79,6 @@ class StandardShowOperationsTest extends TestCase
 
         $response = $this->get("/api/posts/{$post->id}?include=user");
 
-        $this->assertResourceShown($response, $post->fresh('user'));
+        $this->assertResourceShown($response, $post->fresh('user')->toArray());
     }
 }

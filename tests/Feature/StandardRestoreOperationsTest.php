@@ -32,7 +32,7 @@ class StandardRestoreOperationsTest extends TestCase
 
         $response = $this->requireAuthorization()->withAuth($trashedPost->user)->post("/api/posts/{$trashedPost->id}/restore");
 
-        $this->assertResourceRestored($response, $trashedPost->fresh());
+        $this->assertResourceRestored($response, $trashedPost);
     }
 
     /** @test */
@@ -69,16 +69,17 @@ class StandardRestoreOperationsTest extends TestCase
 
         $response = $this->post("/api/posts/{$trashedPost->id}/restore");
 
-        $this->assertResourceRestored($response, $trashedPost->fresh(), ['test-field-from-resource' => 'test-value']);
+        $this->assertResourceRestored($response, $trashedPost, ['test-field-from-resource' => 'test-value']);
     }
 
     /** @test */
     public function restoring_a_single_resource_and_getting_included_relation()
     {
-        $trashedPost = factory(Post::class)->state('trashed')->create(['user_id' => factory(User::class)->create()->id]);
+        $user = factory(User::class)->create()->fresh();
+        $trashedPost = factory(Post::class)->state('trashed')->create(['user_id' => $user->id])->fresh();
 
         $response = $this->bypassAuthorization()->post("/api/posts/{$trashedPost->id}/restore?include=user");
 
-        $this->assertResourceRestored($response, $trashedPost->fresh('user'));
+        $this->assertResourceRestored($response, $trashedPost, ['user' => $user->toArray()]);
     }
 }

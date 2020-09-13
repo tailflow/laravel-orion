@@ -29,9 +29,10 @@ class StandardStoreOperationsTest extends TestCase
         $payload = ['title' => 'test post title', 'body' => 'test post body'];
 
         Gate::policy(Post::class, PostPolicy::class);
+
         $response = $this->requireAuthorization()->withAuth()->post('/api/posts', $payload);
 
-        $this->assertResourceStored($response, 'posts', $payload, $payload);
+        $this->assertResourceStored($response, Post::class, $payload);
     }
 
     /** @test */
@@ -42,8 +43,7 @@ class StandardStoreOperationsTest extends TestCase
         $response = $this->post('/api/posts', $payload);
 
         $this->assertResourceStored($response,
-            'posts',
-            ['title' => 'test post title', 'body' => 'test post body'],
+            Post::class,
             ['title' => 'test post title', 'body' => 'test post body']
         );
         $this->assertDatabaseMissing('posts', ['tracking_id' => 'test tracking id']);
@@ -83,7 +83,7 @@ class StandardStoreOperationsTest extends TestCase
 
         $response = $this->post('/api/posts', $payload);
 
-        $this->assertResourceStored($response, 'posts', $payload, array_merge($payload, ['test-field-from-resource' => 'test-value']));
+        $this->assertResourceStored($response, Post::class, $payload, ['test-field-from-resource' => 'test-value']);
     }
 
     /** @test */
@@ -94,7 +94,6 @@ class StandardStoreOperationsTest extends TestCase
 
         $response = $this->withAuth($user)->post('/api/posts?include=user', $payload);
 
-        $post = Post::query()->with('user')->first();
-        $this->assertResourceStored($response, 'posts', $payload, $post->toArray());
+        $this->assertResourceStored($response, Post::class, $payload, ['user' => $user->fresh()->toArray()]);
     }
 }
