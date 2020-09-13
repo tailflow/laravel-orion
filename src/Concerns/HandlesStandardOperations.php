@@ -3,7 +3,9 @@
 namespace Orion\Concerns;
 
 use Exception;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Contracts\Pagination\Paginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Orion\Http\Requests\Request;
 use Orion\Http\Resources\CollectionResource;
@@ -12,25 +14,25 @@ use Orion\Http\Resources\Resource;
 trait HandlesStandardOperations
 {
     /**
-     * Fetch the list of resources.
+     * Fetches the list of resources.
      *
      * @param Request $request
      * @return CollectionResource
      */
     public function index(Request $request)
     {
+        $this->authorize('viewAny', $this->resolveResourceModelClass());
+
+        $requestedRelations = $this->relationsResolver->requestedRelations($request);
+
+        $query = $this->buildIndexQuery($request, $requestedRelations);
+
         $beforeHookResult = $this->beforeIndex($request);
         if ($this->hookResponds($beforeHookResult)) {
             return $beforeHookResult;
         }
 
-        $this->authorize('viewAny', $this->resolveResourceModelClass());
-
-        $requestedRelations = $this->relationsResolver->requestedRelations($request);
-
-        $entities = $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
-            ->with($requestedRelations)
-            ->paginate($this->paginator->resolvePaginationLimit($request));
+        $entities = $this->runIndexQuery($query, $request, $this->paginator->resolvePaginationLimit($request));
 
         $afterHookResult = $this->afterIndex($request, $entities);
         if ($this->hookResponds($afterHookResult)) {
@@ -43,7 +45,33 @@ trait HandlesStandardOperations
     }
 
     /**
-     * Create new resource.
+     * Builds Eloquent query for fetching entities in index method.
+     *
+     * @param Request $request
+     * @param array $requestedRelations
+     * @return Builder
+     */
+    protected function buildIndexQuery(Request $request, array $requestedRelations): Builder
+    {
+        return $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
+            ->with($requestedRelations);
+    }
+
+    /**
+     * Runs the given query for fetching entities in index method.
+     *
+     * @param Builder $query
+     * @param Request $request
+     * @param int $paginationLimit
+     * @return LengthAwarePaginator
+     */
+    protected function runIndexQuery(Builder $query, Request $request, int $paginationLimit): LengthAwarePaginator
+    {
+        return $query->paginate($paginationLimit);
+    }
+
+    /**
+     * Creates new resource.
      *
      * @param Request $request
      * @return Resource
@@ -58,7 +86,6 @@ trait HandlesStandardOperations
          * @var Model $entity
          */
         $entity = new $resourceModelClass;
-        $entity->fill($request->only($entity->getFillable()));
 
         $beforeHookResult = $this->beforeStore($request, $entity);
         if ($this->hookResponds($beforeHookResult)) {
@@ -72,7 +99,8 @@ trait HandlesStandardOperations
 
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
 
-        $entity->save();
+        $this->performStore($entity, $request);
+
         $entity = $entity->fresh($requestedRelations);
         $entity->wasRecentlyCreated = true;
 
@@ -92,7 +120,21 @@ trait HandlesStandardOperations
     }
 
     /**
-     * Fetch resource.
+     * Fills attributes on the given entity and stores it in database.
+     *
+     * @param Model $entity
+     * @param Request $request
+     * @return bool
+     */
+    protected function performStore(Model $entity, Request $request): bool
+    {
+        $entity->fill($request->only($entity->getFillable()));
+
+        return $entity->save();
+    }
+
+    /**
+     * Fetches resource.
      *
      * @param Request $request
      * @param int|string $key
@@ -100,19 +142,16 @@ trait HandlesStandardOperations
      */
     public function show(Request $request, $key)
     {
+        $requestedRelations = $this->relationsResolver->requestedRelations($request);
+
+        $query = $this->buildShowQuery($request, $requestedRelations);
+
         $beforeHookResult = $this->beforeShow($request, $key);
         if ($this->hookResponds($beforeHookResult)) {
             return $beforeHookResult;
         }
 
-        $requestedRelations = $this->relationsResolver->requestedRelations($request);
-
-        /**
-         * @var Model $entity
-         */
-        $entity = $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
-            ->with($requestedRelations)
-            ->findOrFail($key);
+        $entity = $this->runShowQuery($query, $request, $key);
 
         $this->authorize('view', $entity);
 
@@ -127,7 +166,33 @@ trait HandlesStandardOperations
     }
 
     /**
-     * Update a resource.
+     * Builds Eloquent query for fetching entity in show method.
+     *
+     * @param Request $request
+     * @param array $requestedRelations
+     * @return Builder
+     */
+    protected function buildShowQuery(Request $request, array $requestedRelations): Builder
+    {
+        return $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
+            ->with($requestedRelations);
+    }
+
+    /**
+     * Runs the given query for fetching entity in show method.
+     *
+     * @param Builder $query
+     * @param Request $request
+     * @param int|string $key
+     * @return Model
+     */
+    protected function runShowQuery(Builder $query, Request $request, $key): Model
+    {
+        return $query->findOrFail($key);
+    }
+
+    /**
+     * Updates a resource.
      *
      * @param Request $request
      * @param int|string $key
@@ -137,16 +202,10 @@ trait HandlesStandardOperations
     {
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
 
-        /**
-         * @var Model $entity
-         */
-        $entity = $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
-            ->with($requestedRelations)
-            ->findOrFail($key);
+        $query = $this->buildUpdateQuery($request, $requestedRelations);
+        $entity = $this->runUpdateQuery($query, $request, $key);
 
         $this->authorize('update', $entity);
-
-        $entity->fill($request->only($entity->getFillable()));
 
         $beforeHookResult = $this->beforeUpdate($request, $entity);
         if ($this->hookResponds($beforeHookResult)) {
@@ -158,7 +217,8 @@ trait HandlesStandardOperations
             return $beforeSaveHookResult;
         }
 
-        $entity->save();
+        $this->performUpdate($entity, $request);
+
         $entity = $entity->fresh($requestedRelations);
 
         $afterSaveHookResult = $this->afterSave($request, $entity);
@@ -177,7 +237,47 @@ trait HandlesStandardOperations
     }
 
     /**
-     * Delete a resource.
+     * Builds Eloquent query for fetching entity in update method.
+     *
+     * @param Request $request
+     * @param array $requestedRelations
+     * @return Builder
+     */
+    protected function buildUpdateQuery(Request $request, array $requestedRelations): Builder
+    {
+        return $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
+            ->with($requestedRelations);
+    }
+
+    /**
+     * Runs the given query for fetching entity in update method.
+     *
+     * @param Builder $query
+     * @param Request $request
+     * @param int|string $key
+     * @return Model
+     */
+    protected function runUpdateQuery(Builder $query, Request $request, $key): Model
+    {
+        return $query->findOrFail($key);
+    }
+
+    /**
+     * Fills attributes on the given entity and persists changes in database.
+     *
+     * @param Model $entity
+     * @param Request $request
+     * @return bool
+     */
+    protected function performUpdate(Model $entity, Request $request): bool
+    {
+        $entity->fill($request->only($entity->getFillable()));
+
+        return $entity->save();
+    }
+
+    /**
+     * Deletes a resource.
      *
      * @param Request $request
      * @param int|string $key
@@ -187,18 +287,14 @@ trait HandlesStandardOperations
     public function destroy(Request $request, $key)
     {
         $softDeletes = $this->softDeletes($this->resolveResourceModelClass());
+        $forceDeletes = $this->forceDeletes($request, $softDeletes);
+
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
 
-        $entity = $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
-            ->with($requestedRelations)
-            ->when($softDeletes, function ($query) {
-                $query->withTrashed();
-            })
-            ->findOrFail($key);
+        $query = $this->buildDestroyQuery($request, $requestedRelations, $softDeletes);
+        $entity = $this->runDestroyQuery($query, $key);
 
-        $forceDeletes = $softDeletes && $request->get('force');
-
-        if (!$forceDeletes && $softDeletes && $entity->trashed()) {
+        if ($this->isResourceTrashed($entity, $softDeletes, $forceDeletes)) {
             abort(404);
         }
 
@@ -210,12 +306,12 @@ trait HandlesStandardOperations
         }
 
         if (!$forceDeletes) {
-            $entity->delete();
+            $this->performDestroy($entity);
             if ($softDeletes) {
                 $entity = $entity->fresh($requestedRelations);
             }
         } else {
-            $entity->forceDelete();
+            $this->performForceDestroy($entity);
         }
 
         $afterHookResult = $this->afterDestroy($request, $entity);
@@ -226,6 +322,58 @@ trait HandlesStandardOperations
         $entity = $this->relationsResolver->guardRelations($entity, $requestedRelations);
 
         return $this->entityResponse($entity);
+    }
+
+    /**
+     * Builds Eloquent query for fetching entity in destroy method.
+     *
+     * @param Request $request
+     * @param array $requestedRelations
+     * @param bool $softDeletes
+     * @return Builder
+     */
+    protected function buildDestroyQuery(Request $request, array $requestedRelations, bool $softDeletes): Builder
+    {
+        return $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
+            ->with($requestedRelations)
+            ->when($softDeletes, function ($query) {
+                $query->withTrashed();
+            });
+    }
+
+    /**
+     * Runs the given query for fetching entity in destroy method.
+     *
+     * @param Builder $query
+     * @param int|string $key
+     * @return Model
+     */
+    protected function runDestroyQuery(Builder $query, $key): Model
+    {
+        return $query->findOrFail($key);
+    }
+
+    /**
+     * Deletes or trashes the given entity from database.
+     *
+     * @param Model $entity
+     * @return bool
+     * @throws Exception
+     */
+    protected function performDestroy(Model $entity): bool
+    {
+        return $entity->delete();
+    }
+
+    /**
+     * Deletes the given entity from database, even if it is soft deletable.
+     *
+     * @param Model $entity
+     * @return bool
+     */
+    protected function performForceDestroy(Model $entity): bool
+    {
+        return $entity->forceDelete();
     }
 
     /**
@@ -240,10 +388,8 @@ trait HandlesStandardOperations
     {
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
 
-        $entity = $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
-            ->with($requestedRelations)
-            ->withTrashed()
-            ->findOrFail($key);
+        $query = $this->buildRestoreQuery($request, $requestedRelations);
+        $entity = $this->runRestoreQuery($query, $key);
 
         $this->authorize('restore', $entity);
 
@@ -252,7 +398,8 @@ trait HandlesStandardOperations
             return $beforeHookResult;
         }
 
-        $entity->restore();
+        $this->performRestore($entity);
+
         $entity = $entity->fresh($requestedRelations);
 
         $afterHookResult = $this->afterRestore($request, $entity);
@@ -263,6 +410,43 @@ trait HandlesStandardOperations
         $entity = $this->relationsResolver->guardRelations($entity, $requestedRelations);
 
         return $this->entityResponse($entity);
+    }
+
+    /**
+     * Builds Eloquent query for fetching entity in restore method.
+     *
+     * @param Request $request
+     * @param array $requestedRelations
+     * @return Builder
+     */
+    protected function buildRestoreQuery(Request $request, array $requestedRelations): Builder
+    {
+        return $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
+            ->with($requestedRelations)
+            ->withTrashed();
+    }
+
+    /**
+     * Runs the given query for fetching entity in restore method.
+     *
+     * @param Builder $query
+     * @param int|string $key
+     * @return Model
+     */
+    protected function runRestoreQuery(Builder $query, $key): Model
+    {
+        return $query->findOrFail($key);
+    }
+
+    /**
+     * Restores the given entity.
+     *
+     * @param Model $entity
+     * @return bool
+     */
+    protected function performRestore(Model $entity): bool
+    {
+        return $entity->restore();
     }
 
     /**
