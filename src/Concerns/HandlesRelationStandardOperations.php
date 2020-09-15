@@ -3,13 +3,17 @@
 namespace Orion\Concerns;
 
 use Exception;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Contracts\Pagination\Paginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
+use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use InvalidArgumentException;
 use Orion\Http\Requests\Request;
 use Orion\Http\Resources\CollectionResource;
@@ -26,21 +30,20 @@ trait HandlesRelationStandardOperations
      */
     public function index(Request $request, $parentKey)
     {
+        $this->authorize('viewAny', $this->resolveResourceModelClass());
+
+        $requestedRelations = $this->relationsResolver->requestedRelations($request);
+
         $beforeHookResult = $this->beforeIndex($request);
         if ($this->hookResponds($beforeHookResult)) {
             return $beforeHookResult;
         }
 
-        $this->authorize('viewAny', $this->resolveResourceModelClass());
+        $parentQuery = $this->buildIndexParentQuery($request, $parentKey);
+        $parentEntity = $this->runIndexParentQuery($parentQuery, $request, $parentKey);
 
-        $parentEntity = $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
-            ->findOrFail($parentKey);
-
-        $requestedRelations = $this->relationsResolver->requestedRelations($request);
-
-        $entities = $this->relationQueryBuilder->buildQuery($this->newRelationQuery($parentEntity), $request)
-            ->with($requestedRelations)
-            ->paginate($this->paginator->resolvePaginationLimit($request));
+        $query = $this->buildIndexQuery($request, $parentEntity, $requestedRelations);
+        $entities = $this->runIndexQuery($query, $request, $parentEntity, $this->paginator->resolvePaginationLimit($request));
 
         $entities->getCollection()->transform(function ($entity) {
             $entity = $this->cleanupEntity($entity);
@@ -63,6 +66,59 @@ trait HandlesRelationStandardOperations
     }
 
     /**
+     * Builds Eloquent query for fetching parent entity in index method.
+     *
+     * @param Request $request
+     * @param string|int $parentKey
+     * @return Builder
+     */
+    protected function buildIndexParentQuery(Request $request, $parentKey): Builder
+    {
+        return $this->queryBuilder->buildQuery($this->newModelQuery(), $request);
+    }
+
+    /**
+     * Runs the given query for fetching parent entity in index method.
+     *
+     * @param Builder $query
+     * @param Request $request
+     * @param string|int $parentKey
+     * @return Model
+     */
+    protected function runIndexParentQuery(Builder $query, Request $request, $parentKey): Model
+    {
+        return $query->findOrFail($parentKey);
+    }
+
+    /**
+     * Builds Eloquent query for fetching relation entities in index method.
+     *
+     * @param Request $request
+     * @param Model $parentEntity
+     * @param array $requestedRelations
+     * @return Relation
+     */
+    protected function buildIndexQuery(Request $request, Model $parentEntity, array $requestedRelations): Relation
+    {
+        return $this->relationQueryBuilder->buildQuery($this->newRelationQuery($parentEntity), $request)
+            ->with($requestedRelations);
+    }
+
+    /**
+     * Runs the given query for fetching relation entities in index method.
+     *
+     * @param Relation $query
+     * @param Request $request
+     * @param Model $parentEntity
+     * @param int $paginationLimit
+     * @return LengthAwarePaginator
+     */
+    protected function runIndexQuery(Relation $query, Request $request, Model $parentEntity, int $paginationLimit): LengthAwarePaginator
+    {
+        return $query->paginate($paginationLimit);
+    }
+
+    /**
      * Create new relation resource.
      *
      * @param Request $request
@@ -75,14 +131,11 @@ trait HandlesRelationStandardOperations
 
         $this->authorize('create', $resourceModelClass);
 
-        /**
-         * @var Model $entity
-         */
-        $parentEntity = $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
-            ->findOrFail($parentKey);
+        $parentQuery = $this->buildStoreParentQuery($request, $parentKey);
+        $parentEntity = $this->runStoreParentQuery($parentQuery, $request, $parentKey);
 
+        /** @var Model $entity */
         $entity = new $resourceModelClass;
-        $entity->fill($request->only($entity->getFillable()));
 
         $beforeHookResult = $this->beforeStore($request, $entity);
         if ($this->hookResponds($beforeHookResult)) {
@@ -94,14 +147,9 @@ trait HandlesRelationStandardOperations
             return $beforeSaveHookResult;
         }
 
-        if (!$parentEntity->{$this->getRelation()}() instanceof BelongsTo) {
-            $parentEntity->{$this->getRelation()}()->save($entity, $this->preparePivotFields($request->get('pivot', [])));
-        } else {
-            $entity->save();
-            $parentEntity->{$this->getRelation()}()->associate($entity);
-        }
-
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
+
+        $this->performStore($parentEntity, $entity, $request);
 
         $entity = $this->newRelationQuery($parentEntity)->with($requestedRelations)->find($entity->id);
         $entity->wasRecentlyCreated = true;
@@ -128,6 +176,53 @@ trait HandlesRelationStandardOperations
     }
 
     /**
+     * Builds Eloquent query for fetching parent entity in store method.
+     *
+     * @param Request $request
+     * @param string|int $parentKey
+     * @return Builder
+     */
+    protected function buildStoreParentQuery(Request $request, $parentKey): Builder
+    {
+        return $this->queryBuilder->buildQuery($this->newModelQuery(), $request);
+    }
+
+    /**
+     * Runs the given query for fetching parent entity in store method.
+     *
+     * @param Builder $query
+     * @param Request $request
+     * @param string|int $parentKey
+     * @return Model
+     */
+    protected function runStoreParentQuery(Builder $query, Request $request, $parentKey): Model
+    {
+        return $query->findOrFail($parentKey);
+    }
+
+    /**
+     * Fills attributes on the given relation entity and stores it in database.
+     *
+     * @param Model $parentEntity
+     * @param Model $entity
+     * @param Request $request
+     * @return Model
+     */
+    protected function performStore(Model $parentEntity, Model $entity, Request $request): Model
+    {
+        $entity->fill($request->only($entity->getFillable()));
+
+        if (!$parentEntity->{$this->getRelation()}() instanceof BelongsTo) {
+            return $parentEntity->{$this->getRelation()}()->save($entity, $this->preparePivotFields($request->get('pivot', [])));
+        }
+
+        $entity->save(); //TODO: check, if running save here is correct
+        $parentEntity->{$this->getRelation()}()->associate($entity);
+
+        return $entity;
+    }
+
+    /**
      * Fetch a relation resource.
      *
      * @param Request $request
@@ -142,20 +237,13 @@ trait HandlesRelationStandardOperations
             return $beforeHookResult;
         }
 
+        $parentQuery = $this->buildShowParentQuery($request, $parentKey);
+        $parentEntity = $this->runShowParentQuery($parentQuery, $request, $parentKey);
+
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
 
-        $parentEntity = $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
-            ->findOrFail($parentKey);
-
-        $query = $this->relationQueryBuilder->buildQuery($this->newRelationQuery($parentEntity), $request)
-            ->with($requestedRelations);
-
-        if ($this->isOneToOneRelation($parentEntity)) {
-            $entity = $query->firstOrFail();
-        } else {
-            $this->abortIfMissingRelatedID($relatedKey);
-            $entity = $query->findOrFail($relatedKey);
-        }
+        $query = $this->buildShowQuery($request, $parentEntity, $requestedRelations);
+        $entity = $this->runShowQuery($query, $request, $parentEntity, $relatedKey);
 
         $this->authorize('view', $entity);
 
@@ -176,6 +264,65 @@ trait HandlesRelationStandardOperations
     }
 
     /**
+     * Builds Eloquent query for fetching parent entity in show method.
+     *
+     * @param Request $request
+     * @param string|int $parentKey
+     * @return Builder
+     */
+    protected function buildShowParentQuery(Request $request, $parentKey): Builder
+    {
+        return $this->queryBuilder->buildQuery($this->newModelQuery(), $request);
+    }
+
+    /**
+     * Runs the given query for fetching parent entity in show method.
+     *
+     * @param Builder $query
+     * @param Request $request
+     * @param string|int $parentKey
+     * @return Model
+     */
+    protected function runShowParentQuery(Builder $query, Request $request, $parentKey): Model
+    {
+        return $query->findOrFail($parentKey);
+    }
+
+    /**
+     * Builds Eloquent query for fetching relation entity in show method.
+     *
+     * @param Request $request
+     * @param Model $parentEntity
+     * @param array $requestedRelations
+     * @return Relation
+     */
+    protected function buildShowQuery(Request $request, Model $parentEntity, array $requestedRelations): Relation
+    {
+        return $this->relationQueryBuilder->buildQuery($this->newRelationQuery($parentEntity), $request)
+            ->with($requestedRelations);
+    }
+
+    /**
+     * Runs the given query for fetching relation entity in show method.
+     *
+     * @param Relation $query
+     * @param Request $request
+     * @param Model $parentEntity
+     * @param string|int $relatedKey
+     * @return Model
+     */
+    protected function runShowQuery(Relation $query, Request $request, Model $parentEntity, $relatedKey): Model
+    {
+        if ($this->isOneToOneRelation($parentEntity)) {
+            return $query->firstOrFail();
+        }
+
+        $this->abortIfMissingRelatedID($relatedKey);
+
+        return $query->findOrFail($relatedKey);
+    }
+
+    /**
      * Update a relation resource.
      *
      * @param Request $request
@@ -185,24 +332,15 @@ trait HandlesRelationStandardOperations
      */
     public function update(Request $request, $parentKey, $relatedKey = null)
     {
-        $parentEntity = $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
-            ->findOrFail($parentKey);
+        $parentQuery = $this->buildUpdateParentQuery($request, $parentKey);
+        $parentEntity = $this->runUpdateParentQuery($parentQuery, $request, $parentKey);
 
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
 
-        $query = $this->relationQueryBuilder->buildQuery($this->newRelationQuery($parentEntity), $request)
-            ->with($requestedRelations);
-
-        if ($this->isOneToOneRelation($parentEntity)) {
-            $entity = $query->firstOrFail();
-        } else {
-            $this->abortIfMissingRelatedID($relatedKey);
-            $entity = $query->findOrFail($relatedKey);
-        }
+        $query = $this->buildUpdateQuery($request, $parentEntity, $requestedRelations);
+        $entity = $this->runUpdateQuery($query, $request, $parentEntity, $relatedKey);
 
         $this->authorize('update', $entity);
-
-        $entity->fill($request->only($entity->getFillable()));
 
         $beforeHookResult = $this->beforeUpdate($request, $entity);
         if ($this->hookResponds($beforeHookResult)) {
@@ -214,12 +352,7 @@ trait HandlesRelationStandardOperations
             return $beforeSaveHookResult;
         }
 
-        $entity->save();
-
-        $relation = $parentEntity->{$this->getRelation()}();
-        if ($relation instanceof BelongsToMany || $relation instanceof MorphToMany) {
-            $relation->updateExistingPivot($relatedKey, $this->preparePivotFields($request->get('pivot', [])));
-        }
+        $this->performUpdate($parentEntity, $entity, $request);
 
         $entity = $this->newRelationQuery($parentEntity)->with($requestedRelations)->find($entity->id);
 
@@ -245,6 +378,87 @@ trait HandlesRelationStandardOperations
     }
 
     /**
+     * Builds Eloquent query for fetching parent entity in update method.
+     *
+     * @param Request $request
+     * @param string|int $parentKey
+     * @return Builder
+     */
+    protected function buildUpdateParentQuery(Request $request, $parentKey): Builder
+    {
+        return $this->queryBuilder->buildQuery($this->newModelQuery(), $request);
+    }
+
+    /**
+     * Runs the given query for fetching parent entity in update method.
+     *
+     * @param Builder $query
+     * @param Request $request
+     * @param string|int $parentKey
+     * @return Model
+     */
+    protected function runUpdateParentQuery(Builder $query, Request $request, $parentKey): Model
+    {
+        return $query->findOrFail($parentKey);
+    }
+
+    /**
+     * Builds Eloquent query for fetching relation entity in update method.
+     *
+     * @param Request $request
+     * @param Model $parentEntity
+     * @param array $requestedRelations
+     * @return Relation
+     */
+    protected function buildUpdateQuery(Request $request, Model $parentEntity, array $requestedRelations): Relation
+    {
+        return $this->relationQueryBuilder->buildQuery($this->newRelationQuery($parentEntity), $request)
+            ->with($requestedRelations);
+    }
+
+    /**
+     * Runs the given query for fetching relation entity in update method.
+     *
+     * @param Relation $query
+     * @param Request $request
+     * @param Model $parentEntity
+     * @param string|int $relatedKey
+     * @return Model
+     */
+    protected function runUpdateQuery(Relation $query, Request $request, Model $parentEntity, $relatedKey): Model
+    {
+        if ($this->isOneToOneRelation($parentEntity)) {
+            return $query->firstOrFail();
+        }
+
+        $this->abortIfMissingRelatedID($relatedKey);
+
+        return $query->findOrFail($relatedKey);
+    }
+
+    /**
+     * Fills attributes on the given relation entity and persists changes in database.
+     *
+     * @param Model $parentEntity
+     * @param Model $entity
+     * @param Request $request
+     * @return Model
+     */
+    protected function performUpdate(Model $parentEntity, Model $entity, Request $request): Model
+    {
+        $entity->fill($request->only($entity->getFillable()));
+
+        $relation = $parentEntity->{$this->getRelation()}();
+        if ($relation instanceof BelongsToMany || $relation instanceof MorphToMany) {
+            $relation->updateExistingPivot($entity->getKey(), $this->preparePivotFields($request->get('pivot', [])));
+        }
+
+        $entity->save();
+
+        return $entity;
+    }
+
+    /**
      * Delete a relation resource.
      *
      * @param Request $request
@@ -255,26 +469,16 @@ trait HandlesRelationStandardOperations
      */
     public function destroy(Request $request, $parentKey, $relatedKey = null)
     {
-        $parentEntity = $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
-            ->findOrFail($parentKey);
+        $parentQuery = $this->buildDestroyParentQuery($request, $parentKey);
+        $parentEntity = $this->runDestroyParentQuery($parentQuery, $request, $parentKey);
 
         $softDeletes = $this->softDeletes($this->resolveResourceModelClass());
+        $forceDeletes = $softDeletes && $request->get('force');
+
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
 
-        $query = $this->relationQueryBuilder->buildQuery($this->newRelationQuery($parentEntity), $request)
-            ->with($requestedRelations)
-            ->when($softDeletes, function ($query) {
-                $query->withTrashed();
-            });
-
-        if ($this->isOneToOneRelation($parentEntity)) {
-            $entity = $query->firstOrFail();
-        } else {
-            $this->abortIfMissingRelatedID($relatedKey);
-            $entity = $query->findOrFail($relatedKey);
-        }
-
-        $forceDeletes = $softDeletes && $request->get('force');
+        $query = $this->buildDestroyQuery($request, $parentEntity, $requestedRelations, $softDeletes);
+        $entity = $this->runDestroyQuery($query, $request, $parentEntity, $relatedKey);
 
         $this->authorize($forceDeletes ? 'forceDelete' : 'delete', $entity);
 
@@ -284,12 +488,12 @@ trait HandlesRelationStandardOperations
         }
 
         if (!$forceDeletes) {
-            $entity->delete();
+            $this->performDestroy($entity);
             if ($softDeletes) {
                 $entity = $this->newRelationQuery($parentEntity)->withTrashed()->with($requestedRelations)->find($entity->id);
             }
         } else {
-            $entity->forceDelete();
+            $this->performForceDestroy($entity);
         }
 
         $entity = $this->cleanupEntity($entity);
@@ -309,6 +513,96 @@ trait HandlesRelationStandardOperations
     }
 
     /**
+     * Builds Eloquent query for fetching parent entity in destroy method.
+     *
+     * @param Request $request
+     * @param string|int $parentKey
+     * @return Builder
+     */
+    protected function buildDestroyParentQuery(Request $request, $parentKey): Builder
+    {
+        return $this->queryBuilder->buildQuery($this->newModelQuery(), $request);
+    }
+
+    /**
+     * Runs the given query for fetching parent entity in destroy method.
+     *
+     * @param Builder $query
+     * @param Request $request
+     * @param string|int $parentKey
+     * @return Model
+     */
+    protected function runDestroyParentQuery(Builder $query, Request $request, $parentKey): Model
+    {
+        return $query->findOrFail($parentKey);
+    }
+
+    /**
+     * Builds Eloquent query for fetching relation entity in destroy method.
+     *
+     * @param Request $request
+     * @param Model $parentEntity
+     * @param array $requestedRelations
+     * @param bool $softDeletes
+     * @return Relation
+     */
+    protected function buildDestroyQuery(Request $request, Model $parentEntity, array $requestedRelations, bool $softDeletes): Relation
+    {
+        return $this->relationQueryBuilder->buildQuery($this->newRelationQuery($parentEntity), $request)
+            ->with($requestedRelations)
+            ->when($softDeletes, function ($query) {
+                $query->withTrashed();
+            });
+    }
+
+    /**
+     * Runs the given query for fetching relation entity in destroy method.
+     *
+     * @param Relation $query
+     * @param Request $request
+     * @param Model $parentEntity
+     * @param string|int $relatedKey
+     * @return Model
+     */
+    protected function runDestroyQuery(Relation $query, Request $request, Model $parentEntity, $relatedKey): Model
+    {
+        if ($this->isOneToOneRelation($parentEntity)) {
+            return $query->firstOrFail();
+        }
+
+        $this->abortIfMissingRelatedID($relatedKey);
+
+        return $query->findOrFail($relatedKey);
+    }
+
+    /**
+     * Deletes or trashes the given relation entity from database.
+     *
+     * @param Model $entity
+     * @return Model
+     * @throws Exception
+     */
+    protected function performDestroy(Model $entity): Model
+    {
+        $entity->delete();
+
+        return $entity;
+    }
+
+    /**
+     * Deletes the given relation entity from database, even if it is soft deletable.
+     *
+     * @param Model $entity
+     * @return Model
+     */
+    protected function performForceDestroy(Model $entity): Model
+    {
+        $entity->forceDelete();
+
+        return $entity;
+    }
+
+    /**
      * Restores a previously deleted relation resource.
      *
      * @param Request $request
@@ -318,21 +612,13 @@ trait HandlesRelationStandardOperations
      */
     public function restore(Request $request, $parentKey, $relatedKey = null)
     {
-        $parentEntity = $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
-            ->findOrFail($parentKey);
+        $parentQuery = $this->buildRestoreParentQuery($request, $parentKey);
+        $parentEntity = $this->runRestoreParentQuery($parentQuery, $request, $parentKey);
 
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
 
-        $relationEntityQuery = $this->relationQueryBuilder->buildQuery($this->newRelationQuery($parentEntity), $request)
-            ->with($requestedRelations)
-            ->withTrashed();
-
-        if ($this->isOneToOneRelation($parentEntity)) {
-            $entity = $relationEntityQuery->firstOrFail();
-        } else {
-            $this->abortIfMissingRelatedID($relatedKey);
-            $entity = $relationEntityQuery->findOrFail($relatedKey);
-        }
+        $query = $this->buildRestoreQuery($request, $parentEntity, $requestedRelations);
+        $entity = $this->runRestoreQuery($query, $request, $parentEntity, $relatedKey);
 
         $this->authorize('restore', $entity);
 
@@ -341,7 +627,8 @@ trait HandlesRelationStandardOperations
             return $beforeHookResult;
         }
 
-        $entity->restore();
+        $this->performRestore($entity);
+
         $entity = $this->newRelationQuery($parentEntity)->with($requestedRelations)->find($entity->id);
 
         $entity = $this->cleanupEntity($entity);
@@ -358,6 +645,79 @@ trait HandlesRelationStandardOperations
         $entity = $this->relationsResolver->guardRelations($entity, $requestedRelations);
 
         return $this->entityResponse($entity);
+    }
+
+    /**
+     * Builds Eloquent query for fetching parent entity in restore method.
+     *
+     * @param Request $request
+     * @param string|int $parentKey
+     * @return Builder
+     */
+    protected function buildRestoreParentQuery(Request $request, $parentKey): Builder
+    {
+        return $this->queryBuilder->buildQuery($this->newModelQuery(), $request);
+    }
+
+    /**
+     * Runs the given query for fetching parent entity in restore method.
+     *
+     * @param Builder $query
+     * @param Request $request
+     * @param string|int $parentKey
+     * @return Model
+     */
+    protected function runRestoreParentQuery(Builder $query, Request $request, $parentKey): Model
+    {
+        return $query->findOrFail($parentKey);
+    }
+
+    /**
+     * Builds Eloquent query for fetching relation entity in restore method.
+     *
+     * @param Request $request
+     * @param Model $parentEntity
+     * @param array $requestedRelations
+     * @return Relation
+     */
+    protected function buildRestoreQuery(Request $request, Model $parentEntity, array $requestedRelations): Relation
+    {
+        return $this->relationQueryBuilder->buildQuery($this->newRelationQuery($parentEntity), $request)
+            ->with($requestedRelations)
+            ->withTrashed();
+    }
+
+    /**
+     * Runs the given query for fetching relation entity in restore method.
+     *
+     * @param Relation $query
+     * @param Request $request
+     * @param Model $parentEntity
+     * @param string|int $relatedKey
+     * @return Model
+     */
+    protected function runRestoreQuery(Relation $query, Request $request, Model $parentEntity, $relatedKey): Model
+    {
+        if ($this->isOneToOneRelation($parentEntity)) {
+            return $query->firstOrFail();
+        }
+
+        $this->abortIfMissingRelatedID($relatedKey);
+
+        return $query->findOrFail($relatedKey);
+    }
+
+    /**
+     * Restores the given relation entity.
+     *
+     * @param Model|SoftDeletes $entity
+     * @return Model
+     */
+    protected function performRestore(Model $entity): Model
+    {
+        $entity->restore();
+
+        return $entity;
     }
 
     /**
@@ -564,5 +924,4 @@ trait HandlesRelationStandardOperations
     {
         return null;
     }
-
 }
