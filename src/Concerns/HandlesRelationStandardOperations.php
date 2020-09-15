@@ -206,20 +206,17 @@ trait HandlesRelationStandardOperations
      * @param Model $parentEntity
      * @param Model $entity
      * @param Request $request
-     * @return Model
      */
-    protected function performStore(Model $parentEntity, Model $entity, Request $request): Model
+    protected function performStore(Model $parentEntity, Model $entity, Request $request): void
     {
         $entity->fill($request->only($entity->getFillable()));
 
         if (!$parentEntity->{$this->getRelation()}() instanceof BelongsTo) {
-            return $parentEntity->{$this->getRelation()}()->save($entity, $this->preparePivotFields($request->get('pivot', [])));
+            $parentEntity->{$this->getRelation()}()->save($entity, $this->preparePivotFields($request->get('pivot', [])));
+        } else {
+            $entity->save(); //TODO: check, if running save here is correct
+            $parentEntity->{$this->getRelation()}()->associate($entity);
         }
-
-        $entity->save(); //TODO: check, if running save here is correct
-        $parentEntity->{$this->getRelation()}()->associate($entity);
-
-        return $entity;
     }
 
     /**
@@ -442,20 +439,16 @@ trait HandlesRelationStandardOperations
      * @param Model $parentEntity
      * @param Model $entity
      * @param Request $request
-     * @return Model
      */
-    protected function performUpdate(Model $parentEntity, Model $entity, Request $request): Model
+    protected function performUpdate(Model $parentEntity, Model $entity, Request $request): void
     {
         $entity->fill($request->only($entity->getFillable()));
+        $entity->save();
 
         $relation = $parentEntity->{$this->getRelation()}();
         if ($relation instanceof BelongsToMany || $relation instanceof MorphToMany) {
             $relation->updateExistingPivot($entity->getKey(), $this->preparePivotFields($request->get('pivot', [])));
         }
-
-        $entity->save();
-
-        return $entity;
     }
 
     /**
@@ -579,27 +572,21 @@ trait HandlesRelationStandardOperations
      * Deletes or trashes the given relation entity from database.
      *
      * @param Model $entity
-     * @return Model
      * @throws Exception
      */
-    protected function performDestroy(Model $entity): Model
+    protected function performDestroy(Model $entity): void
     {
         $entity->delete();
-
-        return $entity;
     }
 
     /**
      * Deletes the given relation entity from database, even if it is soft deletable.
      *
      * @param Model $entity
-     * @return Model
      */
-    protected function performForceDestroy(Model $entity): Model
+    protected function performForceDestroy(Model $entity): void
     {
         $entity->forceDelete();
-
-        return $entity;
     }
 
     /**
@@ -711,13 +698,10 @@ trait HandlesRelationStandardOperations
      * Restores the given relation entity.
      *
      * @param Model|SoftDeletes $entity
-     * @return Model
      */
-    protected function performRestore(Model $entity): Model
+    protected function performRestore(Model $entity): void
     {
         $entity->restore();
-
-        return $entity;
     }
 
     /**

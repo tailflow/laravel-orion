@@ -7,6 +7,7 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Contracts\Pagination\Paginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Orion\Http\Requests\Request;
 use Orion\Http\Resources\CollectionResource;
 use Orion\Http\Resources\Resource;
@@ -124,13 +125,11 @@ trait HandlesStandardOperations
      *
      * @param Model $entity
      * @param Request $request
-     * @return bool
      */
-    protected function performStore(Model $entity, Request $request): bool
+    protected function performStore(Model $entity, Request $request): void
     {
         $entity->fill($request->only($entity->getFillable()));
-
-        return $entity->save();
+        $entity->save();
     }
 
     /**
@@ -267,13 +266,11 @@ trait HandlesStandardOperations
      *
      * @param Model $entity
      * @param Request $request
-     * @return bool
      */
-    protected function performUpdate(Model $entity, Request $request): bool
+    protected function performUpdate(Model $entity, Request $request): void
     {
         $entity->fill($request->only($entity->getFillable()));
-
-        return $entity->save();
+        $entity->save();
     }
 
     /**
@@ -357,23 +354,21 @@ trait HandlesStandardOperations
      * Deletes or trashes the given entity from database.
      *
      * @param Model $entity
-     * @return bool
      * @throws Exception
      */
-    protected function performDestroy(Model $entity): bool
+    protected function performDestroy(Model $entity): void
     {
-        return $entity->delete();
+        $entity->delete();
     }
 
     /**
      * Deletes the given entity from database, even if it is soft deletable.
      *
      * @param Model $entity
-     * @return bool
      */
-    protected function performForceDestroy(Model $entity): bool
+    protected function performForceDestroy(Model $entity): void
     {
-        return $entity->forceDelete();
+        $entity->forceDelete();
     }
 
     /**
@@ -441,12 +436,11 @@ trait HandlesStandardOperations
     /**
      * Restores the given entity.
      *
-     * @param Model $entity
-     * @return bool
+     * @param Model|SoftDeletes $entity
      */
-    protected function performRestore(Model $entity): bool
+    protected function performRestore(Model $entity): void
     {
-        return $entity->restore();
+        $entity->restore();
     }
 
     /**
