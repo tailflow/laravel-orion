@@ -1,7 +1,8 @@
 <?php
 
-
 namespace Orion\Http\Routing;
+
+use Illuminate\Routing\Route;
 
 class BelongsToManyRelationResourceRegistrar extends RelationResourceRegistrar
 {
@@ -15,13 +16,13 @@ class BelongsToManyRelationResourceRegistrar extends RelationResourceRegistrar
     /**
      * Add the sync method for a resourceful route.
      *
-     * @param  string  $name
-     * @param  string  $base
-     * @param  string  $controller
-     * @param  array   $options
-     * @return \Illuminate\Routing\Route
+     * @param string $name
+     * @param string $base
+     * @param string $controller
+     * @param array $options
+     * @return Route
      */
-    protected function addResourceSync($name, $base, $controller, $options)
+    protected function addResourceSync(string $name, string $base, string $controller, array $options)
     {
         $uri = $this->getResourceUri($name).'/sync';
 
@@ -33,13 +34,13 @@ class BelongsToManyRelationResourceRegistrar extends RelationResourceRegistrar
     /**
      * Add the toggle method for a resourceful route.
      *
-     * @param  string  $name
-     * @param  string  $base
-     * @param  string  $controller
-     * @param  array   $options
-     * @return \Illuminate\Routing\Route
+     * @param string $name
+     * @param string $base
+     * @param string $controller
+     * @param array $options
+     * @return Route
      */
-    protected function addResourceToggle($name, $base, $controller, $options)
+    protected function addResourceToggle(string $name, string $base, string $controller, array $options)
     {
         $uri = $this->getResourceUri($name).'/toggle';
 
@@ -51,13 +52,13 @@ class BelongsToManyRelationResourceRegistrar extends RelationResourceRegistrar
     /**
      * Add the updatePivot method for a resourceful route.
      *
-     * @param  string  $name
-     * @param  string  $base
-     * @param  string  $controller
-     * @param  array   $options
-     * @return \Illuminate\Routing\Route
+     * @param string $name
+     * @param string $base
+     * @param string $controller
+     * @param array $options
+     * @return Route
      */
-    protected function addResourceUpdatePivot($name, $base, $controller, $options)
+    protected function addResourceUpdatePivot(string $name, string $base, string $controller, array $options)
     {
         $uri = $this->getResourceUri($name).'/{'.$base.'?}/pivot';
 
@@ -69,13 +70,13 @@ class BelongsToManyRelationResourceRegistrar extends RelationResourceRegistrar
     /**
      * Add the attach method for a resourceful route.
      *
-     * @param  string  $name
-     * @param  string  $base
-     * @param  string  $controller
-     * @param  array   $options
-     * @return \Illuminate\Routing\Route
+     * @param string $name
+     * @param string $base
+     * @param string $controller
+     * @param array $options
+     * @return Route
      */
-    protected function addResourceAttach($name, $base, $controller, $options)
+    protected function addResourceAttach(string $name, string $base, string $controller, array $options)
     {
         $uri = $this->getResourceUri($name).'/attach';
 
@@ -87,13 +88,13 @@ class BelongsToManyRelationResourceRegistrar extends RelationResourceRegistrar
     /**
      * Add the detach method for a resourceful route.
      *
-     * @param  string  $name
-     * @param  string  $base
-     * @param  string  $controller
-     * @param  array   $options
-     * @return \Illuminate\Routing\Route
+     * @param string $name
+     * @param string $base
+     * @param string $controller
+     * @param array $options
+     * @return Route
      */
-    protected function addResourceDetach($name, $base, $controller, $options)
+    protected function addResourceDetach(string $name, string $base, string $controller, array $options)
     {
         $uri = $this->getResourceUri($name).'/detach';
 

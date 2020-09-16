@@ -2,18 +2,20 @@
 
 namespace Orion\Http\Routing;
 
+use Illuminate\Routing\Route;
+
 class RelationResourceRegistrar extends ResourceRegistrar
 {
     /**
      * Add the update method for a resourceful route.
      *
-     * @param  string  $name
-     * @param  string  $base
-     * @param  string  $controller
-     * @param  array   $options
-     * @return \Illuminate\Routing\Route
+     * @param string $name
+     * @param string $base
+     * @param string $controller
+     * @param array $options
+     * @return Route
      */
-    protected function addResourceUpdate($name, $base, $controller, $options)
+    protected function addResourceUpdate($name, $base, $controller, $options): Route
     {
         $uri = $this->getResourceUri($name).'/{'.$base.'?}';
 
@@ -25,13 +27,13 @@ class RelationResourceRegistrar extends ResourceRegistrar
     /**
      * Add the show method for a resourceful route.
      *
-     * @param  string  $name
-     * @param  string  $base
-     * @param  string  $controller
-     * @param  array   $options
-     * @return \Illuminate\Routing\Route
+     * @param string $name
+     * @param string $base
+     * @param string $controller
+     * @param array $options
+     * @return Route
      */
-    protected function addResourceShow($name, $base, $controller, $options)
+    protected function addResourceShow($name, $base, $controller, $options) : Route
     {
         $uri = $this->getResourceUri($name).'/{'.$base.'?}';
 
@@ -43,13 +45,13 @@ class RelationResourceRegistrar extends ResourceRegistrar
     /**
      * Add the destroy method for a resourceful route.
      *
-     * @param  string  $name
-     * @param  string  $base
-     * @param  string  $controller
-     * @param  array   $options
-     * @return \Illuminate\Routing\Route
+     * @param string $name
+     * @param string $base
+     * @param string $controller
+     * @param array $options
+     * @return Route
      */
-    protected function addResourceDestroy($name, $base, $controller, $options)
+    protected function addResourceDestroy($name, $base, $controller, $options) : Route
     {
         $uri = $this->getResourceUri($name).'/{'.$base.'?}';
 
@@ -65,9 +67,9 @@ class RelationResourceRegistrar extends ResourceRegistrar
      * @param string $base
      * @param string $controller
      * @param array $options
-     * @return \Illuminate\Routing\Route
+     * @return Route
      */
-    protected function addResourceRestore($name, $base, $controller, $options)
+    protected function addResourceRestore(string $name, string $base, string $controller, array $options) : Route
     {
         $uri = $this->getResourceUri($name).'/{'.$base.'?}/restore';
 

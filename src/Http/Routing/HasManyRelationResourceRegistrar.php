@@ -2,6 +2,8 @@
 
 namespace Orion\Http\Routing;
 
+use Illuminate\Routing\Route;
+
 class HasManyRelationResourceRegistrar extends RelationResourceRegistrar
 {
     /**
@@ -14,13 +16,13 @@ class HasManyRelationResourceRegistrar extends RelationResourceRegistrar
     /**
      * Add the associate method for a resourceful route.
      *
-     * @param  string  $name
-     * @param  string  $base
-     * @param  string  $controller
-     * @param  array   $options
-     * @return \Illuminate\Routing\Route
+     * @param string $name
+     * @param string $base
+     * @param string $controller
+     * @param array $options
+     * @return Route
      */
-    protected function addResourceAssociate($name, $base, $controller, $options)
+    protected function addResourceAssociate(string $name, string $base, string $controller, array $options)
     {
         $uri = $this->getResourceUri($name).'/associate';
 
@@ -32,13 +34,13 @@ class HasManyRelationResourceRegistrar extends RelationResourceRegistrar
     /**
      * Add the dissociate method for a resourceful route.
      *
-     * @param  string  $name
-     * @param  string  $base
-     * @param  string  $controller
-     * @param  array   $options
-     * @return \Illuminate\Routing\Route
+     * @param string $name
+     * @param string $base
+     * @param string $controller
+     * @param array $options
+     * @return Route
      */
-    protected function addResourceDissociate($name, $base, $controller, $options)
+    protected function addResourceDissociate(string $name, string $base, string $controller, array $options)
     {
         $uri = $this->getResourceUri($name).'/{'.$base.'?}/dissociate';
 

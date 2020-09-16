@@ -84,7 +84,7 @@ class Request extends FormRequest
         return [];
     }
 
-    protected function buildBatchRules($definedRules, $definedBatchRules)
+    protected function buildBatchRules($definedRules, $definedBatchRules) : array
     {
         $batchRules = [
             'resources' => ['array', 'required']
@@ -104,7 +104,7 @@ class Request extends FormRequest
      *
      * @return array
      */
-    public function commonRules()
+    public function commonRules() : array
     {
         return [];
     }
@@ -114,7 +114,7 @@ class Request extends FormRequest
      *
      * @return array
      */
-    public function storeRules()
+    public function storeRules() : array
     {
         return [];
     }
@@ -124,7 +124,7 @@ class Request extends FormRequest
      *
      * @return array
      */
-    public function batchStoreRules()
+    public function batchStoreRules() : array
     {
         return [];
     }
@@ -134,7 +134,7 @@ class Request extends FormRequest
      *
      * @return array
      */
-    public function updateRules()
+    public function updateRules() : array
     {
         return [];
     }
@@ -144,7 +144,7 @@ class Request extends FormRequest
      *
      * @return array
      */
-    public function batchUpdateRules()
+    public function batchUpdateRules() : array
     {
         return [];
     }
@@ -154,7 +154,7 @@ class Request extends FormRequest
      *
      * @return array
      */
-    public function associateRules()
+    public function associateRules() : array
     {
         return [];
     }
@@ -164,7 +164,7 @@ class Request extends FormRequest
      *
      * @return array
      */
-    public function attachRules()
+    public function attachRules() : array
     {
         return [];
     }
@@ -174,7 +174,7 @@ class Request extends FormRequest
      *
      * @return array
      */
-    public function detachRules()
+    public function detachRules() : array
     {
         return [];
     }
@@ -184,7 +184,7 @@ class Request extends FormRequest
      *
      * @return array
      */
-    public function syncRules()
+    public function syncRules() : array
     {
         return [];
     }
@@ -194,7 +194,7 @@ class Request extends FormRequest
      *
      * @return array
      */
-    public function toggleRules()
+    public function toggleRules() : array
     {
         return [];
     }
@@ -204,7 +204,7 @@ class Request extends FormRequest
      *
      * @return array
      */
-    public function updatePivotRules()
+    public function updatePivotRules() : array
     {
         return [];
     }

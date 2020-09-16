@@ -25,10 +25,10 @@ class WhitelistedField implements Rule
      * Determine if the validation rule passes.
      *
      * @param string $_
-     * @param mixed $field
+     * @param string $field
      * @return bool
      */
-    public function passes($_, $field)
+    public function passes($_, $field) : bool
     {
         if (in_array('*', $this->constraints, true)) {
             return true;

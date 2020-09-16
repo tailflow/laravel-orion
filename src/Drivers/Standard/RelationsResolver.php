@@ -86,7 +86,7 @@ class RelationsResolver implements \Orion\Contracts\RelationsResolver
      * @param Relation $relationInstance
      * @return string
      */
-    public function relationTableFromRelationInstance($relationInstance): string
+    public function relationTableFromRelationInstance(Relation $relationInstance): string
     {
         return $relationInstance->getModel()->getTable();
     }
@@ -97,7 +97,7 @@ class RelationsResolver implements \Orion\Contracts\RelationsResolver
      * @param Relation $relationInstance
      * @return string
      */
-    public function relationForeignKeyFromRelationInstance($relationInstance): string
+    public function relationForeignKeyFromRelationInstance(Relation $relationInstance): string
     {
         $laravelVersion = (float) app()->version();
 
@@ -110,7 +110,7 @@ class RelationsResolver implements \Orion\Contracts\RelationsResolver
      * @param Relation $relationInstance
      * @return string
      */
-    public function relationLocalKeyFromRelationInstance($relationInstance): string
+    public function relationLocalKeyFromRelationInstance(Relation $relationInstance): string
     {
         switch (get_class($relationInstance)) {
             case HasOne::class:
@@ -148,7 +148,7 @@ class RelationsResolver implements \Orion\Contracts\RelationsResolver
      * @param array $requestedRelations
      * @return Model
      */
-    public function guardRelations(Model $entity, array $requestedRelations)
+    public function guardRelations(Model $entity, array $requestedRelations) : Model
     {
         $relations = $entity->getRelations();
         foreach ($relations as $relationName => $relation) {

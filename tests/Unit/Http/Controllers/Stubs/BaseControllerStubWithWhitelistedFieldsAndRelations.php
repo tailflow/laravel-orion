@@ -12,32 +12,32 @@ class BaseControllerStubWithWhitelistedFieldsAndRelations extends BaseController
 
     protected $request = PostRequest::class;
 
-    protected function exposedScopes()
+    protected function exposedScopes(): array
     {
         return ['testScope'];
     }
 
-    protected function filterableBy()
+    protected function filterableBy(): array
     {
         return ['test_filterable_field'];
     }
 
-    protected function sortableBy()
+    protected function sortableBy(): array
     {
         return ['test_sortable_field'];
     }
 
-    protected function searchableBy()
+    protected function searchableBy(): array
     {
         return ['test_searchable_field'];
     }
 
-    protected function includes()
+    protected function includes(): array
     {
         return ['testRelation'];
     }
 
-    protected function alwaysIncludes()
+    protected function alwaysIncludes(): array
     {
         return ['testAlwaysIncludedRelation'];
     }
@@ -52,6 +52,5 @@ class BaseControllerStubWithWhitelistedFieldsAndRelations extends BaseController
 
     protected function bindComponents(): void
     {
-        return;
     }
 }

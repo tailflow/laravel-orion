@@ -234,7 +234,7 @@ trait HandlesRelationManyToManyOperations
      * @param array $resources
      * @return array
      */
-    protected function prepareResourcePivotFields($resources)
+    protected function prepareResourcePivotFields(array $resources)
     {
         foreach ($resources as $key => &$pivotFields) {
             if (!is_array($pivotFields)) {
@@ -253,7 +253,7 @@ trait HandlesRelationManyToManyOperations
      * @param array $pivotFields
      * @return array mixed
      */
-    protected function preparePivotFields($pivotFields)
+    protected function preparePivotFields(array $pivotFields)
     {
         foreach ($pivotFields as &$field) {
             if (is_array($field) || is_object($field)) {
@@ -270,7 +270,7 @@ trait HandlesRelationManyToManyOperations
      * @param Model $entity
      * @return Model
      */
-    protected function castPivotJsonFields($entity)
+    protected function castPivotJsonFields(Model $entity)
     {
         if (!$entity->pivot) {
             return $entity;

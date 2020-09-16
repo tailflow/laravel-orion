@@ -91,7 +91,7 @@ trait HandlesRelationOneToManyOperations
      * @param Model $entity
      * @return mixed
      */
-    protected function beforeAssociate(Request $request, $parentEntity, $entity)
+    protected function beforeAssociate(Request $request, Model $parentEntity, Model $entity)
     {
         return null;
     }
@@ -103,7 +103,7 @@ trait HandlesRelationOneToManyOperations
      * @param Model $entity
      * @return mixed
      */
-    protected function afterAssociate(Request $request, $entity)
+    protected function afterAssociate(Request $request, Model $entity)
     {
         return null;
     }
@@ -116,7 +116,7 @@ trait HandlesRelationOneToManyOperations
      * @param Model $entity
      * @return mixed
      */
-    protected function beforeDissociate(Request $request, $parentEntity, $entity)
+    protected function beforeDissociate(Request $request, Model $parentEntity, Model $entity)
     {
         return null;
     }
@@ -128,7 +128,7 @@ trait HandlesRelationOneToManyOperations
      * @param Model $entity
      * @return mixed
      */
-    protected function afterDissociate(Request $request, $entity)
+    protected function afterDissociate(Request $request, Model $entity)
     {
         return null;
     }

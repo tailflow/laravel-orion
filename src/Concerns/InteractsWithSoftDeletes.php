@@ -3,6 +3,7 @@
 namespace Orion\Concerns;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Http\Request;
 
 trait InteractsWithSoftDeletes
@@ -33,7 +34,7 @@ trait InteractsWithSoftDeletes
     /**
      * Determines, if the resource is considered trashed for the current request.
      *
-     * @param Model $entity
+     * @param Model|SoftDeletes $entity
      * @param bool $softDeletes
      * @param bool $forceDeletes
      * @return bool

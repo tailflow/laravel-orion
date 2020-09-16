@@ -28,22 +28,22 @@ class PostsController extends Controller
         }
     }
 
-    protected function sortableBy()
+    protected function sortableBy() : array
     {
         return ['title', 'user.name'];
     }
 
-    protected function filterableBy()
+    protected function filterableBy() : array
     {
         return ['title', 'position', 'user.name'];
     }
 
-    protected function searchableBy()
+    protected function searchableBy() : array
     {
         return ['title', 'user.name'];
     }
 
-    protected function exposedScopes()
+    protected function exposedScopes() : array
     {
         return ['published', 'publishedAt'];
     }
@@ -51,7 +51,7 @@ class PostsController extends Controller
     /**
      * @return array
      */
-    protected function includes()
+    protected function includes() : array
     {
         return ['user'];
     }

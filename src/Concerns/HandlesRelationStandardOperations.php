@@ -707,12 +707,12 @@ trait HandlesRelationStandardOperations
     /**
      * Determines whether controller relation is one-to-one or not.
      *
-     * @param Model $resourceEntity
+     * @param Model $parentEntity
      * @return bool
      */
-    protected function isOneToOneRelation($resourceEntity)
+    protected function isOneToOneRelation(Model $parentEntity)
     {
-        $relation = $resourceEntity->{$this->getRelation()}();
+        $relation = $parentEntity->{$this->getRelation()}();
         return $relation instanceof HasOne || $relation instanceof MorphOne || $relation instanceof BelongsTo;
     }
 
@@ -772,7 +772,7 @@ trait HandlesRelationStandardOperations
      * @param Model $entity
      * @return mixed
      */
-    protected function beforeStore(Request $request, $entity)
+    protected function beforeStore(Request $request, Model $entity)
     {
         return null;
     }
@@ -784,7 +784,7 @@ trait HandlesRelationStandardOperations
      * @param Model $entity
      * @return mixed
      */
-    protected function afterStore(Request $request, $entity)
+    protected function afterStore(Request $request, Model $entity)
     {
         return null;
     }
@@ -808,7 +808,7 @@ trait HandlesRelationStandardOperations
      * @param Model $entity
      * @return mixed
      */
-    protected function afterShow(Request $request, $entity)
+    protected function afterShow(Request $request, Model $entity)
     {
         return null;
     }
@@ -820,7 +820,7 @@ trait HandlesRelationStandardOperations
      * @param Model $entity
      * @return mixed
      */
-    protected function beforeUpdate(Request $request, $entity)
+    protected function beforeUpdate(Request $request, Model $entity)
     {
         return null;
     }
@@ -832,7 +832,7 @@ trait HandlesRelationStandardOperations
      * @param Model $entity
      * @return mixed
      */
-    protected function afterUpdate(Request $request, $entity)
+    protected function afterUpdate(Request $request, Model $entity)
     {
         return null;
     }
@@ -844,7 +844,7 @@ trait HandlesRelationStandardOperations
      * @param Model $entity
      * @return mixed
      */
-    protected function beforeDestroy(Request $request, $entity)
+    protected function beforeDestroy(Request $request, Model $entity)
     {
         return null;
     }
@@ -856,7 +856,7 @@ trait HandlesRelationStandardOperations
      * @param Model $entity
      * @return mixed
      */
-    protected function afterDestroy(Request $request, $entity)
+    protected function afterDestroy(Request $request, Model $entity)
     {
         return null;
     }
@@ -868,7 +868,7 @@ trait HandlesRelationStandardOperations
      * @param Model $entity
      * @return mixed
      */
-    protected function beforeRestore(Request $request, $entity)
+    protected function beforeRestore(Request $request, Model $entity)
     {
         return null;
     }
@@ -880,7 +880,7 @@ trait HandlesRelationStandardOperations
      * @param Model $entity
      * @return mixed
      */
-    protected function afterRestore(Request $request, $entity)
+    protected function afterRestore(Request $request, Model $entity)
     {
         return null;
     }
@@ -892,7 +892,7 @@ trait HandlesRelationStandardOperations
      * @param Model $entity
      * @return mixed
      */
-    protected function beforeSave(Request $request, $entity)
+    protected function beforeSave(Request $request, Model $entity)
     {
         return null;
     }
@@ -904,7 +904,7 @@ trait HandlesRelationStandardOperations
      * @param Model $entity
      * @return mixed
      */
-    protected function afterSave(Request $request, $entity)
+    protected function afterSave(Request $request, Model $entity)
     {
         return null;
     }

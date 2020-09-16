@@ -2,6 +2,8 @@
 
 namespace Orion\Http\Routing;
 
+use Illuminate\Routing\Route;
+
 class ResourceRegistrar extends \Illuminate\Routing\ResourceRegistrar
 {
     /**
@@ -18,9 +20,9 @@ class ResourceRegistrar extends \Illuminate\Routing\ResourceRegistrar
      * @param string $base
      * @param string $controller
      * @param array $options
-     * @return \Illuminate\Routing\Route
+     * @return Route
      */
-    protected function addResourceSearch($name, $base, $controller, $options)
+    protected function addResourceSearch(string $name, string $base, string $controller, array $options): Route
     {
         $uri = $this->getResourceUri($name).'/search';
 
@@ -38,9 +40,9 @@ class ResourceRegistrar extends \Illuminate\Routing\ResourceRegistrar
      * @param string $base
      * @param string $controller
      * @param array $options
-     * @return \Illuminate\Routing\Route
+     * @return Route
      */
-    protected function addResourceRestore($name, $base, $controller, $options)
+    protected function addResourceRestore(string $name, string $base, string $controller, array $options): Route
     {
         $uri = $this->getResourceUri($name).'/{'.$base.'}/restore';
 
@@ -56,9 +58,9 @@ class ResourceRegistrar extends \Illuminate\Routing\ResourceRegistrar
      * @param string $base
      * @param string $controller
      * @param array $options
-     * @return \Illuminate\Routing\Route
+     * @return Route
      */
-    protected function addResourceBatchStore($name, $base, $controller, $options)
+    protected function addResourceBatchStore(string $name, string $base, string $controller, array $options): Route
     {
         $uri = $this->getResourceUri($name).'/batch';
 
@@ -74,9 +76,9 @@ class ResourceRegistrar extends \Illuminate\Routing\ResourceRegistrar
      * @param string $base
      * @param string $controller
      * @param array $options
-     * @return \Illuminate\Routing\Route
+     * @return Route
      */
-    protected function addResourceBatchUpdate($name, $base, $controller, $options)
+    protected function addResourceBatchUpdate(string $name, string $base, string $controller, array $options): Route
     {
         $uri = $this->getResourceUri($name).'/batch';
 
@@ -92,9 +94,9 @@ class ResourceRegistrar extends \Illuminate\Routing\ResourceRegistrar
      * @param string $base
      * @param string $controller
      * @param array $options
-     * @return \Illuminate\Routing\Route
+     * @return Route
      */
-    protected function addResourceBatchDestroy($name, $base, $controller, $options)
+    protected function addResourceBatchDestroy(string $name, string $base, string $controller, array $options): Route
     {
         $uri = $this->getResourceUri($name).'/batch';
 
@@ -110,9 +112,9 @@ class ResourceRegistrar extends \Illuminate\Routing\ResourceRegistrar
      * @param string $base
      * @param string $controller
      * @param array $options
-     * @return \Illuminate\Routing\Route
+     * @return Route
      */
-    protected function addResourceBatchRestore($name, $base, $controller, $options)
+    protected function addResourceBatchRestore(string $name, string $base, string $controller, array $options): Route
     {
         $uri = $this->getResourceUri($name).'/batch/restore';
 

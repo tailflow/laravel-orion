@@ -2,6 +2,7 @@
 
 namespace Orion\Tests\Unit\Concerns;
 
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Orion\Concerns\ExtendsResources;
 use Orion\Tests\Fixtures\App\Models\Post;
@@ -16,7 +17,7 @@ class ExtendsResourcesTest extends TestCase
         $this->assertSame([
             'title' => 'test',
             'additional-value' => 'test'
-        ], $stub->toArrayWithMerge(null, [
+        ], $stub->toArrayWithMerge(new Request(), [
             'additional-value' => 'test'
         ]));
     }

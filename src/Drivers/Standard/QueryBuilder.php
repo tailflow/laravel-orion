@@ -112,9 +112,6 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
                 $relationField = $this->relationsResolver->relationFieldFromParamConstraint($filterDescriptor['field']);
 
                 $query->{$or ? 'orWhereHas' : 'whereHas'}($relation, function ($relationQuery) use ($relationField, $filterDescriptor) {
-                    /**
-                     * @var \Illuminate\Database\Query\Builder $relationQuery
-                     */
                     $this->buildFilterQueryWhereClause($relationField, $filterDescriptor, $relationQuery);
                 });
             } else {
@@ -171,7 +168,7 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
 
                     $whereQuery->orWhereHas($relation, function ($relationQuery) use ($relationField, $requestedSearchString) {
                         /**
-                         * @var \Illuminate\Database\Query\Builder $relationQuery
+                         * @var Builder $relationQuery
                          */
                         return $relationQuery->where($relationField, 'like', '%'.$requestedSearchString.'%');
                     });

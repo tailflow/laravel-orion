@@ -13,7 +13,7 @@ trait InteractsWithAuthorization
      * @param string $driver
      * @return $this
      */
-    protected function withAuth($user = null, $driver = 'api')
+    protected function withAuth($user = null, string $driver = 'api')
     {
         return $this->actingAs($user ?? factory($this->resolveUserModelClass())->create(), $driver);
     }

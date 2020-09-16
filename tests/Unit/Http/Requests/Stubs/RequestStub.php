@@ -11,7 +11,7 @@ class RequestStub extends Request
      *
      * @return array
      */
-    public function commonRules()
+    public function commonRules() : array
     {
         return [
             'common-rules-field' => 'required'
@@ -23,7 +23,7 @@ class RequestStub extends Request
      *
      * @return array
      */
-    public function storeRules()
+    public function storeRules() : array
     {
         return [
             'store-rules-field' => 'required'
@@ -35,7 +35,7 @@ class RequestStub extends Request
      *
      * @return array
      */
-    public function updateRules()
+    public function updateRules() : array
     {
         return [
             'update-rules-field' => 'required'
@@ -47,7 +47,7 @@ class RequestStub extends Request
      *
      * @return array
      */
-    public function associateRules()
+    public function associateRules() : array
     {
         return [
             'associate-rules-field' => 'required'
@@ -59,7 +59,7 @@ class RequestStub extends Request
      *
      * @return array
      */
-    public function attachRules()
+    public function attachRules() : array
     {
         return [
             'attach-rules-field' => 'required'
@@ -71,7 +71,7 @@ class RequestStub extends Request
      *
      * @return array
      */
-    public function detachRules()
+    public function detachRules() : array
     {
         return [
             'detach-rules-field' => 'required'
@@ -83,7 +83,7 @@ class RequestStub extends Request
      *
      * @return array
      */
-    public function syncRules()
+    public function syncRules() : array
     {
         return [
             'sync-rules-field' => 'required'
@@ -95,7 +95,7 @@ class RequestStub extends Request
      *
      * @return array
      */
-    public function toggleRules()
+    public function toggleRules() : array
     {
         return [
             'toggle-rules-field' => 'required'
@@ -107,7 +107,7 @@ class RequestStub extends Request
      *
      * @return array
      */
-    public function updatePivotRules()
+    public function updatePivotRules() : array
     {
         return [
             'update-pivot-rules-field' => 'required'

@@ -11,7 +11,7 @@ class PostRequest extends Request
      *
      * @return array
      */
-    public function commonRules()
+    public function commonRules() : array
     {
         return [];
     }
@@ -21,7 +21,7 @@ class PostRequest extends Request
      *
      * @return array
      */
-    public function storeRules()
+    public function storeRules() : array
     {
         return [
             'title' => ['string', 'required', 'max:255'],
@@ -34,7 +34,7 @@ class PostRequest extends Request
      *
      * @return array
      */
-    public function updateRules()
+    public function updateRules() : array
     {
         return [
             'title' => ['string', 'required', 'max:255']

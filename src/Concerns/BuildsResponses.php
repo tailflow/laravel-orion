@@ -2,6 +2,7 @@
 
 namespace Orion\Concerns;
 
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Resources\Json\ResourceCollection;
@@ -20,10 +21,10 @@ trait BuildsResponses
     }
 
     /**
-     * @param $entities
+     * @param LengthAwarePaginator $entities
      * @return ResourceCollection
      */
-    public function collectionResponse($entities): ResourceCollection
+    public function collectionResponse(LengthAwarePaginator $entities): ResourceCollection
     {
         if ($collectionResource = $this->getCollectionResource()) {
             return new $collectionResource($entities);
