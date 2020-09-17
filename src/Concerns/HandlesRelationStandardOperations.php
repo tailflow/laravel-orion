@@ -74,7 +74,7 @@ trait HandlesRelationStandardOperations
      */
     protected function buildIndexParentQuery(Request $request, $parentKey): Builder
     {
-        return $this->queryBuilder->buildQuery($this->newModelQuery(), $request);
+        return $this->buildParentFetchQuery($request, $parentKey);
     }
 
     /**
@@ -87,7 +87,7 @@ trait HandlesRelationStandardOperations
      */
     protected function runIndexParentQuery(Builder $query, Request $request, $parentKey): Model
     {
-        return $query->findOrFail($parentKey);
+        return $this->runParentFetchQuery($query, $request, $parentKey);
     }
 
     /**
@@ -100,8 +100,7 @@ trait HandlesRelationStandardOperations
      */
     protected function buildIndexQuery(Request $request, Model $parentEntity, array $requestedRelations): Relation
     {
-        return $this->relationQueryBuilder->buildQuery($this->newRelationQuery($parentEntity), $request)
-            ->with($requestedRelations);
+        return $this->buildRelationFetchQuery($request, $parentEntity, $requestedRelations);
     }
 
     /**
@@ -184,7 +183,7 @@ trait HandlesRelationStandardOperations
      */
     protected function buildStoreParentQuery(Request $request, $parentKey): Builder
     {
-        return $this->queryBuilder->buildQuery($this->newModelQuery(), $request);
+        return $this->buildParentFetchQuery($request, $parentKey);
     }
 
     /**
@@ -197,7 +196,7 @@ trait HandlesRelationStandardOperations
      */
     protected function runStoreParentQuery(Builder $query, Request $request, $parentKey): Model
     {
-        return $query->findOrFail($parentKey);
+        return $this->runParentFetchQuery($query, $request, $parentKey);
     }
 
     /**
@@ -269,7 +268,7 @@ trait HandlesRelationStandardOperations
      */
     protected function buildShowParentQuery(Request $request, $parentKey): Builder
     {
-        return $this->queryBuilder->buildQuery($this->newModelQuery(), $request);
+        return $this->buildParentFetchQuery($request, $parentKey);
     }
 
     /**
@@ -282,7 +281,7 @@ trait HandlesRelationStandardOperations
      */
     protected function runShowParentQuery(Builder $query, Request $request, $parentKey): Model
     {
-        return $query->findOrFail($parentKey);
+        return $this->runParentFetchQuery($query, $request, $parentKey);
     }
 
     /**
@@ -295,8 +294,7 @@ trait HandlesRelationStandardOperations
      */
     protected function buildShowQuery(Request $request, Model $parentEntity, array $requestedRelations): Relation
     {
-        return $this->relationQueryBuilder->buildQuery($this->newRelationQuery($parentEntity), $request)
-            ->with($requestedRelations);
+        return $this->buildRelationFetchQuery($request, $parentEntity, $requestedRelations);
     }
 
     /**
@@ -310,13 +308,7 @@ trait HandlesRelationStandardOperations
      */
     protected function runShowQuery(Relation $query, Request $request, Model $parentEntity, $relatedKey): Model
     {
-        if ($this->isOneToOneRelation($parentEntity)) {
-            return $query->firstOrFail();
-        }
-
-        $this->abortIfMissingRelatedID($relatedKey);
-
-        return $query->findOrFail($relatedKey);
+        return $this->runRelationFetchQuery($query, $request, $parentEntity, $relatedKey);
     }
 
     /**
@@ -383,7 +375,7 @@ trait HandlesRelationStandardOperations
      */
     protected function buildUpdateParentQuery(Request $request, $parentKey): Builder
     {
-        return $this->queryBuilder->buildQuery($this->newModelQuery(), $request);
+        return $this->buildParentFetchQuery($request, $parentKey);
     }
 
     /**
@@ -396,7 +388,7 @@ trait HandlesRelationStandardOperations
      */
     protected function runUpdateParentQuery(Builder $query, Request $request, $parentKey): Model
     {
-        return $query->findOrFail($parentKey);
+        return $this->runParentFetchQuery($query, $request, $parentKey);
     }
 
     /**
@@ -409,8 +401,7 @@ trait HandlesRelationStandardOperations
      */
     protected function buildUpdateQuery(Request $request, Model $parentEntity, array $requestedRelations): Relation
     {
-        return $this->relationQueryBuilder->buildQuery($this->newRelationQuery($parentEntity), $request)
-            ->with($requestedRelations);
+        return $this->buildRelationFetchQuery($request, $parentEntity, $requestedRelations);
     }
 
     /**
@@ -424,13 +415,7 @@ trait HandlesRelationStandardOperations
      */
     protected function runUpdateQuery(Relation $query, Request $request, Model $parentEntity, $relatedKey): Model
     {
-        if ($this->isOneToOneRelation($parentEntity)) {
-            return $query->firstOrFail();
-        }
-
-        $this->abortIfMissingRelatedID($relatedKey);
-
-        return $query->findOrFail($relatedKey);
+        return $this->runRelationFetchQuery($query, $request, $parentEntity, $relatedKey);
     }
 
     /**
@@ -514,7 +499,7 @@ trait HandlesRelationStandardOperations
      */
     protected function buildDestroyParentQuery(Request $request, $parentKey): Builder
     {
-        return $this->queryBuilder->buildQuery($this->newModelQuery(), $request);
+        return $this->buildParentFetchQuery($request, $parentKey);
     }
 
     /**
@@ -527,7 +512,7 @@ trait HandlesRelationStandardOperations
      */
     protected function runDestroyParentQuery(Builder $query, Request $request, $parentKey): Model
     {
-        return $query->findOrFail($parentKey);
+        return $this->runParentFetchQuery($query, $request, $parentKey);
     }
 
     /**
@@ -541,8 +526,7 @@ trait HandlesRelationStandardOperations
      */
     protected function buildDestroyQuery(Request $request, Model $parentEntity, array $requestedRelations, bool $softDeletes): Relation
     {
-        return $this->relationQueryBuilder->buildQuery($this->newRelationQuery($parentEntity), $request)
-            ->with($requestedRelations)
+        return $this->buildRelationFetchQuery($request, $parentEntity, $requestedRelations)
             ->when($softDeletes, function ($query) {
                 $query->withTrashed();
             });
@@ -559,13 +543,7 @@ trait HandlesRelationStandardOperations
      */
     protected function runDestroyQuery(Relation $query, Request $request, Model $parentEntity, $relatedKey): Model
     {
-        if ($this->isOneToOneRelation($parentEntity)) {
-            return $query->firstOrFail();
-        }
-
-        $this->abortIfMissingRelatedID($relatedKey);
-
-        return $query->findOrFail($relatedKey);
+        return $this->runRelationFetchQuery($query, $request, $parentEntity, $relatedKey);
     }
 
     /**
@@ -643,7 +621,7 @@ trait HandlesRelationStandardOperations
      */
     protected function buildRestoreParentQuery(Request $request, $parentKey): Builder
     {
-        return $this->queryBuilder->buildQuery($this->newModelQuery(), $request);
+        return $this->buildParentFetchQuery($request, $parentKey);
     }
 
     /**
@@ -656,7 +634,7 @@ trait HandlesRelationStandardOperations
      */
     protected function runRestoreParentQuery(Builder $query, Request $request, $parentKey): Model
     {
-        return $query->findOrFail($parentKey);
+        return $this->runParentFetchQuery($query, $request, $parentKey);
     }
 
     /**
@@ -669,8 +647,7 @@ trait HandlesRelationStandardOperations
      */
     protected function buildRestoreQuery(Request $request, Model $parentEntity, array $requestedRelations): Relation
     {
-        return $this->relationQueryBuilder->buildQuery($this->newRelationQuery($parentEntity), $request)
-            ->with($requestedRelations)
+        return $this->buildRelationFetchQuery($request, $parentEntity, $requestedRelations)
             ->withTrashed();
     }
 
@@ -685,13 +662,7 @@ trait HandlesRelationStandardOperations
      */
     protected function runRestoreQuery(Relation $query, Request $request, Model $parentEntity, $relatedKey): Model
     {
-        if ($this->isOneToOneRelation($parentEntity)) {
-            return $query->firstOrFail();
-        }
-
-        $this->abortIfMissingRelatedID($relatedKey);
-
-        return $query->findOrFail($relatedKey);
+        return $this->runRelationFetchQuery($query, $request, $parentEntity, $relatedKey);
     }
 
     /**
@@ -702,6 +673,65 @@ trait HandlesRelationStandardOperations
     protected function performRestore(Model $entity): void
     {
         $entity->restore();
+    }
+
+    /**
+     * Builds Eloquent query for fetching parent entity.
+     *
+     * @param Request $request
+     * @param string|int $parentKey
+     * @return Builder
+     */
+    protected function buildParentFetchQuery(Request $request, $parentKey): Builder
+    {
+        return $this->queryBuilder->buildQuery($this->newModelQuery(), $request);
+    }
+
+    /**
+     * Runs the given query for fetching parent entity.
+     *
+     * @param Builder $query
+     * @param Request $request
+     * @param string|int $parentKey
+     * @return Model
+     */
+    protected function runParentFetchQuery(Builder $query, Request $request, $parentKey): Model
+    {
+        return $query->findOrFail($parentKey);
+    }
+
+    /**
+     * Builds Eloquent query for fetching relation entity.
+     *
+     * @param Request $request
+     * @param Model $parentEntity
+     * @param array $requestedRelations
+     * @return Relation
+     */
+    protected function buildRelationFetchQuery(Request $request, Model $parentEntity, array $requestedRelations): Relation
+    {
+        return $this->relationQueryBuilder->buildQuery($this->newRelationQuery($parentEntity), $request)
+            ->with($requestedRelations);
+    }
+
+    /**
+     * Runs the given query for fetching relation entity.
+     *
+     * @param Relation $query
+     * @param Request $request
+     * @param Model $parentEntity
+     * @param string|int $relatedKey
+     * @return Model
+     */
+    protected function runRelationFetchQuery(Relation $query, Request $request, Model $parentEntity, $relatedKey): Model
+    {
+        if ($this->isOneToOneRelation($parentEntity)) {
+            return $query->firstOrFail();
+        }
+
+        $this->abortIfMissingRelatedID($relatedKey);
+
+        return $query->findOrFail($relatedKey);
     }
 
     /**

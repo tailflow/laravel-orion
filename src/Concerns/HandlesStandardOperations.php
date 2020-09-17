@@ -54,8 +54,7 @@ trait HandlesStandardOperations
      */
     protected function buildIndexQuery(Request $request, array $requestedRelations): Builder
     {
-        return $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
-            ->with($requestedRelations);
+        return $this->buildFetchQuery($request, $requestedRelations);
     }
 
     /**
@@ -173,8 +172,7 @@ trait HandlesStandardOperations
      */
     protected function buildShowQuery(Request $request, array $requestedRelations): Builder
     {
-        return $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
-            ->with($requestedRelations);
+        return $this->buildFetchQuery($request, $requestedRelations);
     }
 
     /**
@@ -187,7 +185,7 @@ trait HandlesStandardOperations
      */
     protected function runShowQuery(Builder $query, Request $request, $key): Model
     {
-        return $query->findOrFail($key);
+        return $this->runFetchQuery($query, $request, $key);
     }
 
     /**
@@ -244,8 +242,7 @@ trait HandlesStandardOperations
      */
     protected function buildUpdateQuery(Request $request, array $requestedRelations): Builder
     {
-        return $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
-            ->with($requestedRelations);
+        return $this->buildFetchQuery($request, $requestedRelations);
     }
 
     /**
@@ -258,7 +255,7 @@ trait HandlesStandardOperations
      */
     protected function runUpdateQuery(Builder $query, Request $request, $key): Model
     {
-        return $query->findOrFail($key);
+        return $this->runFetchQuery($query, $request, $key);
     }
 
     /**
@@ -289,7 +286,7 @@ trait HandlesStandardOperations
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
 
         $query = $this->buildDestroyQuery($request, $requestedRelations, $softDeletes);
-        $entity = $this->runDestroyQuery($query, $key);
+        $entity = $this->runDestroyQuery($query, $request, $key);
 
         if ($this->isResourceTrashed($entity, $softDeletes, $forceDeletes)) {
             abort(404);
@@ -331,8 +328,7 @@ trait HandlesStandardOperations
      */
     protected function buildDestroyQuery(Request $request, array $requestedRelations, bool $softDeletes): Builder
     {
-        return $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
-            ->with($requestedRelations)
+        return $this->buildFetchQuery($request, $requestedRelations)
             ->when($softDeletes, function ($query) {
                 $query->withTrashed();
             });
@@ -342,12 +338,13 @@ trait HandlesStandardOperations
      * Runs the given query for fetching entity in destroy method.
      *
      * @param Builder $query
+     * @param Request $request
      * @param int|string $key
      * @return Model
      */
-    protected function runDestroyQuery(Builder $query, $key): Model
+    protected function runDestroyQuery(Builder $query, Request $request, $key): Model
     {
-        return $query->findOrFail($key);
+        return $this->runFetchQuery($query, $request, $key);
     }
 
     /**
@@ -384,7 +381,7 @@ trait HandlesStandardOperations
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
 
         $query = $this->buildRestoreQuery($request, $requestedRelations);
-        $entity = $this->runRestoreQuery($query, $key);
+        $entity = $this->runRestoreQuery($query, $request, $key);
 
         $this->authorize('restore', $entity);
 
@@ -416,8 +413,7 @@ trait HandlesStandardOperations
      */
     protected function buildRestoreQuery(Request $request, array $requestedRelations): Builder
     {
-        return $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
-            ->with($requestedRelations)
+        return $this->buildFetchQuery($request, $requestedRelations)
             ->withTrashed();
     }
 
@@ -425,12 +421,13 @@ trait HandlesStandardOperations
      * Runs the given query for fetching entity in restore method.
      *
      * @param Builder $query
+     * @param Request $request
      * @param int|string $key
      * @return Model
      */
-    protected function runRestoreQuery(Builder $query, $key): Model
+    protected function runRestoreQuery(Builder $query, Request $request, $key): Model
     {
-        return $query->findOrFail($key);
+        return $this->runFetchQuery($query, $request, $key);
     }
 
     /**
@@ -441,6 +438,32 @@ trait HandlesStandardOperations
     protected function performRestore(Model $entity): void
     {
         $entity->restore();
+    }
+
+    /**
+     * Builds Eloquent query for fetching entity.
+     *
+     * @param Request $request
+     * @param array $requestedRelations
+     * @return Builder
+     */
+    protected function buildFetchQuery(Request $request, array $requestedRelations): Builder
+    {
+        return $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
+            ->with($requestedRelations);
+    }
+
+    /**
+     * Runs the given query for fetching entity.
+     *
+     * @param Builder $query
+     * @param Request $request
+     * @param int|string $key
+     * @return Model
+     */
+    protected function runFetchQuery(Builder $query, Request $request, $key): Model
+    {
+        return $query->findOrFail($key);
     }
 
     /**
