@@ -99,7 +99,11 @@ trait HandlesStandardOperations
 
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
 
-        $this->performStore($entity, $request);
+        $this->performStore(
+            $entity,
+            $request,
+            $request->only($entity->getFillable())
+        );
 
         $entity = $entity->fresh($requestedRelations);
         $entity->wasRecentlyCreated = true;
@@ -124,10 +128,11 @@ trait HandlesStandardOperations
      *
      * @param Model $entity
      * @param Request $request
+     * @param array $attributes
      */
-    protected function performStore(Model $entity, Request $request): void
+    protected function performStore(Model $entity, Request $request, array $attributes): void
     {
-        $entity->fill($request->only($entity->getFillable()));
+        $entity->fill($attributes);
         $entity->save();
     }
 
@@ -214,7 +219,11 @@ trait HandlesStandardOperations
             return $beforeSaveHookResult;
         }
 
-        $this->performUpdate($entity, $request);
+        $this->performUpdate(
+            $entity,
+            $request,
+            $request->only($entity->getFillable())
+        );
 
         $entity = $entity->fresh($requestedRelations);
 
@@ -263,10 +272,11 @@ trait HandlesStandardOperations
      *
      * @param Model $entity
      * @param Request $request
+     * @param array $attributes
      */
-    protected function performUpdate(Model $entity, Request $request): void
+    protected function performUpdate(Model $entity, Request $request, array $attributes): void
     {
-        $entity->fill($request->only($entity->getFillable()));
+        $entity->fill($attributes);
         $entity->save();
     }
 
