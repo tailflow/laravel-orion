@@ -3,10 +3,9 @@
 namespace Orion\Concerns;
 
 use Exception;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\MorphToMany;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Orion\Http\Requests\Request;
@@ -32,11 +31,8 @@ trait HandlesRelationStandardBatchOperations
 
         $this->authorize('create', $resourceModelClass);
 
-        /**
-         * @var Model $entity
-         */
-        $parentEntity = $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
-            ->findOrFail($parentKey);
+        $parentQuery = $this->buildBatchStoreParentQuery($request, $parentKey);
+        $parentEntity = $this->runBatchStoreParentQuery($parentQuery, $request, $parentKey);
 
         $resources = $request->get('resources', []);
         $entities = collect([]);
@@ -45,17 +41,17 @@ trait HandlesRelationStandardBatchOperations
 
         foreach ($resources as $resource) {
             $entity = new $resourceModelClass;
-            $entity->fill(Arr::only($resource, $entity->getFillable()));
 
             $this->beforeStore($request, $entity);
             $this->beforeSave($request, $entity);
 
-            if (!$parentEntity->{$this->getRelation()}() instanceof BelongsTo) {
-                $parentEntity->{$this->getRelation()}()->save($entity, $this->preparePivotFields(Arr::get($resource, 'pivot', [])));
-            } else {
-                $entity->save();
-                $parentEntity->{$this->getRelation()}()->associate($entity);
-            }
+            $this->performStore(
+                $parentEntity,
+                $entity,
+                $request,
+                Arr::only($resource, $entity->getFillable()),
+                Arr::get($resource, 'pivot', [])
+            );
 
             $entity = $this->newRelationQuery($parentEntity)->with($requestedRelations)->find($entity->id);
             $entity->wasRecentlyCreated = true;
@@ -83,6 +79,31 @@ trait HandlesRelationStandardBatchOperations
     }
 
     /**
+     * Builds Eloquent query for fetching parent entity in batch store method.
+     *
+     * @param Request $request
+     * @param string|int $parentKey
+     * @return Builder
+     */
+    protected function buildBatchStoreParentQuery(Request $request, $parentKey): Builder
+    {
+        return $this->buildParentFetchQuery($request, $parentKey);
+    }
+
+    /**
+     * Runs the given query for fetching parent entity in batch store method.
+     *
+     * @param Builder $query
+     * @param Request $request
+     * @param string|int $parentKey
+     * @return Model
+     */
+    protected function runBatchStoreParentQuery(Builder $query, Request $request, $parentKey): Model
+    {
+        return $this->runParentFetchQuery($query, $request, $parentKey);
+    }
+
+    /**
      * Updates a batch of relation resources.
      *
      * @param Request $request
@@ -96,38 +117,33 @@ trait HandlesRelationStandardBatchOperations
             return $beforeHookResult;
         }
 
-        $parentEntity = $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
-            ->findOrFail($parentKey);
+        $parentQuery = $this->buildBatchUpdateParentQuery($request, $parentKey);
+        $parentEntity = $this->runBatchUpdateParentQuery($parentQuery, $request, $parentKey);
 
         $resourceModelClass = $this->resolveResourceModelClass();
         $resourceKeyName = (new $resourceModelClass)->getKeyName();
 
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
 
-        $entities = $this->relationQueryBuilder->buildQuery($this->newRelationQuery($parentEntity), $request)
-            ->with($requestedRelations)
-            ->whereIn($resourceKeyName, array_keys($request->get('resources', [])))
-            ->get();
+        $query = $this->buildBatchUpdateQuery($request, $parentEntity, $requestedRelations, $resourceKeyName);
+        $entities = $this->runBatchUpdateQuery($query, $request, $parentEntity);
 
         foreach ($entities as $entity) {
-            /**
-             * @var Model $entity
-             */
+            /** @var Model $entity */
             $this->authorize('update', $entity);
 
             $resource = $request->input("resources.{$entity->getKey()}");
 
-            $entity->fill(Arr::only($resource, $entity->getFillable()));
-
             $this->beforeUpdate($request, $entity);
             $this->beforeSave($request, $entity);
 
-            $entity->save();
-
-            $relation = $parentEntity->{$this->getRelation()}();
-            if ($relation instanceof BelongsToMany || $relation instanceof MorphToMany) {
-                $relation->updateExistingPivot($entity->getKey(), $this->preparePivotFields(Arr::get($resource, 'pivot', [])));
-            }
+            $this->performUpdate(
+                $parentEntity,
+                $entity,
+                $request,
+                Arr::only($resource, $entity->getFillable()),
+                Arr::get($resource, 'pivot', [])
+            );
 
             $entity = $this->newRelationQuery($parentEntity)->with($requestedRelations)->find($entity->id);
 
@@ -152,6 +168,58 @@ trait HandlesRelationStandardBatchOperations
     }
 
     /**
+     * Builds Eloquent query for fetching parent entity in batch update method.
+     *
+     * @param Request $request
+     * @param string|int $parentKey
+     * @return Builder
+     */
+    protected function buildBatchUpdateParentQuery(Request $request, $parentKey): Builder
+    {
+        return $this->buildParentFetchQuery($request, $parentKey);
+    }
+
+    /**
+     * Runs the given query for fetching parent entity in batch update method.
+     *
+     * @param Builder $query
+     * @param Request $request
+     * @param string|int $parentKey
+     * @return Model
+     */
+    protected function runBatchUpdateParentQuery(Builder $query, Request $request, $parentKey): Model
+    {
+        return $this->runParentFetchQuery($query, $request, $parentKey);
+    }
+
+    /**
+     * Builds Eloquent query for fetching relation entities in batch update method.
+     *
+     * @param Request $request
+     * @param Model $parentEntity
+     * @param array $requestedRelations
+     * @param string $resourceKeyName
+     * @return Relation
+     */
+    protected function buildBatchUpdateQuery(Request $request, Model $parentEntity, array $requestedRelations, string $resourceKeyName): Relation
+    {
+        return $this->buildRelationBatchFetchQuery($request, $parentEntity, $requestedRelations, $resourceKeyName);
+    }
+
+    /**
+     * Runs the given query for fetching relation entities in batch update method.
+     *
+     * @param Relation $query
+     * @param Request $request
+     * @param Model $parentEntity
+     * @return Collection
+     */
+    protected function runBatchUpdateQuery(Relation $query, Request $request, Model $parentEntity): Collection
+    {
+        return $this->runRelationBatchFetchQuery($query, $request, $parentEntity);
+    }
+
+    /**
      * Deletes a batch of relation resources.
      *
      * @param Request $request
@@ -166,40 +234,32 @@ trait HandlesRelationStandardBatchOperations
             return $beforeHookResult;
         }
 
-        $parentEntity = $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
-            ->findOrFail($parentKey);
+        $parentQuery = $this->buildBatchDestroyParentQuery($request, $parentKey);
+        $parentEntity = $this->runBatchDestroyParentQuery($parentQuery, $request, $parentKey);
 
         $resourceModelClass = $this->resolveResourceModelClass();
         $resourceKeyName = (new $resourceModelClass)->getKeyName();
 
         $softDeletes = $this->softDeletes($this->resolveResourceModelClass());
+        $forceDeletes = $this->forceDeletes($request, $softDeletes);
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
 
-        $entities = $this->relationQueryBuilder->buildQuery($this->newRelationQuery($parentEntity), $request)
-            ->with($requestedRelations)
-            ->when($softDeletes, function ($query) {
-                $query->withTrashed();
-            })
-            ->whereIn($resourceKeyName, $request->get('resources', []))
-            ->get();
+        $query = $this->buildBatchDestroyQuery($request, $parentEntity, $requestedRelations, $resourceKeyName, $softDeletes);
+        $entities = $this->runBatchDestroyQuery($query, $request, $parentEntity);
 
         foreach ($entities as $entity) {
-            /**
-             * @var Model $entity
-             */
-            $forceDeletes = $softDeletes && $request->get('force');
-
+            /** @var Model $forceDeletes */
             $this->authorize($forceDeletes ? 'forceDelete' : 'delete', $entity);
 
             $this->beforeDestroy($request, $entity);
 
             if (!$forceDeletes) {
-                $entity->delete();
+                $this->performDestroy($entity);
                 if ($softDeletes) {
                     $entity = $this->newRelationQuery($parentEntity)->withTrashed()->with($requestedRelations)->find($entity->id);
                 }
             } else {
-                $entity->forceDelete();
+                $this->performForceDestroy($entity);
             }
 
             $entity = $this->cleanupEntity($entity);
@@ -222,6 +282,62 @@ trait HandlesRelationStandardBatchOperations
     }
 
     /**
+     * Builds Eloquent query for fetching parent entity in batch destroy method.
+     *
+     * @param Request $request
+     * @param string|int $parentKey
+     * @return Builder
+     */
+    protected function buildBatchDestroyParentQuery(Request $request, $parentKey): Builder
+    {
+        return $this->buildParentFetchQuery($request, $parentKey);
+    }
+
+    /**
+     * Runs the given query for fetching parent entity in batch destroy method.
+     *
+     * @param Builder $query
+     * @param Request $request
+     * @param string|int $parentKey
+     * @return Model
+     */
+    protected function runBatchDestroyParentQuery(Builder $query, Request $request, $parentKey): Model
+    {
+        return $this->runParentFetchQuery($query, $request, $parentKey);
+    }
+
+    /**
+     * Builds Eloquent query for fetching relation entities in destroy update method.
+     *
+     * @param Request $request
+     * @param Model $parentEntity
+     * @param array $requestedRelations
+     * @param string $resourceKeyName
+     * @param bool $softDeletes
+     * @return Relation
+     */
+    protected function buildBatchDestroyQuery(Request $request, Model $parentEntity, array $requestedRelations, string $resourceKeyName, bool $softDeletes): Relation
+    {
+        return $this->buildRelationBatchFetchQuery($request, $parentEntity, $requestedRelations, $resourceKeyName)
+            ->when($softDeletes, function ($query) {
+                $query->withTrashed();
+            });
+    }
+
+    /**
+     * Runs the given query for fetching relation entities in batch destroy method.
+     *
+     * @param Relation $query
+     * @param Request $request
+     * @param Model $parentEntity
+     * @return Collection
+     */
+    protected function runBatchDestroyQuery(Relation $query, Request $request, Model $parentEntity): Collection
+    {
+        return $this->runRelationBatchFetchQuery($query, $request, $parentEntity);
+    }
+
+    /**
      * Restores a batch of relation resources.
      *
      * @param Request $request
@@ -236,29 +352,25 @@ trait HandlesRelationStandardBatchOperations
             return $beforeHookResult;
         }
 
-        $parentEntity = $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
-            ->findOrFail($parentKey);
+        $parentQuery = $this->buildBatchRestoreParentQuery($request, $parentKey);
+        $parentEntity = $this->runBatchRestoreParentQuery($parentQuery, $request, $parentKey);
 
         $resourceModelClass = $this->resolveResourceModelClass();
         $resourceKeyName = (new $resourceModelClass)->getKeyName();
 
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
 
-        $entities = $this->relationQueryBuilder->buildQuery($this->newRelationQuery($parentEntity), $request)
-            ->with($requestedRelations)
-            ->whereIn($resourceKeyName, $request->get('resources', []))
-            ->withTrashed()
-            ->get();
+        $query = $this->buildBatchRestoreQuery($request, $parentEntity, $requestedRelations, $resourceKeyName);
+        $entities = $this->runBatchRestoreQuery($query, $request, $parentEntity);
 
         foreach ($entities as $entity) {
-            /**
-             * @var Model $entity
-             */
+            /** @var Model */
             $this->authorize('restore', $entity);
 
             $this->beforeRestore($request, $entity);
 
-            $entity->restore();
+            $this->performRestore($entity);
+
             $entity = $this->newRelationQuery($parentEntity)->with($requestedRelations)->find($entity->id);
 
             $entity = $this->cleanupEntity($entity);
@@ -278,6 +390,87 @@ trait HandlesRelationStandardBatchOperations
         $this->relationsResolver->guardRelationsForCollection($entities, $requestedRelations);
 
         return $this->collectionResponse($entities);
+    }
+
+    /**
+     * Builds Eloquent query for fetching parent entity in batch restore method.
+     *
+     * @param Request $request
+     * @param string|int $parentKey
+     * @return Builder
+     */
+    protected function buildBatchRestoreParentQuery(Request $request, $parentKey): Builder
+    {
+        return $this->buildParentFetchQuery($request, $parentKey);
+    }
+
+    /**
+     * Runs the given query for fetching parent entity in batch restore method.
+     *
+     * @param Builder $query
+     * @param Request $request
+     * @param string|int $parentKey
+     * @return Model
+     */
+    protected function runBatchRestoreParentQuery(Builder $query, Request $request, $parentKey): Model
+    {
+        return $this->runParentFetchQuery($query, $request, $parentKey);
+    }
+
+    /**
+     * Builds Eloquent query for fetching relation entities in destroy update method.
+     *
+     * @param Request $request
+     * @param Model $parentEntity
+     * @param array $requestedRelations
+     * @param string $resourceKeyName
+     * @return Relation
+     */
+    protected function buildBatchRestoreQuery(Request $request, Model $parentEntity, array $requestedRelations, string $resourceKeyName): Relation
+    {
+        return $this->buildRelationBatchFetchQuery($request, $parentEntity, $requestedRelations, $resourceKeyName)
+            ->withTrashed();
+    }
+
+    /**
+     * Runs the given query for fetching relation entities in batch destroy method.
+     *
+     * @param Relation $query
+     * @param Request $request
+     * @param Model $parentEntity
+     * @return Collection
+     */
+    protected function runBatchRestoreQuery(Relation $query, Request $request, Model $parentEntity): Collection
+    {
+        return $this->runRelationBatchFetchQuery($query, $request, $parentEntity);
+    }
+
+    /**
+     * Builds Eloquent query for fetching a list of relation entities.
+     *
+     * @param Request $request
+     * @param Model $parentEntity
+     * @param array $requestedRelations
+     * @param string $resourceKeyName
+     * @return Relation
+     */
+    protected function buildRelationBatchFetchQuery(Request $request, Model $parentEntity, array $requestedRelations, string $resourceKeyName): Relation
+    {
+        return $this->buildRelationFetchQuery($request, $parentEntity, $requestedRelations)
+            ->whereIn($resourceKeyName, array_keys($request->get('resources', [])));
+    }
+
+    /**
+     * Runs the given query for fetching a list of relation entities.
+     *
+     * @param Relation $query
+     * @param Request $request
+     * @param Model $parentEntity
+     * @return Collection
+     */
+    protected function runRelationBatchFetchQuery(Relation $query, Request $request, Model $parentEntity): Collection
+    {
+        return $query->get();
     }
 
     /**

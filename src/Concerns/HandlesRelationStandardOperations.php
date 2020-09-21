@@ -148,7 +148,13 @@ trait HandlesRelationStandardOperations
 
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
 
-        $this->performStore($parentEntity, $entity, $request);
+        $this->performStore(
+            $parentEntity,
+            $entity,
+            $request,
+            $request->only($entity->getFillable()),
+            $request->get('pivot', [])
+        );
 
         $entity = $this->newRelationQuery($parentEntity)->with($requestedRelations)->find($entity->id);
         $entity->wasRecentlyCreated = true;
@@ -205,13 +211,15 @@ trait HandlesRelationStandardOperations
      * @param Model $parentEntity
      * @param Model $entity
      * @param Request $request
+     * @param array $attributes
+     * @param array $pivot
      */
-    protected function performStore(Model $parentEntity, Model $entity, Request $request): void
+    protected function performStore(Model $parentEntity, Model $entity, Request $request, array $attributes, array $pivot): void
     {
-        $entity->fill($request->only($entity->getFillable()));
+        $entity->fill($attributes);
 
         if (!$parentEntity->{$this->getRelation()}() instanceof BelongsTo) {
-            $parentEntity->{$this->getRelation()}()->save($entity, $this->preparePivotFields($request->get('pivot', [])));
+            $parentEntity->{$this->getRelation()}()->save($entity, $this->preparePivotFields($pivot));
         } else {
             $entity->save(); //TODO: check, if running save here is correct
             $parentEntity->{$this->getRelation()}()->associate($entity);
@@ -341,7 +349,13 @@ trait HandlesRelationStandardOperations
             return $beforeSaveHookResult;
         }
 
-        $this->performUpdate($parentEntity, $entity, $request);
+        $this->performUpdate(
+            $parentEntity,
+            $entity,
+            $request,
+            $request->only($entity->getFillable()),
+            $request->get('pivot', [])
+        );
 
         $entity = $this->newRelationQuery($parentEntity)->with($requestedRelations)->find($entity->id);
 
@@ -424,15 +438,17 @@ trait HandlesRelationStandardOperations
      * @param Model $parentEntity
      * @param Model $entity
      * @param Request $request
+     * @param array $attributes
+     * @param array $pivot
      */
-    protected function performUpdate(Model $parentEntity, Model $entity, Request $request): void
+    protected function performUpdate(Model $parentEntity, Model $entity, Request $request, array $attributes, array $pivot): void
     {
-        $entity->fill($request->only($entity->getFillable()));
+        $entity->fill($attributes);
         $entity->save();
 
         $relation = $parentEntity->{$this->getRelation()}();
         if ($relation instanceof BelongsToMany || $relation instanceof MorphToMany) {
-            $relation->updateExistingPivot($entity->getKey(), $this->preparePivotFields($request->get('pivot', [])));
+            $relation->updateExistingPivot($entity->getKey(), $this->preparePivotFields($pivot));
         }
     }
 
