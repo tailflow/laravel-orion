@@ -79,8 +79,8 @@ trait HandlesStandardBatchOperations
 
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
 
-        $query = $this->buildBatchUpdateQuery($request, $requestedRelations);
-        $entities = $this->runBatchUpdateQuery($query, $request);
+        $query = $this->buildBatchUpdateFetchQuery($request, $requestedRelations);
+        $entities = $this->runBatchUpdateFetchQuery($query, $request);
 
         foreach ($entities as $entity) {
             /** @var Model $entity */
@@ -119,7 +119,7 @@ trait HandlesStandardBatchOperations
      * @param array $requestedRelations
      * @return Builder
      */
-    protected function buildBatchUpdateQuery(Request $request, array $requestedRelations): Builder
+    protected function buildBatchUpdateFetchQuery(Request $request, array $requestedRelations): Builder
     {
         return $this->buildBatchFetchQuery($request, $requestedRelations);
     }
@@ -131,7 +131,7 @@ trait HandlesStandardBatchOperations
      * @param Request $request
      * @return Collection
      */
-    protected function runBatchUpdateQuery(Builder $query, Request $request): Collection
+    protected function runBatchUpdateFetchQuery(Builder $query, Request $request): Collection
     {
         return $this->runBatchFetchQuery($query, $request);
     }
@@ -155,8 +155,8 @@ trait HandlesStandardBatchOperations
 
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
 
-        $query = $this->buildBatchDestroyQuery($request, $requestedRelations);
-        $entities = $this->runBatchDestroyQuery($query, $request);
+        $query = $this->buildBatchDestroyFetchQuery($request, $requestedRelations);
+        $entities = $this->runBatchDestroyFetchQuery($query, $request);
 
         foreach ($entities as $entity) {
             /**
@@ -195,7 +195,7 @@ trait HandlesStandardBatchOperations
      * @param array $requestedRelations
      * @return Builder
      */
-    protected function buildBatchDestroyQuery(Request $request, array $requestedRelations): Builder
+    protected function buildBatchDestroyFetchQuery(Request $request, array $requestedRelations): Builder
     {
        return $this->buildBatchFetchQuery($request, $requestedRelations);
     }
@@ -207,7 +207,7 @@ trait HandlesStandardBatchOperations
      * @param Request $request
      * @return Collection
      */
-    protected function runBatchDestroyQuery(Builder $query, Request $request): Collection
+    protected function runBatchDestroyFetchQuery(Builder $query, Request $request): Collection
     {
         return $this->runBatchFetchQuery($query, $request);
     }
@@ -228,8 +228,8 @@ trait HandlesStandardBatchOperations
 
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
 
-        $query = $this->buildBatchUpdateQuery($request, $requestedRelations);
-        $entities = $this->runBatchUpdateQuery($query, $request);
+        $query = $this->buildBatchUpdateFetchQuery($request, $requestedRelations);
+        $entities = $this->runBatchUpdateFetchQuery($query, $request);
 
         foreach ($entities as $entity) {
             /**
@@ -263,7 +263,7 @@ trait HandlesStandardBatchOperations
      * @param array $requestedRelations
      * @return Builder
      */
-    protected function buildBatchRestoreQuery(Request $request, array $requestedRelations): Builder
+    protected function buildBatchRestoreFetchQuery(Request $request, array $requestedRelations): Builder
     {
         return $this->buildBatchFetchQuery($request, $requestedRelations)->withTrashed();
     }
@@ -275,7 +275,7 @@ trait HandlesStandardBatchOperations
      * @param Request $request
      * @return Collection
      */
-    protected function runBatchRestoreQuery(Builder $query, Request $request): Collection
+    protected function runBatchRestoreFetchQuery(Builder $query, Request $request): Collection
     {
         return $this->runBatchFetchQuery($query, $request);
     }

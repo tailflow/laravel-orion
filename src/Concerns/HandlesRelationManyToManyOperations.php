@@ -26,8 +26,8 @@ trait HandlesRelationManyToManyOperations
             return $beforeHookResult;
         }
 
-        $parentQuery = $this->buildAttachParentQuery($request, $parentKey);
-        $parentEntity = $this->runAttachParentQuery($parentQuery, $request, $parentKey);
+        $parentQuery = $this->buildAttachParentFetchQuery($request, $parentKey);
+        $parentEntity = $this->runAttachParentFetchQuery($parentQuery, $request, $parentKey);
 
         $this->authorize('update', $parentEntity);
 
@@ -50,7 +50,7 @@ trait HandlesRelationManyToManyOperations
      * @param string|int $parentKey
      * @return Builder
      */
-    protected function buildAttachParentQuery(Request $request, $parentKey): Builder
+    protected function buildAttachParentFetchQuery(Request $request, $parentKey): Builder
     {
         return $this->buildParentFetchQuery($request, $parentKey);
     }
@@ -63,7 +63,7 @@ trait HandlesRelationManyToManyOperations
      * @param string|int $parentKey
      * @return Model
      */
-    protected function runAttachParentQuery(Builder $query, Request $request, $parentKey): Model
+    protected function runAttachParentFetchQuery(Builder $query, Request $request, $parentKey): Model
     {
         return $this->runParentFetchQuery($query, $request, $parentKey);
     }
@@ -102,8 +102,8 @@ trait HandlesRelationManyToManyOperations
             return $beforeHookResult;
         }
 
-        $parentQuery = $this->buildDetachParentQuery($request, $parentKey);
-        $parentEntity = $this->runDetachParentQuery($parentQuery, $request, $parentKey);
+        $parentQuery = $this->buildDetachParentFetchQuery($request, $parentKey);
+        $parentEntity = $this->runDetachParentFetchQuery($parentQuery, $request, $parentKey);
 
         $this->authorize('update', $parentEntity);
 
@@ -126,7 +126,7 @@ trait HandlesRelationManyToManyOperations
      * @param string|int $parentKey
      * @return Builder
      */
-    protected function buildDetachParentQuery(Request $request, $parentKey): Builder
+    protected function buildDetachParentFetchQuery(Request $request, $parentKey): Builder
     {
         return $this->buildParentFetchQuery($request, $parentKey);
     }
@@ -139,7 +139,7 @@ trait HandlesRelationManyToManyOperations
      * @param string|int $parentKey
      * @return Model
      */
-    protected function runDetachParentQuery(Builder $query, Request $request, $parentKey): Model
+    protected function runDetachParentFetchQuery(Builder $query, Request $request, $parentKey): Model
     {
         return $this->runParentFetchQuery($query, $request, $parentKey);
     }
@@ -173,8 +173,8 @@ trait HandlesRelationManyToManyOperations
             return $beforeHookResult;
         }
 
-        $parentQuery = $this->buildSyncParentQuery($request, $parentKey);
-        $parentEntity = $this->runSyncParentQuery($parentQuery, $request, $parentKey);
+        $parentQuery = $this->buildSyncParentFetchQuery($request, $parentKey);
+        $parentEntity = $this->runSyncParentFetchQuery($parentQuery, $request, $parentKey);
 
         $this->authorize('update', $parentEntity);
 
@@ -195,7 +195,7 @@ trait HandlesRelationManyToManyOperations
      * @param string|int $parentKey
      * @return Builder
      */
-    protected function buildSyncParentQuery(Request $request, $parentKey): Builder
+    protected function buildSyncParentFetchQuery(Request $request, $parentKey): Builder
     {
         return $this->buildParentFetchQuery($request, $parentKey);
     }
@@ -208,7 +208,7 @@ trait HandlesRelationManyToManyOperations
      * @param string|int $parentKey
      * @return Model
      */
-    protected function runSyncParentQuery(Builder $query, Request $request, $parentKey): Model
+    protected function runSyncParentFetchQuery(Builder $query, Request $request, $parentKey): Model
     {
         return $this->runParentFetchQuery($query, $request, $parentKey);
     }
@@ -249,8 +249,8 @@ trait HandlesRelationManyToManyOperations
             return $beforeHookResult;
         }
 
-        $parentQuery = $this->buildToggleParentQuery($request, $parentKey);
-        $parentEntity = $this->runToggleParentQuery($parentQuery, $request, $parentKey);
+        $parentQuery = $this->buildToggleParentFetchQuery($request, $parentKey);
+        $parentEntity = $this->runToggleParentFetchQuery($parentQuery, $request, $parentKey);
 
         $this->authorize('update', $parentEntity);
 
@@ -271,7 +271,7 @@ trait HandlesRelationManyToManyOperations
      * @param string|int $parentKey
      * @return Builder
      */
-    protected function buildToggleParentQuery(Request $request, $parentKey): Builder
+    protected function buildToggleParentFetchQuery(Request $request, $parentKey): Builder
     {
         return $this->buildParentFetchQuery($request, $parentKey);
     }
@@ -284,7 +284,7 @@ trait HandlesRelationManyToManyOperations
      * @param string|int $parentKey
      * @return Model
      */
-    protected function runToggleParentQuery(Builder $query, Request $request, $parentKey): Model
+    protected function runToggleParentFetchQuery(Builder $query, Request $request, $parentKey): Model
     {
         return $this->runParentFetchQuery($query, $request, $parentKey);
     }
@@ -319,8 +319,8 @@ trait HandlesRelationManyToManyOperations
             return $beforeHookResult;
         }
 
-        $parentQuery = $this->buildUpdatePivotParentQuery($request, $parentKey);
-        $parentEntity = $this->runUpdatePivotParentQuery($parentQuery, $request, $parentKey);
+        $parentQuery = $this->buildUpdatePivotParentFetchQuery($request, $parentKey);
+        $parentEntity = $this->runUpdatePivotParentFetchQuery($parentQuery, $request, $parentKey);
 
         $this->authorize('update', $parentEntity);
 
@@ -343,7 +343,7 @@ trait HandlesRelationManyToManyOperations
      * @param string|int $parentKey
      * @return Builder
      */
-    protected function buildUpdatePivotParentQuery(Request $request, $parentKey): Builder
+    protected function buildUpdatePivotParentFetchQuery(Request $request, $parentKey): Builder
     {
         return $this->buildParentFetchQuery($request, $parentKey);
     }
@@ -356,7 +356,7 @@ trait HandlesRelationManyToManyOperations
      * @param string|int $parentKey
      * @return Model
      */
-    protected function runUpdatePivotParentQuery(Builder $query, Request $request, $parentKey): Model
+    protected function runUpdatePivotParentFetchQuery(Builder $query, Request $request, $parentKey): Model
     {
         return $this->runParentFetchQuery($query, $request, $parentKey);
     }

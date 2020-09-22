@@ -19,13 +19,13 @@ trait HandlesRelationOneToManyOperations
      */
     public function associate(Request $request, $parentKey)
     {
-        $parentQuery = $this->buildAssociateParentQuery($request, $parentKey);
-        $parentEntity = $this->runAssociateParentQuery($parentQuery, $request, $parentKey);
+        $parentQuery = $this->buildAssociateParentFetchQuery($request, $parentKey);
+        $parentEntity = $this->runAssociateParentFetchQuery($parentQuery, $request, $parentKey);
 
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
 
-        $query = $this->buildAssociateQuery($request, $parentEntity, $requestedRelations);
-        $entity = $this->runAssociateQuery($query, $request, $parentEntity, $request->get('related_key'));
+        $query = $this->buildAssociateFetchQuery($request, $parentEntity, $requestedRelations);
+        $entity = $this->runAssociateFetchQuery($query, $request, $parentEntity, $request->get('related_key'));
 
         $beforeHookResult = $this->beforeAssociate($request, $parentEntity, $entity);
         if ($this->hookResponds($beforeHookResult)) {
@@ -52,7 +52,7 @@ trait HandlesRelationOneToManyOperations
      * @param string|int $parentKey
      * @return Builder
      */
-    protected function buildAssociateParentQuery(Request $request, $parentKey): Builder
+    protected function buildAssociateParentFetchQuery(Request $request, $parentKey): Builder
     {
         return $this->buildParentFetchQuery($request, $parentKey);
     }
@@ -65,7 +65,7 @@ trait HandlesRelationOneToManyOperations
      * @param string|int $parentKey
      * @return Model
      */
-    protected function runAssociateParentQuery(Builder $query, Request $request, $parentKey): Model
+    protected function runAssociateParentFetchQuery(Builder $query, Request $request, $parentKey): Model
     {
         return $this->runParentFetchQuery($query, $request, $parentKey);
     }
@@ -78,7 +78,7 @@ trait HandlesRelationOneToManyOperations
      * @param array $requestedRelations
      * @return Relation
      */
-    protected function buildAssociateQuery(Request $request, Model $parentEntity, array $requestedRelations): Relation
+    protected function buildAssociateFetchQuery(Request $request, Model $parentEntity, array $requestedRelations): Relation
     {
         return $this->buildRelationFetchQuery($request, $parentEntity, $requestedRelations);
     }
@@ -92,7 +92,7 @@ trait HandlesRelationOneToManyOperations
      * @param string|int $relatedKey
      * @return Model
      */
-    protected function runAssociateQuery(Relation $query, Request $request, Model $parentEntity, $relatedKey): Model
+    protected function runAssociateFetchQuery(Relation $query, Request $request, Model $parentEntity, $relatedKey): Model
     {
         return $this->runRelationFetchQuery($query, $request, $parentEntity, $relatedKey);
     }
@@ -119,13 +119,13 @@ trait HandlesRelationOneToManyOperations
      */
     public function dissociate(Request $request, $parentKey, $relatedKey)
     {
-        $parentQuery = $this->buildDissociateParentQuery($request, $parentKey);
-        $parentEntity = $this->runDissociateParentQuery($parentQuery, $request, $parentKey);
+        $parentQuery = $this->buildDissociateParentFetchQuery($request, $parentKey);
+        $parentEntity = $this->runDissociateParentFetchQuery($parentQuery, $request, $parentKey);
 
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
 
-        $query = $this->buildDissociateQuery($request, $parentEntity, $requestedRelations);
-        $entity = $this->runDissociateQuery($query, $request, $parentEntity, $relatedKey);
+        $query = $this->buildDissociateFetchQuery($request, $parentEntity, $requestedRelations);
+        $entity = $this->runDissociateFetchQuery($query, $request, $parentEntity, $relatedKey);
 
         $beforeHookResult = $this->beforeDissociate($request, $parentEntity, $entity);
         if ($this->hookResponds($beforeHookResult)) {
@@ -151,7 +151,7 @@ trait HandlesRelationOneToManyOperations
      * @param string|int $parentKey
      * @return Builder
      */
-    protected function buildDissociateParentQuery(Request $request, $parentKey): Builder
+    protected function buildDissociateParentFetchQuery(Request $request, $parentKey): Builder
     {
         return $this->buildParentFetchQuery($request, $parentKey);
     }
@@ -164,7 +164,7 @@ trait HandlesRelationOneToManyOperations
      * @param string|int $parentKey
      * @return Model
      */
-    protected function runDissociateParentQuery(Builder $query, Request $request, $parentKey): Model
+    protected function runDissociateParentFetchQuery(Builder $query, Request $request, $parentKey): Model
     {
         return $this->runParentFetchQuery($query, $request, $parentKey);
     }
@@ -177,7 +177,7 @@ trait HandlesRelationOneToManyOperations
      * @param array $requestedRelations
      * @return Relation
      */
-    protected function buildDissociateQuery(Request $request, Model $parentEntity, array $requestedRelations): Relation
+    protected function buildDissociateFetchQuery(Request $request, Model $parentEntity, array $requestedRelations): Relation
     {
         return $this->buildRelationFetchQuery($request, $parentEntity, $requestedRelations);
     }
@@ -191,7 +191,7 @@ trait HandlesRelationOneToManyOperations
      * @param string|int $relatedKey
      * @return Model
      */
-    protected function runDissociateQuery(Relation $query, Request $request, Model $parentEntity, $relatedKey): Model
+    protected function runDissociateFetchQuery(Relation $query, Request $request, Model $parentEntity, $relatedKey): Model
     {
         return $this->runRelationFetchQuery($query, $request, $parentEntity, $relatedKey);
     }

@@ -31,8 +31,8 @@ trait HandlesRelationStandardBatchOperations
 
         $this->authorize('create', $resourceModelClass);
 
-        $parentQuery = $this->buildBatchStoreParentQuery($request, $parentKey);
-        $parentEntity = $this->runBatchStoreParentQuery($parentQuery, $request, $parentKey);
+        $parentQuery = $this->buildBatchStoreParentFetchQuery($request, $parentKey);
+        $parentEntity = $this->runBatchStoreParentFetchQuery($parentQuery, $request, $parentKey);
 
         $resources = $request->get('resources', []);
         $entities = collect([]);
@@ -40,6 +40,7 @@ trait HandlesRelationStandardBatchOperations
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
 
         foreach ($resources as $resource) {
+            /** @var Model $entity */
             $entity = new $resourceModelClass;
 
             $this->beforeStore($request, $entity);
@@ -85,7 +86,7 @@ trait HandlesRelationStandardBatchOperations
      * @param string|int $parentKey
      * @return Builder
      */
-    protected function buildBatchStoreParentQuery(Request $request, $parentKey): Builder
+    protected function buildBatchStoreParentFetchQuery(Request $request, $parentKey): Builder
     {
         return $this->buildParentFetchQuery($request, $parentKey);
     }
@@ -98,7 +99,7 @@ trait HandlesRelationStandardBatchOperations
      * @param string|int $parentKey
      * @return Model
      */
-    protected function runBatchStoreParentQuery(Builder $query, Request $request, $parentKey): Model
+    protected function runBatchStoreParentFetchQuery(Builder $query, Request $request, $parentKey): Model
     {
         return $this->runParentFetchQuery($query, $request, $parentKey);
     }
@@ -117,16 +118,16 @@ trait HandlesRelationStandardBatchOperations
             return $beforeHookResult;
         }
 
-        $parentQuery = $this->buildBatchUpdateParentQuery($request, $parentKey);
-        $parentEntity = $this->runBatchUpdateParentQuery($parentQuery, $request, $parentKey);
+        $parentQuery = $this->buildBatchUpdateParentFetchQuery($request, $parentKey);
+        $parentEntity = $this->runBatchUpdateParentFetchQuery($parentQuery, $request, $parentKey);
 
         $resourceModelClass = $this->resolveResourceModelClass();
         $resourceKeyName = (new $resourceModelClass)->getKeyName();
 
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
 
-        $query = $this->buildBatchUpdateQuery($request, $parentEntity, $requestedRelations, $resourceKeyName);
-        $entities = $this->runBatchUpdateQuery($query, $request, $parentEntity);
+        $query = $this->buildBatchUpdateFetchQuery($request, $parentEntity, $requestedRelations, $resourceKeyName);
+        $entities = $this->runBatchUpdateFetchQuery($query, $request, $parentEntity);
 
         foreach ($entities as $entity) {
             /** @var Model $entity */
@@ -174,7 +175,7 @@ trait HandlesRelationStandardBatchOperations
      * @param string|int $parentKey
      * @return Builder
      */
-    protected function buildBatchUpdateParentQuery(Request $request, $parentKey): Builder
+    protected function buildBatchUpdateParentFetchQuery(Request $request, $parentKey): Builder
     {
         return $this->buildParentFetchQuery($request, $parentKey);
     }
@@ -187,7 +188,7 @@ trait HandlesRelationStandardBatchOperations
      * @param string|int $parentKey
      * @return Model
      */
-    protected function runBatchUpdateParentQuery(Builder $query, Request $request, $parentKey): Model
+    protected function runBatchUpdateParentFetchQuery(Builder $query, Request $request, $parentKey): Model
     {
         return $this->runParentFetchQuery($query, $request, $parentKey);
     }
@@ -201,7 +202,7 @@ trait HandlesRelationStandardBatchOperations
      * @param string $resourceKeyName
      * @return Relation
      */
-    protected function buildBatchUpdateQuery(Request $request, Model $parentEntity, array $requestedRelations, string $resourceKeyName): Relation
+    protected function buildBatchUpdateFetchQuery(Request $request, Model $parentEntity, array $requestedRelations, string $resourceKeyName): Relation
     {
         return $this->buildRelationBatchFetchQuery($request, $parentEntity, $requestedRelations, $resourceKeyName);
     }
@@ -214,7 +215,7 @@ trait HandlesRelationStandardBatchOperations
      * @param Model $parentEntity
      * @return Collection
      */
-    protected function runBatchUpdateQuery(Relation $query, Request $request, Model $parentEntity): Collection
+    protected function runBatchUpdateFetchQuery(Relation $query, Request $request, Model $parentEntity): Collection
     {
         return $this->runRelationBatchFetchQuery($query, $request, $parentEntity);
     }
@@ -234,8 +235,8 @@ trait HandlesRelationStandardBatchOperations
             return $beforeHookResult;
         }
 
-        $parentQuery = $this->buildBatchDestroyParentQuery($request, $parentKey);
-        $parentEntity = $this->runBatchDestroyParentQuery($parentQuery, $request, $parentKey);
+        $parentQuery = $this->buildBatchDestroyParentFetchQuery($request, $parentKey);
+        $parentEntity = $this->runBatchDestroyParentFetchQuery($parentQuery, $request, $parentKey);
 
         $resourceModelClass = $this->resolveResourceModelClass();
         $resourceKeyName = (new $resourceModelClass)->getKeyName();
@@ -244,11 +245,11 @@ trait HandlesRelationStandardBatchOperations
         $forceDeletes = $this->forceDeletes($request, $softDeletes);
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
 
-        $query = $this->buildBatchDestroyQuery($request, $parentEntity, $requestedRelations, $resourceKeyName, $softDeletes);
-        $entities = $this->runBatchDestroyQuery($query, $request, $parentEntity);
+        $query = $this->buildBatchDestroyFetchQuery($request, $parentEntity, $requestedRelations, $resourceKeyName, $softDeletes);
+        $entities = $this->runBatchDestroyFetchQuery($query, $request, $parentEntity);
 
         foreach ($entities as $entity) {
-            /** @var Model $forceDeletes */
+            /** @var Model $entity */
             $this->authorize($forceDeletes ? 'forceDelete' : 'delete', $entity);
 
             $this->beforeDestroy($request, $entity);
@@ -288,7 +289,7 @@ trait HandlesRelationStandardBatchOperations
      * @param string|int $parentKey
      * @return Builder
      */
-    protected function buildBatchDestroyParentQuery(Request $request, $parentKey): Builder
+    protected function buildBatchDestroyParentFetchQuery(Request $request, $parentKey): Builder
     {
         return $this->buildParentFetchQuery($request, $parentKey);
     }
@@ -301,7 +302,7 @@ trait HandlesRelationStandardBatchOperations
      * @param string|int $parentKey
      * @return Model
      */
-    protected function runBatchDestroyParentQuery(Builder $query, Request $request, $parentKey): Model
+    protected function runBatchDestroyParentFetchQuery(Builder $query, Request $request, $parentKey): Model
     {
         return $this->runParentFetchQuery($query, $request, $parentKey);
     }
@@ -316,7 +317,7 @@ trait HandlesRelationStandardBatchOperations
      * @param bool $softDeletes
      * @return Relation
      */
-    protected function buildBatchDestroyQuery(Request $request, Model $parentEntity, array $requestedRelations, string $resourceKeyName, bool $softDeletes): Relation
+    protected function buildBatchDestroyFetchQuery(Request $request, Model $parentEntity, array $requestedRelations, string $resourceKeyName, bool $softDeletes): Relation
     {
         return $this->buildRelationBatchFetchQuery($request, $parentEntity, $requestedRelations, $resourceKeyName)
             ->when($softDeletes, function ($query) {
@@ -332,7 +333,7 @@ trait HandlesRelationStandardBatchOperations
      * @param Model $parentEntity
      * @return Collection
      */
-    protected function runBatchDestroyQuery(Relation $query, Request $request, Model $parentEntity): Collection
+    protected function runBatchDestroyFetchQuery(Relation $query, Request $request, Model $parentEntity): Collection
     {
         return $this->runRelationBatchFetchQuery($query, $request, $parentEntity);
     }
@@ -352,19 +353,19 @@ trait HandlesRelationStandardBatchOperations
             return $beforeHookResult;
         }
 
-        $parentQuery = $this->buildBatchRestoreParentQuery($request, $parentKey);
-        $parentEntity = $this->runBatchRestoreParentQuery($parentQuery, $request, $parentKey);
+        $parentQuery = $this->buildBatchRestoreParentFetchQuery($request, $parentKey);
+        $parentEntity = $this->runBatchRestoreParentFetchQuery($parentQuery, $request, $parentKey);
 
         $resourceModelClass = $this->resolveResourceModelClass();
         $resourceKeyName = (new $resourceModelClass)->getKeyName();
 
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
 
-        $query = $this->buildBatchRestoreQuery($request, $parentEntity, $requestedRelations, $resourceKeyName);
-        $entities = $this->runBatchRestoreQuery($query, $request, $parentEntity);
+        $query = $this->buildBatchRestoreFetchQuery($request, $parentEntity, $requestedRelations, $resourceKeyName);
+        $entities = $this->runBatchRestoreFetchQuery($query, $request, $parentEntity);
 
         foreach ($entities as $entity) {
-            /** @var Model */
+            /** @var Model $entity */
             $this->authorize('restore', $entity);
 
             $this->beforeRestore($request, $entity);
@@ -399,7 +400,7 @@ trait HandlesRelationStandardBatchOperations
      * @param string|int $parentKey
      * @return Builder
      */
-    protected function buildBatchRestoreParentQuery(Request $request, $parentKey): Builder
+    protected function buildBatchRestoreParentFetchQuery(Request $request, $parentKey): Builder
     {
         return $this->buildParentFetchQuery($request, $parentKey);
     }
@@ -412,7 +413,7 @@ trait HandlesRelationStandardBatchOperations
      * @param string|int $parentKey
      * @return Model
      */
-    protected function runBatchRestoreParentQuery(Builder $query, Request $request, $parentKey): Model
+    protected function runBatchRestoreParentFetchQuery(Builder $query, Request $request, $parentKey): Model
     {
         return $this->runParentFetchQuery($query, $request, $parentKey);
     }
@@ -426,7 +427,7 @@ trait HandlesRelationStandardBatchOperations
      * @param string $resourceKeyName
      * @return Relation
      */
-    protected function buildBatchRestoreQuery(Request $request, Model $parentEntity, array $requestedRelations, string $resourceKeyName): Relation
+    protected function buildBatchRestoreFetchQuery(Request $request, Model $parentEntity, array $requestedRelations, string $resourceKeyName): Relation
     {
         return $this->buildRelationBatchFetchQuery($request, $parentEntity, $requestedRelations, $resourceKeyName)
             ->withTrashed();
@@ -440,7 +441,7 @@ trait HandlesRelationStandardBatchOperations
      * @param Model $parentEntity
      * @return Collection
      */
-    protected function runBatchRestoreQuery(Relation $query, Request $request, Model $parentEntity): Collection
+    protected function runBatchRestoreFetchQuery(Relation $query, Request $request, Model $parentEntity): Collection
     {
         return $this->runRelationBatchFetchQuery($query, $request, $parentEntity);
     }

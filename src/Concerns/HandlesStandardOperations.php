@@ -26,14 +26,14 @@ trait HandlesStandardOperations
 
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
 
-        $query = $this->buildIndexQuery($request, $requestedRelations);
+        $query = $this->buildIndexFetchQuery($request, $requestedRelations);
 
         $beforeHookResult = $this->beforeIndex($request);
         if ($this->hookResponds($beforeHookResult)) {
             return $beforeHookResult;
         }
 
-        $entities = $this->runIndexQuery($query, $request, $this->paginator->resolvePaginationLimit($request));
+        $entities = $this->runIndexFetchQuery($query, $request, $this->paginator->resolvePaginationLimit($request));
 
         $afterHookResult = $this->afterIndex($request, $entities);
         if ($this->hookResponds($afterHookResult)) {
@@ -52,7 +52,7 @@ trait HandlesStandardOperations
      * @param array $requestedRelations
      * @return Builder
      */
-    protected function buildIndexQuery(Request $request, array $requestedRelations): Builder
+    protected function buildIndexFetchQuery(Request $request, array $requestedRelations): Builder
     {
         return $this->buildFetchQuery($request, $requestedRelations);
     }
@@ -65,7 +65,7 @@ trait HandlesStandardOperations
      * @param int $paginationLimit
      * @return LengthAwarePaginator
      */
-    protected function runIndexQuery(Builder $query, Request $request, int $paginationLimit): LengthAwarePaginator
+    protected function runIndexFetchQuery(Builder $query, Request $request, int $paginationLimit): LengthAwarePaginator
     {
         return $query->paginate($paginationLimit);
     }
@@ -147,14 +147,14 @@ trait HandlesStandardOperations
     {
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
 
-        $query = $this->buildShowQuery($request, $requestedRelations);
+        $query = $this->buildShowFetchQuery($request, $requestedRelations);
 
         $beforeHookResult = $this->beforeShow($request, $key);
         if ($this->hookResponds($beforeHookResult)) {
             return $beforeHookResult;
         }
 
-        $entity = $this->runShowQuery($query, $request, $key);
+        $entity = $this->runShowFetchQuery($query, $request, $key);
 
         $this->authorize('view', $entity);
 
@@ -175,7 +175,7 @@ trait HandlesStandardOperations
      * @param array $requestedRelations
      * @return Builder
      */
-    protected function buildShowQuery(Request $request, array $requestedRelations): Builder
+    protected function buildShowFetchQuery(Request $request, array $requestedRelations): Builder
     {
         return $this->buildFetchQuery($request, $requestedRelations);
     }
@@ -188,7 +188,7 @@ trait HandlesStandardOperations
      * @param int|string $key
      * @return Model
      */
-    protected function runShowQuery(Builder $query, Request $request, $key): Model
+    protected function runShowFetchQuery(Builder $query, Request $request, $key): Model
     {
         return $this->runFetchQuery($query, $request, $key);
     }
@@ -204,8 +204,8 @@ trait HandlesStandardOperations
     {
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
 
-        $query = $this->buildUpdateQuery($request, $requestedRelations);
-        $entity = $this->runUpdateQuery($query, $request, $key);
+        $query = $this->buildUpdateFetchQuery($request, $requestedRelations);
+        $entity = $this->runUpdateFetchQuery($query, $request, $key);
 
         $this->authorize('update', $entity);
 
@@ -249,7 +249,7 @@ trait HandlesStandardOperations
      * @param array $requestedRelations
      * @return Builder
      */
-    protected function buildUpdateQuery(Request $request, array $requestedRelations): Builder
+    protected function buildUpdateFetchQuery(Request $request, array $requestedRelations): Builder
     {
         return $this->buildFetchQuery($request, $requestedRelations);
     }
@@ -262,7 +262,7 @@ trait HandlesStandardOperations
      * @param int|string $key
      * @return Model
      */
-    protected function runUpdateQuery(Builder $query, Request $request, $key): Model
+    protected function runUpdateFetchQuery(Builder $query, Request $request, $key): Model
     {
         return $this->runFetchQuery($query, $request, $key);
     }
@@ -295,8 +295,8 @@ trait HandlesStandardOperations
 
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
 
-        $query = $this->buildDestroyQuery($request, $requestedRelations, $softDeletes);
-        $entity = $this->runDestroyQuery($query, $request, $key);
+        $query = $this->buildDestroyFetchQuery($request, $requestedRelations, $softDeletes);
+        $entity = $this->runDestroyFetchQuery($query, $request, $key);
 
         if ($this->isResourceTrashed($entity, $softDeletes, $forceDeletes)) {
             abort(404);
@@ -336,7 +336,7 @@ trait HandlesStandardOperations
      * @param bool $softDeletes
      * @return Builder
      */
-    protected function buildDestroyQuery(Request $request, array $requestedRelations, bool $softDeletes): Builder
+    protected function buildDestroyFetchQuery(Request $request, array $requestedRelations, bool $softDeletes): Builder
     {
         return $this->buildFetchQuery($request, $requestedRelations)
             ->when($softDeletes, function ($query) {
@@ -352,7 +352,7 @@ trait HandlesStandardOperations
      * @param int|string $key
      * @return Model
      */
-    protected function runDestroyQuery(Builder $query, Request $request, $key): Model
+    protected function runDestroyFetchQuery(Builder $query, Request $request, $key): Model
     {
         return $this->runFetchQuery($query, $request, $key);
     }
@@ -390,8 +390,8 @@ trait HandlesStandardOperations
     {
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
 
-        $query = $this->buildRestoreQuery($request, $requestedRelations);
-        $entity = $this->runRestoreQuery($query, $request, $key);
+        $query = $this->buildRestoreFetchQuery($request, $requestedRelations);
+        $entity = $this->runRestoreFetchQuery($query, $request, $key);
 
         $this->authorize('restore', $entity);
 
@@ -421,7 +421,7 @@ trait HandlesStandardOperations
      * @param array $requestedRelations
      * @return Builder
      */
-    protected function buildRestoreQuery(Request $request, array $requestedRelations): Builder
+    protected function buildRestoreFetchQuery(Request $request, array $requestedRelations): Builder
     {
         return $this->buildFetchQuery($request, $requestedRelations)
             ->withTrashed();
@@ -435,7 +435,7 @@ trait HandlesStandardOperations
      * @param int|string $key
      * @return Model
      */
-    protected function runRestoreQuery(Builder $query, Request $request, $key): Model
+    protected function runRestoreFetchQuery(Builder $query, Request $request, $key): Model
     {
         return $this->runFetchQuery($query, $request, $key);
     }
