@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
 use Orion\Concerns\BuildsResponses;
 use Orion\Concerns\HandlesAuthorization;
+use Orion\Concerns\InteractsWithBatchResources;
 use Orion\Concerns\InteractsWithHooks;
 use Orion\Concerns\InteractsWithSoftDeletes;
 use Orion\Contracts\ComponentsResolver;
@@ -28,6 +29,7 @@ abstract class BaseController extends \Illuminate\Routing\Controller
         HandlesAuthorization,
         InteractsWithHooks,
         InteractsWithSoftDeletes,
+        InteractsWithBatchResources,
         BuildsResponses;
 
     /**
@@ -182,7 +184,7 @@ abstract class BaseController extends \Illuminate\Routing\Controller
      *
      * @return array
      */
-    protected function resourceAbilityMap() : array
+    protected function resourceAbilityMap(): array
     {
         return [
             'index' => 'viewAny',
@@ -200,7 +202,7 @@ abstract class BaseController extends \Illuminate\Routing\Controller
      *
      * @return array
      */
-    protected function exposedScopes() : array
+    protected function exposedScopes(): array
     {
         return [];
     }
@@ -210,7 +212,7 @@ abstract class BaseController extends \Illuminate\Routing\Controller
      *
      * @return array
      */
-    protected function filterableBy() : array
+    protected function filterableBy(): array
     {
         return [];
     }
@@ -220,7 +222,7 @@ abstract class BaseController extends \Illuminate\Routing\Controller
      *
      * @return array
      */
-    protected function searchableBy() : array
+    protected function searchableBy(): array
     {
         return [];
     }
@@ -230,7 +232,7 @@ abstract class BaseController extends \Illuminate\Routing\Controller
      *
      * @return array
      */
-    protected function sortableBy() : array
+    protected function sortableBy(): array
     {
         return [];
     }
@@ -240,7 +242,7 @@ abstract class BaseController extends \Illuminate\Routing\Controller
      *
      * @return array
      */
-    protected function includes() : array
+    protected function includes(): array
     {
         return [];
     }
@@ -250,7 +252,7 @@ abstract class BaseController extends \Illuminate\Routing\Controller
      *
      * @return array
      */
-    protected function alwaysIncludes() : array
+    protected function alwaysIncludes(): array
     {
         return [];
     }
@@ -260,7 +262,7 @@ abstract class BaseController extends \Illuminate\Routing\Controller
      *
      * @return int
      */
-    protected function limit() : int
+    protected function limit(): int
     {
         return 15;
     }

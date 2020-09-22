@@ -195,7 +195,7 @@ trait HandlesStandardBatchOperations
      */
     protected function buildBatchDestroyFetchQuery(Request $request, array $requestedRelations): Builder
     {
-       return $this->buildBatchFetchQuery($request, $requestedRelations);
+        return $this->buildBatchFetchQuery($request, $requestedRelations);
     }
 
     /**
@@ -226,8 +226,8 @@ trait HandlesStandardBatchOperations
 
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
 
-        $query = $this->buildBatchUpdateFetchQuery($request, $requestedRelations);
-        $entities = $this->runBatchUpdateFetchQuery($request, $query);
+        $query = $this->buildBatchRestoreFetchQuery($request, $requestedRelations);
+        $entities = $this->runBatchRestoreFetchQuery($request, $query);
 
         foreach ($entities as $entity) {
             /**
@@ -287,11 +287,11 @@ trait HandlesStandardBatchOperations
      */
     protected function buildBatchFetchQuery(Request $request, array $requestedRelations): Builder
     {
-        $resourceModelClass = $this->resolveResourceModelClass();
-        $resourceKeyName = (new $resourceModelClass)->getKeyName();
+        $resourceKeyName = $this->resolveResourceKeyName();
+        $resourceKeys = $this->resolveResourceKeys($request);
 
         return $this->buildFetchQuery($request, $requestedRelations)
-            ->whereIn($resourceKeyName, array_keys($request->get('resources', [])));
+            ->whereIn($resourceKeyName, $resourceKeys);
     }
 
     /**
