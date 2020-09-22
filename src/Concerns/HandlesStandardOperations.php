@@ -33,7 +33,7 @@ trait HandlesStandardOperations
             return $beforeHookResult;
         }
 
-        $entities = $this->runIndexFetchQuery($query, $request, $this->paginator->resolvePaginationLimit($request));
+        $entities = $this->runIndexFetchQuery($request, $query, $this->paginator->resolvePaginationLimit($request));
 
         $afterHookResult = $this->afterIndex($request, $entities);
         if ($this->hookResponds($afterHookResult)) {
@@ -60,12 +60,12 @@ trait HandlesStandardOperations
     /**
      * Runs the given query for fetching entities in index method.
      *
-     * @param Builder $query
      * @param Request $request
+     * @param Builder $query
      * @param int $paginationLimit
      * @return LengthAwarePaginator
      */
-    protected function runIndexFetchQuery(Builder $query, Request $request, int $paginationLimit): LengthAwarePaginator
+    protected function runIndexFetchQuery(Request $request, Builder $query, int $paginationLimit): LengthAwarePaginator
     {
         return $query->paginate($paginationLimit);
     }
@@ -100,9 +100,7 @@ trait HandlesStandardOperations
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
 
         $this->performStore(
-            $entity,
-            $request,
-            $request->only($entity->getFillable())
+            $request, $entity, $request->only($entity->getFillable())
         );
 
         $entity = $entity->fresh($requestedRelations);
@@ -126,11 +124,11 @@ trait HandlesStandardOperations
     /**
      * Fills attributes on the given entity and stores it in database.
      *
-     * @param Model $entity
      * @param Request $request
+     * @param Model $entity
      * @param array $attributes
      */
-    protected function performStore(Model $entity, Request $request, array $attributes): void
+    protected function performStore(Request $request, Model $entity, array $attributes): void
     {
         $entity->fill($attributes);
         $entity->save();
@@ -154,7 +152,7 @@ trait HandlesStandardOperations
             return $beforeHookResult;
         }
 
-        $entity = $this->runShowFetchQuery($query, $request, $key);
+        $entity = $this->runShowFetchQuery($request, $query, $key);
 
         $this->authorize('view', $entity);
 
@@ -183,14 +181,14 @@ trait HandlesStandardOperations
     /**
      * Runs the given query for fetching entity in show method.
      *
-     * @param Builder $query
      * @param Request $request
+     * @param Builder $query
      * @param int|string $key
      * @return Model
      */
-    protected function runShowFetchQuery(Builder $query, Request $request, $key): Model
+    protected function runShowFetchQuery(Request $request, Builder $query, $key): Model
     {
-        return $this->runFetchQuery($query, $request, $key);
+        return $this->runFetchQuery($request, $query, $key);
     }
 
     /**
@@ -205,7 +203,7 @@ trait HandlesStandardOperations
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
 
         $query = $this->buildUpdateFetchQuery($request, $requestedRelations);
-        $entity = $this->runUpdateFetchQuery($query, $request, $key);
+        $entity = $this->runUpdateFetchQuery($request, $query, $key);
 
         $this->authorize('update', $entity);
 
@@ -220,9 +218,7 @@ trait HandlesStandardOperations
         }
 
         $this->performUpdate(
-            $entity,
-            $request,
-            $request->only($entity->getFillable())
+            $request, $entity, $request->only($entity->getFillable())
         );
 
         $entity = $entity->fresh($requestedRelations);
@@ -257,24 +253,24 @@ trait HandlesStandardOperations
     /**
      * Runs the given query for fetching entity in update method.
      *
-     * @param Builder $query
      * @param Request $request
+     * @param Builder $query
      * @param int|string $key
      * @return Model
      */
-    protected function runUpdateFetchQuery(Builder $query, Request $request, $key): Model
+    protected function runUpdateFetchQuery(Request $request, Builder $query, $key): Model
     {
-        return $this->runFetchQuery($query, $request, $key);
+        return $this->runFetchQuery($request, $query, $key);
     }
 
     /**
      * Fills attributes on the given entity and persists changes in database.
      *
-     * @param Model $entity
      * @param Request $request
+     * @param Model $entity
      * @param array $attributes
      */
-    protected function performUpdate(Model $entity, Request $request, array $attributes): void
+    protected function performUpdate(Request $request, Model $entity, array $attributes): void
     {
         $entity->fill($attributes);
         $entity->save();
@@ -296,7 +292,7 @@ trait HandlesStandardOperations
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
 
         $query = $this->buildDestroyFetchQuery($request, $requestedRelations, $softDeletes);
-        $entity = $this->runDestroyFetchQuery($query, $request, $key);
+        $entity = $this->runDestroyFetchQuery($request, $query, $key);
 
         if ($this->isResourceTrashed($entity, $softDeletes, $forceDeletes)) {
             abort(404);
@@ -347,14 +343,14 @@ trait HandlesStandardOperations
     /**
      * Runs the given query for fetching entity in destroy method.
      *
-     * @param Builder $query
      * @param Request $request
+     * @param Builder $query
      * @param int|string $key
      * @return Model
      */
-    protected function runDestroyFetchQuery(Builder $query, Request $request, $key): Model
+    protected function runDestroyFetchQuery(Request $request, Builder $query, $key): Model
     {
-        return $this->runFetchQuery($query, $request, $key);
+        return $this->runFetchQuery($request, $query, $key);
     }
 
     /**
@@ -391,7 +387,7 @@ trait HandlesStandardOperations
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
 
         $query = $this->buildRestoreFetchQuery($request, $requestedRelations);
-        $entity = $this->runRestoreFetchQuery($query, $request, $key);
+        $entity = $this->runRestoreFetchQuery($request, $query, $key);
 
         $this->authorize('restore', $entity);
 
@@ -430,14 +426,14 @@ trait HandlesStandardOperations
     /**
      * Runs the given query for fetching entity in restore method.
      *
-     * @param Builder $query
      * @param Request $request
+     * @param Builder $query
      * @param int|string $key
      * @return Model
      */
-    protected function runRestoreFetchQuery(Builder $query, Request $request, $key): Model
+    protected function runRestoreFetchQuery(Request $request, Builder $query, $key): Model
     {
-        return $this->runFetchQuery($query, $request, $key);
+        return $this->runFetchQuery($request, $query, $key);
     }
 
     /**
@@ -466,12 +462,12 @@ trait HandlesStandardOperations
     /**
      * Runs the given query for fetching entity.
      *
-     * @param Builder $query
      * @param Request $request
+     * @param Builder $query
      * @param int|string $key
      * @return Model
      */
-    protected function runFetchQuery(Builder $query, Request $request, $key): Model
+    protected function runFetchQuery(Request $request, Builder $query, $key): Model
     {
         return $query->findOrFail($key);
     }

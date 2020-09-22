@@ -27,11 +27,11 @@ trait HandlesRelationManyToManyOperations
         }
 
         $parentQuery = $this->buildAttachParentFetchQuery($request, $parentKey);
-        $parentEntity = $this->runAttachParentFetchQuery($parentQuery, $request, $parentKey);
+        $parentEntity = $this->runAttachParentFetchQuery($request, $parentQuery, $parentKey);
 
         $this->authorize('update', $parentEntity);
 
-        $attachResult = $this->performAttach($parentEntity, $request, $request->get('duplicates'), $request->get('resources'));
+        $attachResult = $this->performAttach($request, $parentEntity, $request->get('resources'), $request->get('duplicates'));
 
         $afterHookResult = $this->afterAttach($request, $attachResult);
         if ($this->hookResponds($afterHookResult)) {
@@ -58,26 +58,26 @@ trait HandlesRelationManyToManyOperations
     /**
      * Runs the given query for fetching parent entity in attach method.
      *
-     * @param Builder $query
      * @param Request $request
+     * @param Builder $query
      * @param string|int $parentKey
      * @return Model
      */
-    protected function runAttachParentFetchQuery(Builder $query, Request $request, $parentKey): Model
+    protected function runAttachParentFetchQuery(Request $request, Builder $query, $parentKey): Model
     {
-        return $this->runParentFetchQuery($query, $request, $parentKey);
+        return $this->runParentFetchQuery($request, $query, $parentKey);
     }
 
     /**
      * Attaches the given relation resources to the parent entity.
      *
-     * @param Model $parentEntity
      * @param Request $request
-     * @param bool $duplicates
+     * @param Model $parentEntity
      * @param array $resources
+     * @param bool $duplicates
      * @return array
      */
-    protected function performAttach(Model $parentEntity, Request $request, bool $duplicates, array $resources): array
+    protected function performAttach(Request $request, Model $parentEntity, array $resources, bool $duplicates): array
     {
         $resources = $this->prepareResourcePivotFields($this->preparePivotResources($resources));
 
@@ -103,11 +103,11 @@ trait HandlesRelationManyToManyOperations
         }
 
         $parentQuery = $this->buildDetachParentFetchQuery($request, $parentKey);
-        $parentEntity = $this->runDetachParentFetchQuery($parentQuery, $request, $parentKey);
+        $parentEntity = $this->runDetachParentFetchQuery($request, $parentQuery, $parentKey);
 
         $this->authorize('update', $parentEntity);
 
-        $detachResult = $this->performDetach($parentEntity, $request, $request->get('resources'));
+        $detachResult = $this->performDetach($request, $parentEntity, $request->get('resources'));
 
         $afterHookResult = $this->afterDetach($request, $detachResult);
         if ($this->hookResponds($afterHookResult)) {
@@ -134,25 +134,25 @@ trait HandlesRelationManyToManyOperations
     /**
      * Runs the given query for fetching parent entity in detach method.
      *
-     * @param Builder $query
      * @param Request $request
+     * @param Builder $query
      * @param string|int $parentKey
      * @return Model
      */
-    protected function runDetachParentFetchQuery(Builder $query, Request $request, $parentKey): Model
+    protected function runDetachParentFetchQuery(Request $request, Builder $query, $parentKey): Model
     {
-        return $this->runParentFetchQuery($query, $request, $parentKey);
+        return $this->runParentFetchQuery($request, $query, $parentKey);
     }
 
     /**
      * Detaches the given relation resources from the parent entity.
      *
-     * @param Model $parentEntity
      * @param Request $request
+     * @param Model $parentEntity
      * @param array $resources
      * @return array
      */
-    protected function performDetach(Model $parentEntity, Request $request, array $resources): array
+    protected function performDetach(Request $request, Model $parentEntity, array $resources): array
     {
         $resources = $this->prepareResourcePivotFields($this->preparePivotResources($resources));
 
@@ -174,11 +174,11 @@ trait HandlesRelationManyToManyOperations
         }
 
         $parentQuery = $this->buildSyncParentFetchQuery($request, $parentKey);
-        $parentEntity = $this->runSyncParentFetchQuery($parentQuery, $request, $parentKey);
+        $parentEntity = $this->runSyncParentFetchQuery($request, $parentQuery, $parentKey);
 
         $this->authorize('update', $parentEntity);
 
-        $syncResult = $this->performSync($parentEntity, $request, $request->get('detaching', true), $request->get('resources'));
+        $syncResult = $this->performSync($request, $parentEntity, $request->get('resources'), $request->get('detaching', true));
 
         $afterHookResult = $this->afterSync($request, $syncResult);
         if ($this->hookResponds($afterHookResult)) {
@@ -203,26 +203,26 @@ trait HandlesRelationManyToManyOperations
     /**
      * Runs the given query for fetching parent entity in sync method.
      *
-     * @param Builder $query
      * @param Request $request
+     * @param Builder $query
      * @param string|int $parentKey
      * @return Model
      */
-    protected function runSyncParentFetchQuery(Builder $query, Request $request, $parentKey): Model
+    protected function runSyncParentFetchQuery(Request $request, Builder $query, $parentKey): Model
     {
-        return $this->runParentFetchQuery($query, $request, $parentKey);
+        return $this->runParentFetchQuery($request, $query, $parentKey);
     }
 
     /**
      * Sync the given relation resources on the parent entity.
      *
-     * @param Model $parentEntity
      * @param Request $request
-     * @param bool $detaching
+     * @param Model $parentEntity
      * @param array $resources
+     * @param bool $detaching
      * @return array
      */
-    protected function performSync(Model $parentEntity, Request $request, bool $detaching, array $resources): array
+    protected function performSync(Request $request, Model $parentEntity, array $resources, bool $detaching): array
     {
         $resources = $this->prepareResourcePivotFields($this->preparePivotResources($resources));
 
@@ -250,11 +250,11 @@ trait HandlesRelationManyToManyOperations
         }
 
         $parentQuery = $this->buildToggleParentFetchQuery($request, $parentKey);
-        $parentEntity = $this->runToggleParentFetchQuery($parentQuery, $request, $parentKey);
+        $parentEntity = $this->runToggleParentFetchQuery($request, $parentQuery, $parentKey);
 
         $this->authorize('update', $parentEntity);
 
-        $toggleResult = $this->performToggle($parentEntity, $request, $request->get('resources'));
+        $toggleResult = $this->performToggle($request, $parentEntity, $request->get('resources'));
 
         $afterHookResult = $this->afterToggle($request, $toggleResult);
         if ($this->hookResponds($afterHookResult)) {
@@ -279,25 +279,25 @@ trait HandlesRelationManyToManyOperations
     /**
      * Runs the given query for fetching parent entity in toggle method.
      *
-     * @param Builder $query
      * @param Request $request
+     * @param Builder $query
      * @param string|int $parentKey
      * @return Model
      */
-    protected function runToggleParentFetchQuery(Builder $query, Request $request, $parentKey): Model
+    protected function runToggleParentFetchQuery(Request $request, Builder $query, $parentKey): Model
     {
-        return $this->runParentFetchQuery($query, $request, $parentKey);
+        return $this->runParentFetchQuery($request, $query, $parentKey);
     }
 
     /**
      * Toggles the given relation resources on the parent entity.
      *
-     * @param Model $parentEntity
      * @param Request $request
+     * @param Model $parentEntity
      * @param array $resources
      * @return array
      */
-    protected function performToggle(Model $parentEntity, Request $request, array $resources): array
+    protected function performToggle(Request $request, Model $parentEntity, array $resources): array
     {
         $resources = $this->prepareResourcePivotFields($this->preparePivotResources($resources));
 
@@ -320,11 +320,11 @@ trait HandlesRelationManyToManyOperations
         }
 
         $parentQuery = $this->buildUpdatePivotParentFetchQuery($request, $parentKey);
-        $parentEntity = $this->runUpdatePivotParentFetchQuery($parentQuery, $request, $parentKey);
+        $parentEntity = $this->runUpdatePivotParentFetchQuery($request, $parentQuery, $parentKey);
 
         $this->authorize('update', $parentEntity);
 
-        $updateResult = $this->performUpdatePivot($parentEntity, $request, $relatedKey, $request->get('pivot', []));
+        $updateResult = $this->performUpdatePivot($request, $parentEntity, $relatedKey, $request->get('pivot', []));
 
         $afterHookResult = $this->afterUpdatePivot($request, $updateResult);
         if ($this->hookResponds($afterHookResult)) {
@@ -351,26 +351,26 @@ trait HandlesRelationManyToManyOperations
     /**
      * Runs the given query for fetching parent entity in update pivot method.
      *
-     * @param Builder $query
      * @param Request $request
+     * @param Builder $query
      * @param string|int $parentKey
      * @return Model
      */
-    protected function runUpdatePivotParentFetchQuery(Builder $query, Request $request, $parentKey): Model
+    protected function runUpdatePivotParentFetchQuery(Request $request, Builder $query, $parentKey): Model
     {
-        return $this->runParentFetchQuery($query, $request, $parentKey);
+        return $this->runParentFetchQuery($request, $query, $parentKey);
     }
 
     /**
      * Updates relation resource pivot.
      *
-     * @param Model $parentEntity
      * @param Request $request
+     * @param Model $parentEntity
      * @param string|int $relatedKey
      * @param array $pivot
      * @return array
      */
-    protected function performUpdatePivot(Model $parentEntity, Request $request, $relatedKey, array $pivot): array
+    protected function performUpdatePivot(Request $request, Model $parentEntity, $relatedKey, array $pivot): array
     {
         $pivot = $this->preparePivotFields($pivot);
 

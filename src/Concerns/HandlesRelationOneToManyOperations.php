@@ -20,12 +20,12 @@ trait HandlesRelationOneToManyOperations
     public function associate(Request $request, $parentKey)
     {
         $parentQuery = $this->buildAssociateParentFetchQuery($request, $parentKey);
-        $parentEntity = $this->runAssociateParentFetchQuery($parentQuery, $request, $parentKey);
+        $parentEntity = $this->runAssociateParentFetchQuery($request, $parentQuery, $parentKey);
 
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
 
         $query = $this->buildAssociateFetchQuery($request, $parentEntity, $requestedRelations);
-        $entity = $this->runAssociateFetchQuery($query, $request, $parentEntity, $request->get('related_key'));
+        $entity = $this->runAssociateFetchQuery($request, $query, $parentEntity, $request->get('related_key'));
 
         $beforeHookResult = $this->beforeAssociate($request, $parentEntity, $entity);
         if ($this->hookResponds($beforeHookResult)) {
@@ -35,7 +35,7 @@ trait HandlesRelationOneToManyOperations
         $this->authorize('view', $parentEntity);
         $this->authorize('update', $entity);
 
-        $this->performAssociate($parentEntity, $entity, $request);
+        $this->performAssociate($request, $parentEntity, $entity);
 
         $afterHookResult = $this->afterAssociate($request, $entity);
         if ($this->hookResponds($afterHookResult)) {
@@ -60,14 +60,14 @@ trait HandlesRelationOneToManyOperations
     /**
      * Runs the given query for fetching parent entity in associate method.
      *
-     * @param Builder $query
      * @param Request $request
+     * @param Builder $query
      * @param string|int $parentKey
      * @return Model
      */
-    protected function runAssociateParentFetchQuery(Builder $query, Request $request, $parentKey): Model
+    protected function runAssociateParentFetchQuery(Request $request, Builder $query, $parentKey): Model
     {
-        return $this->runParentFetchQuery($query, $request, $parentKey);
+        return $this->runParentFetchQuery($request, $query, $parentKey);
     }
 
     /**
@@ -86,25 +86,25 @@ trait HandlesRelationOneToManyOperations
     /**
      * Runs the given query for fetching relation entity in associate method.
      *
-     * @param Relation $query
      * @param Request $request
+     * @param Relation $query
      * @param Model $parentEntity
      * @param string|int $relatedKey
      * @return Model
      */
-    protected function runAssociateFetchQuery(Relation $query, Request $request, Model $parentEntity, $relatedKey): Model
+    protected function runAssociateFetchQuery(Request $request, Relation $query, Model $parentEntity, $relatedKey): Model
     {
-        return $this->runRelationFetchQuery($query, $request, $parentEntity, $relatedKey);
+        return $this->runRelationFetchQuery($request, $query, $parentEntity, $relatedKey);
     }
 
     /**
      * Associates the given entity with parent entity.
      *
+     * @param Request $request
      * @param Model $parentEntity
      * @param Model $entity
-     * @param Request $request
      */
-    protected function performAssociate(Model $parentEntity, Model $entity, Request $request): void
+    protected function performAssociate(Request $request, Model $parentEntity, Model $entity): void
     {
         $parentEntity->{$this->getRelation()}()->save($entity);
     }
@@ -120,12 +120,12 @@ trait HandlesRelationOneToManyOperations
     public function dissociate(Request $request, $parentKey, $relatedKey)
     {
         $parentQuery = $this->buildDissociateParentFetchQuery($request, $parentKey);
-        $parentEntity = $this->runDissociateParentFetchQuery($parentQuery, $request, $parentKey);
+        $parentEntity = $this->runDissociateParentFetchQuery($request, $parentQuery, $parentKey);
 
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
 
         $query = $this->buildDissociateFetchQuery($request, $parentEntity, $requestedRelations);
-        $entity = $this->runDissociateFetchQuery($query, $request, $parentEntity, $relatedKey);
+        $entity = $this->runDissociateFetchQuery($request, $query, $parentEntity, $relatedKey);
 
         $beforeHookResult = $this->beforeDissociate($request, $parentEntity, $entity);
         if ($this->hookResponds($beforeHookResult)) {
@@ -134,7 +134,7 @@ trait HandlesRelationOneToManyOperations
 
         $this->authorize('update', $entity);
 
-        $this->performDissociate($parentEntity, $entity, $request);
+        $this->performDissociate($request, $parentEntity, $entity);
 
         $afterHookResult = $this->afterDissociate($request, $entity);
         if ($this->hookResponds($afterHookResult)) {
@@ -159,14 +159,14 @@ trait HandlesRelationOneToManyOperations
     /**
      * Runs the given query for fetching parent entity in dissociate method.
      *
-     * @param Builder $query
      * @param Request $request
+     * @param Builder $query
      * @param string|int $parentKey
      * @return Model
      */
-    protected function runDissociateParentFetchQuery(Builder $query, Request $request, $parentKey): Model
+    protected function runDissociateParentFetchQuery(Request $request, Builder $query, $parentKey): Model
     {
-        return $this->runParentFetchQuery($query, $request, $parentKey);
+        return $this->runParentFetchQuery($request, $query, $parentKey);
     }
 
     /**
@@ -185,25 +185,25 @@ trait HandlesRelationOneToManyOperations
     /**
      * Runs the given query for fetching relation entity in dissociate method.
      *
-     * @param Relation $query
      * @param Request $request
+     * @param Relation $query
      * @param Model $parentEntity
      * @param string|int $relatedKey
      * @return Model
      */
-    protected function runDissociateFetchQuery(Relation $query, Request $request, Model $parentEntity, $relatedKey): Model
+    protected function runDissociateFetchQuery(Request $request, Relation $query, Model $parentEntity, $relatedKey): Model
     {
-        return $this->runRelationFetchQuery($query, $request, $parentEntity, $relatedKey);
+        return $this->runRelationFetchQuery($request, $query, $parentEntity, $relatedKey);
     }
 
     /**
      * Dissociates the given entity from its parent entity.
      *
+     * @param Request $request
      * @param Model $parentEntity
      * @param Model $entity
-     * @param Request $request
      */
-    protected function performDissociate(Model $parentEntity, Model $entity, Request $request): void
+    protected function performDissociate(Request $request, Model $parentEntity, Model $entity): void
     {
         $foreignKeyName = $parentEntity->{$this->getRelation()}()->getForeignKeyName();
 

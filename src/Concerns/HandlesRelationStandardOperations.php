@@ -40,10 +40,10 @@ trait HandlesRelationStandardOperations
         }
 
         $parentQuery = $this->buildIndexParentFetchQuery($request, $parentKey);
-        $parentEntity = $this->runIndexParentFetchQuery($parentQuery, $request, $parentKey);
+        $parentEntity = $this->runIndexParentFetchQuery($request, $parentQuery, $parentKey);
 
         $query = $this->buildIndexFetchQuery($request, $parentEntity, $requestedRelations);
-        $entities = $this->runIndexFetchQuery($query, $request, $parentEntity, $this->paginator->resolvePaginationLimit($request));
+        $entities = $this->runIndexFetchQuery($request, $query, $parentEntity, $this->paginator->resolvePaginationLimit($request));
 
         $entities->getCollection()->transform(function ($entity) {
             $entity = $this->cleanupEntity($entity);
@@ -80,14 +80,14 @@ trait HandlesRelationStandardOperations
     /**
      * Runs the given query for fetching parent entity in index method.
      *
-     * @param Builder $query
      * @param Request $request
+     * @param Builder $query
      * @param string|int $parentKey
      * @return Model
      */
-    protected function runIndexParentFetchQuery(Builder $query, Request $request, $parentKey): Model
+    protected function runIndexParentFetchQuery(Request $request, Builder $query, $parentKey): Model
     {
-        return $this->runParentFetchQuery($query, $request, $parentKey);
+        return $this->runParentFetchQuery($request, $query, $parentKey);
     }
 
     /**
@@ -106,13 +106,13 @@ trait HandlesRelationStandardOperations
     /**
      * Runs the given query for fetching relation entities in index method.
      *
-     * @param Relation $query
      * @param Request $request
+     * @param Relation $query
      * @param Model $parentEntity
      * @param int $paginationLimit
      * @return LengthAwarePaginator
      */
-    protected function runIndexFetchQuery(Relation $query, Request $request, Model $parentEntity, int $paginationLimit): LengthAwarePaginator
+    protected function runIndexFetchQuery(Request $request, Relation $query, Model $parentEntity, int $paginationLimit): LengthAwarePaginator
     {
         return $query->paginate($paginationLimit);
     }
@@ -131,7 +131,7 @@ trait HandlesRelationStandardOperations
         $this->authorize('create', $resourceModelClass);
 
         $parentQuery = $this->buildStoreParentFetchQuery($request, $parentKey);
-        $parentEntity = $this->runStoreParentFetchQuery($parentQuery, $request, $parentKey);
+        $parentEntity = $this->runStoreParentFetchQuery($request, $parentQuery, $parentKey);
 
         /** @var Model $entity */
         $entity = new $resourceModelClass;
@@ -149,11 +149,7 @@ trait HandlesRelationStandardOperations
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
 
         $this->performStore(
-            $parentEntity,
-            $entity,
-            $request,
-            $request->only($entity->getFillable()),
-            $request->get('pivot', [])
+            $request, $parentEntity, $entity, $request->only($entity->getFillable()), $request->get('pivot', [])
         );
 
         $entity = $this->newRelationQuery($parentEntity)->with($requestedRelations)->find($entity->id);
@@ -195,26 +191,26 @@ trait HandlesRelationStandardOperations
     /**
      * Runs the given query for fetching parent entity in store method.
      *
-     * @param Builder $query
      * @param Request $request
+     * @param Builder $query
      * @param string|int $parentKey
      * @return Model
      */
-    protected function runStoreParentFetchQuery(Builder $query, Request $request, $parentKey): Model
+    protected function runStoreParentFetchQuery(Request $request, Builder $query, $parentKey): Model
     {
-        return $this->runParentFetchQuery($query, $request, $parentKey);
+        return $this->runParentFetchQuery($request, $query, $parentKey);
     }
 
     /**
      * Fills attributes on the given relation entity and stores it in database.
      *
+     * @param Request $request
      * @param Model $parentEntity
      * @param Model $entity
-     * @param Request $request
      * @param array $attributes
      * @param array $pivot
      */
-    protected function performStore(Model $parentEntity, Model $entity, Request $request, array $attributes, array $pivot): void
+    protected function performStore(Request $request, Model $parentEntity, Model $entity, array $attributes, array $pivot): void
     {
         $entity->fill($attributes);
 
@@ -242,12 +238,12 @@ trait HandlesRelationStandardOperations
         }
 
         $parentQuery = $this->buildShowParentFetchQuery($request, $parentKey);
-        $parentEntity = $this->runShowParentFetchQuery($parentQuery, $request, $parentKey);
+        $parentEntity = $this->runShowParentFetchQuery($request, $parentQuery, $parentKey);
 
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
 
         $query = $this->buildShowFetchQuery($request, $parentEntity, $requestedRelations);
-        $entity = $this->runShowFetchQuery($query, $request, $parentEntity, $relatedKey);
+        $entity = $this->runShowFetchQuery($request, $query, $parentEntity, $relatedKey);
 
         $this->authorize('view', $entity);
 
@@ -282,14 +278,14 @@ trait HandlesRelationStandardOperations
     /**
      * Runs the given query for fetching parent entity in show method.
      *
-     * @param Builder $query
      * @param Request $request
+     * @param Builder $query
      * @param string|int $parentKey
      * @return Model
      */
-    protected function runShowParentFetchQuery(Builder $query, Request $request, $parentKey): Model
+    protected function runShowParentFetchQuery(Request $request, Builder $query, $parentKey): Model
     {
-        return $this->runParentFetchQuery($query, $request, $parentKey);
+        return $this->runParentFetchQuery($request, $query, $parentKey);
     }
 
     /**
@@ -308,15 +304,15 @@ trait HandlesRelationStandardOperations
     /**
      * Runs the given query for fetching relation entity in show method.
      *
-     * @param Relation $query
      * @param Request $request
+     * @param Relation $query
      * @param Model $parentEntity
      * @param string|int $relatedKey
      * @return Model
      */
-    protected function runShowFetchQuery(Relation $query, Request $request, Model $parentEntity, $relatedKey): Model
+    protected function runShowFetchQuery(Request $request, Relation $query, Model $parentEntity, $relatedKey): Model
     {
-        return $this->runRelationFetchQuery($query, $request, $parentEntity, $relatedKey);
+        return $this->runRelationFetchQuery($request, $query, $parentEntity, $relatedKey);
     }
 
     /**
@@ -330,12 +326,12 @@ trait HandlesRelationStandardOperations
     public function update(Request $request, $parentKey, $relatedKey = null)
     {
         $parentQuery = $this->buildUpdateParentFetchQuery($request, $parentKey);
-        $parentEntity = $this->runUpdateParentFetchQuery($parentQuery, $request, $parentKey);
+        $parentEntity = $this->runUpdateParentFetchQuery($request, $parentQuery, $parentKey);
 
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
 
         $query = $this->buildUpdateFetchQuery($request, $parentEntity, $requestedRelations);
-        $entity = $this->runUpdateFetchQuery($query, $request, $parentEntity, $relatedKey);
+        $entity = $this->runUpdateFetchQuery($request, $query, $parentEntity, $relatedKey);
 
         $this->authorize('update', $entity);
 
@@ -350,11 +346,7 @@ trait HandlesRelationStandardOperations
         }
 
         $this->performUpdate(
-            $parentEntity,
-            $entity,
-            $request,
-            $request->only($entity->getFillable()),
-            $request->get('pivot', [])
+            $request, $parentEntity, $entity, $request->only($entity->getFillable()), $request->get('pivot', [])
         );
 
         $entity = $this->newRelationQuery($parentEntity)->with($requestedRelations)->find($entity->id);
@@ -395,14 +387,14 @@ trait HandlesRelationStandardOperations
     /**
      * Runs the given query for fetching parent entity in update method.
      *
-     * @param Builder $query
      * @param Request $request
+     * @param Builder $query
      * @param string|int $parentKey
      * @return Model
      */
-    protected function runUpdateParentFetchQuery(Builder $query, Request $request, $parentKey): Model
+    protected function runUpdateParentFetchQuery(Request $request, Builder $query, $parentKey): Model
     {
-        return $this->runParentFetchQuery($query, $request, $parentKey);
+        return $this->runParentFetchQuery($request, $query, $parentKey);
     }
 
     /**
@@ -421,27 +413,27 @@ trait HandlesRelationStandardOperations
     /**
      * Runs the given query for fetching relation entity in update method.
      *
-     * @param Relation $query
      * @param Request $request
+     * @param Relation $query
      * @param Model $parentEntity
      * @param string|int $relatedKey
      * @return Model
      */
-    protected function runUpdateFetchQuery(Relation $query, Request $request, Model $parentEntity, $relatedKey): Model
+    protected function runUpdateFetchQuery(Request $request, Relation $query, Model $parentEntity, $relatedKey): Model
     {
-        return $this->runRelationFetchQuery($query, $request, $parentEntity, $relatedKey);
+        return $this->runRelationFetchQuery($request, $query, $parentEntity, $relatedKey);
     }
 
     /**
      * Fills attributes on the given relation entity and persists changes in database.
      *
+     * @param Request $request
      * @param Model $parentEntity
      * @param Model $entity
-     * @param Request $request
      * @param array $attributes
      * @param array $pivot
      */
-    protected function performUpdate(Model $parentEntity, Model $entity, Request $request, array $attributes, array $pivot): void
+    protected function performUpdate(Request $request, Model $parentEntity, Model $entity, array $attributes, array $pivot): void
     {
         $entity->fill($attributes);
         $entity->save();
@@ -464,7 +456,7 @@ trait HandlesRelationStandardOperations
     public function destroy(Request $request, $parentKey, $relatedKey = null)
     {
         $parentQuery = $this->buildDestroyParentFetchQuery($request, $parentKey);
-        $parentEntity = $this->runDestroyParentFetchQuery($parentQuery, $request, $parentKey);
+        $parentEntity = $this->runDestroyParentFetchQuery($request, $parentQuery, $parentKey);
 
         $softDeletes = $this->softDeletes($this->resolveResourceModelClass());
         $forceDeletes = $softDeletes && $request->get('force');
@@ -472,7 +464,7 @@ trait HandlesRelationStandardOperations
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
 
         $query = $this->buildDestroyFetchQuery($request, $parentEntity, $requestedRelations, $softDeletes);
-        $entity = $this->runDestroyFetchQuery($query, $request, $parentEntity, $relatedKey);
+        $entity = $this->runDestroyFetchQuery($request, $query, $parentEntity, $relatedKey);
 
         $this->authorize($forceDeletes ? 'forceDelete' : 'delete', $entity);
 
@@ -521,14 +513,14 @@ trait HandlesRelationStandardOperations
     /**
      * Runs the given query for fetching parent entity in destroy method.
      *
-     * @param Builder $query
      * @param Request $request
+     * @param Builder $query
      * @param string|int $parentKey
      * @return Model
      */
-    protected function runDestroyParentFetchQuery(Builder $query, Request $request, $parentKey): Model
+    protected function runDestroyParentFetchQuery(Request $request, Builder $query, $parentKey): Model
     {
-        return $this->runParentFetchQuery($query, $request, $parentKey);
+        return $this->runParentFetchQuery($request, $query, $parentKey);
     }
 
     /**
@@ -551,15 +543,15 @@ trait HandlesRelationStandardOperations
     /**
      * Runs the given query for fetching relation entity in destroy method.
      *
-     * @param Relation $query
      * @param Request $request
+     * @param Relation $query
      * @param Model $parentEntity
      * @param string|int $relatedKey
      * @return Model
      */
-    protected function runDestroyFetchQuery(Relation $query, Request $request, Model $parentEntity, $relatedKey): Model
+    protected function runDestroyFetchQuery(Request $request, Relation $query, Model $parentEntity, $relatedKey): Model
     {
-        return $this->runRelationFetchQuery($query, $request, $parentEntity, $relatedKey);
+        return $this->runRelationFetchQuery($request, $query, $parentEntity, $relatedKey);
     }
 
     /**
@@ -594,12 +586,12 @@ trait HandlesRelationStandardOperations
     public function restore(Request $request, $parentKey, $relatedKey = null)
     {
         $parentQuery = $this->buildRestoreParentFetchQuery($request, $parentKey);
-        $parentEntity = $this->runRestoreParentFetchQuery($parentQuery, $request, $parentKey);
+        $parentEntity = $this->runRestoreParentFetchQuery($request, $parentQuery, $parentKey);
 
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
 
         $query = $this->buildRestoreFetchQuery($request, $parentEntity, $requestedRelations);
-        $entity = $this->runRestoreFetchQuery($query, $request, $parentEntity, $relatedKey);
+        $entity = $this->runRestoreFetchQuery($request, $query, $parentEntity, $relatedKey);
 
         $this->authorize('restore', $entity);
 
@@ -643,14 +635,14 @@ trait HandlesRelationStandardOperations
     /**
      * Runs the given query for fetching parent entity in restore method.
      *
-     * @param Builder $query
      * @param Request $request
+     * @param Builder $query
      * @param string|int $parentKey
      * @return Model
      */
-    protected function runRestoreParentFetchQuery(Builder $query, Request $request, $parentKey): Model
+    protected function runRestoreParentFetchQuery(Request $request, Builder $query, $parentKey): Model
     {
-        return $this->runParentFetchQuery($query, $request, $parentKey);
+        return $this->runParentFetchQuery($request, $query, $parentKey);
     }
 
     /**
@@ -670,15 +662,15 @@ trait HandlesRelationStandardOperations
     /**
      * Runs the given query for fetching relation entity in restore method.
      *
-     * @param Relation $query
      * @param Request $request
+     * @param Relation $query
      * @param Model $parentEntity
      * @param string|int $relatedKey
      * @return Model
      */
-    protected function runRestoreFetchQuery(Relation $query, Request $request, Model $parentEntity, $relatedKey): Model
+    protected function runRestoreFetchQuery(Request $request, Relation $query, Model $parentEntity, $relatedKey): Model
     {
-        return $this->runRelationFetchQuery($query, $request, $parentEntity, $relatedKey);
+        return $this->runRelationFetchQuery($request, $query, $parentEntity, $relatedKey);
     }
 
     /**
@@ -706,12 +698,12 @@ trait HandlesRelationStandardOperations
     /**
      * Runs the given query for fetching parent entity.
      *
-     * @param Builder $query
      * @param Request $request
+     * @param Builder $query
      * @param string|int $parentKey
      * @return Model
      */
-    protected function runParentFetchQuery(Builder $query, Request $request, $parentKey): Model
+    protected function runParentFetchQuery(Request $request, Builder $query, $parentKey): Model
     {
         return $query->findOrFail($parentKey);
     }
@@ -733,13 +725,13 @@ trait HandlesRelationStandardOperations
     /**
      * Runs the given query for fetching relation entity.
      *
-     * @param Relation $query
      * @param Request $request
+     * @param Relation $query
      * @param Model $parentEntity
      * @param string|int $relatedKey
      * @return Model
      */
-    protected function runRelationFetchQuery(Relation $query, Request $request, Model $parentEntity, $relatedKey): Model
+    protected function runRelationFetchQuery(Request $request, Relation $query, Model $parentEntity, $relatedKey): Model
     {
         if ($this->isOneToOneRelation($parentEntity)) {
             return $query->firstOrFail();

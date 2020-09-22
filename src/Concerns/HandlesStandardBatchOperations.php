@@ -43,7 +43,7 @@ trait HandlesStandardBatchOperations
             $this->beforeStore($request, $entity);
             $this->beforeSave($request, $entity);
 
-            $this->performStore($entity, $request, Arr::only($resource, $entity->getFillable()));
+            $this->performStore($request, $entity, Arr::only($resource, $entity->getFillable()));
 
             $entity = $entity->fresh($requestedRelations);
             $entity->wasRecentlyCreated = true;
@@ -80,7 +80,7 @@ trait HandlesStandardBatchOperations
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
 
         $query = $this->buildBatchUpdateFetchQuery($request, $requestedRelations);
-        $entities = $this->runBatchUpdateFetchQuery($query, $request);
+        $entities = $this->runBatchUpdateFetchQuery($request, $query);
 
         foreach ($entities as $entity) {
             /** @var Model $entity */
@@ -90,10 +90,8 @@ trait HandlesStandardBatchOperations
             $this->beforeSave($request, $entity);
 
             $this->performUpdate(
-                $entity,
-                $request,
-                Arr::only($request->input("resources.{$entity->getKey()}"),
-                    $entity->getFillable())
+                $request, $entity, Arr::only($request->input("resources.{$entity->getKey()}"),
+                $entity->getFillable())
             );
 
             $entity = $entity->fresh($requestedRelations);
@@ -127,13 +125,13 @@ trait HandlesStandardBatchOperations
     /**
      * Runs the given query for fetching entities in batch update method.
      *
-     * @param Builder $query
      * @param Request $request
+     * @param Builder $query
      * @return Collection
      */
-    protected function runBatchUpdateFetchQuery(Builder $query, Request $request): Collection
+    protected function runBatchUpdateFetchQuery(Request $request, Builder $query): Collection
     {
-        return $this->runBatchFetchQuery($query, $request);
+        return $this->runBatchFetchQuery($request, $query);
     }
 
     /**
@@ -156,7 +154,7 @@ trait HandlesStandardBatchOperations
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
 
         $query = $this->buildBatchDestroyFetchQuery($request, $requestedRelations);
-        $entities = $this->runBatchDestroyFetchQuery($query, $request);
+        $entities = $this->runBatchDestroyFetchQuery($request, $query);
 
         foreach ($entities as $entity) {
             /**
@@ -203,13 +201,13 @@ trait HandlesStandardBatchOperations
     /**
      * Runs the given query for fetching entities in batch destroy method.
      *
-     * @param Builder $query
      * @param Request $request
+     * @param Builder $query
      * @return Collection
      */
-    protected function runBatchDestroyFetchQuery(Builder $query, Request $request): Collection
+    protected function runBatchDestroyFetchQuery(Request $request, Builder $query): Collection
     {
-        return $this->runBatchFetchQuery($query, $request);
+        return $this->runBatchFetchQuery($request, $query);
     }
 
     /**
@@ -229,7 +227,7 @@ trait HandlesStandardBatchOperations
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
 
         $query = $this->buildBatchUpdateFetchQuery($request, $requestedRelations);
-        $entities = $this->runBatchUpdateFetchQuery($query, $request);
+        $entities = $this->runBatchUpdateFetchQuery($request, $query);
 
         foreach ($entities as $entity) {
             /**
@@ -271,13 +269,13 @@ trait HandlesStandardBatchOperations
     /**
      * Runs the given query for fetching entities in batch restore method.
      *
-     * @param Builder $query
      * @param Request $request
+     * @param Builder $query
      * @return Collection
      */
-    protected function runBatchRestoreFetchQuery(Builder $query, Request $request): Collection
+    protected function runBatchRestoreFetchQuery(Request $request, Builder $query): Collection
     {
-        return $this->runBatchFetchQuery($query, $request);
+        return $this->runBatchFetchQuery($request, $query);
     }
 
     /**
@@ -299,11 +297,11 @@ trait HandlesStandardBatchOperations
     /**
      * Runs the given query for fetching entities in batch methods.
      *
-     * @param Builder $query
      * @param Request $request
+     * @param Builder $query
      * @return Collection
      */
-    protected function runBatchFetchQuery(Builder $query, Request $request): Collection
+    protected function runBatchFetchQuery(Request $request, Builder $query): Collection
     {
         return $query->get();
     }
