@@ -31,7 +31,7 @@ trait HandlesRelationManyToManyOperations
 
         $this->authorize('update', $parentEntity);
 
-        $attachResult = $this->performAttach($request, $parentEntity, $request->get('resources'), $request->get('duplicates'));
+        $attachResult = $this->performAttach($request, $parentEntity, $request->get('resources'), $request->get('duplicates', false));
 
         $afterHookResult = $this->afterAttach($request, $attachResult);
         if ($this->hookResponds($afterHookResult)) {
@@ -115,7 +115,7 @@ trait HandlesRelationManyToManyOperations
         }
 
         return response()->json([
-            'detached' => array_values($request->get('resources', []))
+            'detached' => $detachResult
         ]);
     }
 
@@ -156,7 +156,9 @@ trait HandlesRelationManyToManyOperations
     {
         $resources = $this->prepareResourcePivotFields($this->preparePivotResources($resources));
 
-        return $parentEntity->{$this->getRelation()}()->detach(array_keys($resources));
+        $parentEntity->{$this->getRelation()}()->detach(array_keys($resources));
+
+        return array_keys($resources);
     }
 
     /**
@@ -332,7 +334,7 @@ trait HandlesRelationManyToManyOperations
         }
 
         return response()->json([
-            'updated' => [is_numeric($relatedKey) ? (int) $relatedKey : $relatedKey]
+            'updated' => $updateResult
         ]);
     }
 
@@ -374,7 +376,9 @@ trait HandlesRelationManyToManyOperations
     {
         $pivot = $this->preparePivotFields($pivot);
 
-        return $parentEntity->{$this->getRelation()}()->updateExistingPivot($relatedKey, $pivot);
+        $parentEntity->{$this->getRelation()}()->updateExistingPivot($relatedKey, $pivot);
+
+        return [is_numeric($relatedKey) ? (int) $relatedKey : $relatedKey];
     }
 
     /**
