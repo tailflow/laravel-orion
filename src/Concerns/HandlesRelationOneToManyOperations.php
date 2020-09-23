@@ -76,25 +76,29 @@ trait HandlesRelationOneToManyOperations
      * @param Request $request
      * @param Model $parentEntity
      * @param array $requestedRelations
-     * @return Relation
+     * @return Builder
      */
-    protected function buildAssociateFetchQuery(Request $request, Model $parentEntity, array $requestedRelations): Relation
+    protected function buildAssociateFetchQuery(Request $request, Model $parentEntity, array $requestedRelations): Builder
     {
-        return $this->buildRelationFetchQuery($request, $parentEntity, $requestedRelations);
+        $parentModel = $this->getModel();
+        $relatedModel = (new $parentModel)->{$this->getRelation()}()->getModel();
+
+        return $this->relationQueryBuilder->buildQuery($relatedModel->query(), $request)
+            ->with($this->relationsResolver->requestedRelations($request));
     }
 
     /**
      * Runs the given query for fetching relation entity in associate method.
      *
      * @param Request $request
-     * @param Relation $query
+     * @param Builder $query
      * @param Model $parentEntity
      * @param string|int $relatedKey
      * @return Model
      */
-    protected function runAssociateFetchQuery(Request $request, Relation $query, Model $parentEntity, $relatedKey): Model
+    protected function runAssociateFetchQuery(Request $request, Builder $query, Model $parentEntity, $relatedKey): Model
     {
-        return $this->runRelationFetchQuery($request, $query, $parentEntity, $relatedKey);
+        return $query->findOrFail($relatedKey);
     }
 
     /**
