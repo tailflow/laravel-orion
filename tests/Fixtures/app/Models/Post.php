@@ -45,6 +45,14 @@ class Post extends Model
     }
 
     /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
+    }
+
+    /**
      * @param Builder $query
      * @return Builder|\Illuminate\Database\Query\Builder
      */

@@ -447,7 +447,7 @@ trait HandlesStandardOperations
     }
 
     /**
-     * Builds Eloquent query for fetching entity.
+     * Builds Eloquent query for fetching entity(-ies).
      *
      * @param Request $request
      * @param array $requestedRelations

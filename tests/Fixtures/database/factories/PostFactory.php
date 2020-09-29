@@ -1,5 +1,6 @@
 <?php
 
+use Carbon\Carbon;
 use Faker\Generator as Faker;
 use Orion\Tests\Fixtures\App\Models\Post;
 
@@ -12,6 +13,6 @@ $factory->define(Post::class, function (Faker $faker) {
 
 $factory->state(Post::class, 'trashed', function (Faker $faker) {
     return [
-        'deleted_at' => \Carbon\Carbon::now()
+        'deleted_at' => Carbon::now()
     ];
 });
