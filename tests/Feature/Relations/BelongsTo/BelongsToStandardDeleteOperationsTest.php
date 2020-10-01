@@ -137,7 +137,7 @@ class BelongsToStandardDeleteOperationsTest extends TestCase
             return $componentsResolverMock;
         });
 
-        $response = $this->withAuth($post->user)->delete("/api/posts/{$post->id}/user");
+        $response = $this->bypassAuthorization()->delete("/api/posts/{$post->id}/user");
 
         $this->assertResourceDeleted($response, $user, ['test-field-from-resource' => 'test-value']);
     }
@@ -148,7 +148,7 @@ class BelongsToStandardDeleteOperationsTest extends TestCase
         $user = factory(User::class)->create()->fresh();
         $post = factory(Post::class)->create(['user_id' => $user->id])->fresh();
 
-        $response = $this->withAuth($user)->delete("/api/posts/{$post->id}/user?include=posts");
+        $response = $this->bypassAuthorization()->delete("/api/posts/{$post->id}/user?include=posts");
 
         $this->assertResourceDeleted($response, $user, ['posts' => [$post->toArray()]]);
     }
