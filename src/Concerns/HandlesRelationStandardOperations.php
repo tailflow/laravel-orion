@@ -466,6 +466,10 @@ trait HandlesRelationStandardOperations
         $query = $this->buildDestroyFetchQuery($request, $parentEntity, $requestedRelations, $softDeletes);
         $entity = $this->runDestroyFetchQuery($request, $query, $parentEntity, $relatedKey);
 
+        if ($this->isResourceTrashed($entity, $softDeletes, $forceDeletes)) {
+            abort(404);
+        }
+
         $this->authorize($forceDeletes ? 'forceDelete' : 'delete', $entity);
 
         $beforeHookResult = $this->beforeDestroy($request, $entity);
