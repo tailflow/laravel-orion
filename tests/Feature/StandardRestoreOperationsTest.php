@@ -46,7 +46,7 @@ class StandardRestoreOperationsTest extends TestCase
     }
 
     /** @test */
-    public function restoring_a_resource_that_is_not_marked_as_soft_deletable()
+    public function restoring_a_single_resource_that_is_not_marked_as_soft_deletable()
     {
         $team = factory(Team::class)->create();
 
