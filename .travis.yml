@@ -32,7 +32,8 @@ install:
   - travis_retry composer require "illuminate/contracts=${LARAVEL}" --prefer-dist --no-interaction --no-suggest
   - if [ "${LARAVEL}" = "^8.0" ]; then travis_retry composer require "laravel/legacy-factories" --prefer-dist --no-interaction --no-suggest; fi
 
-before_script:
-  - sleep 10
+cache:
+  directories:
+    - vendor
 
 script: vendor/bin/phpunit --verbose
