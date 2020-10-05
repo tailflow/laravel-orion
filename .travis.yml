@@ -6,7 +6,8 @@ php:
   - 7.4
 
 env:
-  - COMPOSER_MEMORY_LIMIT=-1
+  global:
+    - COMPOSER_MEMORY_LIMIT=-1
   jobs:
     - LARAVEL=5.7.*
     - LARAVEL=5.8.*
