@@ -1,0 +1,54 @@
+language: php
+
+cache:
+  directories:
+    - vendor
+
+php:
+  - 7.2
+  - 7.3
+  - 7.4
+
+services:
+  - mysql
+  - postgresql
+
+env:
+  global:
+    - COMPOSER_MEMORY_LIMIT=-1
+  jobs:
+    - LARAVEL=5.7.* DB_CONNECTION=sqlite
+    - LARAVEL=5.7.* DB_CONNECTION=mysql
+    - LARAVEL=5.7.* DB_CONNECTION=postgres
+    - LARAVEL=5.8.* DB_CONNECTION=sqlite
+    - LARAVEL=5.8.* DB_CONNECTION=mysql
+    - LARAVEL=5.8.* DB_CONNECTION=postgres
+    - LARAVEL=^6.0 DB_CONNECTION=sqlite
+    - LARAVEL=^6.0 DB_CONNECTION=mysql
+    - LARAVEL=^6.0 DB_CONNECTION=postgres
+    - LARAVEL=^7.0 DB_CONNECTION=sqlite
+    - LARAVEL=^7.0 DB_CONNECTION=mysql
+    - LARAVEL=^7.0 DB_CONNECTION=postgres
+    - LARAVEL=^8.0 DB_CONNECTION=sqlite
+    - LARAVEL=^8.0 DB_CONNECTION=mysql
+    - LARAVEL=^8.0 DB_CONNECTION=postgres
+
+jobs:
+  fast_finish: true
+  exclude:
+    - php: 7.1
+      env: LARAVEL=^8.0
+    - php: 7.2
+      env: LARAVEL=^8.0
+    - php: 7.4
+      env: LARAVEL=5.7.*
+
+before_install:
+  - phpenv config-rm xdebug.ini || true
+
+install:
+  - travis_retry composer require "illuminate/contracts=${LARAVEL}" --prefer-dist --no-interaction --no-suggest
+  - if [ "${LARAVEL}" = "^8.0" ]; then travis_retry composer require "laravel/legacy-factories" --prefer-dist --no-interaction --no-suggest; fi
+  - ./setup-"${DB_CONNECTION}".sh
+
+script: vendor/bin/phpunit --verbose
