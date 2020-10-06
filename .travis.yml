@@ -36,12 +36,18 @@ env:
 jobs:
   fast_finish: true
   exclude:
-    - php: 7.1
-      env: LARAVEL=^8.0
     - php: 7.2
-      env: LARAVEL=^8.0
+      env: LARAVEL=^8.0 DB_CONNECTION=sqlite
+    - php: 7.2
+      env: LARAVEL=^8.0 DB_CONNECTION=mysql
+    - php: 7.2
+      env: LARAVEL=^8.0 DB_CONNECTION=pgsql
     - php: 7.4
-      env: LARAVEL=5.7.*
+      env: LARAVEL=5.7.* DB_CONNECTION=sqlite
+    - php: 7.4
+      env: LARAVEL=5.7.* DB_CONNECTION=mysql
+    - php: 7.4
+      env: LARAVEL=5.7.* DB_CONNECTION=pgsql
 
 before_install:
   - phpenv config-rm xdebug.ini || true
