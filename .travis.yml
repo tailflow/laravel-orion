@@ -19,19 +19,19 @@ env:
   jobs:
     - LARAVEL=5.7.* DB_CONNECTION=sqlite
     - LARAVEL=5.7.* DB_CONNECTION=mysql
-    - LARAVEL=5.7.* DB_CONNECTION=postgres
+    - LARAVEL=5.7.* DB_CONNECTION=pgsql
     - LARAVEL=5.8.* DB_CONNECTION=sqlite
     - LARAVEL=5.8.* DB_CONNECTION=mysql
-    - LARAVEL=5.8.* DB_CONNECTION=postgres
+    - LARAVEL=5.8.* DB_CONNECTION=pgsql
     - LARAVEL=^6.0 DB_CONNECTION=sqlite
     - LARAVEL=^6.0 DB_CONNECTION=mysql
-    - LARAVEL=^6.0 DB_CONNECTION=postgres
+    - LARAVEL=^6.0 DB_CONNECTION=pgsql
     - LARAVEL=^7.0 DB_CONNECTION=sqlite
     - LARAVEL=^7.0 DB_CONNECTION=mysql
-    - LARAVEL=^7.0 DB_CONNECTION=postgres
+    - LARAVEL=^7.0 DB_CONNECTION=pgsql
     - LARAVEL=^8.0 DB_CONNECTION=sqlite
     - LARAVEL=^8.0 DB_CONNECTION=mysql
-    - LARAVEL=^8.0 DB_CONNECTION=postgres
+    - LARAVEL=^8.0 DB_CONNECTION=pgsql
 
 jobs:
   fast_finish: true
