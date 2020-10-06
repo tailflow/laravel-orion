@@ -24,7 +24,6 @@ abstract class TestCase extends \Orchestra\Testbench\TestCase
      */
     protected function refreshInMemoryDatabase()
     {
-        $this->artisan('migrate', ['--path' => realpath(__DIR__.'/../vendor/orchestra/testbench-core/laravel/migrations'), '--realpath' => true]);
         $this->artisan('migrate', ['--path' => __DIR__.'/Fixtures/database/migrations', '--realpath' => true]);
 
         $this->app[Kernel::class]->setArtisan(null);
@@ -38,7 +37,6 @@ abstract class TestCase extends \Orchestra\Testbench\TestCase
     protected function refreshTestDatabase()
     {
         if (!RefreshDatabaseState::$migrated) {
-            $this->artisan('migrate:fresh', ['--path' => realpath(__DIR__.'/../vendor/orchestra/testbench-core/laravel/migrations'), '--realpath' => true]);
             $this->artisan('migrate', ['--path' => __DIR__.'/Fixtures/database/migrations', '--realpath' => true]);
 
             $this->app[Kernel::class]->setArtisan(null);
