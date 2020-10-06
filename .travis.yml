@@ -49,6 +49,6 @@ before_install:
 install:
   - travis_retry composer require "illuminate/contracts=${LARAVEL}" --prefer-dist --no-interaction --no-suggest
   - if [ "${LARAVEL}" = "^8.0" ]; then travis_retry composer require "laravel/legacy-factories" --prefer-dist --no-interaction --no-suggest; fi
-  - ./.travis/setup-"${DB_CONNECTION}".sh
+  - bash .travis/setup-"${DB_CONNECTION}".sh
 
 script: vendor/bin/phpunit --verbose
