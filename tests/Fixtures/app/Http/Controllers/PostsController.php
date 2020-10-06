@@ -9,8 +9,6 @@ use Orion\Tests\Fixtures\App\Models\Post;
 
 class PostsController extends Controller
 {
-    use DisableAuthorization;
-
     /**
      * @var string|null $model
      */

@@ -2,8 +2,10 @@
 
 namespace Orion\Tests\Feature;
 
+use Illuminate\Support\Facades\Gate;
 use Orion\Tests\Fixtures\App\Models\Post;
 use Orion\Tests\Fixtures\App\Models\User;
+use Orion\Tests\Fixtures\App\Policies\GreenPolicy;
 
 class StandardIndexSearchingOperationsTest extends TestCase
 {
@@ -12,6 +14,8 @@ class StandardIndexSearchingOperationsTest extends TestCase
     {
         $matchingPost = factory(Post::class)->create(['title' => 'match'])->refresh();
         factory(Post::class)->create(['title' => 'different'])->refresh();
+
+        Gate::policy(Post::class, GreenPolicy::class);
 
         $response = $this->post('/api/posts/search', [
             'search' => ['value' => 'match']
@@ -32,6 +36,8 @@ class StandardIndexSearchingOperationsTest extends TestCase
         $nonMatchingPostUser = factory(User::class)->make(['name' => 'not match']);
         factory(Post::class)->create(['user_id' => $nonMatchingPostUser->id])->refresh();
 
+        Gate::policy(Post::class, GreenPolicy::class);
+
         $response = $this->post('/api/posts/search', [
             'search' => ['value' => 'match']
         ]);
@@ -47,6 +53,8 @@ class StandardIndexSearchingOperationsTest extends TestCase
     {
         $matchingPost = factory(Post::class)->create(['title' => 'match'])->refresh();
         $anotherMatchingPost = factory(Post::class)->create(['title' => 'different'])->refresh();
+
+        Gate::policy(Post::class, GreenPolicy::class);
 
         $response = $this->post('/api/posts/search', [
             'search' => ['value' => '']

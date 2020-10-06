@@ -1,17 +1,16 @@
 <?php
 
-
 namespace Orion\Tests\Fixtures\App\Policies;
 
 use Illuminate\Auth\Access\HandlesAuthorization;
-use Orion\Tests\Fixtures\App\Models\Team;
+use Illuminate\Database\Eloquent\Model;
 
-class TeamPolicy
+class GreenPolicy
 {
     use HandlesAuthorization;
 
     /**
-     * Determine whether the user can view the list of teams.
+     * Determine whether the user can view the list of models.
      *
      * @param $user
      * @return bool
@@ -22,19 +21,19 @@ class TeamPolicy
     }
 
     /**
-     * Determine whether the user can view the team.
+     * Determine whether the user can view the model.
      *
      * @param $user
-     * @param Team $team
+     * @param Model $model
      * @return bool
      */
-    public function view($user, Team $team)
+    public function view($user, Model $model)
     {
         return true;
     }
 
     /**
-     * Determine whether the user can create teams.
+     * Determine whether the user can create models.
      *
      * @param $user
      * @return bool
@@ -45,51 +44,50 @@ class TeamPolicy
     }
 
     /**
-     * Determine whether the user can update the team.
+     * Determine whether the user can update the model.
      *
      * @param $user
-     * @param Team $post
+     * @param Model $model
      * @return bool
      */
-    public function update($user, Team $post)
+    public function update($user, Model $model)
     {
         return true;
     }
 
     /**
-     * Determine whether the user can delete the team.
+     * Determine whether the user can delete the model.
      *
      * @param $user
-     * @param Team $post
+     * @param Model $model
      * @return bool
      */
-    public function delete($user, Team $post)
+    public function delete($user, Model $model)
     {
         return true;
     }
 
     /**
-     * Determine whether the user can restore the team.
+     * Determine whether the user can restore the model.
      *
      * @param $user
-     * @param Team $post
+     * @param Model $model
      * @return bool
      */
-    public function restore($user, Team $post)
+    public function restore($user, Model $model)
     {
         return true;
     }
 
     /**
-     * Determine whether the user can permanently delete the team.
+     * Determine whether the user can permanently delete the model.
      *
      * @param $user
-     * @param Team $post
+     * @param Model $model
      * @return bool
      */
-    public function forceDelete($user, Team $post)
+    public function forceDelete($user, Model $model)
     {
         return true;
     }
 }
-

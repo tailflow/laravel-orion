@@ -2,10 +2,12 @@
 
 namespace Orion\Tests\Feature;
 
+use Illuminate\Support\Facades\Gate;
 use Orion\Tests\Fixtures\App\Models\Company;
 use Orion\Tests\Fixtures\App\Models\Post;
 use Orion\Tests\Fixtures\App\Models\Team;
 use Orion\Tests\Fixtures\App\Models\User;
+use Orion\Tests\Fixtures\App\Policies\GreenPolicy;
 
 class StandardIndexFilteringOperationsTest extends TestCase
 {
@@ -14,6 +16,8 @@ class StandardIndexFilteringOperationsTest extends TestCase
     {
         $matchingPost = factory(Post::class)->create(['title' => 'match'])->refresh();
         factory(Post::class)->create(['title' => 'not match'])->refresh();
+
+        Gate::policy(Post::class, GreenPolicy::class);
 
         $response = $this->post('/api/posts/search', [
             'filters' => [
@@ -34,6 +38,8 @@ class StandardIndexFilteringOperationsTest extends TestCase
         $anotherMatchingPost = factory(Post::class)->create(['position' => 3])->refresh();
         factory(Post::class)->create(['title' => 'not match'])->refresh();
 
+        Gate::policy(Post::class, GreenPolicy::class);
+
         $response = $this->post('/api/posts/search', [
             'filters' => [
                 ['field' => 'title', 'operator' => '=', 'value' => 'match'],
@@ -53,6 +59,8 @@ class StandardIndexFilteringOperationsTest extends TestCase
         $matchingPost = factory(Post::class)->create(['position' => 4])->refresh();
         factory(Post::class)->create(['position' => 5])->refresh();
 
+        Gate::policy(Post::class, GreenPolicy::class);
+
         $response = $this->post('/api/posts/search', [
             'filters' => [
                 ['field' => 'position', 'operator' => '!=', 'value' => 5]
@@ -70,6 +78,8 @@ class StandardIndexFilteringOperationsTest extends TestCase
     {
         $matchingPost = factory(Post::class)->create(['position' => 4])->refresh();
         factory(Post::class)->create(['position' => 5])->refresh();
+
+        Gate::policy(Post::class, GreenPolicy::class);
 
         $response = $this->post('/api/posts/search', [
             'filters' => [
@@ -90,6 +100,8 @@ class StandardIndexFilteringOperationsTest extends TestCase
         $anotherMatchingPost = factory(Post::class)->create(['position' => 5])->refresh();
         factory(Post::class)->create(['position' => 6])->refresh();
 
+        Gate::policy(Post::class, GreenPolicy::class);
+
         $response = $this->post('/api/posts/search', [
             'filters' => [
                 ['field' => 'position', 'operator' => '<=', 'value' => 5],
@@ -107,6 +119,8 @@ class StandardIndexFilteringOperationsTest extends TestCase
     {
         $matchingPost = factory(Post::class)->create(['position' => 4])->refresh();
         factory(Post::class)->create(['position' => 2])->refresh();
+
+        Gate::policy(Post::class, GreenPolicy::class);
 
         $response = $this->post('/api/posts/search', [
             'filters' => [
@@ -127,6 +141,8 @@ class StandardIndexFilteringOperationsTest extends TestCase
         $anotherMatchingPost = factory(Post::class)->create(['position' => 5])->refresh();
         factory(Post::class)->create(['position' => 3])->refresh();
 
+        Gate::policy(Post::class, GreenPolicy::class);
+
         $response = $this->post('/api/posts/search', [
             'filters' => [
                 ['field' => 'position', 'operator' => '>=', 'value' => 4],
@@ -146,6 +162,8 @@ class StandardIndexFilteringOperationsTest extends TestCase
         $anotherMatchingPost = factory(Post::class)->create(['title' => 'another match'])->refresh();
         factory(Post::class)->create(['title' => 'different'])->refresh();
 
+        Gate::policy(Post::class, GreenPolicy::class);
+
         $response = $this->post('/api/posts/search', [
             'filters' => [
                 ['field' => 'title', 'operator' => 'like', 'value' => '%match%'],
@@ -163,6 +181,8 @@ class StandardIndexFilteringOperationsTest extends TestCase
     {
         $matchingPost = factory(Post::class)->create(['title' => 'another match'])->refresh();
         factory(Post::class)->create(['title' => 'match'])->refresh();
+
+        Gate::policy(Post::class, GreenPolicy::class);
 
         $response = $this->post('/api/posts/search', [
             'filters' => [
@@ -183,6 +203,8 @@ class StandardIndexFilteringOperationsTest extends TestCase
         $anotherMatchingPost = factory(Post::class)->create(['title' => 'another match'])->refresh();
         factory(Post::class)->create(['title' => 'different'])->refresh();
 
+        Gate::policy(Post::class, GreenPolicy::class);
+
         $response = $this->post('/api/posts/search', [
             'filters' => [
                 ['field' => 'title', 'operator' => 'in', 'value' => ['match', 'another match']],
@@ -200,6 +222,8 @@ class StandardIndexFilteringOperationsTest extends TestCase
     {
         $matchingPost = factory(Post::class)->create(['title' => 'match'])->refresh();
         factory(Post::class)->create(['title' => 'different'])->refresh();
+
+        Gate::policy(Post::class, GreenPolicy::class);
 
         $response = $this->post('/api/posts/search', [
             'filters' => [
@@ -222,6 +246,8 @@ class StandardIndexFilteringOperationsTest extends TestCase
         $nonMatchingPostUser = factory(User::class)->make(['name' => 'not match']);
         factory(Post::class)->create(['user_id' => $nonMatchingPostUser->id])->refresh();
 
+        Gate::policy(Post::class, GreenPolicy::class);
+
         $response = $this->post('/api/posts/search', [
             'filters' => [
                 ['field' => 'user.name', 'operator' => '=', 'value' => 'match'],
@@ -240,6 +266,8 @@ class StandardIndexFilteringOperationsTest extends TestCase
         factory(Post::class)->create(['body' => 'match'])->refresh();
         factory(Post::class)->create(['body' => 'not match'])->refresh();
 
+        Gate::policy(Post::class, GreenPolicy::class);
+
         $response = $this->post('/api/posts/search', [
             'filters' => [
                 ['field' => 'body', 'operator' => '=', 'value' => 'match']
@@ -256,7 +284,9 @@ class StandardIndexFilteringOperationsTest extends TestCase
         $matchingTeam = factory(Team::class)->create(['name' => 'match'])->refresh();
         factory(Team::class)->create(['name' => 'not match'])->refresh();
 
-        $response = $this->bypassAuthorization()->post('/api/teams/search', [
+        Gate::policy(Team::class, GreenPolicy::class);
+
+        $response = $this->post('/api/teams/search', [
             'filters' => [
                 ['field' => 'name', 'operator' => '=', 'value' => 'match']
             ]
@@ -276,7 +306,9 @@ class StandardIndexFilteringOperationsTest extends TestCase
         $nonMatchingTeamCompany = factory(Company::class)->create(['name' => 'not match'])->refresh();
         factory(Team::class)->create(['company_id' => $nonMatchingTeamCompany->id])->refresh();
 
-        $response = $this->bypassAuthorization()->post('/api/teams/search', [
+        Gate::policy(Team::class, GreenPolicy::class);
+
+        $response = $this->post('/api/teams/search', [
             'filters' => [
                 ['field' => 'company.name', 'operator' => '=', 'value' => 'match']
             ]

@@ -9,7 +9,8 @@ use Orion\Tests\Fixtures\App\Http\Resources\SampleResource;
 use Orion\Tests\Fixtures\App\Models\Post;
 use Orion\Tests\Fixtures\App\Models\Team;
 use Orion\Tests\Fixtures\App\Models\User;
-use Orion\Tests\Fixtures\App\Policies\PostPolicy;
+use Orion\Tests\Fixtures\App\Policies\GreenPolicy;
+use Orion\Tests\Fixtures\App\Policies\RedPolicy;
 
 class StandardRestoreOperationsTest extends TestCase
 {
@@ -18,7 +19,9 @@ class StandardRestoreOperationsTest extends TestCase
     {
         $trashedPost = factory(Post::class)->state('trashed')->create();
 
-        $response = $this->requireAuthorization()->post("/api/posts/{$trashedPost->id}/restore");
+        Gate::policy(Post::class, RedPolicy::class);
+
+        $response = $this->post("/api/posts/{$trashedPost->id}/restore");
 
         $this->assertUnauthorizedResponse($response);
     }
@@ -28,9 +31,9 @@ class StandardRestoreOperationsTest extends TestCase
     {
         $trashedPost = factory(Post::class)->state('trashed')->create(['user_id' => factory(User::class)->create()->id]);
 
-        Gate::policy(Post::class, PostPolicy::class);
+        Gate::policy(Post::class, GreenPolicy::class);
 
-        $response = $this->requireAuthorization()->withAuth($trashedPost->user)->post("/api/posts/{$trashedPost->id}/restore");
+        $response = $this->post("/api/posts/{$trashedPost->id}/restore");
 
         $this->assertResourceRestored($response, $trashedPost);
     }
@@ -39,6 +42,8 @@ class StandardRestoreOperationsTest extends TestCase
     public function restoring_a_single_not_trashed_resource()
     {
         $post = factory(Post::class)->create();
+
+        Gate::policy(Post::class, GreenPolicy::class);
 
         $response = $this->post("/api/posts/{$post->id}/restore");
 
@@ -50,6 +55,8 @@ class StandardRestoreOperationsTest extends TestCase
     {
         $team = factory(Team::class)->create();
 
+        Gate::policy(Post::class, GreenPolicy::class);
+
         $response = $this->post("/api/teams/{$team->id}/restore");
 
         $response->assertNotFound();
@@ -59,6 +66,8 @@ class StandardRestoreOperationsTest extends TestCase
     public function transforming_a_single_restored_resource()
     {
         $trashedPost = factory(Post::class)->state('trashed')->create();
+
+        Gate::policy(Post::class, GreenPolicy::class);
 
         app()->bind(ComponentsResolver::class, function () {
             $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
@@ -78,7 +87,9 @@ class StandardRestoreOperationsTest extends TestCase
         $user = factory(User::class)->create()->fresh();
         $trashedPost = factory(Post::class)->state('trashed')->create(['user_id' => $user->id])->fresh();
 
-        $response = $this->bypassAuthorization()->post("/api/posts/{$trashedPost->id}/restore?include=user");
+        Gate::policy(Post::class, GreenPolicy::class);
+
+        $response = $this->post("/api/posts/{$trashedPost->id}/restore?include=user");
 
         $this->assertResourceRestored($response, $trashedPost, ['user' => $user->toArray()]);
     }

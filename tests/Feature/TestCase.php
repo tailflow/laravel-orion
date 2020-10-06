@@ -11,6 +11,12 @@ abstract class TestCase extends BaseTestCase
 {
     use InteractsWithResources, InteractsWithAuthorization;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->withAuth();
+    }
+
     protected function resolveUserModelClass(): ?string
     {
         return User::class;

@@ -1,5 +1,9 @@
 language: php
 
+cache:
+  directories:
+    - vendor
+
 php:
   - 7.2
   - 7.3
@@ -31,9 +35,5 @@ before_install:
 install:
   - travis_retry composer require "illuminate/contracts=${LARAVEL}" --prefer-dist --no-interaction --no-suggest
   - if [ "${LARAVEL}" = "^8.0" ]; then travis_retry composer require "laravel/legacy-factories" --prefer-dist --no-interaction --no-suggest; fi
-
-cache:
-  directories:
-    - vendor
 
 script: vendor/bin/phpunit --verbose

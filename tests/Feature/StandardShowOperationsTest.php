@@ -8,7 +8,8 @@ use Orion\Contracts\ComponentsResolver;
 use Orion\Tests\Fixtures\App\Http\Resources\SampleResource;
 use Orion\Tests\Fixtures\App\Models\Post;
 use Orion\Tests\Fixtures\App\Models\User;
-use Orion\Tests\Fixtures\App\Policies\PostPolicy;
+use Orion\Tests\Fixtures\App\Policies\GreenPolicy;
+use Orion\Tests\Fixtures\App\Policies\RedPolicy;
 
 class StandardShowOperationsTest extends TestCase
 {
@@ -17,7 +18,9 @@ class StandardShowOperationsTest extends TestCase
     {
         $post = factory(Post::class)->create();
 
-        $response = $this->requireAuthorization()->get("/api/posts/{$post->id}");
+        Gate::policy(Post::class, RedPolicy::class);
+
+        $response = $this->get("/api/posts/{$post->id}");
 
         $this->assertUnauthorizedResponse($response);
     }
@@ -28,9 +31,9 @@ class StandardShowOperationsTest extends TestCase
         $user = factory(User::class)->create();
         $post = factory(Post::class)->create(['user_id' => $user->id]);
 
-        Gate::policy(Post::class, PostPolicy::class);
+        Gate::policy(Post::class, GreenPolicy::class);
 
-        $response = $this->requireAuthorization()->withAuth($user)->get("/api/posts/{$post->id}");
+        $response = $this->get("/api/posts/{$post->id}");
 
         $this->assertResourceShown($response, $post);
     }
@@ -39,6 +42,8 @@ class StandardShowOperationsTest extends TestCase
     public function getting_a_single_trashed_resource_when_with_trashed_query_parameter_is_missing()
     {
         $trashedPost = factory(Post::class)->state('trashed')->create();
+
+        Gate::policy(Post::class, GreenPolicy::class);
 
         $response = $this->get("/api/posts/{$trashedPost->id}");
 
@@ -49,6 +54,8 @@ class StandardShowOperationsTest extends TestCase
     public function getting_a_single_trashed_resource_when_with_trashed_query_parameter_is_present()
     {
         $trashedPost = factory(Post::class)->state('trashed')->create();
+
+        Gate::policy(Post::class, GreenPolicy::class);
 
         $response = $this->get("/api/posts/{$trashedPost->id}?with_trashed=true");
 
@@ -67,6 +74,8 @@ class StandardShowOperationsTest extends TestCase
             return $componentsResolverMock;
         });
 
+        Gate::policy(Post::class, GreenPolicy::class);
+
         $response = $this->get("/api/posts/{$post->id}");
 
         $this->assertResourceShown($response, $post, ['test-field-from-resource' => 'test-value']);
@@ -76,6 +85,8 @@ class StandardShowOperationsTest extends TestCase
     public function getting_a_single_resource_with_included_relation()
     {
         $post = factory(Post::class)->create(['user_id' => factory(User::class)->create()->id]);
+
+        Gate::policy(Post::class, GreenPolicy::class);
 
         $response = $this->get("/api/posts/{$post->id}?include=user");
 

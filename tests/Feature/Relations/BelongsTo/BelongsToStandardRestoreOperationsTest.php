@@ -10,8 +10,8 @@ use Orion\Tests\Fixtures\App\Http\Resources\SampleResource;
 use Orion\Tests\Fixtures\App\Models\Category;
 use Orion\Tests\Fixtures\App\Models\Post;
 use Orion\Tests\Fixtures\App\Models\User;
-use Orion\Tests\Fixtures\App\Policies\CategoryPolicy;
-use Orion\Tests\Fixtures\App\Policies\UserPolicy;
+use Orion\Tests\Fixtures\App\Policies\GreenPolicy;
+use Orion\Tests\Fixtures\App\Policies\RedPolicy;
 
 class BelongsToStandardRestoreOperationsTest extends TestCase
 {
@@ -21,8 +21,10 @@ class BelongsToStandardRestoreOperationsTest extends TestCase
         $trashedCategory = factory(Category::class)->state('trashed')->create();
         $post = factory(Post::class)->create(['category_id' => $trashedCategory->id]);
 
+        Gate::policy(Category::class, RedPolicy::class);
+
         //TODO: make possible to omit child relation key?
-        $response = $this->requireAuthorization()->post("/api/posts/{$post->id}/category/{$trashedCategory->id}/restore");
+        $response = $this->post("/api/posts/{$post->id}/category/{$trashedCategory->id}/restore");
 
         $this->assertUnauthorizedResponse($response);
     }
@@ -33,9 +35,9 @@ class BelongsToStandardRestoreOperationsTest extends TestCase
         $trashedCategory = factory(Category::class)->state('trashed')->create();
         $post = factory(Post::class)->create(['category_id' => $trashedCategory->id]);
 
-        Gate::policy(Category::class, CategoryPolicy::class);
+        Gate::policy(Category::class, GreenPolicy::class);
 
-        $response =  $this->requireAuthorization()->withAuth($post->user)->post("/api/posts/{$post->id}/category/{$trashedCategory->id}/restore");
+        $response =  $this->post("/api/posts/{$post->id}/category/{$trashedCategory->id}/restore");
 
         $this->assertResourceRestored($response, $trashedCategory);
     }
@@ -46,9 +48,9 @@ class BelongsToStandardRestoreOperationsTest extends TestCase
         $trashedCategory = factory(Category::class)->create();
         $post = factory(Post::class)->create(['category_id' => $trashedCategory->id]);
 
-        Gate::policy(Category::class, CategoryPolicy::class);
+        Gate::policy(Category::class, GreenPolicy::class);
 
-        $response =  $this->requireAuthorization()->withAuth($post->user)->post("/api/posts/{$post->id}/category/{$trashedCategory->id}/restore");
+        $response =  $this->post("/api/posts/{$post->id}/category/{$trashedCategory->id}/restore");
 
         $this->assertResourceRestored($response, $trashedCategory);
     }
@@ -59,7 +61,7 @@ class BelongsToStandardRestoreOperationsTest extends TestCase
         $user = factory(User::class)->create()->fresh();
         $post = factory(Post::class)->create(['user_id' => $user->id]);
 
-        Gate::policy(User::class, UserPolicy::class);
+        Gate::policy(User::class, GreenPolicy::class);
 
         $response = $this->post("/api/teams/{$post->id}/user/{$user->id}/restore");
 
@@ -72,7 +74,7 @@ class BelongsToStandardRestoreOperationsTest extends TestCase
         $trashedCategory = factory(Category::class)->create();
         $post = factory(Post::class)->create(['category_id' => $trashedCategory->id]);
 
-        Gate::policy(Category::class, CategoryPolicy::class);
+        Gate::policy(Category::class, GreenPolicy::class);
 
         app()->bind(ComponentsResolver::class, function () {
             $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
@@ -81,7 +83,7 @@ class BelongsToStandardRestoreOperationsTest extends TestCase
             return $componentsResolverMock;
         });
 
-        $response =  $this->requireAuthorization()->withAuth($post->user)->post("/api/posts/{$post->id}/category/{$trashedCategory->id}/restore");
+        $response =  $this->post("/api/posts/{$post->id}/category/{$trashedCategory->id}/restore");
 
         $this->assertResourceRestored($response, $trashedCategory, ['test-field-from-resource' => 'test-value']);
     }
@@ -92,9 +94,9 @@ class BelongsToStandardRestoreOperationsTest extends TestCase
         $trashedCategory = factory(Category::class)->create();
         $post = factory(Post::class)->create(['category_id' => $trashedCategory->id]);
 
-        Gate::policy(Category::class, CategoryPolicy::class);
+        Gate::policy(Category::class, GreenPolicy::class);
 
-        $response =  $this->requireAuthorization()->withAuth($post->user)->post("/api/posts/{$post->id}/category/{$trashedCategory->id}/restore?include=posts");
+        $response =  $this->post("/api/posts/{$post->id}/category/{$trashedCategory->id}/restore?include=posts");
 
         $this->assertResourceRestored($response, $trashedCategory, ['posts' => $trashedCategory->posts->toArray()]);
     }

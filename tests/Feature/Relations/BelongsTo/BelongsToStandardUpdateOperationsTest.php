@@ -10,7 +10,8 @@ use Orion\Tests\Fixtures\App\Http\Requests\UserRequest;
 use Orion\Tests\Fixtures\App\Http\Resources\SampleResource;
 use Orion\Tests\Fixtures\App\Models\Post;
 use Orion\Tests\Fixtures\App\Models\User;
-use Orion\Tests\Fixtures\App\Policies\UserPolicy;
+use Orion\Tests\Fixtures\App\Policies\GreenPolicy;
+use Orion\Tests\Fixtures\App\Policies\RedPolicy;
 
 class BelongsToStandardUpdateOperationsTest extends TestCase
 {
@@ -21,7 +22,9 @@ class BelongsToStandardUpdateOperationsTest extends TestCase
         $post = factory(Post::class)->create(['user_id' => $user->id]);
         $payload = ['name' => 'test user updated'];
 
-        $response = $this->requireAuthorization()->patch("/api/posts/{$post->id}/user", $payload);
+        Gate::policy(User::class, RedPolicy::class);
+
+        $response = $this->patch("/api/posts/{$post->id}/user", $payload);
 
         $this->assertUnauthorizedResponse($response);
     }
@@ -33,9 +36,9 @@ class BelongsToStandardUpdateOperationsTest extends TestCase
         $post = factory(Post::class)->create(['user_id' => $user->id]);
         $payload = ['name' => 'test user updated'];
 
-        Gate::policy(User::class, UserPolicy::class);
+        Gate::policy(User::class, GreenPolicy::class);
 
-        $response = $this->requireAuthorization()->withAuth($user)->patch("/api/posts/{$post->id}/user", $payload);
+        $response = $this->patch("/api/posts/{$post->id}/user", $payload);
 
         $this->assertResourceUpdated($response,
             User::class,
@@ -51,7 +54,9 @@ class BelongsToStandardUpdateOperationsTest extends TestCase
         $post = factory(Post::class)->create(['user_id' => $user->id]);
         $payload = ['name' => 'test user updated', 'remember_token' => 'new token'];
 
-        $response = $this->bypassAuthorization()->patch("/api/posts/{$post->id}/user", $payload);
+        Gate::policy(User::class, GreenPolicy::class);
+
+        $response = $this->patch("/api/posts/{$post->id}/user", $payload);
 
         $this->assertResourceUpdated($response,
             User::class,
@@ -76,6 +81,8 @@ class BelongsToStandardUpdateOperationsTest extends TestCase
             return $componentsResolverMock;
         });
 
+        Gate::policy(User::class, GreenPolicy::class);
+
         $response = $this->patch("/api/posts/{$post->id}/user", $payload);
 
         $response->assertStatus(422);
@@ -97,7 +104,9 @@ class BelongsToStandardUpdateOperationsTest extends TestCase
             return $componentsResolverMock;
         });
 
-        $response = $this->bypassAuthorization()->patch("/api/posts/{$post->id}/user", $payload);
+        Gate::policy(User::class, GreenPolicy::class);
+
+        $response = $this->patch("/api/posts/{$post->id}/user", $payload);
 
         $this->assertResourceUpdated($response,
             User::class,
@@ -114,7 +123,9 @@ class BelongsToStandardUpdateOperationsTest extends TestCase
         $post = factory(Post::class)->create(['user_id' => $user->id]);
         $payload = ['name' => 'test user updated'];
 
-        $response = $this->bypassAuthorization()->patch("/api/posts/{$post->id}/user?include=posts", $payload);
+        Gate::policy(User::class, GreenPolicy::class);
+
+        $response = $this->patch("/api/posts/{$post->id}/user?include=posts", $payload);
 
         $this->assertResourceUpdated($response,
             User::class,

@@ -10,8 +10,8 @@ use Orion\Tests\Fixtures\App\Http\Resources\SampleResource;
 use Orion\Tests\Fixtures\App\Models\Category;
 use Orion\Tests\Fixtures\App\Models\Post;
 use Orion\Tests\Fixtures\App\Models\User;
-use Orion\Tests\Fixtures\App\Policies\CategoryPolicy;
-use Orion\Tests\Fixtures\App\Policies\UserPolicy;
+use Orion\Tests\Fixtures\App\Policies\GreenPolicy;
+use Orion\Tests\Fixtures\App\Policies\RedPolicy;
 
 class BelongsToStandardDeleteOperationsTest extends TestCase
 {
@@ -21,7 +21,9 @@ class BelongsToStandardDeleteOperationsTest extends TestCase
         $category = factory(Category::class)->create();
         $post = factory(Post::class)->create(['category_id' => $category->id]);
 
-        $response = $this->requireAuthorization()->delete("/api/posts/{$post->id}/category");
+        Gate::policy(Category::class, RedPolicy::class);
+
+        $response = $this->delete("/api/posts/{$post->id}/category");
 
         $this->assertUnauthorizedResponse($response);
     }
@@ -32,7 +34,9 @@ class BelongsToStandardDeleteOperationsTest extends TestCase
         $user = factory(User::class)->create();
         $post = factory(Post::class)->create(['user_id' => $user->id]);
 
-        $response = $this->requireAuthorization()->delete("/api/posts/{$post->id}/user");
+        Gate::policy(User::class, RedPolicy::class);
+
+        $response = $this->delete("/api/posts/{$post->id}/user");
 
         $this->assertUnauthorizedResponse($response);
     }
@@ -43,7 +47,9 @@ class BelongsToStandardDeleteOperationsTest extends TestCase
         $trashedCategory = factory(Category::class)->state('trashed')->create();
         $post = factory(Post::class)->create(['category_id' => $trashedCategory->id]);
 
-        $response = $this->requireAuthorization()->delete("/api/posts/{$post->id}/category?force=true");
+        Gate::policy(Category::class, RedPolicy::class);
+
+        $response = $this->delete("/api/posts/{$post->id}/category?force=true");
 
         $this->assertUnauthorizedResponse($response);
     }
@@ -54,9 +60,9 @@ class BelongsToStandardDeleteOperationsTest extends TestCase
         $category = factory(Category::class)->create();
         $post = factory(Post::class)->create(['category_id' => $category->id]);
 
-        Gate::policy(Category::class, CategoryPolicy::class);
+        Gate::policy(Category::class, GreenPolicy::class);
 
-        $response = $this->requireAuthorization()->withAuth($post->user)->delete("/api/posts/{$post->id}/category");
+        $response = $this->delete("/api/posts/{$post->id}/category");
 
         $this->assertResourceTrashed($response, $category);
     }
@@ -67,9 +73,9 @@ class BelongsToStandardDeleteOperationsTest extends TestCase
         $user = factory(User::class)->create()->fresh();
         $post = factory(Post::class)->create(['user_id' => $user->id]);
 
-        Gate::policy(User::class, UserPolicy::class);
+        Gate::policy(User::class, GreenPolicy::class);
 
-        $response = $this->withAuth($user)->delete("/api/posts/{$post->id}/user");
+        $response = $this->delete("/api/posts/{$post->id}/user");
 
         $this->assertResourceDeleted($response, $user);
     }
@@ -80,9 +86,9 @@ class BelongsToStandardDeleteOperationsTest extends TestCase
         $trashedCategory = factory(Category::class)->state('trashed')->create()->fresh();
         $post = factory(Post::class)->create(['category_id' => $trashedCategory->id]);
 
-        Gate::policy(Category::class, CategoryPolicy::class);
+        Gate::policy(Category::class, GreenPolicy::class);
 
-        $response = $this->requireAuthorization()->withAuth($post->user)->delete("/api/posts/{$post->id}/category?force=true");
+        $response = $this->delete("/api/posts/{$post->id}/category?force=true");
 
         $this->assertResourceDeleted($response, $trashedCategory);
     }
@@ -93,7 +99,9 @@ class BelongsToStandardDeleteOperationsTest extends TestCase
         $trashedCategory = factory(Category::class)->state('trashed')->create();
         $post = factory(Post::class)->create(['category_id' => $trashedCategory->id]);
 
-        $response = $this->bypassAuthorization()->delete("/api/posts/{$post->id}/category");
+        Gate::policy(Category::class, GreenPolicy::class);
+
+        $response = $this->delete("/api/posts/{$post->id}/category");
 
         $response->assertNotFound();
         $response->assertJsonStructure(['message']);
@@ -106,7 +114,9 @@ class BelongsToStandardDeleteOperationsTest extends TestCase
         $trashedCategory = factory(Category::class)->state('trashed')->create();
         $post = factory(Post::class)->create(['category_id' => $trashedCategory->id]);
 
-        $response = $this->bypassAuthorization()->delete("/api/posts/{$post->id}/category?with_trashed=true");
+        Gate::policy(Category::class, GreenPolicy::class);
+
+        $response = $this->delete("/api/posts/{$post->id}/category?with_trashed=true");
 
         $response->assertNotFound();
         $response->assertJsonStructure(['message']);
@@ -119,7 +129,9 @@ class BelongsToStandardDeleteOperationsTest extends TestCase
         $trashedCategory = factory(Category::class)->state('trashed')->create()->fresh();
         $post = factory(Post::class)->create(['category_id' => $trashedCategory->id]);
 
-        $response = $this->bypassAuthorization()->delete("/api/posts/{$post->id}/category?force=true");
+        Gate::policy(Category::class, GreenPolicy::class);
+
+        $response = $this->delete("/api/posts/{$post->id}/category?force=true");
 
         $this->assertResourceDeleted($response, $trashedCategory);
     }
@@ -137,7 +149,9 @@ class BelongsToStandardDeleteOperationsTest extends TestCase
             return $componentsResolverMock;
         });
 
-        $response = $this->bypassAuthorization()->delete("/api/posts/{$post->id}/user");
+        Gate::policy(User::class, GreenPolicy::class);
+
+        $response = $this->delete("/api/posts/{$post->id}/user");
 
         $this->assertResourceDeleted($response, $user, ['test-field-from-resource' => 'test-value']);
     }
@@ -148,7 +162,9 @@ class BelongsToStandardDeleteOperationsTest extends TestCase
         $user = factory(User::class)->create()->fresh();
         $post = factory(Post::class)->create(['user_id' => $user->id])->fresh();
 
-        $response = $this->bypassAuthorization()->delete("/api/posts/{$post->id}/user?include=posts");
+        Gate::policy(User::class, GreenPolicy::class);
+
+        $response = $this->delete("/api/posts/{$post->id}/user?include=posts");
 
         $this->assertResourceDeleted($response, $user, ['posts' => [$post->toArray()]]);
     }

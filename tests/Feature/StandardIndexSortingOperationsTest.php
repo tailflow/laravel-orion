@@ -2,8 +2,10 @@
 
 namespace Orion\Tests\Feature;
 
+use Illuminate\Support\Facades\Gate;
 use Orion\Tests\Fixtures\App\Models\Post;
 use Orion\Tests\Fixtures\App\Models\User;
+use Orion\Tests\Fixtures\App\Policies\GreenPolicy;
 
 class StandardIndexSortingOperationsTest extends TestCase
 {
@@ -13,6 +15,8 @@ class StandardIndexSortingOperationsTest extends TestCase
         $postC = factory(Post::class)->create(['title' => 'C'])->refresh();
         $postB = factory(Post::class)->create(['title' => 'B'])->refresh();
         $postA = factory(Post::class)->create(['title' => 'A'])->refresh();
+
+        Gate::policy(Post::class, GreenPolicy::class);
 
         $response = $this->post('/api/posts/search', [
             'sort' => [
@@ -33,6 +37,8 @@ class StandardIndexSortingOperationsTest extends TestCase
         $postB = factory(Post::class)->create(['title' => 'B'])->refresh();
         $postA = factory(Post::class)->create(['title' => 'A'])->refresh();
 
+        Gate::policy(Post::class, GreenPolicy::class);
+
         $response = $this->post('/api/posts/search', [
             'sort' => [
                 ['field' => 'title']
@@ -51,6 +57,8 @@ class StandardIndexSortingOperationsTest extends TestCase
         $postA = factory(Post::class)->create(['title' => 'A'])->refresh();
         $postB = factory(Post::class)->create(['title' => 'B'])->refresh();
         $postC = factory(Post::class)->create(['title' => 'C'])->refresh();
+
+        Gate::policy(Post::class, GreenPolicy::class);
 
         $response = $this->post('/api/posts/search', [
             'sort' => [
@@ -71,6 +79,8 @@ class StandardIndexSortingOperationsTest extends TestCase
         factory(Post::class)->create(['body' => 'B'])->refresh();
         factory(Post::class)->create(['body' => 'A'])->refresh();
 
+        Gate::policy(Post::class, GreenPolicy::class);
+
         $response = $this->post('/api/posts/search', [
             'sort' => [
                 ['field' => 'body', 'direction' => 'asc']
@@ -88,6 +98,8 @@ class StandardIndexSortingOperationsTest extends TestCase
         $postB = factory(Post::class)->create(['title' => 'B'])->refresh();
         $postC = factory(Post::class)->create(['title' => 'C'])->refresh();
 
+        Gate::policy(Post::class, GreenPolicy::class);
+
         $response = $this->post('/api/posts/search', [
             'sort' => []
         ]);
@@ -104,6 +116,8 @@ class StandardIndexSortingOperationsTest extends TestCase
         $postC = factory(Post::class)->create(['user_id' => factory(User::class)->create(['name' => 'C'])->id])->refresh();
         $postB = factory(Post::class)->create(['user_id' => factory(User::class)->create(['name' => 'B'])->id])->refresh();
         $postA = factory(Post::class)->create(['user_id' => factory(User::class)->create(['name' => 'A'])->id])->refresh();
+
+        Gate::policy(Post::class, GreenPolicy::class);
 
         $response = $this->post('/api/posts/search', [
             'sort' => [

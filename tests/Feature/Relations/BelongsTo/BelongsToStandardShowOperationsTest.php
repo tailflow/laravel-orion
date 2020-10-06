@@ -11,7 +11,8 @@ use Orion\Tests\Fixtures\App\Http\Resources\SampleResource;
 use Orion\Tests\Fixtures\App\Models\Category;
 use Orion\Tests\Fixtures\App\Models\Post;
 use Orion\Tests\Fixtures\App\Models\User;
-use Orion\Tests\Fixtures\App\Policies\UserPolicy;
+use Orion\Tests\Fixtures\App\Policies\GreenPolicy;
+use Orion\Tests\Fixtures\App\Policies\RedPolicy;
 
 class BelongsToStandardShowOperationsTest extends TestCase
 {
@@ -21,7 +22,9 @@ class BelongsToStandardShowOperationsTest extends TestCase
         $user = factory(User::class)->create();
         $post = factory(Post::class)->create(['user_id' => $user->id]);
 
-        $response = $this->requireAuthorization()->get("/api/posts/{$post->id}/user");
+        Gate::policy(User::class, RedPolicy::class);
+
+        $response = $this->get("/api/posts/{$post->id}/user");
 
         $this->assertUnauthorizedResponse($response);
     }
@@ -32,9 +35,9 @@ class BelongsToStandardShowOperationsTest extends TestCase
         $user = factory(User::class)->create();
         $post = factory(Post::class)->create(['user_id' => $user->id]);
 
-        Gate::policy(User::class, UserPolicy::class);
+        Gate::policy(User::class, GreenPolicy::class);
 
-        $response = $this->requireAuthorization()->withAuth($user)->get("/api/posts/{$post->id}/user");
+        $response = $this->get("/api/posts/{$post->id}/user");
 
         $this->assertResourceShown($response, $user);
     }
@@ -45,7 +48,9 @@ class BelongsToStandardShowOperationsTest extends TestCase
         $trashedCategory = factory(Category::class)->state('trashed')->create();
         $post = factory(Post::class)->create(['category_id' => $trashedCategory->id]);
 
-        $response = $this->bypassAuthorization()->get("/api/posts/{$post->id}/category");
+        Gate::policy(Category::class, GreenPolicy::class);
+
+        $response = $this->get("/api/posts/{$post->id}/category");
 
         $response->assertNotFound();
     }
@@ -56,7 +61,9 @@ class BelongsToStandardShowOperationsTest extends TestCase
         $trashedCategory = factory(Category::class)->state('trashed')->create();
         $post = factory(Post::class)->create(['category_id' => $trashedCategory->id]);
 
-        $response = $this->bypassAuthorization()->get("/api/posts/{$post->id}/category?with_trashed=true");
+        Gate::policy(Category::class, GreenPolicy::class);
+
+        $response = $this->get("/api/posts/{$post->id}/category?with_trashed=true");
 
         $this->assertResourceShown($response, $trashedCategory);
     }
@@ -75,7 +82,9 @@ class BelongsToStandardShowOperationsTest extends TestCase
             return $componentsResolverMock;
         });
 
-        $response = $this->bypassAuthorization()->get("/api/posts/{$post->id}/user");
+        Gate::policy(User::class, GreenPolicy::class);
+
+        $response = $this->get("/api/posts/{$post->id}/user");
 
         $this->assertResourceShown($response, $user, ['test-field-from-resource' => 'test-value']);
     }
@@ -86,7 +95,9 @@ class BelongsToStandardShowOperationsTest extends TestCase
         $user = factory(User::class)->create();
         $post = factory(Post::class)->create(['user_id' => $user->id]);
 
-        $response = $this->bypassAuthorization()->get("/api/posts/{$post->id}/user?include=posts");
+        Gate::policy(User::class, GreenPolicy::class);
+
+        $response = $this->get("/api/posts/{$post->id}/user?include=posts");
 
         $this->assertResourceShown($response, $user->fresh('posts')->toArray());
     }

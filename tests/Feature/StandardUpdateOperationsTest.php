@@ -9,7 +9,8 @@ use Orion\Tests\Fixtures\App\Http\Requests\PostRequest;
 use Orion\Tests\Fixtures\App\Http\Resources\SampleResource;
 use Orion\Tests\Fixtures\App\Models\Post;
 use Orion\Tests\Fixtures\App\Models\User;
-use Orion\Tests\Fixtures\App\Policies\PostPolicy;
+use Orion\Tests\Fixtures\App\Policies\GreenPolicy;
+use Orion\Tests\Fixtures\App\Policies\RedPolicy;
 
 class StandardUpdateOperationsTest extends TestCase
 {
@@ -19,7 +20,9 @@ class StandardUpdateOperationsTest extends TestCase
         $post = factory(Post::class)->create();
         $payload = ['title' => 'test post title updated'];
 
-        $response = $this->requireAuthorization()->patch("/api/posts/{$post->id}", $payload);
+        Gate::policy(Post::class, RedPolicy::class);
+
+        $response = $this->patch("/api/posts/{$post->id}", $payload);
 
         $this->assertUnauthorizedResponse($response);
     }
@@ -31,9 +34,9 @@ class StandardUpdateOperationsTest extends TestCase
         $post = factory(Post::class)->create(['user_id' => $user->id]);
         $payload = ['title' => 'test post title updated'];
 
-        Gate::policy(Post::class, PostPolicy::class);
+        Gate::policy(Post::class, GreenPolicy::class);
 
-        $response = $this->requireAuthorization()->withAuth($user)->patch("/api/posts/{$post->id}", $payload);
+        $response = $this->patch("/api/posts/{$post->id}", $payload);
 
         $this->assertResourceUpdated($response,
             Post::class,
@@ -47,6 +50,8 @@ class StandardUpdateOperationsTest extends TestCase
     {
         $post = factory(Post::class)->create();
         $payload = ['title' => 'test post title updated', 'tracking_id' => 'test tracking id'];
+
+        Gate::policy(Post::class, GreenPolicy::class);
 
         $response = $this->patch("/api/posts/{$post->id}", $payload);
 
@@ -72,6 +77,8 @@ class StandardUpdateOperationsTest extends TestCase
             return $componentsResolverMock;
         });
 
+        Gate::policy(Post::class, GreenPolicy::class);
+
         $response = $this->patch("/api/posts/{$post->id}", $payload);
 
         $response->assertStatus(422);
@@ -92,6 +99,8 @@ class StandardUpdateOperationsTest extends TestCase
             return $componentsResolverMock;
         });
 
+        Gate::policy(Post::class, GreenPolicy::class);
+
         $response = $this->patch("/api/posts/{$post->id}", $payload);
 
         $this->assertResourceUpdated($response,
@@ -109,7 +118,9 @@ class StandardUpdateOperationsTest extends TestCase
         $post = factory(Post::class)->create(['user_id' => $user->id]);
         $payload = ['title' => 'test post title updated'];
 
-        $response = $this->patch("/api/posts/{$post->id}?include=user", $payload);
+        Gate::policy(Post::class, GreenPolicy::class);
+
+        $response = $this->withAuth($user)->patch("/api/posts/{$post->id}?include=user", $payload);
 
         $this->assertResourceUpdated($response,
             Post::class,
