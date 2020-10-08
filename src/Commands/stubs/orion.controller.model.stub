@@ -1,0 +1,11 @@
+<?php
+
+namespace DummyNamespace;
+
+use Orion\Http\Controllers\Controller;
+use DummyModelClass;
+
+class DummyClass extends Controller
+{
+    protected $model = DummyModelClass::class;
+}

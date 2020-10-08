@@ -1,0 +1,23 @@
+<?php
+
+namespace DummyNamespace;
+
+use Orion\Http\Requests\Request;
+
+class DummyClass extends Request
+{
+    public function commonRules(): array
+    {
+        return [];
+    }
+
+    public function storeRules(): array
+    {
+        return [];
+    }
+
+    public function updateRules(): array
+    {
+        return [];
+    }
+}

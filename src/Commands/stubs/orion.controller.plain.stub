@@ -1,0 +1,10 @@
+<?php
+
+namespace DummyNamespace;
+
+use Orion\Http\Controllers\Controller;
+
+class DummyClass extends Controller
+{
+
+}

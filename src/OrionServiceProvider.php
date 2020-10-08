@@ -3,6 +3,8 @@
 namespace Orion;
 
 use Illuminate\Support\ServiceProvider;
+use Orion\Commands\OrionControllerMakeCommand;
+use Orion\Commands\OrionRequestMakeCommand;
 use Orion\Contracts\ComponentsResolver;
 use Orion\Contracts\Paginator;
 use Orion\Contracts\ParamsValidator;
@@ -36,6 +38,11 @@ class OrionServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        $this->commands([
+            OrionControllerMakeCommand::class,
+            OrionRequestMakeCommand::class,
+        ]);
+
         app('router')->pushMiddlewareToGroup('api', EnforceExpectsJson::class);
     }
 }
