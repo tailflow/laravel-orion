@@ -24,7 +24,7 @@ class PendingResourceRegistration extends \Illuminate\Routing\PendingResourceReg
     }
 
     /**
-     * Enables "restore" endpoint on the resource.
+     * Enables "restore" operation on the resource.
      *
      * @return $this
      */
@@ -34,6 +34,22 @@ class PendingResourceRegistration extends \Illuminate\Routing\PendingResourceReg
 
         unset($except[array_search('restore', $except, true)]);
         unset($except[array_search('batchRestore', $except, true)]);
+
+        $this->except($except);
+
+        return $this;
+    }
+
+    /**
+     * Disables batch operations on the resource.
+     *
+     * @return $this
+     */
+    public function withoutBatch() : PendingResourceRegistration
+    {
+        $except = Arr::get($this->options, 'except');
+
+        $except = array_merge($except, ['batchStore', 'batchUpdate', 'batchDestroy', 'batchRestore']);
 
         $this->except($except);
 
