@@ -12,8 +12,8 @@ class StandardIndexSearchingOperationsTest extends TestCase
     /** @test */
     public function searching_for_resources_by_model_field()
     {
-        $matchingPost = factory(Post::class)->create(['title' => 'match'])->refresh();
-        factory(Post::class)->create(['title' => 'different'])->refresh();
+        $matchingPost = factory(Post::class)->create(['title' => 'match'])->fresh();
+        factory(Post::class)->create(['title' => 'different'])->fresh();
 
         Gate::policy(Post::class, GreenPolicy::class);
 
@@ -31,10 +31,10 @@ class StandardIndexSearchingOperationsTest extends TestCase
     public function searching_for_resources_by_relation_field()
     {
         $matchingPostUser = factory(User::class)->create(['name' => 'match']);
-        $matchingPost = factory(Post::class)->create(['user_id' => $matchingPostUser->id])->refresh();
+        $matchingPost = factory(Post::class)->create(['user_id' => $matchingPostUser->id])->fresh();
 
         $nonMatchingPostUser = factory(User::class)->make(['name' => 'not match']);
-        factory(Post::class)->create(['user_id' => $nonMatchingPostUser->id])->refresh();
+        factory(Post::class)->create(['user_id' => $nonMatchingPostUser->id])->fresh();
 
         Gate::policy(Post::class, GreenPolicy::class);
 
@@ -51,8 +51,8 @@ class StandardIndexSearchingOperationsTest extends TestCase
     /** @test */
     public function searching_for_resources_with_empty_search_value()
     {
-        $matchingPost = factory(Post::class)->create(['title' => 'match'])->refresh();
-        $anotherMatchingPost = factory(Post::class)->create(['title' => 'different'])->refresh();
+        $matchingPost = factory(Post::class)->create(['title' => 'match'])->fresh();
+        $anotherMatchingPost = factory(Post::class)->create(['title' => 'different'])->fresh();
 
         Gate::policy(Post::class, GreenPolicy::class);
 

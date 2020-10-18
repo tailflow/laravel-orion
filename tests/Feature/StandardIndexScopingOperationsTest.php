@@ -12,8 +12,8 @@ class StandardIndexScopingOperationsTest extends TestCase
     /** @test */
     public function getting_a_list_of_scoped_resources_without_parameters()
     {
-        $matchingPost = factory(Post::class)->create(['publish_at' => Carbon::now()->subHours(3)])->refresh();
-        factory(Post::class)->create(['publish_at' => null])->refresh();
+        $matchingPost = factory(Post::class)->create(['publish_at' => Carbon::now()->subHours(3)])->fresh();
+        factory(Post::class)->create(['publish_at' => null])->fresh();
 
         Gate::policy(Post::class, GreenPolicy::class);
 
@@ -32,8 +32,8 @@ class StandardIndexScopingOperationsTest extends TestCase
     /** @test */
     public function getting_a_list_of_scoped_resources_with_parameters()
     {
-        $matchingPost = factory(Post::class)->create(['publish_at' => Carbon::parse('2019-01-10 09:35:21')])->refresh();
-        factory(Post::class)->create(['publish_at' => null])->refresh();
+        $matchingPost = factory(Post::class)->create(['publish_at' => Carbon::parse('2019-01-10 09:35:21')])->fresh();
+        factory(Post::class)->create(['publish_at' => null])->fresh();
 
         Gate::policy(Post::class, GreenPolicy::class);
 

@@ -12,9 +12,9 @@ class StandardIndexSortingOperationsTest extends TestCase
     /** @test */
     public function getting_a_list_of_resources_asc_sorted_with_a_valid_sort_query_parameter()
     {
-        $postC = factory(Post::class)->create(['title' => 'C'])->refresh();
-        $postB = factory(Post::class)->create(['title' => 'B'])->refresh();
-        $postA = factory(Post::class)->create(['title' => 'A'])->refresh();
+        $postC = factory(Post::class)->create(['title' => 'C'])->fresh();
+        $postB = factory(Post::class)->create(['title' => 'B'])->fresh();
+        $postA = factory(Post::class)->create(['title' => 'A'])->fresh();
 
         Gate::policy(Post::class, GreenPolicy::class);
 
@@ -33,9 +33,9 @@ class StandardIndexSortingOperationsTest extends TestCase
     /** @test */
     public function getting_a_list_of_resources_asc_sorted_with_sort_query_parameter_missing_direction()
     {
-        $postC = factory(Post::class)->create(['title' => 'C'])->refresh();
-        $postB = factory(Post::class)->create(['title' => 'B'])->refresh();
-        $postA = factory(Post::class)->create(['title' => 'A'])->refresh();
+        $postC = factory(Post::class)->create(['title' => 'C'])->fresh();
+        $postB = factory(Post::class)->create(['title' => 'B'])->fresh();
+        $postA = factory(Post::class)->create(['title' => 'A'])->fresh();
 
         Gate::policy(Post::class, GreenPolicy::class);
 
@@ -54,9 +54,9 @@ class StandardIndexSortingOperationsTest extends TestCase
     /** @test */
     public function getting_a_list_of_resources_desc_sorted_with_a_valid_sort_query_parameter()
     {
-        $postA = factory(Post::class)->create(['title' => 'A'])->refresh();
-        $postB = factory(Post::class)->create(['title' => 'B'])->refresh();
-        $postC = factory(Post::class)->create(['title' => 'C'])->refresh();
+        $postA = factory(Post::class)->create(['title' => 'A'])->fresh();
+        $postB = factory(Post::class)->create(['title' => 'B'])->fresh();
+        $postC = factory(Post::class)->create(['title' => 'C'])->fresh();
 
         Gate::policy(Post::class, GreenPolicy::class);
 
@@ -75,9 +75,9 @@ class StandardIndexSortingOperationsTest extends TestCase
     /** @test */
     public function getting_a_list_of_resources_sorted_by_not_whitelisted_field()
     {
-        factory(Post::class)->create(['body' => 'C'])->refresh();
-        factory(Post::class)->create(['body' => 'B'])->refresh();
-        factory(Post::class)->create(['body' => 'A'])->refresh();
+        factory(Post::class)->create(['body' => 'C'])->fresh();
+        factory(Post::class)->create(['body' => 'B'])->fresh();
+        factory(Post::class)->create(['body' => 'A'])->fresh();
 
         Gate::policy(Post::class, GreenPolicy::class);
 
@@ -94,9 +94,9 @@ class StandardIndexSortingOperationsTest extends TestCase
     /** @test */
     public function getting_a_list_of_resources_asc_sorted_with_sort_query_parameter_missing_value()
     {
-        $postA = factory(Post::class)->create(['title' => 'A'])->refresh();
-        $postB = factory(Post::class)->create(['title' => 'B'])->refresh();
-        $postC = factory(Post::class)->create(['title' => 'C'])->refresh();
+        $postA = factory(Post::class)->create(['title' => 'A'])->fresh();
+        $postB = factory(Post::class)->create(['title' => 'B'])->fresh();
+        $postC = factory(Post::class)->create(['title' => 'C'])->fresh();
 
         Gate::policy(Post::class, GreenPolicy::class);
 
@@ -113,9 +113,9 @@ class StandardIndexSortingOperationsTest extends TestCase
     /** @test */
     public function getting_a_list_of_resources_asc_sorted_by_relation_field()
     {
-        $postC = factory(Post::class)->create(['user_id' => factory(User::class)->create(['name' => 'C'])->id])->refresh();
-        $postB = factory(Post::class)->create(['user_id' => factory(User::class)->create(['name' => 'B'])->id])->refresh();
-        $postA = factory(Post::class)->create(['user_id' => factory(User::class)->create(['name' => 'A'])->id])->refresh();
+        $postC = factory(Post::class)->create(['user_id' => factory(User::class)->create(['name' => 'C'])->id])->fresh();
+        $postB = factory(Post::class)->create(['user_id' => factory(User::class)->create(['name' => 'B'])->id])->fresh();
+        $postA = factory(Post::class)->create(['user_id' => factory(User::class)->create(['name' => 'A'])->id])->fresh();
 
         Gate::policy(Post::class, GreenPolicy::class);
 
