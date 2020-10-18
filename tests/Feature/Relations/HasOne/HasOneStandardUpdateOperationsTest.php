@@ -52,7 +52,7 @@ class HasOneStandardUpdateOperationsTest extends TestCase
     {
         $post = factory(Post::class)->create();
         $postMeta = factory(PostMeta::class)->create(['post_id' => $post->id]);
-        $payload = ['notes' => 'test updated', 'user_id' => 5];
+        $payload = ['notes' => 'test updated', 'comments_enabled' => false];
 
         Gate::policy(PostMeta::class, GreenPolicy::class);
 
@@ -63,8 +63,8 @@ class HasOneStandardUpdateOperationsTest extends TestCase
             $postMeta->toArray(),
             ['notes' => 'test updated']
         );
-        $this->assertDatabaseMissing('post_metas', ['user_id' => 5]);
-        $response->assertJsonMissing(['user_id' => 5]);
+        $this->assertDatabaseMissing('post_metas', ['comments_enabled' => false]);
+        $response->assertJsonMissing(['comments_enabled' => false]);
     }
 
     /** @test */
