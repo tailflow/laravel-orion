@@ -45,14 +45,14 @@ class BelongsToStandardRestoreOperationsTest extends TestCase
     /** @test */
     public function restoring_a_single_not_trashed_relation_resource()
     {
-        $trashedCategory = factory(Category::class)->create();
-        $post = factory(Post::class)->create(['category_id' => $trashedCategory->id]);
+        $category = factory(Category::class)->create();
+        $post = factory(Post::class)->create(['category_id' => $category->id]);
 
         Gate::policy(Category::class, GreenPolicy::class);
 
-        $response =  $this->post("/api/posts/{$post->id}/category/{$trashedCategory->id}/restore");
+        $response =  $this->post("/api/posts/{$post->id}/category/{$category->id}/restore");
 
-        $this->assertResourceRestored($response, $trashedCategory);
+        $this->assertResourceRestored($response, $category);
     }
 
     /** @test */

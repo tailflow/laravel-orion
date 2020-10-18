@@ -5,6 +5,8 @@ namespace Orion\Tests\Fixtures\App\Models;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Post extends Model
@@ -37,7 +39,7 @@ class Post extends Model
     ];
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * @return BelongsTo
      */
     public function user()
     {
@@ -45,11 +47,27 @@ class Post extends Model
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * @return BelongsTo
      */
     public function category()
     {
         return $this->belongsTo(Category::class);
+    }
+
+    /**
+     * @return HasOne
+     */
+    public function meta()
+    {
+        return $this->hasOne(PostMeta::class);
+    }
+
+    /**
+     * @return HasOne
+     */
+    public function image()
+    {
+        return $this->hasOne(PostImage::class);
     }
 
     /**
