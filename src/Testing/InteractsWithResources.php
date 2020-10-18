@@ -217,7 +217,7 @@ trait InteractsWithResources
         $links = [
             $this->buildMetaLink(
                 $paginator->currentPage() > 1 ? $this->resolveResourceLink($paginator, $paginator->currentPage() - 1) : null,
-                'Previous',
+                (float) app()->version() >= 8.0 ? '&laquo; Previous' : 'Previous',
                 false
             )
         ];
@@ -232,7 +232,7 @@ trait InteractsWithResources
 
         $links[] = $this->buildMetaLink(
             $paginator->lastPage() > 1 ? $this->resolveResourceLink($paginator, $paginator->currentPage() + 1) : null,
-            'Next',
+            (float) app()->version() >= 8.0 ? 'Next &raquo;' : 'Next',
             false
         );
 
