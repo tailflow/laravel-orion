@@ -187,7 +187,8 @@ trait InteractsWithResources
     protected function assertResourceAssociated($response, Model $parentModel, Model $relationModel, string $relation, array $mergeData = [], bool $exact = true): void
     {
         $relationModel = $relationModel->fresh();
-        self::assertSame((string) $parentModel->getKey(), (string) $relationModel->{$relationModel->{$relation}()->getForeignKeyName()});
+        $foreignKeyGetter = (float) app()->version() > 5.7 ? 'getForeignKeyName' : 'getForeignKey';
+        self::assertSame((string) $parentModel->getKey(), (string) $relationModel->{$relationModel->{$relation}()->{$foreignKeyGetter}()});
 
         $response->assertStatus(200);
         $response->assertJsonStructure(['data']);
@@ -207,7 +208,8 @@ trait InteractsWithResources
     protected function assertResourceDissociated($response, Model $relationModel, string $relation, array $mergeData = [], bool $exact = true): void
     {
         $relationModel = $relationModel->fresh();
-        self::assertSame(null, $relationModel->{$relationModel->{$relation}()->getForeignKeyName()});
+        $foreignKeyGetter = (float) app()->version() > 5.7 ? 'getForeignKeyName' : 'getForeignKey';
+        self::assertSame(null, $relationModel->{$relationModel->{$relation}()->{$foreignKeyGetter}()});
 
         $response->assertStatus(200);
         $response->assertJsonStructure(['data']);
