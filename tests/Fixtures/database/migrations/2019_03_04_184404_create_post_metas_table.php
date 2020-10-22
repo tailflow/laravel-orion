@@ -17,7 +17,7 @@ class CreatePostMetasTable extends Migration
             $table->increments('id');
             $table->text('notes');
             $table->boolean('comments_enabled')->default(true);
-            $table->unsignedInteger('post_id');
+            $table->unsignedBigInteger('post_id');
             $table->foreign('post_id')->references('id')->on('posts')->onDelete('cascade');
             $table->timestamps();
         });

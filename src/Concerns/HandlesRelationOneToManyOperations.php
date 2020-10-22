@@ -37,10 +37,14 @@ trait HandlesRelationOneToManyOperations
 
         $this->performAssociate($request, $parentEntity, $entity);
 
+        $entity = $this->runAssociateFetchQuery($request, $query, $parentEntity, $request->get('related_key'));
+
         $afterHookResult = $this->afterAssociate($request, $entity);
         if ($this->hookResponds($afterHookResult)) {
             return $afterHookResult;
         }
+
+        $entity = $this->relationsResolver->guardRelations($entity, $requestedRelations);
 
         return $this->entityResponse($entity);
     }
@@ -80,8 +84,7 @@ trait HandlesRelationOneToManyOperations
      */
     protected function buildAssociateFetchQuery(Request $request, Model $parentEntity, array $requestedRelations): Builder
     {
-        $parentModel = $this->getModel();
-        $relatedModel = (new $parentModel)->{$this->getRelation()}()->getModel();
+        $relatedModel = $parentEntity->{$this->getRelation()}()->getModel();
 
         return $this->relationQueryBuilder->buildQuery($relatedModel->query(), $request)
             ->with($this->relationsResolver->requestedRelations($request));
@@ -140,10 +143,15 @@ trait HandlesRelationOneToManyOperations
 
         $this->performDissociate($request, $parentEntity, $entity);
 
+        $entity = $this->relationQueryBuilder->buildQuery($entity::query(), $request)
+            ->with($this->relationsResolver->requestedRelations($request))->first();
+
         $afterHookResult = $this->afterDissociate($request, $entity);
         if ($this->hookResponds($afterHookResult)) {
             return $afterHookResult;
         }
+
+        $entity = $this->relationsResolver->guardRelations($entity, $requestedRelations);
 
         return $this->entityResponse($entity);
     }

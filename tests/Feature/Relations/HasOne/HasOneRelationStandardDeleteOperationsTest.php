@@ -13,7 +13,7 @@ use Orion\Tests\Fixtures\App\Models\PostMeta;
 use Orion\Tests\Fixtures\App\Policies\GreenPolicy;
 use Orion\Tests\Fixtures\App\Policies\RedPolicy;
 
-class HasOneStandardDeleteOperationsTest extends TestCase
+class HasOneRelationStandardDeleteOperationsTest extends TestCase
 {
     /** @test */
     public function trashing_a_single_soft_deletable_relation_resource_without_authorization()

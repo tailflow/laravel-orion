@@ -13,7 +13,7 @@ use Orion\Tests\Fixtures\App\Models\User;
 use Orion\Tests\Fixtures\App\Policies\GreenPolicy;
 use Orion\Tests\Fixtures\App\Policies\RedPolicy;
 
-class BelongsToStandardRestoreOperationsTest extends TestCase
+class BelongsToRelationStandardRestoreOperationsTest extends TestCase
 {
     /** @test */
     public function restoring_a_single_relation_resource_without_authorization()

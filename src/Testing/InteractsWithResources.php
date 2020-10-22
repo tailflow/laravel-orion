@@ -176,6 +176,47 @@ trait InteractsWithResources
         $this->assertResponseContent($expected, $response, $exact);
     }
 
+    /**
+     * @param \Illuminate\Testing\TestResponse|\Illuminate\Foundation\Testing\TestResponse $response
+     * @param Model $parentModel
+     * @param Model $relationModel
+     * @param string $relation
+     * @param array $mergeData
+     * @param bool $exact
+     */
+    protected function assertResourceAssociated($response, Model $parentModel, Model $relationModel, string $relation, array $mergeData = [], bool $exact = true): void
+    {
+        $relationModel = $relationModel->fresh();
+        self::assertSame((string) $parentModel->getKey(), (string) $relationModel->{$relationModel->{$relation}()->getForeignKeyName()});
+
+        $response->assertStatus(200);
+        $response->assertJsonStructure(['data']);
+
+        $expected = ['data' => array_merge($relationModel->toArray(), $mergeData)];
+
+        $this->assertResponseContent($expected, $response, $exact);
+    }
+
+    /**
+     * @param \Illuminate\Testing\TestResponse|\Illuminate\Foundation\Testing\TestResponse $response
+     * @param Model $relationModel
+     * @param string $relation
+     * @param array $mergeData
+     * @param bool $exact
+     */
+    protected function assertResourceDissociated($response, Model $relationModel, string $relation, array $mergeData = [], bool $exact = true): void
+    {
+        $relationModel = $relationModel->fresh();
+        self::assertSame(null, $relationModel->{$relationModel->{$relation}()->getForeignKeyName()});
+
+        $response->assertStatus(200);
+        $response->assertJsonStructure(['data']);
+
+        $expected = ['data' => array_merge($relationModel->toArray(), $mergeData)];
+
+        $this->assertResponseContent($expected, $response, $exact);
+    }
+
     protected function assertResponseContent(array $expected, $response, bool $exact)
     {
         if ($exact) {

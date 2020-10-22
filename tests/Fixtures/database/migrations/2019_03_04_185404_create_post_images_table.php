@@ -16,7 +16,7 @@ class CreatePostImagesTable extends Migration
         Schema::create('post_images', function (Blueprint $table) {
             $table->increments('id');
             $table->text('path');
-            $table->unsignedInteger('post_id');
+            $table->unsignedBigInteger('post_id');
             $table->foreign('post_id')->references('id')->on('posts')->onDelete('cascade');
             $table->timestamps();
             $table->softDeletes();

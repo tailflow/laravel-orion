@@ -13,7 +13,7 @@ use Orion\Tests\Fixtures\App\Models\PostMeta;
 use Orion\Tests\Fixtures\App\Policies\GreenPolicy;
 use Orion\Tests\Fixtures\App\Policies\RedPolicy;
 
-class HasOneStandardShowOperationsTest extends TestCase
+class HasOneRelationStandardShowOperationsTest extends TestCase
 {
     /** @test */
     public function getting_a_single_relation_resource_without_parent_authorization()
