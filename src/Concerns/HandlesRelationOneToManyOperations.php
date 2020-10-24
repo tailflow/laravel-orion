@@ -217,7 +217,7 @@ trait HandlesRelationOneToManyOperations
      */
     protected function performDissociate(Request $request, Model $parentEntity, Model $entity): void
     {
-        $foreignKeyName = $parentEntity->{$this->getRelation()}()->{(float) app()->version() > 5.7 ? 'getForeignKeyName' : 'getForeignKey'}();
+        $foreignKeyName = $parentEntity->{$this->getRelation()}()->getForeignKeyName();
 
         $entity->{$foreignKeyName} = null;
         $entity->save();
