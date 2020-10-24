@@ -3,9 +3,9 @@
 </p>
 
 <p align="center">
-<a href="https://travis-ci.org/laravel-orion/laravel-orion"><img src="https://travis-ci.org/laravel-orion/laravel-orion.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel-orion/laravel-orion"><img src="https://poser.pugx.org/laravel-orion/laravel-orion/version" alt="Stable Release"></a>
-<a href="https://packagist.org/packages/laravel-orion/laravel-orion"><img src="https://poser.pugx.org/laravel-orion/laravel-orion/license" alt="Stable Release"></a>
+<a href="https://travis-ci.org/tailflow/laravel-orion"><img src="https://travis-ci.org/tailflow/laravel-orion.svg" alt="Build Status"></a>
+<a href="https://packagist.org/packages/tailflow/laravel-orion"><img src="https://poser.pugx.org/tailflow/laravel-orion/version" alt="Stable Release"></a>
+<a href="https://packagist.org/packages/tailflow/laravel-orion"><img src="https://poser.pugx.org/tailflow/laravel-orion/license" alt="Stable Release"></a>
 </p>
 
 ## Introduction
@@ -14,7 +14,7 @@ Laravel Orion allows you to build a fully featured REST API based on your Eloque
 
 ## Official Documentation
 
-Documentation for Laravel Orion can be found on the [website](https://laravel-orion.github.io/docs/).
+Documentation for Laravel Orion can be found on the [website](https://tailflow.github.io/laravel-orion-docs/).
 
 ## License
 

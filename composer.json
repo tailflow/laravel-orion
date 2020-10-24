@@ -1,5 +1,5 @@
 {
-    "name": "laravel-orion/laravel-orion",
+    "name": "tailflow/laravel-orion",
     "description": "Laravel Orion allows you to build a fully featured REST API based on your Eloquent models and relationships with the simplicity of Laravel as you love it.",
     "keywords": [
         "laravel",
@@ -7,13 +7,13 @@
     ],
     "license": "MIT",
     "support": {
-        "issues": "https://github.com/laravel-orion/laravel-orion/issues",
-        "source": "https://github.com/laravel-orion/laravel-orion"
+        "issues": "https://github.com/tailflow/laravel-orion/issues",
+        "source": "https://github.com/tailflow/laravel-orion"
     },
     "authors": [
         {
             "name": "Aleksei Zarubin",
-            "email": "alex@zarubin.co"
+            "email": "alex@tailflow.org"
         }
     ],
     "require": {
