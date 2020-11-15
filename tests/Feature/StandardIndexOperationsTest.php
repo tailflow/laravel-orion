@@ -15,7 +15,7 @@ use Orion\Tests\Fixtures\App\Policies\RedPolicy;
 class StandardIndexOperationsTest extends TestCase
 {
     /** @test */
-    public function getting_a_list_of_resources_without_authorization()
+    public function getting_a_list_of_resources_without_authorization(): void
     {
         factory(Post::class)->times(5)->create();
 
@@ -27,7 +27,7 @@ class StandardIndexOperationsTest extends TestCase
     }
 
     /** @test */
-    public function getting_a_list_of_resources_when_authorized()
+    public function getting_a_list_of_resources_when_authorized(): void
     {
         $user = factory(User::class)->create();
         $posts = factory(Post::class)->times(5)->create(['user_id' => $user->id]);
@@ -43,7 +43,7 @@ class StandardIndexOperationsTest extends TestCase
     }
 
     /** @test */
-    public function getting_a_paginated_list_of_resources()
+    public function getting_a_paginated_list_of_resources(): void
     {
         $posts = factory(Post::class)->times(45)->create();
 
@@ -58,7 +58,7 @@ class StandardIndexOperationsTest extends TestCase
     }
 
     /** @test */
-    public function getting_a_list_of_soft_deletable_resources_when_with_trashed_query_parameter_is_present()
+    public function getting_a_list_of_soft_deletable_resources_when_with_trashed_query_parameter_is_present(): void
     {
         $trashedPosts = factory(Post::class)->state('trashed')->times(5)->create();
         $posts = factory(Post::class)->times(5)->create();
@@ -74,7 +74,7 @@ class StandardIndexOperationsTest extends TestCase
     }
 
     /** @test */
-    public function getting_a_list_of_soft_deletable_resources_when_only_trashed_query_parameter_is_present()
+    public function getting_a_list_of_soft_deletable_resources_when_only_trashed_query_parameter_is_present(): void
     {
         $trashedPosts = factory(Post::class)->state('trashed')->times(5)->create();
         factory(Post::class)->times(5)->create();
@@ -90,7 +90,7 @@ class StandardIndexOperationsTest extends TestCase
     }
 
     /** @test */
-    public function getting_a_list_of_soft_deletable_resources_with_trashed_resources_filtered_out()
+    public function getting_a_list_of_soft_deletable_resources_with_trashed_resources_filtered_out(): void
     {
         $trashedPosts = factory(Post::class)->state('trashed')->times(5)->create();
         $posts = factory(Post::class)->times(5)->create();
@@ -111,7 +111,7 @@ class StandardIndexOperationsTest extends TestCase
     }
 
     /** @test */
-    public function transforming_a_list_of_resources()
+    public function transforming_a_list_of_resources(): void
     {
         $posts = factory(Post::class)->times(5)->create();
 
@@ -134,7 +134,7 @@ class StandardIndexOperationsTest extends TestCase
     }
 
     /** @test */
-    public function transforming_a_list_of_resources_using_collection_resource()
+    public function transforming_a_list_of_resources_using_collection_resource(): void
     {
         $posts = factory(Post::class)->times(5)->create();
 
@@ -161,7 +161,7 @@ class StandardIndexOperationsTest extends TestCase
     }
 
     /** @test */
-    public function getting_a_list_of_resources_with_included_relation()
+    public function getting_a_list_of_resources_with_included_relation(): void
     {
         $posts = factory(Post::class)->times(5)->create()->map(function (Post $post) {
             $post->user()->associate(factory(User::class)->create());

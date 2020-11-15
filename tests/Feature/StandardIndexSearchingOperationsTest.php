@@ -10,7 +10,7 @@ use Orion\Tests\Fixtures\App\Policies\GreenPolicy;
 class StandardIndexSearchingOperationsTest extends TestCase
 {
     /** @test */
-    public function searching_for_resources_by_model_field()
+    public function searching_for_resources_by_model_field(): void
     {
         $matchingPost = factory(Post::class)->create(['title' => 'match'])->fresh();
         factory(Post::class)->create(['title' => 'different'])->fresh();
@@ -28,7 +28,7 @@ class StandardIndexSearchingOperationsTest extends TestCase
     }
 
     /** @test */
-    public function searching_for_resources_by_relation_field()
+    public function searching_for_resources_by_relation_field(): void
     {
         $matchingPostUser = factory(User::class)->create(['name' => 'match']);
         $matchingPost = factory(Post::class)->create(['user_id' => $matchingPostUser->id])->fresh();
@@ -49,7 +49,7 @@ class StandardIndexSearchingOperationsTest extends TestCase
     }
 
     /** @test */
-    public function searching_for_resources_with_empty_search_value()
+    public function searching_for_resources_with_empty_search_value(): void
     {
         $matchingPost = factory(Post::class)->create(['title' => 'match'])->fresh();
         $anotherMatchingPost = factory(Post::class)->create(['title' => 'different'])->fresh();

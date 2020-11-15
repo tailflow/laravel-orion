@@ -18,7 +18,7 @@ use Orion\Tests\Fixtures\App\Policies\RedPolicy;
 class HasManyRelationStandardIndexOperationsTest extends TestCase
 {
     /** @test */
-    public function getting_a_list_of_relation_resources_without_authorization()
+    public function getting_a_list_of_relation_resources_without_authorization(): void
     {
         $company = factory(Company::class)->create();
         factory(Team::class)->times(5)->create(['company_id' => $company->id]);
@@ -31,7 +31,7 @@ class HasManyRelationStandardIndexOperationsTest extends TestCase
     }
 
     /** @test */
-    public function getting_a_list_of_relation_resources_when_authorized()
+    public function getting_a_list_of_relation_resources_when_authorized(): void
     {
         $company = factory(Company::class)->create();
         $teams = factory(Team::class)->times(5)->create(['company_id' => $company->id]);
@@ -47,7 +47,7 @@ class HasManyRelationStandardIndexOperationsTest extends TestCase
     }
 
     /** @test */
-    public function getting_a_paginated_list_of_relation_resources()
+    public function getting_a_paginated_list_of_relation_resources(): void
     {
         $company = factory(Company::class)->create();
         $teams = factory(Team::class)->times(45)->create(['company_id' => $company->id]);
@@ -63,7 +63,7 @@ class HasManyRelationStandardIndexOperationsTest extends TestCase
     }
 
     /** @test */
-    public function getting_a_list_of_soft_deletable_relation_resources_when_with_trashed_query_parameter_is_present()
+    public function getting_a_list_of_soft_deletable_relation_resources_when_with_trashed_query_parameter_is_present(): void
     {
         $user = factory(User::class)->create();
         $trashedPosts = factory(Post::class)->state('trashed')->times(5)->create(['user_id' => $user->id]);
@@ -80,7 +80,7 @@ class HasManyRelationStandardIndexOperationsTest extends TestCase
     }
 
     /** @test */
-    public function getting_a_list_of_soft_deletable_relation_resources_when_only_trashed_query_parameter_is_present()
+    public function getting_a_list_of_soft_deletable_relation_resources_when_only_trashed_query_parameter_is_present(): void
     {
         $user = factory(User::class)->create();
         $trashedPosts = factory(Post::class)->state('trashed')->times(5)->create(['user_id' => $user->id]);
@@ -97,7 +97,7 @@ class HasManyRelationStandardIndexOperationsTest extends TestCase
     }
 
     /** @test */
-    public function getting_a_list_of_soft_deletable_relation_resources_with_trashed_resources_filtered_out()
+    public function getting_a_list_of_soft_deletable_relation_resources_with_trashed_resources_filtered_out(): void
     {
         $user = factory(User::class)->create();
         $posts = factory(Post::class)->times(5)->create(['user_id' => $user->id]);
@@ -119,7 +119,7 @@ class HasManyRelationStandardIndexOperationsTest extends TestCase
     }
 
     /** @test */
-    public function transforming_a_list_of_relation_resources()
+    public function transforming_a_list_of_relation_resources(): void
     {
         $company = factory(Company::class)->create();
         $teams = factory(Team::class)->times(5)->create(['company_id' => $company->id]);
@@ -143,7 +143,7 @@ class HasManyRelationStandardIndexOperationsTest extends TestCase
     }
 
     /** @test */
-    public function transforming_a_list_of_relation_resources_using_collection_resource()
+    public function transforming_a_list_of_relation_resources_using_collection_resource(): void
     {
         $company = factory(Company::class)->create();
         $teams = factory(Team::class)->times(5)->create(['company_id' => $company->id]);
@@ -171,7 +171,7 @@ class HasManyRelationStandardIndexOperationsTest extends TestCase
     }
 
     /** @test */
-    public function getting_a_list_of_relation_resources_with_included_relation()
+    public function getting_a_list_of_relation_resources_with_included_relation(): void
     {
         $company = factory(Company::class)->create();
         $teams = factory(Team::class)->times(5)->create()->map(function (Team $team) use ($company) {

@@ -441,7 +441,6 @@ trait HandlesRelationManyToManyOperations
             if (!is_array($pivotFields)) {
                 continue;
             }
-            $pivotFields = Arr::only($pivotFields, $this->getPivotFillable());
             $pivotFields = $this->preparePivotFields($pivotFields);
         }
 
@@ -461,6 +460,8 @@ trait HandlesRelationManyToManyOperations
                 $field = json_encode($field);
             }
         }
+
+        $pivotFields = Arr::only($pivotFields, $this->getPivotFillable());
 
         return $pivotFields;
     }

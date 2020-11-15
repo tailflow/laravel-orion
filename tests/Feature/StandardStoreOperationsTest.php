@@ -15,7 +15,7 @@ use Orion\Tests\Fixtures\App\Policies\RedPolicy;
 class StandardStoreOperationsTest extends TestCase
 {
     /** @test */
-    public function storing_a_single_resource_without_authorization()
+    public function storing_a_single_resource_without_authorization(): void
     {
         $payload = ['title' => 'test post', 'body' => 'test post body'];
 
@@ -27,7 +27,7 @@ class StandardStoreOperationsTest extends TestCase
     }
 
     /** @test */
-    public function storing_a_single_resource_when_authorized()
+    public function storing_a_single_resource_when_authorized(): void
     {
         $payload = ['title' => 'test post title', 'body' => 'test post body'];
 
@@ -39,7 +39,7 @@ class StandardStoreOperationsTest extends TestCase
     }
 
     /** @test */
-    public function storing_a_single_resource_with_only_fillable_properties()
+    public function storing_a_single_resource_with_only_fillable_properties(): void
     {
         $payload = ['title' => 'test post title', 'body' => 'test post body', 'tracking_id' => 'test tracking id'];
 
@@ -56,7 +56,7 @@ class StandardStoreOperationsTest extends TestCase
     }
 
     /** @test */
-    public function storing_a_single_resource_when_validation_fails()
+    public function storing_a_single_resource_when_validation_fails(): void
     {
         $payload = ['body' => 'test post body'];
 
@@ -77,7 +77,7 @@ class StandardStoreOperationsTest extends TestCase
     }
 
     /** @test */
-    public function transforming_a_single_stored_resource()
+    public function transforming_a_single_stored_resource(): void
     {
         $payload = ['title' => 'test post title', 'body' => 'test post body'];
 
@@ -96,7 +96,7 @@ class StandardStoreOperationsTest extends TestCase
     }
 
     /** @test */
-    public function storing_a_single_resource_and_getting_included_relation()
+    public function storing_a_single_resource_and_getting_included_relation(): void
     {
         $payload = ['title' => 'test post title', 'body' => 'test post body'];
         $user = factory(User::class)->create();

@@ -3,12 +3,9 @@
 namespace Orion\Tests\Fixtures\App\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
-    use Notifiable;
-
     /**
      * The attributes that are mass assignable.
      *
@@ -30,5 +27,15 @@ class User extends Authenticatable
     public function posts()
     {
         return $this->hasMany(Post::class);
+    }
+
+    public function roles()
+    {
+        return $this->belongsToMany(Role::class)->withPivot('meta', 'references', 'custom_name');
+    }
+
+    public function notifications()
+    {
+        return $this->belongsToMany(Notification::class)->withPivot('meta');
     }
 }

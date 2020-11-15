@@ -10,7 +10,7 @@ use Orion\Tests\Fixtures\App\Policies\GreenPolicy;
 class StandardIndexSortingOperationsTest extends TestCase
 {
     /** @test */
-    public function getting_a_list_of_resources_asc_sorted_with_a_valid_sort_query_parameter()
+    public function getting_a_list_of_resources_asc_sorted_with_a_valid_sort_query_parameter(): void
     {
         $postC = factory(Post::class)->create(['title' => 'C'])->fresh();
         $postB = factory(Post::class)->create(['title' => 'B'])->fresh();
@@ -31,7 +31,7 @@ class StandardIndexSortingOperationsTest extends TestCase
     }
 
     /** @test */
-    public function getting_a_list_of_resources_asc_sorted_with_sort_query_parameter_missing_direction()
+    public function getting_a_list_of_resources_asc_sorted_with_sort_query_parameter_missing_direction(): void
     {
         $postC = factory(Post::class)->create(['title' => 'C'])->fresh();
         $postB = factory(Post::class)->create(['title' => 'B'])->fresh();
@@ -52,7 +52,7 @@ class StandardIndexSortingOperationsTest extends TestCase
     }
 
     /** @test */
-    public function getting_a_list_of_resources_desc_sorted_with_a_valid_sort_query_parameter()
+    public function getting_a_list_of_resources_desc_sorted_with_a_valid_sort_query_parameter(): void
     {
         $postA = factory(Post::class)->create(['title' => 'A'])->fresh();
         $postB = factory(Post::class)->create(['title' => 'B'])->fresh();
@@ -73,7 +73,7 @@ class StandardIndexSortingOperationsTest extends TestCase
     }
 
     /** @test */
-    public function getting_a_list_of_resources_sorted_by_not_whitelisted_field()
+    public function getting_a_list_of_resources_sorted_by_not_whitelisted_field(): void
     {
         factory(Post::class)->create(['body' => 'C'])->fresh();
         factory(Post::class)->create(['body' => 'B'])->fresh();
@@ -92,7 +92,7 @@ class StandardIndexSortingOperationsTest extends TestCase
     }
 
     /** @test */
-    public function getting_a_list_of_resources_asc_sorted_with_sort_query_parameter_missing_value()
+    public function getting_a_list_of_resources_asc_sorted_with_sort_query_parameter_missing_value(): void
     {
         $postA = factory(Post::class)->create(['title' => 'A'])->fresh();
         $postB = factory(Post::class)->create(['title' => 'B'])->fresh();
@@ -111,7 +111,7 @@ class StandardIndexSortingOperationsTest extends TestCase
     }
 
     /** @test */
-    public function getting_a_list_of_resources_asc_sorted_by_relation_field()
+    public function getting_a_list_of_resources_asc_sorted_by_relation_field(): void
     {
         $postC = factory(Post::class)->create(['user_id' => factory(User::class)->create(['name' => 'C'])->id])->fresh();
         $postB = factory(Post::class)->create(['user_id' => factory(User::class)->create(['name' => 'B'])->id])->fresh();

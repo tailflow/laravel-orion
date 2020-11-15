@@ -16,7 +16,7 @@ use Orion\Tests\Fixtures\App\Policies\RedPolicy;
 class BelongsToRelationStandardUpdateOperationsTest extends TestCase
 {
     /** @test */
-    public function updating_a_single_relation_resource_without_authorization()
+    public function updating_a_single_relation_resource_without_authorization(): void
     {
         $user = factory(User::class)->create();
         $post = factory(Post::class)->create(['user_id' => $user->id]);
@@ -30,7 +30,7 @@ class BelongsToRelationStandardUpdateOperationsTest extends TestCase
     }
 
     /** @test */
-    public function updating_a_single_relation_resource_when_authorized()
+    public function updating_a_single_relation_resource_when_authorized(): void
     {
         $user = factory(User::class)->create();
         $post = factory(Post::class)->create(['user_id' => $user->id]);
@@ -48,7 +48,7 @@ class BelongsToRelationStandardUpdateOperationsTest extends TestCase
     }
 
     /** @test */
-    public function updating_a_single_relation_resource_with_only_fillable_properties()
+    public function updating_a_single_relation_resource_with_only_fillable_properties(): void
     {
         $user = factory(User::class)->create();
         $post = factory(Post::class)->create(['user_id' => $user->id]);
@@ -68,7 +68,7 @@ class BelongsToRelationStandardUpdateOperationsTest extends TestCase
     }
 
     /** @test */
-    public function updating_a_single_relation_resource_when_validation_fails()
+    public function updating_a_single_relation_resource_when_validation_fails(): void
     {
         $user = factory(User::class)->create();
         $post = factory(Post::class)->create(['user_id' => $user->id]);
@@ -91,7 +91,7 @@ class BelongsToRelationStandardUpdateOperationsTest extends TestCase
     }
 
     /** @test */
-    public function transforming_a_single_updated_relation_resource()
+    public function transforming_a_single_updated_relation_resource(): void
     {
         $user = factory(User::class)->create();
         $post = factory(Post::class)->create(['user_id' => $user->id]);
@@ -117,7 +117,7 @@ class BelongsToRelationStandardUpdateOperationsTest extends TestCase
     }
 
     /** @test */
-    public function updating_a_single_resource_and_getting_included_relation()
+    public function updating_a_single_resource_and_getting_included_relation(): void
     {
         $user = factory(User::class)->create();
         $post = factory(Post::class)->create(['user_id' => $user->id]);

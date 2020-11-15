@@ -15,7 +15,7 @@ use Orion\Tests\Fixtures\App\Policies\RedPolicy;
 class StandardUpdateOperationsTest extends TestCase
 {
     /** @test */
-    public function updating_a_single_resource_without_authorization()
+    public function updating_a_single_resource_without_authorization(): void
     {
         $post = factory(Post::class)->create();
         $payload = ['title' => 'test post title updated'];
@@ -28,7 +28,7 @@ class StandardUpdateOperationsTest extends TestCase
     }
 
     /** @test */
-    public function updating_a_single_resource_when_authorized()
+    public function updating_a_single_resource_when_authorized(): void
     {
         $user = factory(User::class)->create();
         $post = factory(Post::class)->create(['user_id' => $user->id]);
@@ -46,7 +46,7 @@ class StandardUpdateOperationsTest extends TestCase
     }
 
     /** @test */
-    public function updating_a_single_resource_with_only_fillable_properties()
+    public function updating_a_single_resource_with_only_fillable_properties(): void
     {
         $post = factory(Post::class)->create();
         $payload = ['title' => 'test post title updated', 'tracking_id' => 'test tracking id'];
@@ -65,7 +65,7 @@ class StandardUpdateOperationsTest extends TestCase
     }
 
     /** @test */
-    public function updating_a_single_resource_when_validation_fails()
+    public function updating_a_single_resource_when_validation_fails(): void
     {
         $post = factory(Post::class)->create();
         $payload = ['body' => 'test post body updated'];
@@ -87,7 +87,7 @@ class StandardUpdateOperationsTest extends TestCase
     }
 
     /** @test */
-    public function transforming_a_single_updated_resource()
+    public function transforming_a_single_updated_resource(): void
     {
         $post = factory(Post::class)->create();
         $payload = ['title' => 'test post title updated'];
@@ -112,7 +112,7 @@ class StandardUpdateOperationsTest extends TestCase
     }
 
     /** @test */
-    public function updating_a_single_resource_and_getting_included_relation()
+    public function updating_a_single_resource_and_getting_included_relation(): void
     {
         $user = factory(User::class)->create();
         $post = factory(Post::class)->create(['user_id' => $user->id]);

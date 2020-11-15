@@ -15,7 +15,7 @@ use Orion\Tests\Fixtures\App\Policies\RedPolicy;
 class StandardDeleteOperationsTest extends TestCase
 {
     /** @test */
-    public function trashing_a_single_soft_deletable_resource_without_authorization()
+    public function trashing_a_single_soft_deletable_resource_without_authorization(): void
     {
         $post = factory(Post::class)->create();
 
@@ -27,7 +27,7 @@ class StandardDeleteOperationsTest extends TestCase
     }
 
     /** @test */
-    public function deleting_a_single_resource_without_authorization()
+    public function deleting_a_single_resource_without_authorization(): void
     {
         $team = factory(Team::class)->create();
 
@@ -39,7 +39,7 @@ class StandardDeleteOperationsTest extends TestCase
     }
 
     /** @test */
-    public function force_deleting_a_single_resource_without_authorization()
+    public function force_deleting_a_single_resource_without_authorization(): void
     {
         $trashedPost = factory(Post::class)->state('trashed')->create();
 
@@ -51,7 +51,7 @@ class StandardDeleteOperationsTest extends TestCase
     }
 
     /** @test */
-    public function trashing_a_single_soft_deletable_resource_when_authorized()
+    public function trashing_a_single_soft_deletable_resource_when_authorized(): void
     {
         $post = factory(Post::class)->create(['user_id' => factory(User::class)->create()->id]);
 
@@ -63,7 +63,7 @@ class StandardDeleteOperationsTest extends TestCase
     }
 
     /** @test */
-    public function deleting_a_single_resource_when_authorized()
+    public function deleting_a_single_resource_when_authorized(): void
     {
         $team = factory(Team::class)->create()->fresh();
 
@@ -75,7 +75,7 @@ class StandardDeleteOperationsTest extends TestCase
     }
 
     /** @test */
-    public function force_deleting_a_single_trashed_resource_when_authorized()
+    public function force_deleting_a_single_trashed_resource_when_authorized(): void
     {
         $user = factory(User::class)->create();
         $trashedPost = factory(Post::class)->state('trashed')->create(['user_id' => $user->id])->fresh();
@@ -88,7 +88,7 @@ class StandardDeleteOperationsTest extends TestCase
     }
 
     /** @test */
-    public function deleting_a_single_trashed_resource_without_trashed_query_parameter()
+    public function deleting_a_single_trashed_resource_without_trashed_query_parameter(): void
     {
         $trashedPost = factory(Post::class)->state('trashed')->create();
 
@@ -102,7 +102,7 @@ class StandardDeleteOperationsTest extends TestCase
     }
 
     /** @test */
-    public function deleting_a_single_trashed_resource_with_trashed_query_parameter()
+    public function deleting_a_single_trashed_resource_with_trashed_query_parameter(): void
     {
         $trashedPost = factory(Post::class)->state('trashed')->create();
 
@@ -116,7 +116,7 @@ class StandardDeleteOperationsTest extends TestCase
     }
 
     /** @test */
-    public function deleting_a_single_trashed_resource_with_force_query_parameter()
+    public function deleting_a_single_trashed_resource_with_force_query_parameter(): void
     {
         $trashedPost = factory(Post::class)->state('trashed')->create()->fresh();
 
@@ -128,7 +128,7 @@ class StandardDeleteOperationsTest extends TestCase
     }
 
     /** @test */
-    public function transforming_a_single_deleted_resource()
+    public function transforming_a_single_deleted_resource(): void
     {
         $post = factory(Post::class)->create()->fresh();
 
@@ -147,7 +147,7 @@ class StandardDeleteOperationsTest extends TestCase
     }
 
     /** @test */
-    public function deleting_a_single_resource_and_getting_included_relation()
+    public function deleting_a_single_resource_and_getting_included_relation(): void
     {
         $user = factory(User::class)->create()->fresh();
         $post = factory(Post::class)->create(['user_id' => $user->id])->fresh();

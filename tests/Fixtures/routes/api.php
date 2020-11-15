@@ -9,7 +9,9 @@ use Orion\Tests\Fixtures\App\Http\Controllers\PostPostMetaController;
 use Orion\Tests\Fixtures\App\Http\Controllers\PostsController;
 use Orion\Tests\Fixtures\App\Http\Controllers\PostUserController;
 use Orion\Tests\Fixtures\App\Http\Controllers\TeamsController;
+use Orion\Tests\Fixtures\App\Http\Controllers\UserNotificationsController;
 use Orion\Tests\Fixtures\App\Http\Controllers\UserPostsController;
+use Orion\Tests\Fixtures\App\Http\Controllers\UserRolesController;
 
 Route::group(['as' => 'api.', 'prefix' => 'api'], function () {
     Orion::resource('teams', TeamsController::class);
@@ -21,4 +23,6 @@ Route::group(['as' => 'api.', 'prefix' => 'api'], function () {
     Orion::hasOneResource('posts', 'image', PostPostImageController::class)->withSoftDeletes();
     Orion::hasManyResource('companies', 'teams', CompanyTeamsController::class);
     Orion::hasManyResource('users', 'posts', UserPostsController::class)->withSoftDeletes();
+    Orion::belongsToManyResource('users', 'roles', UserRolesController::class);
+    Orion::belongsToManyResource('users', 'notifications', UserNotificationsController::class)->withSoftDeletes();
 });

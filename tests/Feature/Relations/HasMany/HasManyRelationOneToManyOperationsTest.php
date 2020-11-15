@@ -15,7 +15,7 @@ use Orion\Tests\Fixtures\App\Policies\RedPolicy;
 class HasManyRelationOneToManyOperationsTest extends TestCase
 {
     /** @test */
-    public function associating_relation_resource_when_parent_model_is_unauthorized()
+    public function associating_relation_resource_when_parent_model_is_unauthorized(): void
     {
         $company = factory(Company::class)->create();
         $team = factory(Team::class)->create();
@@ -31,7 +31,7 @@ class HasManyRelationOneToManyOperationsTest extends TestCase
     }
 
     /** @test */
-    public function associating_relation_resource_when_relation_model_is_unauthorized()
+    public function associating_relation_resource_when_relation_model_is_unauthorized(): void
     {
         $company = factory(Company::class)->create();
         $team = factory(Team::class)->create();
@@ -47,7 +47,7 @@ class HasManyRelationOneToManyOperationsTest extends TestCase
     }
 
     /** @test */
-    public function associating_relation_resource_with_no_related_key_provided()
+    public function associating_relation_resource_with_no_related_key_provided(): void
     {
         $company = factory(Company::class)->create();
         factory(Team::class)->create();
@@ -62,7 +62,7 @@ class HasManyRelationOneToManyOperationsTest extends TestCase
     }
 
     /** @test */
-    public function associating_relation_resource_when_authorized()
+    public function associating_relation_resource_when_authorized(): void
     {
         $company = factory(Company::class)->create();
         $team = factory(Team::class)->create();
@@ -78,7 +78,7 @@ class HasManyRelationOneToManyOperationsTest extends TestCase
     }
 
     /** @test */
-    public function associating_relation_resource_and_getting_included_relation()
+    public function associating_relation_resource_and_getting_included_relation(): void
     {
         $company = factory(Company::class)->create();
         $team = factory(Team::class)->create();
@@ -100,7 +100,7 @@ class HasManyRelationOneToManyOperationsTest extends TestCase
     }
 
     /** @test */
-    public function transforming_an_associated_relation_resource()
+    public function transforming_an_associated_relation_resource(): void
     {
         $company = factory(Company::class)->create();
         $team = factory(Team::class)->create();
@@ -129,7 +129,7 @@ class HasManyRelationOneToManyOperationsTest extends TestCase
     }
 
     /** @test */
-    public function dissociating_relation_resource_when_unauthorized()
+    public function dissociating_relation_resource_when_unauthorized(): void
     {
         $company = factory(Company::class)->create();
         $team = factory(Team::class)->create(['company_id' => $company->id]);
@@ -142,7 +142,7 @@ class HasManyRelationOneToManyOperationsTest extends TestCase
     }
 
     /** @test */
-    public function dissociating_relation_resource_when_authorized()
+    public function dissociating_relation_resource_when_authorized(): void
     {
         $company = factory(Company::class)->create();
         $team = factory(Team::class)->create(['company_id' => $company->id]);
@@ -156,7 +156,7 @@ class HasManyRelationOneToManyOperationsTest extends TestCase
     }
 
     /** @test */
-    public function dissociating_relation_resource_and_getting_included_relation()
+    public function dissociating_relation_resource_and_getting_included_relation(): void
     {
         $company = factory(Company::class)->create();
         $team = factory(Team::class)->create(['company_id' => $company->id]);
@@ -175,7 +175,7 @@ class HasManyRelationOneToManyOperationsTest extends TestCase
     }
 
     /** @test */
-    public function transforming_a_dissociated_relation_resource_when_authorized()
+    public function transforming_a_dissociated_relation_resource_when_authorized(): void
     {
         $company = factory(Company::class)->create();
         $team = factory(Team::class)->create(['company_id' => $company->id]);

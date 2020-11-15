@@ -16,7 +16,7 @@ use Orion\Tests\Fixtures\App\Policies\RedPolicy;
 class BelongsToRelationStandardDeleteOperationsTest extends TestCase
 {
     /** @test */
-    public function trashing_a_single_soft_deletable_relation_resource_without_authorization()
+    public function trashing_a_single_soft_deletable_relation_resource_without_authorization(): void
     {
         $category = factory(Category::class)->create();
         $post = factory(Post::class)->create(['category_id' => $category->id]);
@@ -29,7 +29,7 @@ class BelongsToRelationStandardDeleteOperationsTest extends TestCase
     }
 
     /** @test */
-    public function deleting_a_single_relation_resource_without_authorization()
+    public function deleting_a_single_relation_resource_without_authorization(): void
     {
         $user = factory(User::class)->create();
         $post = factory(Post::class)->create(['user_id' => $user->id]);
@@ -42,7 +42,7 @@ class BelongsToRelationStandardDeleteOperationsTest extends TestCase
     }
 
     /** @test */
-    public function force_deleting_a_single_relation_resource_without_authorization()
+    public function force_deleting_a_single_relation_resource_without_authorization(): void
     {
         $trashedCategory = factory(Category::class)->state('trashed')->create();
         $post = factory(Post::class)->create(['category_id' => $trashedCategory->id]);
@@ -55,7 +55,7 @@ class BelongsToRelationStandardDeleteOperationsTest extends TestCase
     }
 
     /** @test */
-    public function trashing_a_single_soft_deletable_relation_resource_when_authorized()
+    public function trashing_a_single_soft_deletable_relation_resource_when_authorized(): void
     {
         $category = factory(Category::class)->create();
         $post = factory(Post::class)->create(['category_id' => $category->id]);
@@ -68,7 +68,7 @@ class BelongsToRelationStandardDeleteOperationsTest extends TestCase
     }
 
     /** @test */
-    public function deleting_a_single_relation_resource_when_authorized()
+    public function deleting_a_single_relation_resource_when_authorized(): void
     {
         $user = factory(User::class)->create()->fresh();
         $post = factory(Post::class)->create(['user_id' => $user->id]);
@@ -81,7 +81,7 @@ class BelongsToRelationStandardDeleteOperationsTest extends TestCase
     }
 
     /** @test */
-    public function force_deleting_a_single_trashed_relation_resource_when_authorized()
+    public function force_deleting_a_single_trashed_relation_resource_when_authorized(): void
     {
         $trashedCategory = factory(Category::class)->state('trashed')->create()->fresh();
         $post = factory(Post::class)->create(['category_id' => $trashedCategory->id]);
@@ -94,7 +94,7 @@ class BelongsToRelationStandardDeleteOperationsTest extends TestCase
     }
 
     /** @test */
-    public function deleting_a_single_trashed_relation_resource_without_trashed_query_parameter()
+    public function deleting_a_single_trashed_relation_resource_without_trashed_query_parameter(): void
     {
         $trashedCategory = factory(Category::class)->state('trashed')->create();
         $post = factory(Post::class)->create(['category_id' => $trashedCategory->id]);
@@ -109,7 +109,7 @@ class BelongsToRelationStandardDeleteOperationsTest extends TestCase
     }
 
     /** @test */
-    public function deleting_a_single_trashed_relation_resource_with_trashed_query_parameter()
+    public function deleting_a_single_trashed_relation_resource_with_trashed_query_parameter(): void
     {
         $trashedCategory = factory(Category::class)->state('trashed')->create();
         $post = factory(Post::class)->create(['category_id' => $trashedCategory->id]);
@@ -124,20 +124,7 @@ class BelongsToRelationStandardDeleteOperationsTest extends TestCase
     }
 
     /** @test */
-    public function deleting_a_single_trashed_relation_resource_with_force_query_parameter()
-    {
-        $trashedCategory = factory(Category::class)->state('trashed')->create()->fresh();
-        $post = factory(Post::class)->create(['category_id' => $trashedCategory->id]);
-
-        Gate::policy(Category::class, GreenPolicy::class);
-
-        $response = $this->delete("/api/posts/{$post->id}/category?force=true");
-
-        $this->assertResourceDeleted($response, $trashedCategory);
-    }
-
-    /** @test */
-    public function transforming_a_single_deleted_relation_resource()
+    public function transforming_a_single_deleted_relation_resource(): void
     {
         $user = factory(User::class)->create()->fresh();
         $post = factory(Post::class)->create(['user_id' => $user->id]);
@@ -157,7 +144,7 @@ class BelongsToRelationStandardDeleteOperationsTest extends TestCase
     }
 
     /** @test */
-    public function deleting_a_single_relation_resource_and_getting_included_relation()
+    public function deleting_a_single_relation_resource_and_getting_included_relation(): void
     {
         $user = factory(User::class)->create()->fresh();
         $post = factory(Post::class)->create(['user_id' => $user->id])->fresh();

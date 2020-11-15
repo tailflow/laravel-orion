@@ -16,7 +16,7 @@ use Orion\Tests\Fixtures\App\Policies\RedPolicy;
 class HasOneRelationStandardDeleteOperationsTest extends TestCase
 {
     /** @test */
-    public function trashing_a_single_soft_deletable_relation_resource_without_authorization()
+    public function trashing_a_single_soft_deletable_relation_resource_without_authorization(): void
     {
         $post = factory(Post::class)->create();
         factory(PostImage::class)->create(['post_id' => $post->id]);
@@ -29,7 +29,7 @@ class HasOneRelationStandardDeleteOperationsTest extends TestCase
     }
 
     /** @test */
-    public function deleting_a_single_relation_resource_without_authorization()
+    public function deleting_a_single_relation_resource_without_authorization(): void
     {
         $post = factory(Post::class)->create();
         factory(PostMeta::class)->create(['post_id' => $post->id]);
@@ -42,7 +42,7 @@ class HasOneRelationStandardDeleteOperationsTest extends TestCase
     }
 
     /** @test */
-    public function force_deleting_a_single_relation_resource_without_authorization()
+    public function force_deleting_a_single_relation_resource_without_authorization(): void
     {
         $post = factory(Post::class)->create();
         factory(PostImage::class)->state('trashed')->create(['post_id' => $post->id]);
@@ -55,7 +55,7 @@ class HasOneRelationStandardDeleteOperationsTest extends TestCase
     }
 
     /** @test */
-    public function trashing_a_single_soft_deletable_relation_resource_when_authorized()
+    public function trashing_a_single_soft_deletable_relation_resource_when_authorized(): void
     {
         $post = factory(Post::class)->create();
         $postImage = factory(PostImage::class)->create(['post_id' => $post->id]);
@@ -68,7 +68,7 @@ class HasOneRelationStandardDeleteOperationsTest extends TestCase
     }
 
     /** @test */
-    public function deleting_a_single_relation_resource_when_authorized()
+    public function deleting_a_single_relation_resource_when_authorized(): void
     {
         $post = factory(Post::class)->create();
         $postMeta = factory(PostMeta::class)->create(['post_id' => $post->id])->fresh();
@@ -81,7 +81,7 @@ class HasOneRelationStandardDeleteOperationsTest extends TestCase
     }
 
     /** @test */
-    public function force_deleting_a_single_trashed_relation_resource_when_authorized()
+    public function force_deleting_a_single_trashed_relation_resource_when_authorized(): void
     {
         $post = factory(Post::class)->create();
         $trashedPostImage = factory(PostImage::class)->state('trashed')->create(['post_id' => $post->id])->fresh();
@@ -94,7 +94,7 @@ class HasOneRelationStandardDeleteOperationsTest extends TestCase
     }
 
     /** @test */
-    public function deleting_a_single_trashed_relation_resource_without_trashed_query_parameter()
+    public function deleting_a_single_trashed_relation_resource_without_trashed_query_parameter(): void
     {
         $post = factory(Post::class)->create();
         $trashedPostImage = factory(PostImage::class)->state('trashed')->create(['post_id' => $post->id]);
@@ -109,7 +109,7 @@ class HasOneRelationStandardDeleteOperationsTest extends TestCase
     }
 
     /** @test */
-    public function deleting_a_single_trashed_relation_resource_with_trashed_query_parameter()
+    public function deleting_a_single_trashed_relation_resource_with_trashed_query_parameter(): void
     {
         $post = factory(Post::class)->create();
         $trashedPostImage = factory(PostImage::class)->state('trashed')->create(['post_id' => $post->id]);
@@ -124,20 +124,7 @@ class HasOneRelationStandardDeleteOperationsTest extends TestCase
     }
 
     /** @test */
-    public function deleting_a_single_trashed_relation_resource_with_force_query_parameter()
-    {
-        $post = factory(Post::class)->create();
-        $trashedPostImage = factory(PostImage::class)->state('trashed')->create(['post_id' => $post->id])->fresh();
-
-        Gate::policy(PostImage::class, GreenPolicy::class);
-
-        $response = $this->delete("/api/posts/{$post->id}/image?force=true");
-
-        $this->assertResourceDeleted($response, $trashedPostImage);
-    }
-
-    /** @test */
-    public function transforming_a_single_deleted_relation_resource()
+    public function transforming_a_single_deleted_relation_resource(): void
     {
         $post = factory(Post::class)->create();
         $postMeta = factory(PostMeta::class)->create(['post_id' => $post->id])->fresh();
@@ -157,7 +144,7 @@ class HasOneRelationStandardDeleteOperationsTest extends TestCase
     }
 
     /** @test */
-    public function deleting_a_single_relation_resource_and_getting_included_relation()
+    public function deleting_a_single_relation_resource_and_getting_included_relation(): void
     {
         $post = factory(Post::class)->create()->fresh();
         $postMeta = factory(PostMeta::class)->create(['post_id' => $post->id])->fresh();

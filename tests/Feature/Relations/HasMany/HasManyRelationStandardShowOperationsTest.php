@@ -17,7 +17,7 @@ use Orion\Tests\Fixtures\App\Policies\RedPolicy;
 class HasManyRelationStandardShowOperationsTest extends TestCase
 {
     /** @test */
-    public function getting_a_single_relation_resource_without_parent_authorization()
+    public function getting_a_single_relation_resource_without_parent_authorization(): void
     {
         $company = factory(Company::class)->create();
         $team = factory(Team::class)->create(['company_id' => $company->id]);
@@ -30,7 +30,7 @@ class HasManyRelationStandardShowOperationsTest extends TestCase
     }
 
     /** @test */
-    public function getting_a_single_relation_resource_when_authorized()
+    public function getting_a_single_relation_resource_when_authorized(): void
     {
         $company = factory(Company::class)->create();
         $team = factory(Team::class)->create(['company_id' => $company->id]);
@@ -43,7 +43,7 @@ class HasManyRelationStandardShowOperationsTest extends TestCase
     }
 
     /** @test */
-    public function getting_a_single_trashed_relation_resource_when_with_trashed_query_parameter_is_missing()
+    public function getting_a_single_trashed_relation_resource_when_with_trashed_query_parameter_is_missing(): void
     {
         $user = factory(User::class)->create();
         $trashedPost = factory(Post::class)->state('trashed')->create(['user_id' => $user->id]);
@@ -56,7 +56,7 @@ class HasManyRelationStandardShowOperationsTest extends TestCase
     }
 
     /** @test */
-    public function getting_a_single_trashed_relation_resource_when_with_trashed_query_parameter_is_present()
+    public function getting_a_single_trashed_relation_resource_when_with_trashed_query_parameter_is_present(): void
     {
         $user = factory(User::class)->create();
         $trashedPost = factory(Post::class)->state('trashed')->create(['user_id' => $user->id]);
@@ -70,7 +70,7 @@ class HasManyRelationStandardShowOperationsTest extends TestCase
 
 
     /** @test */
-    public function getting_a_single_transformed_relation_resource()
+    public function getting_a_single_transformed_relation_resource(): void
     {
         $company = factory(Company::class)->create();
         $team = factory(Team::class)->create(['company_id' => $company->id]);
@@ -90,7 +90,7 @@ class HasManyRelationStandardShowOperationsTest extends TestCase
     }
 
     /** @test */
-    public function getting_a_single_relation_resource_with_included_relation()
+    public function getting_a_single_relation_resource_with_included_relation(): void
     {
         $company = factory(Company::class)->create();
         $team = factory(Team::class)->create(['company_id' => $company->id]);

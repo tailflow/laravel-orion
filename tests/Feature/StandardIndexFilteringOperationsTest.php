@@ -12,7 +12,7 @@ use Orion\Tests\Fixtures\App\Policies\GreenPolicy;
 class StandardIndexFilteringOperationsTest extends TestCase
 {
     /** @test */
-    public function getting_a_list_of_resources_filtered_by_model_field_using_equal_operator()
+    public function getting_a_list_of_resources_filtered_by_model_field_using_equal_operator(): void
     {
         $matchingPost = factory(Post::class)->create(['title' => 'match'])->fresh();
         factory(Post::class)->create(['title' => 'not match'])->fresh();
@@ -32,7 +32,7 @@ class StandardIndexFilteringOperationsTest extends TestCase
     }
 
     /** @test */
-    public function getting_a_list_of_resources_filtered_by_model_field_using_equal_operator_and_or_type()
+    public function getting_a_list_of_resources_filtered_by_model_field_using_equal_operator_and_or_type(): void
     {
         $matchingPost = factory(Post::class)->create(['title' => 'match'])->fresh();
         $anotherMatchingPost = factory(Post::class)->create(['position' => 3])->fresh();
@@ -54,7 +54,7 @@ class StandardIndexFilteringOperationsTest extends TestCase
     }
 
     /** @test */
-    public function getting_a_list_of_resources_filtered_by_model_field_using_not_equal_operator()
+    public function getting_a_list_of_resources_filtered_by_model_field_using_not_equal_operator(): void
     {
         $matchingPost = factory(Post::class)->create(['position' => 4])->fresh();
         factory(Post::class)->create(['position' => 5])->fresh();
@@ -74,7 +74,7 @@ class StandardIndexFilteringOperationsTest extends TestCase
     }
 
     /** @test */
-    public function getting_a_list_of_resources_filtered_by_model_field_using_less_than_operator()
+    public function getting_a_list_of_resources_filtered_by_model_field_using_less_than_operator(): void
     {
         $matchingPost = factory(Post::class)->create(['position' => 4])->fresh();
         factory(Post::class)->create(['position' => 5])->fresh();
@@ -94,7 +94,7 @@ class StandardIndexFilteringOperationsTest extends TestCase
     }
 
     /** @test */
-    public function getting_a_list_of_resources_filtered_by_model_field_using_less_than_or_equal_operator()
+    public function getting_a_list_of_resources_filtered_by_model_field_using_less_than_or_equal_operator(): void
     {
         $matchingPost = factory(Post::class)->create(['position' => 4])->fresh();
         $anotherMatchingPost = factory(Post::class)->create(['position' => 5])->fresh();
@@ -115,7 +115,7 @@ class StandardIndexFilteringOperationsTest extends TestCase
     }
 
     /** @test */
-    public function getting_a_list_of_resources_filtered_by_model_field_using_more_than_operator()
+    public function getting_a_list_of_resources_filtered_by_model_field_using_more_than_operator(): void
     {
         $matchingPost = factory(Post::class)->create(['position' => 4])->fresh();
         factory(Post::class)->create(['position' => 2])->fresh();
@@ -135,7 +135,7 @@ class StandardIndexFilteringOperationsTest extends TestCase
     }
 
     /** @test */
-    public function getting_a_list_of_resources_filtered_by_model_field_using_more_than_or_equal_operator()
+    public function getting_a_list_of_resources_filtered_by_model_field_using_more_than_or_equal_operator(): void
     {
         $matchingPost = factory(Post::class)->create(['position' => 4])->fresh();
         $anotherMatchingPost = factory(Post::class)->create(['position' => 5])->fresh();
@@ -156,7 +156,7 @@ class StandardIndexFilteringOperationsTest extends TestCase
     }
 
     /** @test */
-    public function getting_a_list_of_resources_filtered_by_model_field_using_like_operator()
+    public function getting_a_list_of_resources_filtered_by_model_field_using_like_operator(): void
     {
         $matchingPost = factory(Post::class)->create(['title' => 'match'])->fresh();
         $anotherMatchingPost = factory(Post::class)->create(['title' => 'another match'])->fresh();
@@ -177,7 +177,7 @@ class StandardIndexFilteringOperationsTest extends TestCase
     }
 
     /** @test */
-    public function getting_a_list_of_resources_filtered_by_model_field_using_not_like_operator()
+    public function getting_a_list_of_resources_filtered_by_model_field_using_not_like_operator(): void
     {
         $matchingPost = factory(Post::class)->create(['title' => 'another match'])->fresh();
         factory(Post::class)->create(['title' => 'match'])->fresh();
@@ -197,7 +197,7 @@ class StandardIndexFilteringOperationsTest extends TestCase
     }
 
     /** @test */
-    public function getting_a_list_of_resources_filtered_by_model_field_using_in_operator()
+    public function getting_a_list_of_resources_filtered_by_model_field_using_in_operator(): void
     {
         $matchingPost = factory(Post::class)->create(['title' => 'match'])->fresh();
         $anotherMatchingPost = factory(Post::class)->create(['title' => 'another match'])->fresh();
@@ -218,7 +218,7 @@ class StandardIndexFilteringOperationsTest extends TestCase
     }
 
     /** @test */
-    public function getting_a_list_of_resources_filtered_by_model_field_using_not_in_operator()
+    public function getting_a_list_of_resources_filtered_by_model_field_using_not_in_operator(): void
     {
         $matchingPost = factory(Post::class)->create(['title' => 'match'])->fresh();
         factory(Post::class)->create(['title' => 'different'])->fresh();
@@ -238,7 +238,7 @@ class StandardIndexFilteringOperationsTest extends TestCase
     }
 
     /** @test */
-    public function getting_a_list_of_resources_filtered_by_relation_field_resources()
+    public function getting_a_list_of_resources_filtered_by_relation_field_resources(): void
     {
         $matchingPostUser = factory(User::class)->create(['name' => 'match']);
         $matchingPost = factory(Post::class)->create(['user_id' => $matchingPostUser->id])->fresh();
@@ -261,7 +261,7 @@ class StandardIndexFilteringOperationsTest extends TestCase
     }
 
     /** @test */
-    public function getting_a_list_of_resources_filtered_by_not_whitelisted_field()
+    public function getting_a_list_of_resources_filtered_by_not_whitelisted_field(): void
     {
         factory(Post::class)->create(['body' => 'match'])->fresh();
         factory(Post::class)->create(['body' => 'not match'])->fresh();
@@ -279,7 +279,7 @@ class StandardIndexFilteringOperationsTest extends TestCase
     }
 
     /** @test */
-    public function getting_a_list_of_resources_filtered_by_model_field_with_wildcard_whitelisting()
+    public function getting_a_list_of_resources_filtered_by_model_field_with_wildcard_whitelisting(): void
     {
         $matchingTeam = factory(Team::class)->create(['name' => 'match'])->fresh();
         factory(Team::class)->create(['name' => 'not match'])->fresh();
@@ -299,7 +299,7 @@ class StandardIndexFilteringOperationsTest extends TestCase
     }
 
     /** @test */
-    public function getting_a_list_of_resources_filtered_by_relation_field_with_wildcard_whitelisting()
+    public function getting_a_list_of_resources_filtered_by_relation_field_with_wildcard_whitelisting(): void
     {
         $matchingTeamCompany = factory(Company::class)->create(['name' => 'match'])->fresh();
         $matchingTeam = factory(Team::class)->create(['company_id' => $matchingTeamCompany->id])->fresh();

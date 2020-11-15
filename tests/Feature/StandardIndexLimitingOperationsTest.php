@@ -9,7 +9,7 @@ use Orion\Tests\Fixtures\App\Policies\GreenPolicy;
 class StandardIndexLimitingOperationsTest extends TestCase
 {
     /** @test */
-    public function getting_a_limited_list_of_resources_with_a_valid_limit_query_parameter()
+    public function getting_a_limited_list_of_resources_with_a_valid_limit_query_parameter(): void
     {
         $posts = factory(Post::class)->times(15)->create();
 
@@ -24,7 +24,7 @@ class StandardIndexLimitingOperationsTest extends TestCase
     }
 
     /** @test */
-    public function getting_a_list_of_resources_with_limit_query_parameter_being_a_string()
+    public function getting_a_list_of_resources_with_limit_query_parameter_being_a_string(): void
     {
         $posts = factory(Post::class)->times(5)->create();
 
@@ -39,7 +39,7 @@ class StandardIndexLimitingOperationsTest extends TestCase
     }
 
     /** @test */
-    public function getting_a_list_of_resources_with_limit_query_parameter_being_a_negative_number()
+    public function getting_a_list_of_resources_with_limit_query_parameter_being_a_negative_number(): void
     {
         $posts = factory(Post::class)->times(5)->create();
 
@@ -54,7 +54,7 @@ class StandardIndexLimitingOperationsTest extends TestCase
     }
 
     /** @test */
-    public function getting_a_list_of_resources_with_limit_query_parameter_being_zero()
+    public function getting_a_list_of_resources_with_limit_query_parameter_being_zero(): void
     {
         $posts = factory(Post::class)->times(5)->create();
 
@@ -69,7 +69,7 @@ class StandardIndexLimitingOperationsTest extends TestCase
     }
 
     /** @test */
-    public function getting_a_list_of_resources_with_limit_query_parameter_missing_value()
+    public function getting_a_list_of_resources_with_limit_query_parameter_missing_value(): void
     {
         $posts = factory(Post::class)->times(5)->create();
 

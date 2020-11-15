@@ -151,14 +151,19 @@ class RelationsResolver implements \Orion\Contracts\RelationsResolver
     public function guardRelations(Model $entity, array $requestedRelations) : Model
     {
         $relations = $entity->getRelations();
+
+        ksort($relations);
+
         foreach ($relations as $relationName => $relation) {
             if ($relationName === 'pivot') {
                 continue;
             }
             if (!in_array($relationName, $requestedRelations, true)) {
-                $entity->unsetRelation($relationName);
+                unset($relations[$relationName]);
             }
         }
+
+        $entity->setRelations($relations);
 
         return $entity;
     }

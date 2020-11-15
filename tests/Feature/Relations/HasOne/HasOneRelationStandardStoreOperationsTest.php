@@ -16,7 +16,7 @@ use Orion\Tests\Fixtures\App\Policies\RedPolicy;
 class HasOneRelationStandardStoreOperationsTest extends TestCase
 {
     /** @test */
-    public function storing_a_single_relation_resource_without_authorization()
+    public function storing_a_single_relation_resource_without_authorization(): void
     {
         $post = factory(Post::class)->create();
         $payload = ['notes' => 'test stored'];
@@ -29,7 +29,7 @@ class HasOneRelationStandardStoreOperationsTest extends TestCase
     }
 
     /** @test */
-    public function storing_a_single_relation_resource_when_authorized()
+    public function storing_a_single_relation_resource_when_authorized(): void
     {
         $post = factory(Post::class)->create();
         $payload = ['notes' => 'test stored'];
@@ -42,7 +42,7 @@ class HasOneRelationStandardStoreOperationsTest extends TestCase
     }
 
     /** @test */
-    public function storing_a_single_relation_resource_with_only_fillable_properties()
+    public function storing_a_single_relation_resource_with_only_fillable_properties(): void
     {
         $post = factory(Post::class)->create();
         $payload = ['notes' => 'test stored', 'comments_enabled' => false];
@@ -60,7 +60,7 @@ class HasOneRelationStandardStoreOperationsTest extends TestCase
     }
 
     /** @test */
-    public function storing_a_single_relation_resource_when_validation_fails()
+    public function storing_a_single_relation_resource_when_validation_fails(): void
     {
         $post = factory(Post::class)->create();
         $payload = ['notes' => 'a'];
@@ -82,7 +82,7 @@ class HasOneRelationStandardStoreOperationsTest extends TestCase
     }
 
     /** @test */
-    public function transforming_a_single_stored_relation_resource()
+    public function transforming_a_single_stored_relation_resource(): void
     {
         $post = factory(Post::class)->create();
         $payload = ['notes' => 'test stored'];
@@ -102,7 +102,7 @@ class HasOneRelationStandardStoreOperationsTest extends TestCase
     }
 
     /** @test */
-    public function storing_a_single_relation_resource_and_getting_included_relation()
+    public function storing_a_single_relation_resource_and_getting_included_relation(): void
     {
         $post = factory(Post::class)->create();
         $payload = ['notes' => 'test stored'];

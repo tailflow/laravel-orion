@@ -346,7 +346,11 @@ trait HandlesRelationStandardOperations
         }
 
         $this->performUpdate(
-            $request, $parentEntity, $entity, $request->only($entity->getFillable()), $request->get('pivot', [])
+            $request,
+            $parentEntity,
+            $entity,
+            $request->only($entity->getFillable()),
+            $request->get('pivot', [])
         );
 
         $entity = $this->newRelationQuery($parentEntity)->with($requestedRelations)->find($entity->id);
@@ -440,7 +444,9 @@ trait HandlesRelationStandardOperations
 
         $relation = $parentEntity->{$this->getRelation()}();
         if ($relation instanceof BelongsToMany || $relation instanceof MorphToMany) {
-            $relation->updateExistingPivot($entity->getKey(), $this->preparePivotFields($pivot));
+            if (count($pivotFields = $this->preparePivotFields($pivot))) {
+                $relation->updateExistingPivot($entity->getKey(), $pivotFields);
+            }
         }
     }
 

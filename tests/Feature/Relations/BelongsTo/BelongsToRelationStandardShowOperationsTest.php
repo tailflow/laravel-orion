@@ -16,7 +16,7 @@ use Orion\Tests\Fixtures\App\Policies\RedPolicy;
 class BelongsToRelationStandardShowOperationsTest extends TestCase
 {
     /** @test */
-    public function getting_a_single_relation_resource_without_parent_authorization()
+    public function getting_a_single_relation_resource_without_parent_authorization(): void
     {
         $user = factory(User::class)->create();
         $post = factory(Post::class)->create(['user_id' => $user->id]);
@@ -29,7 +29,7 @@ class BelongsToRelationStandardShowOperationsTest extends TestCase
     }
 
     /** @test */
-    public function getting_a_single_relation_resource_when_authorized()
+    public function getting_a_single_relation_resource_when_authorized(): void
     {
         $user = factory(User::class)->create();
         $post = factory(Post::class)->create(['user_id' => $user->id]);
@@ -42,7 +42,7 @@ class BelongsToRelationStandardShowOperationsTest extends TestCase
     }
 
     /** @test */
-    public function getting_a_single_trashed_relation_resource_when_with_trashed_query_parameter_is_missing()
+    public function getting_a_single_trashed_relation_resource_when_with_trashed_query_parameter_is_missing(): void
     {
         $trashedCategory = factory(Category::class)->state('trashed')->create();
         $post = factory(Post::class)->create(['category_id' => $trashedCategory->id]);
@@ -55,7 +55,7 @@ class BelongsToRelationStandardShowOperationsTest extends TestCase
     }
 
     /** @test */
-    public function getting_a_single_trashed_relation_resource_when_with_trashed_query_parameter_is_present()
+    public function getting_a_single_trashed_relation_resource_when_with_trashed_query_parameter_is_present(): void
     {
         $trashedCategory = factory(Category::class)->state('trashed')->create();
         $post = factory(Post::class)->create(['category_id' => $trashedCategory->id]);
@@ -69,7 +69,7 @@ class BelongsToRelationStandardShowOperationsTest extends TestCase
 
 
     /** @test */
-    public function getting_a_single_transformed_relation_resource()
+    public function getting_a_single_transformed_relation_resource(): void
     {
         $user = factory(User::class)->create();
         $post = factory(Post::class)->create(['user_id' => $user->id]);
@@ -89,7 +89,7 @@ class BelongsToRelationStandardShowOperationsTest extends TestCase
     }
 
     /** @test */
-    public function getting_a_single_relation_resource_with_included_relation()
+    public function getting_a_single_relation_resource_with_included_relation(): void
     {
         $user = factory(User::class)->create();
         $post = factory(Post::class)->create(['user_id' => $user->id]);

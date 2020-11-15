@@ -4,6 +4,7 @@ namespace Orion\Testing;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 
 trait InteractsWithResources
@@ -82,6 +83,9 @@ trait InteractsWithResources
      */
     protected function assertResourceStored($response, string $model, array $databaseData, array $mergeData = [], bool $exact = true): void
     {
+        // TODO: assert pivot table
+
+        $databaseData = Arr::except($databaseData, 'pivot');
         $this->assertDatabaseHas((new $model)->getTable(), $databaseData);
 
         $response->assertStatus(201);
@@ -103,6 +107,11 @@ trait InteractsWithResources
      */
     protected function assertResourceUpdated($response, string $model, array $originalDatabaseData, array $updatedDatabaseData, array $mergeData = [], bool $exact = true): void
     {
+        // TODO: assert pivot table
+
+        $originalDatabaseData = Arr::except($originalDatabaseData, 'pivot');
+        $updatedDatabaseData = Arr::except($updatedDatabaseData, 'pivot');
+
         $table = (new $model)->getTable();
         $this->assertDatabaseMissing($table, $originalDatabaseData);
         $this->assertDatabaseHas($table, $updatedDatabaseData);
@@ -144,10 +153,10 @@ trait InteractsWithResources
     {
         $resource = $resource->fresh();
         if (!$resource) {
-            $this->fail('The resource was deleted, not trashed.');
+            self::fail('The resource was deleted, not trashed.');
         }
         if (is_null($resource->{$resource->getDeletedAtColumn()})) {
-            $this->fail('The resource was not trashed.');
+            self::fail('The resource was not trashed.');
         }
 
         $response->assertStatus(200);

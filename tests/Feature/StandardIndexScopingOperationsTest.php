@@ -10,7 +10,7 @@ use Orion\Tests\Fixtures\App\Policies\GreenPolicy;
 class StandardIndexScopingOperationsTest extends TestCase
 {
     /** @test */
-    public function getting_a_list_of_scoped_resources_without_parameters()
+    public function getting_a_list_of_scoped_resources_without_parameters(): void
     {
         $matchingPost = factory(Post::class)->create(['publish_at' => Carbon::now()->subHours(3)])->fresh();
         factory(Post::class)->create(['publish_at' => null])->fresh();
@@ -30,7 +30,7 @@ class StandardIndexScopingOperationsTest extends TestCase
     }
 
     /** @test */
-    public function getting_a_list_of_scoped_resources_with_parameters()
+    public function getting_a_list_of_scoped_resources_with_parameters(): void
     {
         $matchingPost = factory(Post::class)->create(['publish_at' => Carbon::parse('2019-01-10 09:35:21')])->fresh();
         factory(Post::class)->create(['publish_at' => null])->fresh();
@@ -50,7 +50,7 @@ class StandardIndexScopingOperationsTest extends TestCase
     }
 
     /** @test */
-    public function getting_a_list_of_scoped_resources_if_scope_is_not_whitelisted()
+    public function getting_a_list_of_scoped_resources_if_scope_is_not_whitelisted(): void
     {
         factory(Post::class)->times(5)->create();
 

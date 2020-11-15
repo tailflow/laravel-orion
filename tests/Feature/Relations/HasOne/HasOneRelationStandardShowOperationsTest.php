@@ -16,7 +16,7 @@ use Orion\Tests\Fixtures\App\Policies\RedPolicy;
 class HasOneRelationStandardShowOperationsTest extends TestCase
 {
     /** @test */
-    public function getting_a_single_relation_resource_without_parent_authorization()
+    public function getting_a_single_relation_resource_without_parent_authorization(): void
     {
         $post = factory(Post::class)->create();
         factory(PostMeta::class)->create(['post_id' => $post->id]);
@@ -29,7 +29,7 @@ class HasOneRelationStandardShowOperationsTest extends TestCase
     }
 
     /** @test */
-    public function getting_a_single_relation_resource_when_authorized()
+    public function getting_a_single_relation_resource_when_authorized(): void
     {
         $post = factory(Post::class)->create();
         $postMeta = factory(PostMeta::class)->create(['post_id' => $post->id]);
@@ -42,7 +42,7 @@ class HasOneRelationStandardShowOperationsTest extends TestCase
     }
 
     /** @test */
-    public function getting_a_single_trashed_relation_resource_when_with_trashed_query_parameter_is_missing()
+    public function getting_a_single_trashed_relation_resource_when_with_trashed_query_parameter_is_missing(): void
     {
         $post = factory(Post::class)->create();
         factory(PostImage::class)->state('trashed')->create(['post_id' => $post->id]);
@@ -55,7 +55,7 @@ class HasOneRelationStandardShowOperationsTest extends TestCase
     }
 
     /** @test */
-    public function getting_a_single_trashed_relation_resource_when_with_trashed_query_parameter_is_present()
+    public function getting_a_single_trashed_relation_resource_when_with_trashed_query_parameter_is_present(): void
     {
         $post = factory(Post::class)->create();
         $trashedPostMeta =  factory(PostImage::class)->state('trashed')->create(['post_id' => $post->id]);
@@ -69,7 +69,7 @@ class HasOneRelationStandardShowOperationsTest extends TestCase
 
 
     /** @test */
-    public function getting_a_single_transformed_relation_resource()
+    public function getting_a_single_transformed_relation_resource(): void
     {
         $post = factory(Post::class)->create();
         $postMeta = factory(PostMeta::class)->create(['post_id' => $post->id]);
@@ -89,7 +89,7 @@ class HasOneRelationStandardShowOperationsTest extends TestCase
     }
 
     /** @test */
-    public function getting_a_single_relation_resource_with_included_relation()
+    public function getting_a_single_relation_resource_with_included_relation(): void
     {
         $post = factory(Post::class)->create();
         $postMeta = factory(PostMeta::class)->create(['post_id' => $post->id]);

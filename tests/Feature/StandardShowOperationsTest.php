@@ -14,7 +14,7 @@ use Orion\Tests\Fixtures\App\Policies\RedPolicy;
 class StandardShowOperationsTest extends TestCase
 {
     /** @test */
-    public function getting_a_single_resource_without_authorization()
+    public function getting_a_single_resource_without_authorization(): void
     {
         $post = factory(Post::class)->create();
 
@@ -26,7 +26,7 @@ class StandardShowOperationsTest extends TestCase
     }
 
     /** @test */
-    public function getting_a_single_resource_when_authorized()
+    public function getting_a_single_resource_when_authorized(): void
     {
         $user = factory(User::class)->create();
         $post = factory(Post::class)->create(['user_id' => $user->id]);
@@ -39,7 +39,7 @@ class StandardShowOperationsTest extends TestCase
     }
 
     /** @test */
-    public function getting_a_single_trashed_resource_when_with_trashed_query_parameter_is_missing()
+    public function getting_a_single_trashed_resource_when_with_trashed_query_parameter_is_missing(): void
     {
         $trashedPost = factory(Post::class)->state('trashed')->create();
 
@@ -51,7 +51,7 @@ class StandardShowOperationsTest extends TestCase
     }
 
     /** @test */
-    public function getting_a_single_trashed_resource_when_with_trashed_query_parameter_is_present()
+    public function getting_a_single_trashed_resource_when_with_trashed_query_parameter_is_present(): void
     {
         $trashedPost = factory(Post::class)->state('trashed')->create();
 
@@ -63,7 +63,7 @@ class StandardShowOperationsTest extends TestCase
     }
 
     /** @test */
-    public function getting_a_single_transformed_resource()
+    public function getting_a_single_transformed_resource(): void
     {
         $post = factory(Post::class)->create();
 
@@ -82,7 +82,7 @@ class StandardShowOperationsTest extends TestCase
     }
 
     /** @test */
-    public function getting_a_single_resource_with_included_relation()
+    public function getting_a_single_resource_with_included_relation(): void
     {
         $post = factory(Post::class)->create(['user_id' => factory(User::class)->create()->id]);
 

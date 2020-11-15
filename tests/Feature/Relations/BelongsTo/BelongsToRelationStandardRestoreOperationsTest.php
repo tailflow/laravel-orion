@@ -16,7 +16,7 @@ use Orion\Tests\Fixtures\App\Policies\RedPolicy;
 class BelongsToRelationStandardRestoreOperationsTest extends TestCase
 {
     /** @test */
-    public function restoring_a_single_relation_resource_without_authorization()
+    public function restoring_a_single_relation_resource_without_authorization(): void
     {
         $trashedCategory = factory(Category::class)->state('trashed')->create();
         $post = factory(Post::class)->create(['category_id' => $trashedCategory->id]);
@@ -30,7 +30,7 @@ class BelongsToRelationStandardRestoreOperationsTest extends TestCase
     }
 
     /** @test */
-    public function restoring_a_single_relation_resource_when_authorized()
+    public function restoring_a_single_relation_resource_when_authorized(): void
     {
         $trashedCategory = factory(Category::class)->state('trashed')->create();
         $post = factory(Post::class)->create(['category_id' => $trashedCategory->id]);
@@ -43,7 +43,7 @@ class BelongsToRelationStandardRestoreOperationsTest extends TestCase
     }
 
     /** @test */
-    public function restoring_a_single_not_trashed_relation_resource()
+    public function restoring_a_single_not_trashed_relation_resource(): void
     {
         $category = factory(Category::class)->create();
         $post = factory(Post::class)->create(['category_id' => $category->id]);
@@ -56,7 +56,7 @@ class BelongsToRelationStandardRestoreOperationsTest extends TestCase
     }
 
     /** @test */
-    public function restoring_a_single_relation_resource_that_is_not_marked_as_soft_deletable()
+    public function restoring_a_single_relation_resource_that_is_not_marked_as_soft_deletable(): void
     {
         $user = factory(User::class)->create()->fresh();
         $post = factory(Post::class)->create(['user_id' => $user->id]);
@@ -69,7 +69,7 @@ class BelongsToRelationStandardRestoreOperationsTest extends TestCase
     }
 
     /** @test */
-    public function transforming_a_single_restored_relation_resource()
+    public function transforming_a_single_restored_relation_resource(): void
     {
         $trashedCategory = factory(Category::class)->create();
         $post = factory(Post::class)->create(['category_id' => $trashedCategory->id]);
@@ -89,7 +89,7 @@ class BelongsToRelationStandardRestoreOperationsTest extends TestCase
     }
 
     /** @test */
-    public function restoring_a_single_relation_resource_and_getting_included_relation()
+    public function restoring_a_single_relation_resource_and_getting_included_relation(): void
     {
         $trashedCategory = factory(Category::class)->create();
         $post = factory(Post::class)->create(['category_id' => $trashedCategory->id]);
