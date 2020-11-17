@@ -71,7 +71,7 @@ class BelongsToManyRelationStandardStoreOperationsTest extends TestCase
     }
 
     /** @test */
-    public function storing_a_single_relation_resource_with_only_fillable_properties(): void
+    public function storing_a_single_relation_resource_with_only_fillable_fields(): void
     {
         $user = factory(User::class)->create();
         $payload = ['name' => 'test stored', 'deprecated' => true];
@@ -90,7 +90,7 @@ class BelongsToManyRelationStandardStoreOperationsTest extends TestCase
     }
 
     /** @test */
-    public function storing_a_single_relation_resource_with_only_fillable_pivot_properties(): void
+    public function storing_a_single_relation_resource_with_only_fillable_pivot_fields(): void
     {
         $user = factory(User::class)->create();
         $payload = [

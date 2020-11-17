@@ -48,7 +48,7 @@ class BelongsToRelationStandardUpdateOperationsTest extends TestCase
     }
 
     /** @test */
-    public function updating_a_single_relation_resource_with_only_fillable_properties(): void
+    public function updating_a_single_relation_resource_with_only_fillable_fields(): void
     {
         $user = factory(User::class)->create();
         $post = factory(Post::class)->create(['user_id' => $user->id]);

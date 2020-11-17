@@ -82,7 +82,10 @@ trait HandlesRelationManyToManyOperations
         $resources = $this->prepareResourcePivotFields($this->preparePivotResources($resources));
 
         if ($duplicates) {
-            return $parentEntity->{$this->getRelation()}()->attach($resources);
+            $parentEntity->{$this->getRelation()}()->attach($resources);
+            return [
+                'attached' => array_keys($resources)
+            ];
         }
 
         return $parentEntity->{$this->getRelation()}()->sync($resources, false);

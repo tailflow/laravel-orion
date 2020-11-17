@@ -39,7 +39,7 @@ class StandardStoreOperationsTest extends TestCase
     }
 
     /** @test */
-    public function storing_a_single_resource_with_only_fillable_properties(): void
+    public function storing_a_single_resource_with_only_fillable_fields(): void
     {
         $payload = ['title' => 'test post title', 'body' => 'test post body', 'tracking_id' => 'test tracking id'];
 

@@ -48,7 +48,7 @@ class HasOneRelationStandardUpdateOperationsTest extends TestCase
     }
 
     /** @test */
-    public function updating_a_single_relation_resource_with_only_fillable_properties(): void
+    public function updating_a_single_relation_resource_with_only_fillable_fields(): void
     {
         $post = factory(Post::class)->create();
         $postMeta = factory(PostMeta::class)->create(['post_id' => $post->id]);

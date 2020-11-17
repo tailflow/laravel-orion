@@ -46,7 +46,7 @@ class StandardUpdateOperationsTest extends TestCase
     }
 
     /** @test */
-    public function updating_a_single_resource_with_only_fillable_properties(): void
+    public function updating_a_single_resource_with_only_fillable_fields(): void
     {
         $post = factory(Post::class)->create();
         $payload = ['title' => 'test post title updated', 'tracking_id' => 'test tracking id'];

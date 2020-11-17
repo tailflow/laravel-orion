@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 trait InteractsWithResources
 {
@@ -228,6 +229,94 @@ trait InteractsWithResources
         $this->assertResponseContent($expected, $response, $exact);
     }
 
+    protected function assertResourcesAttached($response, string $relation, Model $parentModel, Collection $relationModels, array $pivotFields = [], bool $exact = true): void
+    {
+        foreach ($relationModels as $relationModel) {
+            $this->assertResourceAttached(
+                $relation,
+                $parentModel,
+                $relationModel,
+                Arr::get($pivotFields, $relationModel->getKey(), [])
+            );
+        }
+
+        $this->assertResponseContent(['attached' => $relationModels->pluck('id')->toArray()], $response, $exact);
+    }
+
+    protected function assertResourcesDetached($response, string $relation, Model $parentModel, Collection $relationModels, bool $exact = true): void
+    {
+        foreach ($relationModels as $relationModel) {
+            $this->assertResourceDetached($relation, $parentModel, $relationModel);
+        }
+
+        $this->assertResponseContent(['detached' => $relationModels->pluck('id')->toArray()], $response, $exact);
+    }
+
+    protected function assertResourcesSynced($response, string $relation, Model $parentModel, array $syncMap, array $pivotFields = [], bool $exact = true): void
+    {
+        foreach (array_merge($syncMap['attached'], $syncMap['updated'], $syncMap['remained']) as $relationModel) {
+            $this->assertResourceAttached(
+                $relation,
+                $parentModel,
+                $relationModel,
+                Arr::get($pivotFields, $relationModel->getKey(), [])
+            );
+        }
+
+        foreach ($syncMap['detached'] as $relationModel) {
+            $this->assertResourceDetached($relation, $parentModel, $relationModel,);
+        }
+
+        $this->assertResponseContent(
+            [
+                'attached' => collect($syncMap['attached'])->pluck('id')->toArray(),
+                'detached' => collect($syncMap['detached'])->pluck('id')->toArray(),
+                'updated' => collect($syncMap['updated'])->pluck('id')->toArray(),
+            ],
+            $response,
+            $exact
+        );
+    }
+
+    protected function assertResourceAttached(string $relation, Model $parentModel, Model $relationModel, array $pivotFields = []): void
+    {
+        $pivotFields = $this->castPivotFields($pivotFields);
+
+        $this->assertDatabaseHas($parentModel->{$relation}()->getTable(), array_merge([
+            $parentModel->{$relation}()->getForeignPivotKeyName() => $parentModel->getKey(),
+            $parentModel->{$relation}()->getRelatedPivotKeyName() => $relationModel->getKey()
+        ], $pivotFields));
+    }
+
+    protected function assertResourceDetached(string $relation, Model $parentModel, Model $relationModel): void
+    {
+        $this->assertDatabaseMissing($parentModel->{$relation}()->getTable(), [
+            $parentModel->{$relation}()->getForeignPivotKeyName() => $parentModel->getKey(),
+            $parentModel->{$relation}()->getRelatedPivotKeyName() => $relationModel->getKey()
+        ]);
+    }
+
+    protected function assertNoResourcesAttached($response, string $relation, Model $parentModel, bool $exact = true): void
+    {
+        self::assertSame(0, $parentModel->{$relation}()->count());
+
+        $this->assertResponseContent(['attached' => []], $response, $exact);
+    }
+
+    protected function assertNoResourcesDetached($response, string $relation, Model $parentModel, int $expectedCount, bool $exact = true): void
+    {
+        self::assertSame($expectedCount, $parentModel->{$relation}()->count());
+
+        $this->assertResponseContent(['detached' => []], $response, $exact);
+    }
+
+    protected function assertNoResourcesSynced($response, string $relation, Model $parentModel, bool $exact = true): void
+    {
+        self::assertSame(0, $parentModel->{$relation}()->count());
+
+        $this->assertResponseContent(['attached' => [], 'detached' => [], 'updated' => []], $response, $exact);
+    }
+
     protected function assertResponseContent(array $expected, $response, bool $exact)
     {
         if ($exact) {
@@ -240,7 +329,29 @@ trait InteractsWithResources
     protected function assertJsonSame(array $expected, $response): void
     {
         $actual = json_decode($response->getContent(), true);
-        $this->assertSame($expected, $actual);
+        self::assertSame($expected, $actual);
+    }
+
+    protected function castPivotFields(array $pivotFields): array
+    {
+        return collect($pivotFields)->map(function ($pivotFieldValue) {
+            if (is_array($pivotFieldValue)) {
+                $pivotFieldValue = json_encode($pivotFieldValue);
+                $pivotFieldValue = DB::raw("CAST('{$pivotFieldValue}' AS JSON)");
+            }
+
+            return $pivotFieldValue;
+        })->toArray();
+    }
+
+    protected function buildSyncMap(array $attached = [], array $detached = [], array $updated = [], array $remained = []): array
+    {
+        return [
+            'attached' => $attached,
+            'detached' => $detached,
+            'updated' => $updated,
+            'remained' => $remained
+        ];
     }
 
     protected function resolveResourceLink(LengthAwarePaginator $paginator, int $page): string

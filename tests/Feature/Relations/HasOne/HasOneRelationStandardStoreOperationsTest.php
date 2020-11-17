@@ -42,7 +42,7 @@ class HasOneRelationStandardStoreOperationsTest extends TestCase
     }
 
     /** @test */
-    public function storing_a_single_relation_resource_with_only_fillable_properties(): void
+    public function storing_a_single_relation_resource_with_only_fillable_fields(): void
     {
         $post = factory(Post::class)->create();
         $payload = ['notes' => 'test stored', 'comments_enabled' => false];
