@@ -264,7 +264,7 @@ trait InteractsWithResources
         }
 
         foreach ($syncMap['detached'] as $relationModel) {
-            $this->assertResourceDetached($relation, $parentModel, $relationModel,);
+            $this->assertResourceDetached($relation, $parentModel, $relationModel);
         }
 
         $this->assertResponseContent(
@@ -290,7 +290,7 @@ trait InteractsWithResources
         }
 
         foreach ($syncMap['detached'] as $relationModel) {
-            $this->assertResourceDetached($relation, $parentModel, $relationModel,);
+            $this->assertResourceDetached($relation, $parentModel, $relationModel);
         }
 
         $this->assertResponseContent(
