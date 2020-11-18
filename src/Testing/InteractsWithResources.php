@@ -84,8 +84,6 @@ trait InteractsWithResources
      */
     protected function assertResourceStored($response, string $model, array $databaseData, array $mergeData = [], bool $exact = true): void
     {
-        // TODO: assert pivot table
-
         $databaseData = Arr::except($databaseData, 'pivot');
         $this->assertDatabaseHas((new $model)->getTable(), $databaseData);
 
@@ -108,8 +106,6 @@ trait InteractsWithResources
      */
     protected function assertResourceUpdated($response, string $model, array $originalDatabaseData, array $updatedDatabaseData, array $mergeData = [], bool $exact = true): void
     {
-        // TODO: assert pivot table
-
         $originalDatabaseData = Arr::except($originalDatabaseData, 'pivot');
         $updatedDatabaseData = Arr::except($updatedDatabaseData, 'pivot');
 

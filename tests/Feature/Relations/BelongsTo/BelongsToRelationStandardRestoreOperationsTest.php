@@ -23,7 +23,6 @@ class BelongsToRelationStandardRestoreOperationsTest extends TestCase
 
         Gate::policy(Category::class, RedPolicy::class);
 
-        //TODO: make possible to omit child relation key?
         $response = $this->post("/api/posts/{$post->id}/category/{$trashedCategory->id}/restore");
 
         $this->assertUnauthorizedResponse($response);

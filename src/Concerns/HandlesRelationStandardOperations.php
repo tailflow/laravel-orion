@@ -217,7 +217,7 @@ trait HandlesRelationStandardOperations
         if (!$parentEntity->{$this->getRelation()}() instanceof BelongsTo) {
             $parentEntity->{$this->getRelation()}()->save($entity, $this->preparePivotFields($pivot));
         } else {
-            $entity->save(); //TODO: check, if running save here is correct
+            $entity->save();
             $parentEntity->{$this->getRelation()}()->associate($entity);
         }
     }

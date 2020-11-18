@@ -23,7 +23,6 @@ class HasOneRelationStandardRestoreOperationsTest extends TestCase
 
         Gate::policy(PostImage::class, RedPolicy::class);
 
-        //TODO: make possible to omit child relation key?
         $response = $this->post("/api/posts/{$post->id}/image/{$trashedPostImage->id}/restore");
 
         $this->assertUnauthorizedResponse($response);

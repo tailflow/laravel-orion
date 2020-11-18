@@ -51,6 +51,7 @@ class BelongsToManyRelationStandardUpdateOperationsTest extends TestCase
             $payload,
             ['pivot' => $user->roles()->first()->pivot->toArray()]
         );
+        $this->assertResourceAttached('roles', $user, $role);
     }
 
     /** @test */
@@ -81,6 +82,9 @@ class BelongsToManyRelationStandardUpdateOperationsTest extends TestCase
             $payload,
             ['pivot' => $updatedRole->pivot->toArray()]
         );
+        $this->assertResourceAttached('roles', $user, $role, [
+            'references' => ['key' => 'value']
+        ]);
     }
 
     /** @test */
@@ -136,6 +140,10 @@ class BelongsToManyRelationStandardUpdateOperationsTest extends TestCase
             'pivot' => [
                 'meta' => ['key' => 'value']
             ]
+        ]);
+        $this->assertResourceAttached('roles', $user, $role, [
+            'meta' => null,
+            'custom_name' => 'test custom'
         ]);
     }
 

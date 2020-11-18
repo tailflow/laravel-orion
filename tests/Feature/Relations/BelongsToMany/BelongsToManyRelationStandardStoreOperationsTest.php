@@ -38,11 +38,14 @@ class BelongsToManyRelationStandardStoreOperationsTest extends TestCase
 
         $response = $this->post("/api/users/{$user->id}/roles", $payload);
 
+        $role = $user->roles()->first();
+
         $this->assertResourceStored($response,
             Role::class,
             $payload,
-            ['pivot' => $user->roles()->first()->pivot->toArray()]
+            ['pivot' => $role->pivot->toArray()]
         );
+        $this->assertResourceAttached('roles', $user, $role);
     }
 
     /** @test */
@@ -68,6 +71,9 @@ class BelongsToManyRelationStandardStoreOperationsTest extends TestCase
             $payload,
             ['pivot' => $role->pivot->toArray()]
         );
+        $this->assertResourceAttached('roles', $user, $role, [
+            'references' =>  ['key' => 'value']
+        ]);
     }
 
     /** @test */
@@ -105,16 +111,22 @@ class BelongsToManyRelationStandardStoreOperationsTest extends TestCase
 
         $response = $this->post("/api/users/{$user->id}/roles", $payload);
 
+        $role = $user->roles()->first();
+
         $this->assertResourceStored($response,
             Role::class,
             ['name' => 'test stored'],
-            ['pivot' => $user->roles()->first()->pivot->toArray()]
+            ['pivot' => $role->pivot->toArray()]
         );
         $this->assertDatabaseHas('role_user', ['meta' => null]);
         $response->assertJsonMissing([
             'pivot' => [
                 'meta' => ['key' => 'value']
             ]
+        ]);
+        $this->assertResourceAttached('roles', $user, $role, [
+            'custom_name' => 'test custom',
+            'meta' => null
         ]);
     }
 
