@@ -327,7 +327,10 @@ trait HandlesRelationManyToManyOperations
         $parentQuery = $this->buildUpdatePivotParentFetchQuery($request, $parentKey);
         $parentEntity = $this->runUpdatePivotParentFetchQuery($request, $parentQuery, $parentKey);
 
-        $this->authorize('update', $parentEntity);
+        $query = $this->buildShowFetchQuery($request, $parentEntity, []);
+        $entity = $this->runShowFetchQuery($request, $query, $parentEntity, $relatedKey);
+
+        $this->authorize('update', $entity);
 
         $updateResult = $this->performUpdatePivot($request, $parentEntity, $relatedKey, $request->get('pivot', []));
 

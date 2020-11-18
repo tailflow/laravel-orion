@@ -278,6 +278,31 @@ trait InteractsWithResources
         );
     }
 
+    protected function assertResourcesToggled($response, string $relation, Model $parentModel, array $syncMap, array $pivotFields = [], bool $exact = true): void
+    {
+        foreach ($syncMap['attached'] as $relationModel) {
+            $this->assertResourceAttached(
+                $relation,
+                $parentModel,
+                $relationModel,
+                Arr::get($pivotFields, $relationModel->getKey(), [])
+            );
+        }
+
+        foreach ($syncMap['detached'] as $relationModel) {
+            $this->assertResourceDetached($relation, $parentModel, $relationModel,);
+        }
+
+        $this->assertResponseContent(
+            [
+                'attached' => collect($syncMap['attached'])->pluck('id')->toArray(),
+                'detached' => collect($syncMap['detached'])->pluck('id')->toArray(),
+            ],
+            $response,
+            $exact
+        );
+    }
+
     protected function assertResourceAttached(string $relation, Model $parentModel, Model $relationModel, array $pivotFields = []): void
     {
         $pivotFields = $this->castPivotFields($pivotFields);
@@ -294,6 +319,18 @@ trait InteractsWithResources
             $parentModel->{$relation}()->getForeignPivotKeyName() => $parentModel->getKey(),
             $parentModel->{$relation}()->getRelatedPivotKeyName() => $relationModel->getKey()
         ]);
+    }
+
+    protected function assertResourcePivotUpdated($response, string $relation, Model $parentModel, Model $relationModel, array $pivotFields, bool $exact = true): void
+    {
+        $this->assertResponseContent(['updated' => [$relationModel->getKey()]], $response, $exact);
+
+        $pivotFields = $this->castPivotFields($pivotFields);
+
+        $this->assertDatabaseHas($parentModel->{$relation}()->getTable(), array_merge([
+            $parentModel->{$relation}()->getForeignPivotKeyName() => $parentModel->getKey(),
+            $parentModel->{$relation}()->getRelatedPivotKeyName() => $relationModel->getKey()
+        ], $pivotFields));
     }
 
     protected function assertNoResourcesAttached($response, string $relation, Model $parentModel, bool $exact = true): void
@@ -315,6 +352,13 @@ trait InteractsWithResources
         self::assertSame(0, $parentModel->{$relation}()->count());
 
         $this->assertResponseContent(['attached' => [], 'detached' => [], 'updated' => []], $response, $exact);
+    }
+
+    protected function assertNoResourcesToggled($response, string $relation, Model $parentModel,int $expectedCount, bool $exact = true): void
+    {
+        self::assertSame($expectedCount, $parentModel->{$relation}()->count());
+
+        $this->assertResponseContent(['attached' => [], 'detached' => []], $response, $exact);
     }
 
     protected function assertResponseContent(array $expected, $response, bool $exact)

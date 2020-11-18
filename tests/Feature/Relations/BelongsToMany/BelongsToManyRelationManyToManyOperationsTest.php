@@ -145,8 +145,14 @@ class BelongsToManyRelationManyToManyOperationsTest extends TestCase
 
         $response = $this->post("/api/users/{$user->id}/roles/attach", [
             'resources' => [
-                $roleA->id => ['meta' => ['key1' => 'item1']],
-                $roleB->id => ['meta' => ['key2' => 'item2']],
+                $roleA->id => [
+                    'meta' => ['key1' => 'item1'],
+                    'custom_name' => 'test value 1'
+                ],
+                $roleB->id => [
+                    'meta' => ['key2' => 'item2'],
+                    'custom_name' => 'test value 2'
+                ],
             ]
         ]);
 
@@ -156,8 +162,14 @@ class BelongsToManyRelationManyToManyOperationsTest extends TestCase
             $user,
             collect([$roleA, $roleB]),
             [
-                $roleA->id => ['meta' => null],
-                $roleB->id => ['meta' => null]
+                $roleA->id => [
+                    'meta' => null,
+                    'custom_name' => 'test value 1'
+                ],
+                $roleB->id => [
+                    'meta' => null,
+                    'custom_name' => 'test value 2'
+                ]
             ]
         );
     }
@@ -342,8 +354,14 @@ class BelongsToManyRelationManyToManyOperationsTest extends TestCase
 
         $response = $this->patch("/api/users/{$user->id}/roles/sync", [
             'resources' => [
-                $roleToAttach->id => ['meta' => ['key1' => 'value1']],
-                $roleToUpdate->id => ['meta' => ['key2' => 'value2']]
+                $roleToAttach->id => [
+                    'meta' => ['key1' => 'value1'],
+                    'custom_name' => 'test value 1'
+                ],
+                $roleToUpdate->id => [
+                    'meta' => ['key2' => 'value2'],
+                    'custom_name' => 'test value 2'
+                ]
             ]
         ]);
 
@@ -351,10 +369,16 @@ class BelongsToManyRelationManyToManyOperationsTest extends TestCase
             $response,
             'roles',
             $user,
-            $this->buildSyncMap([$roleToAttach], [$roleToDetach], []),
+            $this->buildSyncMap([$roleToAttach], [$roleToDetach], [$roleToUpdate]),
             [
-                $roleToAttach->id => ['meta' => null],
-                $roleToUpdate->id => ['meta' => null]
+                $roleToAttach->id => [
+                    'meta' => null,
+                    'custom_name' => 'test value 1'
+                ],
+                $roleToUpdate->id => [
+                    'meta' => null,
+                    'custom_name' => 'test value 2'
+                ]
             ]
         );
     }
@@ -418,6 +442,241 @@ class BelongsToManyRelationManyToManyOperationsTest extends TestCase
             'roles',
             $user,
             $this->buildSyncMap([$roleToAttach], [], [], [$roleToRemain])
+        );
+    }
+
+    /** @test */
+    public function toggling_relation_resources_when_unauthorized(): void
+    {
+        /** @var User $user */
+        $user = factory(User::class)->create();
+        $roles = factory(Role::class)->times(5)->create();
+        $user->roles()->saveMany($roles);
+
+        Gate::policy(User::class, RedPolicy::class);
+
+        self::assertEquals(5, $user->roles()->count());
+
+        $response = $this->patch("/api/users/{$user->id}/roles/toggle", [
+            'resources' => $roles->pluck('id')->toArray()
+        ]);
+
+        $this->assertUnauthorizedResponse($response);
+        self::assertEquals(5, $user->roles()->count());
+    }
+
+    /** @test */
+    public function toggling_relation_resources_when_authorized_only_on_parent(): void
+    {
+        /** @var User $user */
+        $user = factory(User::class)->create();
+        $roles = factory(Role::class)->times(5)->create();
+        $user->roles()->saveMany($roles);
+
+        Gate::policy(User::class, GreenPolicy::class);
+
+        self::assertEquals(5, $user->roles()->count());
+
+        $response = $this->patch("/api/users/{$user->id}/roles/toggle", [
+            'resources' => $roles->pluck('id')->toArray()
+        ]);
+
+        $this->assertNoResourcesToggled($response, 'roles', $user, 5);
+    }
+
+    /** @test */
+    public function toggling_relation_resources_when_authorized(): void
+    {
+        /** @var User $user */
+        $user = factory(User::class)->create();
+        $roleToAttach = factory(Role::class)->create();
+        $roleToDetach = factory(Role::class)->create();
+        $user->roles()->attach($roleToDetach->id);
+
+        Gate::policy(User::class, GreenPolicy::class);
+        Gate::policy(Role::class, GreenPolicy::class);
+
+        self::assertEquals(1, $user->roles()->count());
+
+        $response = $this->patch("/api/users/{$user->id}/roles/toggle", [
+            'resources' => [$roleToAttach->id, $roleToDetach->id]
+        ]);
+
+        $this->assertResourcesToggled(
+            $response,
+            'roles',
+            $user,
+            $this->buildSyncMap([$roleToAttach], [$roleToDetach])
+        );
+    }
+
+    /** @test */
+    public function toggling_relation_resources_with_only_fillable_pivot_fields(): void
+    {
+        /** @var User $user */
+        $user = factory(User::class)->create();
+        $roleToAttach = factory(Role::class)->create();
+        $roleToDetach = factory(Role::class)->create();
+        $user->roles()->attach($roleToDetach->id);
+
+        Gate::policy(User::class, GreenPolicy::class);
+        Gate::policy(Role::class, GreenPolicy::class);
+
+        self::assertEquals(1, $user->roles()->count());
+
+        $response = $this->patch("/api/users/{$user->id}/roles/toggle", [
+            'resources' => [
+                $roleToAttach->id => [
+                    'meta' => ['key' => 'item'],
+                    'custom_name' => 'test value'
+                ],
+                $roleToDetach->id
+            ]
+        ]);
+
+        $this->assertResourcesToggled(
+            $response,
+            'roles',
+            $user,
+            $this->buildSyncMap([$roleToAttach], [$roleToDetach]),
+            [
+                $roleToAttach->id => [
+                    'meta' => null,
+                    'custom_name' => 'test value'
+                ]
+            ]
+        );
+    }
+
+    /** @test */
+    public function toggling_relation_resources_with_casted_to_json_pivot_field(): void
+    {
+        /** @var User $user */
+        $user = factory(User::class)->create();
+        $roleToAttach = factory(Role::class)->create();
+        $roleToDetach = factory(Role::class)->create();
+        $user->roles()->attach($roleToDetach->id);
+
+        Gate::policy(User::class, GreenPolicy::class);
+        Gate::policy(Role::class, GreenPolicy::class);
+
+        self::assertEquals(1, $user->roles()->count());
+
+        $response = $this->patch("/api/users/{$user->id}/roles/toggle", [
+            'resources' => [
+                $roleToAttach->id => [
+                    'references' => ['key' => 'item']
+                ],
+                $roleToDetach->id
+            ]
+        ]);
+
+        $this->assertResourcesToggled(
+            $response,
+            'roles',
+            $user,
+            $this->buildSyncMap([$roleToAttach], [$roleToDetach]),
+            [
+                $roleToAttach->id => [
+                    'references' => ['key' => 'item']
+                ]
+            ]
+        );
+    }
+
+    /** @test */
+    public function updating_pivot_of_relation_resource_when_unauthorized(): void
+    {
+        /** @var User $user */
+        $user = factory(User::class)->create();
+        $role = factory(Role::class)->create();
+        $user->roles()->save($role);
+
+        Gate::policy(Role::class, RedPolicy::class);
+
+        $response = $this->patch("/api/users/{$user->id}/roles/{$role->id}/pivot", [
+            'pivot' => [
+                'custom_name' => 'test value'
+            ]
+        ]);
+
+        $this->assertUnauthorizedResponse($response);
+        $this->assertResourceAttached('roles', $user, $role, ['custom_name' => null]);
+    }
+
+    /** @test */
+    public function updating_pivot_of_relation_resource_when_authorized(): void
+    {
+        /** @var User $user */
+        $user = factory(User::class)->create();
+        $role = factory(Role::class)->create();
+        $user->roles()->save($role);
+
+        Gate::policy(Role::class, GreenPolicy::class);
+
+        $response = $this->patch("/api/users/{$user->id}/roles/{$role->id}/pivot", [
+            'pivot' => [
+                'custom_name' => 'test value'
+            ]
+        ]);
+
+        $this->assertResourcePivotUpdated(
+            $response,
+            'roles',
+            $user,
+            $role,
+            ['custom_name' => 'test value']
+        );
+    }
+
+    /** @test */
+    public function updating_pivot_of_relation_resource_with_only_fillable_pivot_fields(): void
+    {
+        /** @var User $user */
+        $user = factory(User::class)->create();
+        $role = factory(Role::class)->create();
+        $user->roles()->save($role);
+
+        Gate::policy(Role::class, GreenPolicy::class);
+
+        $response = $this->patch("/api/users/{$user->id}/roles/{$role->id}/pivot", [
+            'pivot' => [
+                'custom_name' => 'test value',
+                'meta' => ['key' => 'value']
+            ]
+        ]);
+
+        $this->assertResourcePivotUpdated(
+            $response,
+            'roles',
+            $user,
+            $role,
+            ['custom_name' => 'test value', 'meta' => null]
+        );
+    }
+
+    /** @test */
+    public function updating_pivot_of_relation_resource_casted_to_json_pivot_field(): void
+    {
+        /** @var User $user */
+        $user = factory(User::class)->create();
+        $role = factory(Role::class)->create();
+        $user->roles()->save($role);
+
+        Gate::policy(Role::class, GreenPolicy::class);
+
+        $response = $this->patch("/api/users/{$user->id}/roles/{$role->id}/pivot", [
+            'pivot' => [
+                'references' => ['key' => 'value']
+            ]
+        ]);
+
+        $this->assertResourcePivotUpdated(
+            $response,
+            'roles',
+            $user,
+            $role,
+            ['references' => ['key' => 'value']]
         );
     }
 }
