@@ -2,8 +2,10 @@
 <img src="https://res.cloudinary.com/dudxt4lp6/image/upload/v1572976051/Laravel%20Orion/logo_with_text_t5jjyc.png" width="400">
 </p>
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/tailflow/laravel-orion.svg)](https://packagist.org/packages/tailflow/laravel-orion)
-[![Build Status on Travis CI](https://img.shields.io/travis/tailflow/laravel-orion)](https://travis-ci.org/tailflow/laravel-orion)
+<p align="center">
+<a href="https://packagist.org/packages/tailflow/laravel-orion"><img src="https://img.shields.io/packagist/v/tailflow/laravel-orion.svg" alt="Latest Version on Packagist"></a>
+<a href="https://travis-ci.org/tailflow/laravel-orion"><img src="https://img.shields.io/travis/tailflow/laravel-orion" alt="Build Status on Travis CI"></a>
+</p>
 
 ## Introduction
 
