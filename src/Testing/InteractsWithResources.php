@@ -377,7 +377,12 @@ trait InteractsWithResources
         return collect($pivotFields)->map(function ($pivotFieldValue) {
             if (is_array($pivotFieldValue)) {
                 $pivotFieldValue = json_encode($pivotFieldValue);
-                $pivotFieldValue = DB::raw("CAST('{$pivotFieldValue}' AS JSON)");
+                if (config('database.default') === 'mysql') {
+                    $pivotFieldValue = DB::raw("CAST('{$pivotFieldValue}' AS JSON)");
+                }
+                if (config('database.default') === 'pgsql') {
+                    $pivotFieldValue = DB::raw("'{$pivotFieldValue}'::json");
+                }
             }
 
             return $pivotFieldValue;
