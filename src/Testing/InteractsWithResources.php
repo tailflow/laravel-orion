@@ -381,7 +381,7 @@ trait InteractsWithResources
                     $pivotFieldValue = DB::raw("CAST('{$pivotFieldValue}' AS JSON)");
                 }
                 if (config('database.default') === 'pgsql') {
-                    $pivotFieldValue = DB::raw("'{$pivotFieldValue}'::json");
+                    $pivotFieldValue = DB::raw("'{$pivotFieldValue}'::jsonb");
                 }
             }
 

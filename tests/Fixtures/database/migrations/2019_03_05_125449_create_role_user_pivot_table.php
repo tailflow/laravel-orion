@@ -19,8 +19,8 @@ class CreateRoleUserPivotTable extends Migration
             $table->foreign('role_id')->references('id')->on('roles')->onDelete('cascade');
             $table->unsignedBigInteger('user_id');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->json('meta')->nullable();
-            $table->json('references')->nullable();
+            $table->jsonb('meta')->nullable();
+            $table->jsonb('references')->nullable();
             $table->string('custom_name')->nullable();
             $table->timestamps();
         });

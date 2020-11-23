@@ -19,7 +19,7 @@ class CreateNotificationUserPivotTable extends Migration
             $table->foreign('notification_id')->references('id')->on('notifications')->onDelete('cascade');
             $table->unsignedBigInteger('user_id');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->json('meta')->nullable();
+            $table->jsonb('meta')->nullable();
             $table->timestamps();
         });
     }
