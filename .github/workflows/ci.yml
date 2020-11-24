@@ -91,21 +91,24 @@ jobs:
         if: matrix.database == 'sqlite'
         run: vendor/bin/phpunit --verbose
         env:
+          DB_CONNECTION: sqlite
           DB_DATABASE: ':memory:'
 
       - name: Run test suite with MySQL
         if: matrix.database == 'mysql'
         run: vendor/bin/phpunit --verbose
         env:
+          DB_CONNECTION: mysql
           DB_PORT: ${{ job.services.mysql.ports[3306] }}
-          DB_DATABASE: 'orion'
-          DB_USERNAME: 'root'
+          DB_DATABASE: orion
+          DB_USERNAME: root
 
       - name: Run test suite with PostgreSQL
         if: matrix.database == 'pgsql'
         run: vendor/bin/phpunit --verbose
         env:
+          DB_CONNECTION: pgsql
           DB_PORT: ${{ job.services.pgsql.ports[5432] }}
-          DB_DATABASE: 'orion'
-          DB_USERNAME: 'postgres'
-          DB_PASSWORD: 'postgres'
+          DB_DATABASE: orion
+          DB_USERNAME: postgres
+          DB_PASSWORD: postgres
