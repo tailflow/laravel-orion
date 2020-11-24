@@ -87,8 +87,8 @@ jobs:
         if: matrix.laravel-version == '^8.0'
         run: composer require "laravel/legacy-factories" --prefer-dist --no-progress --no-suggest
 
-      - name: Run test suite with MySQL
-        if: matrix.database == 'mysql'
+      - name: Run test suite with Sqlite
+        if: matrix.database == 'sqlite'
         run: vendor/bin/phpunit --verbose
         env:
           DB_DATABASE: ':memory:'
