@@ -3,9 +3,12 @@
 namespace Orion\Tests\Fixtures\App\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Orion\Tests\Fixtures\App\Traits\AppliesDefaultOrder;
 
 class User extends Authenticatable
 {
+    use AppliesDefaultOrder;
+
     /**
      * The attributes that are mass assignable.
      *

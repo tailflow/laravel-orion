@@ -8,10 +8,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Orion\Tests\Fixtures\App\Traits\AppliesDefaultOrder;
 
 class Post extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes, AppliesDefaultOrder;
 
     /**
      * The attributes that are mass assignable.
