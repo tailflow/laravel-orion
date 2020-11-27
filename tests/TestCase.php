@@ -3,6 +3,8 @@
 namespace Orion\Tests;
 
 use Illuminate\Contracts\Console\Kernel;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\RefreshDatabaseState;
 
@@ -15,6 +17,10 @@ abstract class TestCase extends \Orchestra\Testbench\TestCase
         parent::setUp();
 
         $this->withFactories(__DIR__.'/Fixtures/database/factories');
+
+        Model::addGlobalScope(function (Builder $builder) {
+            $builder->orderBy('id', 'asc');
+        });
     }
 
     /**
