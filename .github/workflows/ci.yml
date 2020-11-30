@@ -106,7 +106,7 @@ jobs:
 
       - name: Run test suite with PostgreSQL
         if: matrix.database == 'pgsql'
-        run: vendor/bin/phpunit --verbose
+        run: vendor/bin/phpunit
         env:
           DB_CONNECTION: pgsql
           DB_PORT: ${{ job.services.pgsql.ports[5432] }}
