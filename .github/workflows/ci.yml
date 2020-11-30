@@ -2,7 +2,7 @@ name: default
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, next ]
   pull_request:
     branches: [ main ]
 
@@ -14,7 +14,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php-version: [ '7.2', '7.3', '7.4' ]
+        php-version: [ '7.2', '7.3', '7.4', '8.0' ]
         laravel-version: [ '5.7.*', '5.8.*', '^6.0', '^7.0', '^8.0' ]
         database: [ 'sqlite', 'mysql', 'pgsql' ]
         exclude:
@@ -35,6 +35,9 @@ jobs:
             database: 'mysql'
           - php-version: '7.4'
             laravel-version: '5.7.*'
+            database: 'pgsql'
+          - php-version: '8.0'
+            laravel-version: '^8.0'
             database: 'pgsql'
 
     name: Tests on PHP ${{ matrix.php-version }} with Laravel ${{ matrix.laravel-version }} and ${{ matrix.database }}
