@@ -36,6 +36,9 @@ jobs:
           - php-version: '7.4'
             laravel-version: '5.7.*'
             database: 'pgsql'
+          - php-version: '8.0'
+            laravel-version: '^8.0'
+            database: 'pgsql'
 
     name: Tests on PHP ${{ matrix.php-version }} with Laravel ${{ matrix.laravel-version }} and ${{ matrix.database }}
 
@@ -106,7 +109,7 @@ jobs:
 
       - name: Run test suite with PostgreSQL
         if: matrix.database == 'pgsql'
-        run: vendor/bin/phpunit
+        run: vendor/bin/phpunit --verbose
         env:
           DB_CONNECTION: pgsql
           DB_PORT: ${{ job.services.pgsql.ports[5432] }}
