@@ -19,6 +19,7 @@ class StandardIndexFilteringOperationsTest extends TestCase
 
         Gate::policy(Post::class, GreenPolicy::class);
 
+        $this->withoutExceptionHandling();
         $response = $this->post('/api/posts/search', [
             'filters' => [
                 ['field' => 'title', 'operator' => '=', 'value' => 'match']
