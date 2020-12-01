@@ -115,7 +115,7 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
                     $this->buildFilterQueryWhereClause($relationField, $filterDescriptor, $relationQuery);
                 });
             } else {
-                $this->buildFilterQueryWhereClause($filterDescriptor['field'], $filterDescriptor, $query, $or);
+                $this->buildFilterQueryWhereClause($this->getQualifiedFieldName($filterDescriptor['field']), $filterDescriptor, $query, $or);
             }
         }
     }
@@ -173,7 +173,7 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
                         return $relationQuery->where($relationField, 'like', '%'.$requestedSearchString.'%');
                     });
                 } else {
-                    $whereQuery->orWhere($searchable, 'like', '%'.$requestedSearchString.'%');
+                    $whereQuery->orWhere($this->getQualifiedFieldName($searchable), 'like', '%'.$requestedSearchString.'%');
                 }
             }
         });
@@ -213,9 +213,9 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
 
                 $query->leftJoin($relationTable, $relationForeignKey, '=', $relationLocalKey)
                     ->orderBy("$relationTable.$relationField", $direction)
-                    ->select((new $this->resourceModelClass)->getTable().'.*');
+                    ->select($this->getQualifiedFieldName('*'));
             } else {
-                $query->orderBy($sortableField, $direction);
+                $query->orderBy($this->getQualifiedFieldName($sortableField), $direction);
             }
         }
     }
@@ -240,5 +240,17 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
         }
 
         return true;
+    }
+
+    /**
+     * Builds a complete field name with table.
+     *
+     * @param string $field
+     * @return string
+     */
+    protected function getQualifiedFieldName(string $field): string
+    {
+        $table = (new $this->resourceModelClass)->getTable();
+        return "{$table}.{$field}";
     }
 }
