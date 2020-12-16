@@ -100,7 +100,7 @@ trait HandlesStandardOperations
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
 
         $this->performStore(
-            $request, $entity, $request->only($entity->getFillable())
+            $request, $entity, $request->all()
         );
 
         $entity = $entity->fresh($requestedRelations);
@@ -218,7 +218,7 @@ trait HandlesStandardOperations
         }
 
         $this->performUpdate(
-            $request, $entity, $request->only($entity->getFillable())
+            $request, $entity, $request->all()
         );
 
         $entity = $entity->fresh($requestedRelations);

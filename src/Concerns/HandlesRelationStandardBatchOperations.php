@@ -47,7 +47,7 @@ trait HandlesRelationStandardBatchOperations
             $this->beforeSave($request, $entity);
 
             $this->performStore(
-                $request, $parentEntity, $entity, Arr::only($resource, $entity->getFillable()), Arr::get($resource, 'pivot', [])
+                $request, $parentEntity, $entity, $resource, Arr::get($resource, 'pivot', [])
             );
 
             $entity = $this->newRelationQuery($parentEntity)->with($requestedRelations)->find($entity->id);
@@ -132,7 +132,7 @@ trait HandlesRelationStandardBatchOperations
             $this->beforeSave($request, $entity);
 
             $this->performUpdate(
-                $request, $parentEntity, $entity, Arr::only($resource, $entity->getFillable()), Arr::get($resource, 'pivot', [])
+                $request, $parentEntity, $entity, $resource, Arr::get($resource, 'pivot', [])
             );
 
             $entity = $this->newRelationQuery($parentEntity)->with($requestedRelations)->find($entity->id);
