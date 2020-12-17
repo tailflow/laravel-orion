@@ -56,10 +56,10 @@ jobs:
             database: 'pgsql'
           - php-version: '8.0'
             laravel-version: '^8.0'
-            database: 'mysql'
+            database: 'pgsql'
           - php-version: '8.0'
             laravel-version: '^8.0'
-            database: 'pgsql'
+            database: 'mysql'
 
     name: Tests on PHP ${{ matrix.php-version }} with Laravel ${{ matrix.laravel-version }} and ${{ matrix.database }}
 
