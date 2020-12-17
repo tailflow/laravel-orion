@@ -5,7 +5,6 @@ namespace Orion\Concerns;
 use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Orion\Http\Requests\Request;
 use Orion\Http\Resources\CollectionResource;
@@ -43,7 +42,7 @@ trait HandlesStandardBatchOperations
             $this->beforeStore($request, $entity);
             $this->beforeSave($request, $entity);
 
-            $this->performStore($request, $entity, Arr::only($resource, $entity->getFillable()));
+            $this->performStore($request, $entity, $resource);
 
             $entity = $entity->fresh($requestedRelations);
             $entity->wasRecentlyCreated = true;
@@ -90,8 +89,7 @@ trait HandlesStandardBatchOperations
             $this->beforeSave($request, $entity);
 
             $this->performUpdate(
-                $request, $entity, Arr::only($request->input("resources.{$entity->getKey()}"),
-                $entity->getFillable())
+                $request, $entity, $request->input("resources.{$entity->getKey()}")
             );
 
             $entity = $entity->fresh($requestedRelations);
