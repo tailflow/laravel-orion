@@ -2,7 +2,6 @@
 
 namespace Orion\Tests\Fixtures\App\Http\Controllers;
 
-use Orion\Concerns\DisableAuthorization;
 use Orion\Http\Controllers\Controller;
 use Orion\Http\Requests\Request;
 use Orion\Tests\Fixtures\App\Models\Post;
