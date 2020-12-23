@@ -469,7 +469,9 @@ trait HandlesStandardOperations
      */
     protected function runFetchQuery(Request $request, Builder $query, $key): Model
     {
-        return $query->findOrFail($key);
+        $routeKey = $query->getModel()->getRouteKeyName();
+
+        return $routeKey === "id" ? $query->findOrFail($key) : $query->where($routeKey, $key)->firstOrFail();
     }
 
     /**
