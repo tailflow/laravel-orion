@@ -132,12 +132,13 @@ class RelationsResolver implements \Orion\Contracts\RelationsResolver
      *
      * @param Collection $entities
      * @param array $requestedRelations
+     * @param bool $normalized
      * @return Collection
      */
-    public function guardRelationsForCollection(Collection $entities, array $requestedRelations): Collection
+    public function guardRelationsForCollection(Collection $entities, array $requestedRelations, bool $normalized = false): Collection
     {
-        return $entities->transform(function ($entity) use ($requestedRelations) {
-            return $this->guardRelations($entity, $requestedRelations);
+        return $entities->transform(function ($entity) use ($requestedRelations, $normalized) {
+            return $this->guardRelations($entity, $requestedRelations, $normalized);
         });
     }
 
@@ -146,25 +147,50 @@ class RelationsResolver implements \Orion\Contracts\RelationsResolver
      *
      * @param Model $entity
      * @param array $requestedRelations
+     * @param bool $normalized
      * @return Model
      */
-    public function guardRelations(Model $entity, array $requestedRelations) : Model
+    public function guardRelations(Model $entity, array $requestedRelations, bool $normalized = false): Model
     {
-        $relations = $entity->getRelations();
+        if (!$normalized) {
+            $requestedRelations = $this->normalizeRequestedRelations($requestedRelations);
+        }
 
+        $relations = $entity->getRelations();
         ksort($relations);
 
         foreach ($relations as $relationName => $relation) {
             if ($relationName === 'pivot') {
                 continue;
             }
-            if (!in_array($relationName, $requestedRelations, true)) {
+
+            if (!array_key_exists($relationName, $requestedRelations)) {
                 unset($relations[$relationName]);
+            } elseif ($relation !== null) {
+                if ($relation instanceof Model) {
+                    $relation = $this->guardRelations($relation, $requestedRelations[$relationName], true);
+                } else {
+                    $relation = $this->guardRelationsForCollection($relation, $requestedRelations[$relationName], true);
+                }
             }
         }
 
         $entity->setRelations($relations);
 
         return $entity;
+    }
+
+    protected function normalizeRequestedRelations(array $requestedRelations): array
+    {
+        return collect($requestedRelations)->mapWithKeys(function (string $requestedRelation) {
+            if (($firstDotIndex = strpos($requestedRelation, '.')) !== false) {
+                $parentOfNestedRelation = Arr::first(explode('.', $requestedRelation));
+                $nestedRelation = substr($requestedRelation, $firstDotIndex + 1);
+
+                return [$parentOfNestedRelation => $this->normalizeRequestedRelations([$nestedRelation])];
+            }
+
+            return [$requestedRelation => []];
+        })->toArray();
     }
 }

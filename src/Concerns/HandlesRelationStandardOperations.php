@@ -149,7 +149,7 @@ trait HandlesRelationStandardOperations
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
 
         $this->performStore(
-            $request, $parentEntity, $entity, $request->only($entity->getFillable()), $request->get('pivot', [])
+            $request, $parentEntity, $entity, $request->all(), $request->get('pivot', [])
         );
 
         $entity = $this->newRelationQuery($parentEntity)->with($requestedRelations)->find($entity->id);
@@ -349,7 +349,7 @@ trait HandlesRelationStandardOperations
             $request,
             $parentEntity,
             $entity,
-            $request->only($entity->getFillable()),
+            $request->all(),
             $request->get('pivot', [])
         );
 
