@@ -46,9 +46,26 @@ class RelationsResolver implements \Orion\Contracts\RelationsResolver
 
         $allowedIncludes = array_unique(array_merge($this->includableRelations, $this->alwaysIncludedRelations));
 
-        $validatedIncludes = array_filter($requestedIncludes, function ($include) use ($allowedIncludes) {
-            return in_array($include, $allowedIncludes, true);
-        });
+        $validatedIncludes = [];
+
+        foreach ($requestedIncludes as $requestedInclude) {
+            if (in_array($requestedInclude, $allowedIncludes, true)) {
+                $validatedIncludes[] = $requestedInclude;
+            }
+
+            if (strpos($requestedInclude, '.') !== false) {
+                $relations = explode('.', $requestedInclude);
+                $relationMatcher = '';
+
+                foreach ($relations as $relation) {
+                    $relationMatcher.= "{$relation}.";
+
+                    if (in_array("{$relationMatcher}*", $allowedIncludes, true)) {
+                        $validatedIncludes[] = $requestedInclude;
+                    }
+                }
+            }
+        }
 
         return array_unique(array_merge($validatedIncludes, $this->alwaysIncludedRelations));
     }

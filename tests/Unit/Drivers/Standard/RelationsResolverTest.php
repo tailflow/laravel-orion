@@ -3,6 +3,7 @@
 namespace Orion\Tests\Unit\Drivers\Standard;
 
 use Orion\Drivers\Standard\RelationsResolver;
+use Orion\Http\Requests\Request;
 use Orion\Tests\Fixtures\App\Models\Post;
 use Orion\Tests\Fixtures\App\Models\Team;
 use Orion\Tests\Fixtures\App\Models\User;
@@ -10,6 +11,18 @@ use Orion\Tests\Unit\TestCase;
 
 class RelationsResolverTest extends TestCase
 {
+    /** @test */
+    public function resolving_requested_relations_with_wildcard()
+    {
+        $relationsResolver = new RelationsResolver(['user', 'editors.*', 'comments.*'], []);
+
+        $requestedRelations = $relationsResolver->requestedRelations(
+            new Request(['include' => 'user,editors.team,editors.team.users'])
+        );
+
+        self::assertSame(['user', 'editors.team', 'editors.team.users'], $requestedRelations);
+    }
+
     /** @test */
     public function guarding_entity_relations()
     {
@@ -32,8 +45,12 @@ class RelationsResolverTest extends TestCase
         $post = new Post(['title' => 'test post']);
 
         $manager = new User(['name' => 'manager user']);
+
+        $team = new Team(['name' => 'test team']);
+        $team->setRelation('users', collect([new User(['name' => 'team user'])]));
+
         $editor = new User(['name' => 'editor user']);
-        $editor->setRelation('team', new Team(['name' => 'test team']));
+        $editor->setRelation('team', $team);
 
         $post->setRelations([
             'user' => $manager,
@@ -41,11 +58,12 @@ class RelationsResolverTest extends TestCase
         ]);
 
         $relationsResolver = new RelationsResolver(['user', 'editors.team'], []);
-        $guardedPost = $relationsResolver->guardRelations($post, ['user', 'editors.team']);
+        $guardedPost = $relationsResolver->guardRelations($post, ['user', 'editors.team',]);
 
         self::assertArrayHasKey('user', $guardedPost->getRelations());
         self::assertArrayHasKey('editors', $guardedPost->getRelations());
         self::assertArrayHasKey('team', $guardedPost->getRelation('editors')->first()->getRelations());
+        self::assertArrayNotHasKey('users', $guardedPost->getRelation('editors')->first()->team->getRelations());
     }
 
     /** @test */
