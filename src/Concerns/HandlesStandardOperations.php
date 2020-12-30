@@ -469,7 +469,7 @@ trait HandlesStandardOperations
      */
     protected function runFetchQuery(Request $request, Builder $query, $key): Model
     {
-        return $query->findOrFail($key);
+        return $query->where($this->resolveQualifiedKeyName(), $key)->firstOrFail();
     }
 
     /**

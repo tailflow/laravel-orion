@@ -7,15 +7,6 @@ use Orion\Http\Requests\Request;
 trait InteractsWithBatchResources
 {
     /**
-     * @return string
-     */
-    protected function resolveResourceKeyName(): string
-    {
-        $resourceModelClass = $this->resolveResourceModelClass();
-        return (new $resourceModelClass)->getKeyName();
-    }
-
-    /**
      * @param Request $request
      * @return array
      */

@@ -715,7 +715,7 @@ trait HandlesRelationStandardOperations
      */
     protected function runParentFetchQuery(Request $request, Builder $query, $parentKey): Model
     {
-        return $query->findOrFail($parentKey);
+        return $query->where($this->resolveQualifiedParentKeyName(), $parentKey)->firstOrFail();
     }
 
     /**
@@ -749,7 +749,7 @@ trait HandlesRelationStandardOperations
 
         $this->abortIfMissingRelatedID($relatedKey);
 
-        return $query->findOrFail($relatedKey);
+        return $query->where($this->resolveQualifiedKeyName(), $relatedKey)->firstOrFail();
     }
 
     /**

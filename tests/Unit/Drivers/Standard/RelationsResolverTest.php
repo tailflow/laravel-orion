@@ -24,6 +24,18 @@ class RelationsResolverTest extends TestCase
     }
 
     /** @test */
+    public function resolving_requested_relations_by_listing_nested_relations()
+    {
+        $relationsResolver = new RelationsResolver(['user', 'editors.team', 'editors.team.users'], []);
+
+        $requestedRelations = $relationsResolver->requestedRelations(
+            new Request(['include' => 'user,editors.team,editors.team.users'])
+        );
+
+        self::assertSame(['user', 'editors.team', 'editors.team.users'], $requestedRelations);
+    }
+
+    /** @test */
     public function guarding_entity_relations()
     {
         $post = new Post(['title' => 'test post']);
@@ -58,7 +70,7 @@ class RelationsResolverTest extends TestCase
         ]);
 
         $relationsResolver = new RelationsResolver(['user', 'editors.team'], []);
-        $guardedPost = $relationsResolver->guardRelations($post, ['user', 'editors.team',]);
+        $guardedPost = $relationsResolver->guardRelations($post, ['user', 'editors.team']);
 
         self::assertArrayHasKey('user', $guardedPost->getRelations());
         self::assertArrayHasKey('editors', $guardedPost->getRelations());

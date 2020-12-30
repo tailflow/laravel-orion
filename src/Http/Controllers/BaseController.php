@@ -268,6 +268,28 @@ abstract class BaseController extends \Illuminate\Routing\Controller
     }
 
     /**
+     * The name of the field used to fetch a resource from the database.
+     *
+     * @return string
+     */
+    protected function keyName(): string
+    {
+        $resourceModelClass = $this->resolveResourceModelClass();
+        return (new $resourceModelClass)->getKeyName();
+    }
+
+    /**
+     * A qualified name of the field used to fetch a resource from the database.
+     *
+     * @return string
+     */
+    protected function resolveQualifiedKeyName(): string
+    {
+        $resourceModelClass = $this->resolveResourceModelClass();
+        return (new $resourceModelClass)->qualifyColumn($this->keyName());
+    }
+
+    /**
      * @param string $modelClass
      * @return $this
      */

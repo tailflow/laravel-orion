@@ -285,7 +285,7 @@ trait HandlesStandardBatchOperations
      */
     protected function buildBatchFetchQuery(Request $request, array $requestedRelations): Builder
     {
-        $resourceKeyName = $this->resolveResourceKeyName();
+        $resourceKeyName = $this->resolveQualifiedKeyName();
         $resourceKeys = $this->resolveResourceKeys($request);
 
         return $this->buildFetchQuery($request, $requestedRelations)
