@@ -3,9 +3,9 @@
 namespace Orion\Concerns;
 
 use Exception;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Contracts\Pagination\Paginator;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Orion\Http\Requests\Request;
@@ -40,7 +40,10 @@ trait HandlesStandardOperations
             return $afterHookResult;
         }
 
-        $this->relationsResolver->guardRelationsForCollection($entities->getCollection(), $requestedRelations);
+        $this->relationsResolver->guardRelationsForCollection(
+            $entities instanceof Paginator ? $entities->getCollection() : $entities,
+            $requestedRelations
+        );
 
         return $this->collectionResponse($entities);
     }
@@ -63,11 +66,11 @@ trait HandlesStandardOperations
      * @param Request $request
      * @param Builder $query
      * @param int $paginationLimit
-     * @return LengthAwarePaginator
+     * @return Paginator|Collection
      */
-    protected function runIndexFetchQuery(Request $request, Builder $query, int $paginationLimit): LengthAwarePaginator
+    protected function runIndexFetchQuery(Request $request, Builder $query, int $paginationLimit)
     {
-        return $query->paginate($paginationLimit);
+        return $this->shouldPaginate($request, $paginationLimit) ? $query->paginate($paginationLimit) : $query->get();
     }
 
     /**
@@ -487,10 +490,10 @@ trait HandlesStandardOperations
      * The hooks is executed after fetching the list of resources.
      *
      * @param Request $request
-     * @param Paginator $entities
+     * @param Paginator|Collection $entities
      * @return mixed
      */
-    protected function afterIndex(Request $request, Paginator $entities)
+    protected function afterIndex(Request $request, $entities)
     {
         return null;
     }

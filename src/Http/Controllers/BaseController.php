@@ -2,6 +2,7 @@
 
 namespace Orion\Http\Controllers;
 
+use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
@@ -20,6 +21,7 @@ use Orion\Contracts\QueryBuilder;
 use Orion\Contracts\RelationsResolver;
 use Orion\Contracts\SearchBuilder;
 use Orion\Exceptions\BindingException;
+use Orion\Http\Requests\Request;
 
 abstract class BaseController extends \Illuminate\Routing\Controller
 {
@@ -287,6 +289,23 @@ abstract class BaseController extends \Illuminate\Routing\Controller
     {
         $resourceModelClass = $this->resolveResourceModelClass();
         return (new $resourceModelClass)->qualifyColumn($this->keyName());
+    }
+
+    /**
+     * Determine whether pagination is enabled or not.
+     *
+     * @param Request $request
+     * @param int $paginationLimit
+     * @return bool
+     * @throws BindingResolutionException
+     */
+    protected function shouldPaginate(Request $request, int $paginationLimit): bool
+    {
+        if (app()->bound('orion.paginationEnabled')) {
+            return app()->make('orion.paginationEnabled');
+        }
+
+        return !property_exists($this, 'paginationDisabled');
     }
 
     /**

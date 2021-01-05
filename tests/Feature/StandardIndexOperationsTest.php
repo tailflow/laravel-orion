@@ -36,9 +36,29 @@ class StandardIndexOperationsTest extends TestCase
 
         $response = $this->get('/api/posts');
 
-        $this->assertResourceListed(
+        $this->assertResourcesPaginated(
             $response,
             $this->makePaginator($posts, 'posts')
+        );
+    }
+
+    /** @test */
+    public function getting_a_list_of_resources_without_pagination(): void
+    {
+        $user = factory(User::class)->create();
+        $posts = factory(Post::class)->times(20)->create(['user_id' => $user->id]);
+
+        Gate::policy(Post::class, GreenPolicy::class);
+
+        app()->bind('orion.paginationEnabled', function() {
+           return false;
+        });
+
+        $response = $this->get('/api/posts');
+
+        $this->assertResourcesListed(
+            $response,
+            $posts
         );
     }
 
@@ -51,7 +71,7 @@ class StandardIndexOperationsTest extends TestCase
 
         $response = $this->get('/api/posts?page=2');
 
-        $this->assertResourceListed(
+        $this->assertResourcesPaginated(
             $response,
             $this->makePaginator($posts, 'posts', 2)
         );
@@ -67,7 +87,7 @@ class StandardIndexOperationsTest extends TestCase
 
         $response = $this->get('/api/posts?with_trashed=true');
 
-        $this->assertResourceListed(
+        $this->assertResourcesPaginated(
             $response,
             $this->makePaginator($trashedPosts->merge($posts), 'posts')
         );
@@ -83,7 +103,7 @@ class StandardIndexOperationsTest extends TestCase
 
         $response = $this->get('/api/posts?only_trashed=true');
 
-        $this->assertResourceListed(
+        $this->assertResourcesPaginated(
             $response,
             $this->makePaginator($trashedPosts, 'posts')
         );
@@ -99,7 +119,7 @@ class StandardIndexOperationsTest extends TestCase
 
         $response = $this->get('/api/posts');
 
-        $this->assertResourceListed(
+        $this->assertResourcesPaginated(
             $response,
             $this->makePaginator($posts, 'posts')
         );
@@ -126,7 +146,7 @@ class StandardIndexOperationsTest extends TestCase
 
         $response = $this->get('/api/posts');
 
-        $this->assertResourceListed(
+        $this->assertResourcesPaginated(
             $response,
             $this->makePaginator($posts, 'posts'),
             ['test-field-from-resource' => 'test-value']
@@ -149,7 +169,7 @@ class StandardIndexOperationsTest extends TestCase
 
         $response = $this->get('/api/posts');
 
-        $this->assertResourceListed(
+        $this->assertResourcesPaginated(
             $response,
             $this->makePaginator($posts, 'posts'),
             [],
@@ -175,7 +195,7 @@ class StandardIndexOperationsTest extends TestCase
 
         $response = $this->get('/api/posts?include=user');
 
-        $this->assertResourceListed(
+        $this->assertResourcesPaginated(
             $response,
             $this->makePaginator($posts, 'posts')
         );

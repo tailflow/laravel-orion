@@ -17,7 +17,7 @@ class StandardIndexLimitingOperationsTest extends TestCase
 
         $response = $this->get('/api/posts?limit=5');
 
-        $this->assertResourceListed(
+        $this->assertResourcesPaginated(
             $response,
             $this->makePaginator($posts, 'posts', 1, 5)
         );
@@ -32,7 +32,7 @@ class StandardIndexLimitingOperationsTest extends TestCase
 
         $response = $this->get('/api/posts?limit=is+a+string');
 
-        $this->assertResourceListed(
+        $this->assertResourcesPaginated(
             $response,
             $this->makePaginator($posts, 'posts')
         );
@@ -47,7 +47,7 @@ class StandardIndexLimitingOperationsTest extends TestCase
 
         $response = $this->get('/api/posts?limit=-1');
 
-        $this->assertResourceListed(
+        $this->assertResourcesPaginated(
             $response,
             $this->makePaginator($posts, 'posts')
         );
@@ -62,7 +62,7 @@ class StandardIndexLimitingOperationsTest extends TestCase
 
         $response = $this->get('/api/posts?limit=0');
 
-        $this->assertResourceListed(
+        $this->assertResourcesPaginated(
             $response,
             $this->makePaginator($posts, 'posts')
         );
@@ -77,7 +77,7 @@ class StandardIndexLimitingOperationsTest extends TestCase
 
         $response = $this->get('/api/posts?limit=');
 
-        $this->assertResourceListed(
+        $this->assertResourcesPaginated(
             $response,
             $this->makePaginator($posts, 'posts')
         );
