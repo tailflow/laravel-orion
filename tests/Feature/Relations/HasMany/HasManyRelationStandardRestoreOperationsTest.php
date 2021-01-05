@@ -7,6 +7,8 @@ use Mockery;
 use Orion\Contracts\ComponentsResolver;
 use Orion\Tests\Feature\TestCase;
 use Orion\Tests\Fixtures\App\Http\Resources\SampleResource;
+use Orion\Tests\Fixtures\App\Models\AccessKey;
+use Orion\Tests\Fixtures\App\Models\AccessKeyScope;
 use Orion\Tests\Fixtures\App\Models\Company;
 use Orion\Tests\Fixtures\App\Models\Post;
 use Orion\Tests\Fixtures\App\Models\Team;
@@ -40,6 +42,19 @@ class HasManyRelationStandardRestoreOperationsTest extends TestCase
         $response = $this->post("/api/users/{$user->id}/posts/{$trashedPost->id}/restore");
 
         $this->assertResourceRestored($response, $trashedPost);
+    }
+
+    /** @test */
+    public function restoring_a_single_relation_resource_with_custom_key(): void
+    {
+        $accessKey = factory(AccessKey::class)->create();
+        $trashedAccessKeyScope = factory(AccessKeyScope::class)->state('trashed')->create(['access_key_id' => $accessKey->id]);
+
+        Gate::policy(AccessKeyScope::class, GreenPolicy::class);
+
+        $response = $this->post("/api/access_keys/{$accessKey->key}/scopes/{$trashedAccessKeyScope->scope}/restore");
+
+        $this->assertResourceRestored($response, $trashedAccessKeyScope);
     }
 
     /** @test */

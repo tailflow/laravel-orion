@@ -7,6 +7,8 @@ use Mockery;
 use Orion\Contracts\ComponentsResolver;
 use Orion\Tests\Feature\TestCase;
 use Orion\Tests\Fixtures\App\Http\Resources\SampleResource;
+use Orion\Tests\Fixtures\App\Models\AccessKey;
+use Orion\Tests\Fixtures\App\Models\AccessKeyScope;
 use Orion\Tests\Fixtures\App\Models\Company;
 use Orion\Tests\Fixtures\App\Models\Post;
 use Orion\Tests\Fixtures\App\Models\Team;
@@ -40,6 +42,19 @@ class HasManyRelationStandardShowOperationsTest extends TestCase
         $response = $this->get("/api/companies/{$company->id}/teams/{$team->id}");
 
         $this->assertResourceShown($response, $team);
+    }
+
+    /** @test */
+    public function getting_a_single_relation_resource_with_custom_key(): void
+    {
+        $accessKey = factory(AccessKey::class)->create();
+        $accessKeyScope = factory(AccessKeyScope::class)->create(['access_key_id' => $accessKey->id]);
+
+        Gate::policy(AccessKeyScope::class, GreenPolicy::class);
+
+        $response = $this->get("/api/access_keys/{$accessKey->key}/scopes/{$accessKeyScope->scope}");
+
+        $this->assertResourceShown($response, $accessKeyScope);
     }
 
     /** @test */

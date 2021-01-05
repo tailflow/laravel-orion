@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Gate;
 use Mockery;
 use Orion\Contracts\ComponentsResolver;
 use Orion\Tests\Fixtures\App\Http\Resources\SampleResource;
+use Orion\Tests\Fixtures\App\Models\AccessKey;
 use Orion\Tests\Fixtures\App\Models\Post;
 use Orion\Tests\Fixtures\App\Models\Team;
 use Orion\Tests\Fixtures\App\Models\User;
@@ -36,6 +37,18 @@ class StandardRestoreOperationsTest extends TestCase
         $response = $this->post("/api/posts/{$trashedPost->id}/restore");
 
         $this->assertResourceRestored($response, $trashedPost);
+    }
+
+    /** @test */
+    public function restoring_a_single_resource_with_custom_keys(): void
+    {
+        $trashedAccessKey = factory(AccessKey::class)->state('trashed')->create();
+
+        Gate::policy(AccessKey::class, GreenPolicy::class);
+
+        $response = $this->post("/api/access_keys/{$trashedAccessKey->key}/restore");
+
+        $this->assertResourceRestored($response, $trashedAccessKey);
     }
 
     /** @test */
