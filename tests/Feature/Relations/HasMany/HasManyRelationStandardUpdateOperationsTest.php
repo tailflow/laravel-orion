@@ -8,6 +8,8 @@ use Orion\Contracts\ComponentsResolver;
 use Orion\Tests\Feature\TestCase;
 use Orion\Tests\Fixtures\App\Http\Requests\TeamRequest;
 use Orion\Tests\Fixtures\App\Http\Resources\SampleResource;
+use Orion\Tests\Fixtures\App\Models\AccessKey;
+use Orion\Tests\Fixtures\App\Models\AccessKeyScope;
 use Orion\Tests\Fixtures\App\Models\Company;
 use Orion\Tests\Fixtures\App\Models\Team;
 use Orion\Tests\Fixtures\App\Policies\GreenPolicy;
@@ -43,6 +45,24 @@ class HasManyRelationStandardUpdateOperationsTest extends TestCase
         $this->assertResourceUpdated($response,
             Team::class,
             $team->toArray(),
+            $payload
+        );
+    }
+
+    /** @test */
+    public function updating_a_single_relation_resource_with_custom_key(): void
+    {
+        $accessKey = factory(AccessKey::class)->create();
+        $accessKeyScope = factory(AccessKeyScope::class)->create(['access_key_id' => $accessKey->id]);
+        $payload = ['scope' => 'test updated'];
+
+        Gate::policy(AccessKeyScope::class, GreenPolicy::class);
+
+        $response = $this->patch("/api/access_keys/{$accessKey->key}/scopes/{$accessKeyScope->scope}", $payload);
+
+        $this->assertResourceUpdated($response,
+            AccessKeyScope::class,
+            $accessKeyScope->toArray(),
             $payload
         );
     }

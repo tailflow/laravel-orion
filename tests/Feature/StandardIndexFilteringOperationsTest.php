@@ -25,7 +25,7 @@ class StandardIndexFilteringOperationsTest extends TestCase
             ]
         ]);
 
-        $this->assertResourceListed(
+        $this->assertResourcesPaginated(
             $response,
             $this->makePaginator([$matchingPost], 'posts/search')
         );
@@ -47,7 +47,7 @@ class StandardIndexFilteringOperationsTest extends TestCase
             ]
         ]);
 
-        $this->assertResourceListed(
+        $this->assertResourcesPaginated(
             $response,
             $this->makePaginator([$matchingPost, $anotherMatchingPost], 'posts/search')
         );
@@ -67,7 +67,7 @@ class StandardIndexFilteringOperationsTest extends TestCase
             ]
         ]);
 
-        $this->assertResourceListed(
+        $this->assertResourcesPaginated(
             $response,
             $this->makePaginator([$matchingPost], 'posts/search')
         );
@@ -87,7 +87,7 @@ class StandardIndexFilteringOperationsTest extends TestCase
             ]
         ]);
 
-        $this->assertResourceListed(
+        $this->assertResourcesPaginated(
             $response,
             $this->makePaginator([$matchingPost], 'posts/search')
         );
@@ -108,7 +108,7 @@ class StandardIndexFilteringOperationsTest extends TestCase
             ]
         ]);
 
-        $this->assertResourceListed(
+        $this->assertResourcesPaginated(
             $response,
             $this->makePaginator([$matchingPost, $anotherMatchingPost], 'posts/search')
         );
@@ -128,7 +128,7 @@ class StandardIndexFilteringOperationsTest extends TestCase
             ]
         ]);
 
-        $this->assertResourceListed(
+        $this->assertResourcesPaginated(
             $response,
             $this->makePaginator([$matchingPost], 'posts/search')
         );
@@ -149,7 +149,7 @@ class StandardIndexFilteringOperationsTest extends TestCase
             ]
         ]);
 
-        $this->assertResourceListed(
+        $this->assertResourcesPaginated(
             $response,
             $this->makePaginator([$matchingPost, $anotherMatchingPost], 'posts/search')
         );
@@ -170,7 +170,7 @@ class StandardIndexFilteringOperationsTest extends TestCase
             ]
         ]);
 
-        $this->assertResourceListed(
+        $this->assertResourcesPaginated(
             $response,
             $this->makePaginator([$matchingPost, $anotherMatchingPost], 'posts/search')
         );
@@ -190,7 +190,7 @@ class StandardIndexFilteringOperationsTest extends TestCase
             ]
         ]);
 
-        $this->assertResourceListed(
+        $this->assertResourcesPaginated(
             $response,
             $this->makePaginator([$matchingPost], 'posts/search')
         );
@@ -211,7 +211,7 @@ class StandardIndexFilteringOperationsTest extends TestCase
             ]
         ]);
 
-        $this->assertResourceListed(
+        $this->assertResourcesPaginated(
             $response,
             $this->makePaginator([$matchingPost, $anotherMatchingPost], 'posts/search')
         );
@@ -231,7 +231,7 @@ class StandardIndexFilteringOperationsTest extends TestCase
             ]
         ]);
 
-        $this->assertResourceListed(
+        $this->assertResourcesPaginated(
             $response,
             $this->makePaginator([$matchingPost], 'posts/search')
         );
@@ -254,7 +254,7 @@ class StandardIndexFilteringOperationsTest extends TestCase
             ]
         ]);
 
-        $this->assertResourceListed(
+        $this->assertResourcesPaginated(
             $response,
             $this->makePaginator([$matchingPost], 'posts/search')
         );
@@ -292,7 +292,7 @@ class StandardIndexFilteringOperationsTest extends TestCase
             ]
         ]);
 
-        $this->assertResourceListed(
+        $this->assertResourcesPaginated(
             $response,
             $this->makePaginator([$matchingTeam], 'teams/search')
         );
@@ -314,7 +314,7 @@ class StandardIndexFilteringOperationsTest extends TestCase
             ]
         ]);
 
-        $this->assertResourceListed(
+        $this->assertResourcesPaginated(
             $response,
             $this->makePaginator([$matchingTeam], 'teams/search')
         );

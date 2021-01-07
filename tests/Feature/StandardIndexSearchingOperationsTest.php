@@ -21,7 +21,7 @@ class StandardIndexSearchingOperationsTest extends TestCase
             'search' => ['value' => 'match']
         ]);
 
-        $this->assertResourceListed(
+        $this->assertResourcesPaginated(
             $response,
             $this->makePaginator([$matchingPost], 'posts/search')
         );
@@ -42,7 +42,7 @@ class StandardIndexSearchingOperationsTest extends TestCase
             'search' => ['value' => 'match']
         ]);
 
-        $this->assertResourceListed(
+        $this->assertResourcesPaginated(
             $response,
             $this->makePaginator([$matchingPost], 'posts/search')
         );
@@ -60,7 +60,7 @@ class StandardIndexSearchingOperationsTest extends TestCase
             'search' => ['value' => '']
         ]);
 
-        $this->assertResourceListed(
+        $this->assertResourcesPaginated(
             $response,
             $this->makePaginator([$matchingPost, $anotherMatchingPost], 'posts/search')
         );

@@ -75,6 +75,30 @@ abstract class RelationController extends BaseController
     }
 
     /**
+     * The name of the field used to fetch parent resource from the database.
+     *
+     * @return string
+     */
+    protected function parentKeyName(): string
+    {
+        $modelClass = $this->getModel();
+
+        return (new $modelClass)->getKeyName();
+    }
+
+    /**
+     * A qualified name of the field used to fetch parent resource from the database.
+     *
+     * @return string
+     */
+    protected function resolveQualifiedParentKeyName(): string
+    {
+        $modelClass = $this->getModel();
+
+        return (new $modelClass)->qualifyColumn($this->parentKeyName());
+    }
+
+    /**
      * Creates new Eloquent query builder of the relation on the given parent model.
      *
      * @param Model $parentEntity

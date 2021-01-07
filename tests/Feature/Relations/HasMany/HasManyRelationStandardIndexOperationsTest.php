@@ -40,9 +40,29 @@ class HasManyRelationStandardIndexOperationsTest extends TestCase
 
         $response = $this->get("/api/companies/{$company->id}/teams");
 
-        $this->assertResourceListed(
+        $this->assertResourcesPaginated(
             $response,
             $this->makePaginator($teams, "companies/{$company->id}/teams")
+        );
+    }
+
+    /** @test */
+    public function getting_a_list_of_relation_resources_without_pagination(): void
+    {
+        $company = factory(Company::class)->create();
+        $teams = factory(Team::class)->times(20)->create(['company_id' => $company->id]);
+
+        Gate::policy(Team::class, GreenPolicy::class);
+
+        app()->bind('orion.paginationEnabled', function() {
+            return false;
+        });
+
+        $response = $this->get("/api/companies/{$company->id}/teams");
+
+        $this->assertResourcesListed(
+            $response,
+            $teams
         );
     }
 
@@ -56,7 +76,7 @@ class HasManyRelationStandardIndexOperationsTest extends TestCase
 
         $response = $this->get("/api/companies/{$company->id}/teams?page=2");
 
-        $this->assertResourceListed(
+        $this->assertResourcesPaginated(
             $response,
             $this->makePaginator($teams, "companies/{$company->id}/teams", 2)
         );
@@ -73,7 +93,7 @@ class HasManyRelationStandardIndexOperationsTest extends TestCase
 
         $response = $this->get("/api/users/{$user->id}/posts?with_trashed=true");
 
-        $this->assertResourceListed(
+        $this->assertResourcesPaginated(
             $response,
             $this->makePaginator($trashedPosts->merge($posts), "users/{$user->id}/posts")
         );
@@ -90,7 +110,7 @@ class HasManyRelationStandardIndexOperationsTest extends TestCase
 
         $response = $this->get("/api/users/{$user->id}/posts?only_trashed=true");
 
-        $this->assertResourceListed(
+        $this->assertResourcesPaginated(
             $response,
             $this->makePaginator($trashedPosts, "users/{$user->id}/posts")
         );
@@ -107,7 +127,7 @@ class HasManyRelationStandardIndexOperationsTest extends TestCase
 
         $response = $this->get("/api/users/{$user->id}/posts");
 
-        $this->assertResourceListed(
+        $this->assertResourcesPaginated(
             $response,
             $this->makePaginator($posts, "users/{$user->id}/posts")
         );
@@ -135,7 +155,7 @@ class HasManyRelationStandardIndexOperationsTest extends TestCase
 
         $response = $this->get("/api/companies/{$company->id}/teams");
 
-        $this->assertResourceListed(
+        $this->assertResourcesPaginated(
             $response,
             $this->makePaginator($teams, "companies/{$company->id}/teams"),
             ['test-field-from-resource' => 'test-value']
@@ -159,7 +179,7 @@ class HasManyRelationStandardIndexOperationsTest extends TestCase
 
         $response = $this->get("/api/companies/{$company->id}/teams");
 
-        $this->assertResourceListed(
+        $this->assertResourcesPaginated(
             $response,
             $this->makePaginator($teams, "companies/{$company->id}/teams"),
             [],
@@ -186,7 +206,7 @@ class HasManyRelationStandardIndexOperationsTest extends TestCase
 
         $response = $this->get("/api/companies/{$company->id}/teams?include=company");
 
-        $this->assertResourceListed(
+        $this->assertResourcesPaginated(
             $response,
             $this->makePaginator($teams, "companies/{$company->id}/teams")
         );

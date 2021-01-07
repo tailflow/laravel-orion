@@ -43,7 +43,7 @@ class BelongsToManyRelationStandardIndexOperationsTest extends TestCase
 
         $response = $this->get("/api/users/{$user->id}/roles");
 
-        $this->assertResourceListed(
+        $this->assertResourcesPaginated(
             $response,
             $this->makePaginator($user->roles->toArray(), "users/{$user->id}/roles")
         );
@@ -67,7 +67,7 @@ class BelongsToManyRelationStandardIndexOperationsTest extends TestCase
 
         $response = $this->get("/api/users/{$user->id}/roles");
 
-        $this->assertResourceListed(
+        $this->assertResourcesPaginated(
             $response,
             $this->makePaginator($user->load('roles')->roles->map(function(Role $role) {
                 $role->pivot->meta = ['key' => 'value'];
@@ -88,7 +88,7 @@ class BelongsToManyRelationStandardIndexOperationsTest extends TestCase
 
         $response = $this->get("/api/users/{$user->id}/roles?page=2");
 
-        $this->assertResourceListed(
+        $this->assertResourcesPaginated(
             $response,
             $this->makePaginator($user->roles->toArray(), "users/{$user->id}/roles", 2)
         );
@@ -108,7 +108,7 @@ class BelongsToManyRelationStandardIndexOperationsTest extends TestCase
 
         $response = $this->get("/api/users/{$user->id}/notifications?with_trashed=true");
 
-        $this->assertResourceListed(
+        $this->assertResourcesPaginated(
             $response,
             $this->makePaginator($user->notifications()->withTrashed()->get()->toArray(), "users/{$user->id}/notifications")
         );
@@ -128,7 +128,7 @@ class BelongsToManyRelationStandardIndexOperationsTest extends TestCase
 
         $response = $this->get("/api/users/{$user->id}/notifications?only_trashed=true");
 
-        $this->assertResourceListed(
+        $this->assertResourcesPaginated(
             $response,
             $this->makePaginator($user->notifications()->onlyTrashed()->get()->toArray(), "users/{$user->id}/notifications")
         );
@@ -148,7 +148,7 @@ class BelongsToManyRelationStandardIndexOperationsTest extends TestCase
 
         $response = $this->get("/api/users/{$user->id}/notifications");
 
-        $this->assertResourceListed(
+        $this->assertResourcesPaginated(
             $response,
             $this->makePaginator($user->notifications->toArray(), "users/{$user->id}/notifications")
         );
@@ -176,7 +176,7 @@ class BelongsToManyRelationStandardIndexOperationsTest extends TestCase
 
         $response = $this->get("/api/users/{$user->id}/roles");
 
-        $this->assertResourceListed(
+        $this->assertResourcesPaginated(
             $response,
             $this->makePaginator($user->roles->toArray(), "users/{$user->id}/roles"),
             ['test-field-from-resource' => 'test-value']
@@ -202,7 +202,7 @@ class BelongsToManyRelationStandardIndexOperationsTest extends TestCase
 
         $response = $this->get("/api/users/{$user->id}/roles");
 
-        $this->assertResourceListed(
+        $this->assertResourcesPaginated(
             $response,
             $this->makePaginator($user->roles->toArray(), "users/{$user->id}/roles"),
             [],
@@ -225,7 +225,7 @@ class BelongsToManyRelationStandardIndexOperationsTest extends TestCase
 
         $response = $this->get("/api/users/{$user->id}/roles?include=users");
 
-        $this->assertResourceListed(
+        $this->assertResourcesPaginated(
             $response,
             $this->makePaginator($user->roles()->with('users')->get()->toArray(), "users/{$user->id}/roles")
         );

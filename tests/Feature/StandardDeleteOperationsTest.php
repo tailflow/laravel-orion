@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Gate;
 use Mockery;
 use Orion\Contracts\ComponentsResolver;
 use Orion\Tests\Fixtures\App\Http\Resources\SampleResource;
+use Orion\Tests\Fixtures\App\Models\AccessKey;
 use Orion\Tests\Fixtures\App\Models\Post;
 use Orion\Tests\Fixtures\App\Models\Team;
 use Orion\Tests\Fixtures\App\Models\User;
@@ -60,6 +61,18 @@ class StandardDeleteOperationsTest extends TestCase
         $response = $this->delete("/api/posts/{$post->id}");
 
         $this->assertResourceTrashed($response, $post);
+    }
+
+    /** @test */
+    public function trashing_a_single_soft_deletable_resource_with_custom_key(): void
+    {
+        $accessKey = factory(AccessKey::class)->create();
+
+        Gate::policy(AccessKey::class, GreenPolicy::class);
+
+        $response = $this->delete("/api/access_keys/{$accessKey->key}");
+
+        $this->assertResourceTrashed($response, $accessKey);
     }
 
     /** @test */

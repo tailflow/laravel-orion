@@ -7,6 +7,7 @@ use Mockery;
 use Orion\Contracts\ComponentsResolver;
 use Orion\Tests\Fixtures\App\Http\Requests\PostRequest;
 use Orion\Tests\Fixtures\App\Http\Resources\SampleResource;
+use Orion\Tests\Fixtures\App\Models\AccessKey;
 use Orion\Tests\Fixtures\App\Models\Post;
 use Orion\Tests\Fixtures\App\Models\User;
 use Orion\Tests\Fixtures\App\Policies\GreenPolicy;
@@ -41,6 +42,23 @@ class StandardUpdateOperationsTest extends TestCase
         $this->assertResourceUpdated($response,
             Post::class,
             $post->toArray(),
+            $payload
+        );
+    }
+
+    /** @test */
+    public function updating_a_single_resource_with_custom_key(): void
+    {
+        $accessKey = factory(AccessKey::class)->create();
+        $payload = ['name' => 'test access key name updated'];
+
+        Gate::policy(AccessKey::class, GreenPolicy::class);
+
+        $response = $this->patch("/api/access_keys/{$accessKey->key}", $payload);
+
+        $this->assertResourceUpdated($response,
+            AccessKey::class,
+            $accessKey->toArray(),
             $payload
         );
     }

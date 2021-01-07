@@ -16,7 +16,7 @@ trait InteractsWithResources
      * @param array $mergeData
      * @param bool $exact
      */
-    protected function assertResourceListed($response, LengthAwarePaginator $paginator, array $mergeData = [], bool $exact = true): void
+    protected function assertResourcesPaginated($response, LengthAwarePaginator $paginator, array $mergeData = [], bool $exact = true): void
     {
         $response->assertStatus(200);
         $response->assertJsonStructure([
@@ -55,6 +55,31 @@ trait InteractsWithResources
             ksort($meta);
             $expected['meta'] = $meta;
         }
+
+        $this->assertResponseContent($expected, $response, $exact);
+    }
+
+    /**
+     * @param \Illuminate\Testing\TestResponse|\Illuminate\Foundation\Testing\TestResponse $response
+     * @param Collection $entities
+     * @param array $mergeData
+     * @param bool $exact
+     */
+    protected function assertResourcesListed($response, Collection $entities, array $mergeData = [], bool $exact = true): void
+    {
+        $response->assertStatus(200);
+        $response->assertJsonStructure([
+            'data',
+        ]);
+
+        $expected = [
+            'data' => $entities->map(function ($resource) use ($mergeData) {
+                $arrayRepresentation = is_array($resource) ? $resource : $resource->fresh()->toArray();
+                $arrayRepresentation = array_merge($arrayRepresentation, $mergeData);
+
+                return $arrayRepresentation;
+            })->toArray(),
+        ];
 
         $this->assertResponseContent($expected, $response, $exact);
     }

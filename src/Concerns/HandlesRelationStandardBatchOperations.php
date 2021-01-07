@@ -436,7 +436,7 @@ trait HandlesRelationStandardBatchOperations
      */
     protected function buildRelationBatchFetchQuery(Request $request, Model $parentEntity, array $requestedRelations): Relation
     {
-        $resourceKeyName = $this->resolveResourceKeyName();
+        $resourceKeyName = $this->resolveQualifiedKeyName();
         $resourceKeys = $this->resolveResourceKeys($request);
 
         return $this->buildRelationFetchQuery($request, $parentEntity, $requestedRelations)

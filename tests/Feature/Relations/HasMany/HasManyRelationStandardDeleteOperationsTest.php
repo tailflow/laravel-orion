@@ -7,6 +7,8 @@ use Mockery;
 use Orion\Contracts\ComponentsResolver;
 use Orion\Tests\Feature\TestCase;
 use Orion\Tests\Fixtures\App\Http\Resources\SampleResource;
+use Orion\Tests\Fixtures\App\Models\AccessKey;
+use Orion\Tests\Fixtures\App\Models\AccessKeyScope;
 use Orion\Tests\Fixtures\App\Models\Company;
 use Orion\Tests\Fixtures\App\Models\Post;
 use Orion\Tests\Fixtures\App\Models\Team;
@@ -66,6 +68,19 @@ class HasManyRelationStandardDeleteOperationsTest extends TestCase
         $response = $this->delete("/api/users/{$user->id}/posts/{$post->id}");
 
         $this->assertResourceTrashed($response, $post);
+    }
+
+    /** @test */
+    public function trashing_a_single_soft_deletable_relation_resource_with_custom_key(): void
+    {
+        $accessKey = factory(AccessKey::class)->create();
+        $accessKeyScope = factory(AccessKeyScope::class)->create(['access_key_id' => $accessKey->id]);
+
+        Gate::policy(AccessKeyScope::class, GreenPolicy::class);
+
+        $response = $this->delete("/api/access_keys/{$accessKey->key}/scopes/{$accessKeyScope->scope}");
+
+        $this->assertResourceTrashed($response, $accessKeyScope);
     }
 
     /** @test */

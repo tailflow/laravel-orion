@@ -23,7 +23,7 @@ class StandardIndexScopingOperationsTest extends TestCase
             ]
         ]);
 
-        $this->assertResourceListed(
+        $this->assertResourcesPaginated(
             $response,
             $this->makePaginator([$matchingPost], 'posts/search')
         );
@@ -43,7 +43,7 @@ class StandardIndexScopingOperationsTest extends TestCase
             ]
         ]);
 
-        $this->assertResourceListed(
+        $this->assertResourcesPaginated(
             $response,
             $this->makePaginator([$matchingPost], 'posts/search')
         );

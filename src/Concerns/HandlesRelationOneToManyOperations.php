@@ -101,7 +101,7 @@ trait HandlesRelationOneToManyOperations
      */
     protected function runAssociateFetchQuery(Request $request, Builder $query, Model $parentEntity, $relatedKey): Model
     {
-        return $query->findOrFail($relatedKey);
+        return $query->where($this->resolveQualifiedKeyName(), $relatedKey)->firstOrFail();
     }
 
     /**
