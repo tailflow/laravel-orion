@@ -58,7 +58,7 @@ class RelationsResolver implements \Orion\Contracts\RelationsResolver
                 $relationMatcher = '';
 
                 foreach ($relations as $relation) {
-                    $relationMatcher.= "{$relation}.";
+                    $relationMatcher .= "{$relation}.";
 
                     if (in_array("{$relationMatcher}*", $allowedIncludes, true)) {
                         $validatedIncludes[] = $requestedInclude;
@@ -199,15 +199,25 @@ class RelationsResolver implements \Orion\Contracts\RelationsResolver
 
     protected function normalizeRequestedRelations(array $requestedRelations): array
     {
-        return collect($requestedRelations)->mapWithKeys(function (string $requestedRelation) {
+        $normalizedRelations = [];
+
+        foreach ($requestedRelations as $requestedRelation) {
             if (($firstDotIndex = strpos($requestedRelation, '.')) !== false) {
                 $parentOfNestedRelation = Arr::first(explode('.', $requestedRelation));
                 $nestedRelation = substr($requestedRelation, $firstDotIndex + 1);
 
-                return [$parentOfNestedRelation => $this->normalizeRequestedRelations([$nestedRelation])];
-            }
+                $normalizedNestedRelations = $this->normalizeRequestedRelations([$nestedRelation]);
 
-            return [$requestedRelation => []];
-        })->toArray();
+                if (!array_key_exists($parentOfNestedRelation, $normalizedRelations)) {
+                    $normalizedRelations[$parentOfNestedRelation] = $normalizedNestedRelations;
+                } else {
+                    $normalizedRelations[$parentOfNestedRelation] = array_merge($normalizedRelations[$parentOfNestedRelation], $normalizedNestedRelations);
+                }
+            } elseif (!array_key_exists($requestedRelation, $normalizedRelations)) {
+                $normalizedRelations[$requestedRelation] = [];
+            }
+        }
+
+        return $normalizedRelations;
     }
 }

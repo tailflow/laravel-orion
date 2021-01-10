@@ -4,6 +4,7 @@ namespace Orion\Tests\Unit\Drivers\Standard;
 
 use Orion\Drivers\Standard\RelationsResolver;
 use Orion\Http\Requests\Request;
+use Orion\Tests\Fixtures\App\Models\Company;
 use Orion\Tests\Fixtures\App\Models\Post;
 use Orion\Tests\Fixtures\App\Models\Team;
 use Orion\Tests\Fixtures\App\Models\User;
@@ -49,6 +50,28 @@ class RelationsResolverTest extends TestCase
 
         self::assertArrayHasKey('user', $guardedPost->getRelations());
         self::assertArrayNotHasKey('editors', $guardedPost->getRelations());
+    }
+
+    /** @test */
+    public function guarding_entity_nested_relations_of_the_same_parent()
+    {
+        $user = new User(['name' => 'manager user']);
+        $user->setRelations([
+            'company' => new Company(),
+            'team' => new Team()
+        ]);
+
+        $post = new Post(['title' => 'test post']);
+        $post->setRelations([
+            'user' => $user
+        ]);
+
+        $relationsResolver = new RelationsResolver([], ['user.company', 'user.team']);
+        $guardedPost = $relationsResolver->guardRelations($post, ['user.company', 'user.team']);
+
+        self::assertArrayHasKey('user', $guardedPost->getRelations());
+        self::assertArrayHasKey('company', $guardedPost->getRelations()['user']->getRelations());
+        self::assertArrayHasKey('team', $guardedPost->getRelations()['user']->getRelations());
     }
 
     /** @test */
