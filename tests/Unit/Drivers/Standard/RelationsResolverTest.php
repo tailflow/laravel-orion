@@ -83,6 +83,7 @@ class RelationsResolverTest extends TestCase
 
         $team = new Team(['name' => 'test team']);
         $team->setRelation('users', collect([new User(['name' => 'team user'])]));
+        $team->setRelation('company', new Company(['name' => 'test company']));
 
         $editor = new User(['name' => 'editor user']);
         $editor->setRelation('team', $team);
@@ -92,13 +93,14 @@ class RelationsResolverTest extends TestCase
             'editors' => collect([$editor])
         ]);
 
-        $relationsResolver = new RelationsResolver(['user', 'editors.team'], []);
-        $guardedPost = $relationsResolver->guardRelations($post, ['user', 'editors.team']);
+        $relationsResolver = new RelationsResolver(['user', 'editors.team.users', 'editors.team.company'], []);
+        $guardedPost = $relationsResolver->guardRelations($post, ['user',  'editors.team.users', 'editors.team.company']);
 
         self::assertArrayHasKey('user', $guardedPost->getRelations());
         self::assertArrayHasKey('editors', $guardedPost->getRelations());
         self::assertArrayHasKey('team', $guardedPost->getRelation('editors')->first()->getRelations());
-        self::assertArrayNotHasKey('users', $guardedPost->getRelation('editors')->first()->team->getRelations());
+        self::assertArrayHasKey('users', $guardedPost->getRelation('editors')->first()->team->getRelations());
+        self::assertArrayHasKey('company', $guardedPost->getRelation('editors')->first()->team->getRelations());
     }
 
     /** @test */

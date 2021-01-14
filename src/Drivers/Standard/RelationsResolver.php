@@ -208,11 +208,10 @@ class RelationsResolver implements \Orion\Contracts\RelationsResolver
 
                 $normalizedNestedRelations = $this->normalizeRequestedRelations([$nestedRelation]);
 
-                if (!array_key_exists($parentOfNestedRelation, $normalizedRelations)) {
-                    $normalizedRelations[$parentOfNestedRelation] = $normalizedNestedRelations;
-                } else {
-                    $normalizedRelations[$parentOfNestedRelation] = array_merge($normalizedRelations[$parentOfNestedRelation], $normalizedNestedRelations);
-                }
+                $normalizedRelations[$parentOfNestedRelation] = array_merge_recursive(
+                    Arr::get($normalizedRelations, $parentOfNestedRelation, []),
+                    $normalizedNestedRelations
+                );
             } elseif (!array_key_exists($requestedRelation, $normalizedRelations)) {
                 $normalizedRelations[$requestedRelation] = [];
             }
