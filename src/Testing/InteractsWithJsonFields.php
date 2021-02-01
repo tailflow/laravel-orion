@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Orion\Testing;
 
 use Illuminate\Contracts\Support\Jsonable;
-use Illuminate\Database\Query\Expression;
 use Illuminate\Support\Facades\DB;
 
 trait InteractsWithJsonFields
@@ -21,7 +20,7 @@ trait InteractsWithJsonFields
         })->toArray();
     }
 
-    protected function castFieldToJson($value): Expression
+    protected function castFieldToJson($value)
     {
         if ($value instanceof Jsonable) {
             $value = $value->toJson();
