@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Arr;
 use InvalidArgumentException;
 use Orion\Http\Requests\Request;
 use Orion\Http\Resources\CollectionResource;
@@ -215,7 +216,9 @@ trait HandlesRelationStandardOperations
      */
     protected function performStore(Request $request, Model $parentEntity, Model $entity, array $attributes, array $pivot): void
     {
-        $entity->fill($attributes);
+        $entity->fill(
+            Arr::except($attributes, array_keys($entity->getDirty()))
+        );
 
         if (!$parentEntity->{$this->getRelation()}() instanceof BelongsTo) {
             $parentEntity->{$this->getRelation()}()->save($entity, $this->preparePivotFields($pivot));
@@ -442,7 +445,9 @@ trait HandlesRelationStandardOperations
      */
     protected function performUpdate(Request $request, Model $parentEntity, Model $entity, array $attributes, array $pivot): void
     {
-        $entity->fill($attributes);
+        $entity->fill(
+            Arr::except($attributes, array_keys($entity->getDirty()))
+        );
         $entity->save();
 
         $relation = $parentEntity->{$this->getRelation()}();

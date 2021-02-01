@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Arr;
 use Orion\Http\Requests\Request;
 use Orion\Http\Resources\CollectionResource;
 use Orion\Http\Resources\Resource;
@@ -133,7 +134,9 @@ trait HandlesStandardOperations
      */
     protected function performStore(Request $request, Model $entity, array $attributes): void
     {
-        $entity->fill($attributes);
+        $entity->fill(
+            Arr::except($attributes, array_keys($entity->getDirty()))
+        );
         $entity->save();
     }
 
@@ -275,7 +278,9 @@ trait HandlesStandardOperations
      */
     protected function performUpdate(Request $request, Model $entity, array $attributes): void
     {
-        $entity->fill($attributes);
+        $entity->fill(
+            Arr::except($attributes, array_keys($entity->getDirty()))
+        );
         $entity->save();
     }
 
