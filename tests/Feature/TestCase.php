@@ -3,13 +3,14 @@
 namespace Orion\Tests\Feature;
 
 use Orion\Testing\InteractsWithAuthorization;
+use Orion\Testing\InteractsWithJsonFields;
 use Orion\Testing\InteractsWithResources;
 use Orion\Tests\Fixtures\App\Models\User;
 use Orion\Tests\TestCase as BaseTestCase;
 
 abstract class TestCase extends BaseTestCase
 {
-    use InteractsWithResources, InteractsWithAuthorization;
+    use InteractsWithResources, InteractsWithJsonFields, InteractsWithAuthorization;
 
     protected function setUp(): void
     {

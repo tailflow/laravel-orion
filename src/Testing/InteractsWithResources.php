@@ -326,7 +326,7 @@ trait InteractsWithResources
 
     protected function assertResourceAttached(string $relation, Model $parentModel, Model $relationModel, array $pivotFields = []): void
     {
-        $pivotFields = $this->castPivotFields($pivotFields);
+        $pivotFields = $this->castFieldsToJson($pivotFields);
 
         $this->assertDatabaseHas($parentModel->{$relation}()->getTable(), array_merge([
             $parentModel->{$relation}()->getForeignPivotKeyName() => $parentModel->getKey(),
@@ -346,7 +346,7 @@ trait InteractsWithResources
     {
         $this->assertResponseContent(['updated' => [$relationModel->getKey()]], $response, $exact);
 
-        $pivotFields = $this->castPivotFields($pivotFields);
+        $pivotFields = $this->castFieldsToJson($pivotFields);
 
         $this->assertDatabaseHas($parentModel->{$relation}()->getTable(), array_merge([
             $parentModel->{$relation}()->getForeignPivotKeyName() => $parentModel->getKey(),
@@ -395,23 +395,6 @@ trait InteractsWithResources
     {
         $actual = json_decode($response->getContent(), true);
         self::assertSame($expected, $actual);
-    }
-
-    protected function castPivotFields(array $pivotFields): array
-    {
-        return collect($pivotFields)->map(function ($pivotFieldValue) {
-            if (is_array($pivotFieldValue)) {
-                $pivotFieldValue = json_encode($pivotFieldValue);
-                if (config('database.default') === 'mysql') {
-                    $pivotFieldValue = DB::raw("CAST('{$pivotFieldValue}' AS JSON)");
-                }
-                if (config('database.default') === 'pgsql') {
-                    $pivotFieldValue = DB::raw("'{$pivotFieldValue}'::jsonb");
-                }
-            }
-
-            return $pivotFieldValue;
-        })->toArray();
     }
 
     protected function buildSyncMap(array $attached = [], array $detached = [], array $updated = [], array $remained = []): array
