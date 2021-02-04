@@ -2,6 +2,7 @@
 
 namespace Orion\Tests\Feature;
 
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Gate;
 use Orion\Tests\Fixtures\App\Models\Company;
 use Orion\Tests\Fixtures\App\Models\Post;
@@ -317,6 +318,26 @@ class StandardIndexFilteringOperationsTest extends TestCase
         $this->assertResourcesPaginated(
             $response,
             $this->makePaginator([$matchingTeam], 'teams/search')
+        );
+    }
+
+    /** @test */
+    public function getting_a_list_of_resources_filtered_by_model_field_using_nullable_value(): void
+    {
+        $matchingPost = factory(Post::class)->create(['publish_at' => null])->fresh();
+        factory(Post::class)->create(['publish_at' =>  Carbon::now()])->fresh();
+
+        Gate::policy(Post::class, GreenPolicy::class);
+
+        $response = $this->post('/api/posts/search', [
+            'filters' => [
+                ['field' => 'publish_at', 'operator' => '=', 'value' => null]
+            ]
+        ]);
+
+        $this->assertResourcesPaginated(
+            $response,
+            $this->makePaginator([$matchingPost], 'posts/search')
         );
     }
 }
