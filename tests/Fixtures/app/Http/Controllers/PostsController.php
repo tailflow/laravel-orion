@@ -32,7 +32,7 @@ class PostsController extends Controller
 
     protected function filterableBy() : array
     {
-        return ['title', 'position', 'user.name'];
+        return ['title', 'position', 'publish_at', 'user.name'];
     }
 
     protected function searchableBy() : array
