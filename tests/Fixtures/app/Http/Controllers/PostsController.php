@@ -27,12 +27,12 @@ class PostsController extends Controller
 
     protected function sortableBy() : array
     {
-        return ['title', 'user.name'];
+        return ['title', 'user.name', 'meta->nested_field'];
     }
 
     protected function filterableBy() : array
     {
-        return ['title', 'position', 'publish_at', 'user.name'];
+        return ['title', 'position', 'publish_at', 'user.name', 'meta->nested_field'];
     }
 
     protected function searchableBy() : array

@@ -239,6 +239,27 @@ class StandardIndexFilteringOperationsTest extends TestCase
     }
 
     /** @test */
+    public function getting_a_list_of_resources_filtered_by_field_in_json_column(): void
+    {
+        $matchingPost = factory(Post::class)->create(['meta' => ['nested_field' => 'match']])->fresh();
+        $anotherMatchingPost = factory(Post::class)->create(['meta' => ['nested_field' => 'another match']])->fresh();
+        factory(Post::class)->create(['meta' => ['nested_field' => 'different']])->fresh();
+
+        Gate::policy(Post::class, GreenPolicy::class);
+
+        $response = $this->post('/api/posts/search', [
+            'filters' => [
+                ['field' => 'meta->nested_field', 'operator' => 'in', 'value' => ['match', 'another match']],
+            ]
+        ]);
+
+        $this->assertResourcesPaginated(
+            $response,
+            $this->makePaginator([$matchingPost, $anotherMatchingPost], 'posts/search')
+        );
+    }
+
+    /** @test */
     public function getting_a_list_of_resources_filtered_by_relation_field_resources(): void
     {
         $matchingPostUser = factory(User::class)->create(['name' => 'match']);

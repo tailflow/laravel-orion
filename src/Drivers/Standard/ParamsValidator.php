@@ -47,7 +47,7 @@ class ParamsValidator implements \Orion\Contracts\ParamsValidator
         Validator::make($request->all(), [
             'filters' => ['sometimes', 'array'],
             'filters.*.type' => ['sometimes', 'in:and,or'],
-            'filters.*.field' => ['required_with:filters', 'regex:/^[\w.]+$/', new WhitelistedField($this->filterableBy)],
+            'filters.*.field' => ['required_with:filters', 'regex:/^[\w.\_\-\>]+$/', new WhitelistedField($this->filterableBy)],
             'filters.*.operator' => ['required_with:filters', 'in:<,<=,>,>=,=,!=,like,not like,ilike,not ilike,in,not in'],
             'filters.*.value' => ['present', 'nullable']
         ])->validate();
@@ -57,7 +57,7 @@ class ParamsValidator implements \Orion\Contracts\ParamsValidator
     {
         Validator::make($request->all(), [
             'sort' => ['sometimes', 'array'],
-            'sort.*.field' => ['required_with:sort', 'regex:/^[\w.]+$/', new WhitelistedField($this->sortableBy)],
+            'sort.*.field' => ['required_with:sort', 'regex:/^[\w.\_\-\>]+$/', new WhitelistedField($this->sortableBy)],
             'sort.*.direction' => ['sometimes', 'in:asc,desc']
         ])->validate();
     }
