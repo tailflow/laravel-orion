@@ -2,7 +2,7 @@
 
 namespace Orion\Concerns;
 
-use Illuminate\Http\Response;
+use Symfony\Component\HttpFoundation\Response;
 
 trait InteractsWithHooks
 {
