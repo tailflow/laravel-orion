@@ -441,7 +441,7 @@ trait InteractsWithResources
         for ($page = 1; $page <= $paginator->lastPage(); $page++) {
             $links[] = $this->buildMetaLink(
                 $this->resolveResourceLink($paginator, $page),
-                $page,
+                (float) app()->version() >= 8.0 ? (string) $page : $page,
                 $paginator->currentPage() === $page
             );
         }
