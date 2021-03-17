@@ -54,12 +54,6 @@ jobs:
           - php-version: '8.0'
             laravel-version: '5.8.*'
             database: 'pgsql'
-          - php-version: '8.0'
-            laravel-version: '^8.0'
-            database: 'pgsql'
-          - php-version: '8.0'
-            laravel-version: '^8.0'
-            database: 'mysql'
 
     name: Tests on PHP ${{ matrix.php-version }} with Laravel ${{ matrix.laravel-version }} and ${{ matrix.database }}
 
