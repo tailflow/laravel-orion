@@ -43,6 +43,8 @@ trait HandlesRelationStandardOperations
         $parentQuery = $this->buildIndexParentFetchQuery($request, $parentKey);
         $parentEntity = $this->runIndexParentFetchQuery($request, $parentQuery, $parentKey);
 
+        $this->authorize('view', $parentEntity);
+
         $query = $this->buildIndexFetchQuery($request, $parentEntity, $requestedRelations);
         $entities = $this->runIndexFetchQuery($request, $query, $parentEntity, $this->paginator->resolvePaginationLimit($request));
 
