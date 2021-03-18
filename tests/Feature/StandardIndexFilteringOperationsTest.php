@@ -20,11 +20,14 @@ class StandardIndexFilteringOperationsTest extends TestCase
 
         Gate::policy(Post::class, GreenPolicy::class);
 
-        $response = $this->post('/api/posts/search', [
-            'filters' => [
-                ['field' => 'title', 'operator' => '=', 'value' => 'match']
+        $response = $this->post(
+            '/api/posts/search',
+            [
+                'filters' => [
+                    ['field' => 'title', 'operator' => '=', 'value' => 'match'],
+                ],
             ]
-        ]);
+        );
 
         $this->assertResourcesPaginated(
             $response,
@@ -41,12 +44,15 @@ class StandardIndexFilteringOperationsTest extends TestCase
 
         Gate::policy(Post::class, GreenPolicy::class);
 
-        $response = $this->post('/api/posts/search', [
-            'filters' => [
-                ['field' => 'title', 'operator' => '=', 'value' => 'match'],
-                ['type' => 'or', 'field' => 'position', 'operator' => '=', 'value' => 3]
+        $response = $this->post(
+            '/api/posts/search',
+            [
+                'filters' => [
+                    ['field' => 'title', 'operator' => '=', 'value' => 'match'],
+                    ['type' => 'or', 'field' => 'position', 'operator' => '=', 'value' => 3],
+                ],
             ]
-        ]);
+        );
 
         $this->assertResourcesPaginated(
             $response,
@@ -62,11 +68,14 @@ class StandardIndexFilteringOperationsTest extends TestCase
 
         Gate::policy(Post::class, GreenPolicy::class);
 
-        $response = $this->post('/api/posts/search', [
-            'filters' => [
-                ['field' => 'position', 'operator' => '!=', 'value' => 5]
+        $response = $this->post(
+            '/api/posts/search',
+            [
+                'filters' => [
+                    ['field' => 'position', 'operator' => '!=', 'value' => 5],
+                ],
             ]
-        ]);
+        );
 
         $this->assertResourcesPaginated(
             $response,
@@ -82,11 +91,14 @@ class StandardIndexFilteringOperationsTest extends TestCase
 
         Gate::policy(Post::class, GreenPolicy::class);
 
-        $response = $this->post('/api/posts/search', [
-            'filters' => [
-                ['field' => 'position', 'operator' => '<', 'value' => 5]
+        $response = $this->post(
+            '/api/posts/search',
+            [
+                'filters' => [
+                    ['field' => 'position', 'operator' => '<', 'value' => 5],
+                ],
             ]
-        ]);
+        );
 
         $this->assertResourcesPaginated(
             $response,
@@ -103,11 +115,14 @@ class StandardIndexFilteringOperationsTest extends TestCase
 
         Gate::policy(Post::class, GreenPolicy::class);
 
-        $response = $this->post('/api/posts/search', [
-            'filters' => [
-                ['field' => 'position', 'operator' => '<=', 'value' => 5],
+        $response = $this->post(
+            '/api/posts/search',
+            [
+                'filters' => [
+                    ['field' => 'position', 'operator' => '<=', 'value' => 5],
+                ],
             ]
-        ]);
+        );
 
         $this->assertResourcesPaginated(
             $response,
@@ -123,11 +138,14 @@ class StandardIndexFilteringOperationsTest extends TestCase
 
         Gate::policy(Post::class, GreenPolicy::class);
 
-        $response = $this->post('/api/posts/search', [
-            'filters' => [
-                ['field' => 'position', 'operator' => '>', 'value' => 3]
+        $response = $this->post(
+            '/api/posts/search',
+            [
+                'filters' => [
+                    ['field' => 'position', 'operator' => '>', 'value' => 3],
+                ],
             ]
-        ]);
+        );
 
         $this->assertResourcesPaginated(
             $response,
@@ -144,11 +162,14 @@ class StandardIndexFilteringOperationsTest extends TestCase
 
         Gate::policy(Post::class, GreenPolicy::class);
 
-        $response = $this->post('/api/posts/search', [
-            'filters' => [
-                ['field' => 'position', 'operator' => '>=', 'value' => 4],
+        $response = $this->post(
+            '/api/posts/search',
+            [
+                'filters' => [
+                    ['field' => 'position', 'operator' => '>=', 'value' => 4],
+                ],
             ]
-        ]);
+        );
 
         $this->assertResourcesPaginated(
             $response,
@@ -165,11 +186,14 @@ class StandardIndexFilteringOperationsTest extends TestCase
 
         Gate::policy(Post::class, GreenPolicy::class);
 
-        $response = $this->post('/api/posts/search', [
-            'filters' => [
-                ['field' => 'title', 'operator' => 'like', 'value' => '%match%'],
+        $response = $this->post(
+            '/api/posts/search',
+            [
+                'filters' => [
+                    ['field' => 'title', 'operator' => 'like', 'value' => '%match%'],
+                ],
             ]
-        ]);
+        );
 
         $this->assertResourcesPaginated(
             $response,
@@ -185,11 +209,14 @@ class StandardIndexFilteringOperationsTest extends TestCase
 
         Gate::policy(Post::class, GreenPolicy::class);
 
-        $response = $this->post('/api/posts/search', [
-            'filters' => [
-                ['field' => 'title', 'operator' => 'not like', 'value' => 'match%'],
+        $response = $this->post(
+            '/api/posts/search',
+            [
+                'filters' => [
+                    ['field' => 'title', 'operator' => 'not like', 'value' => 'match%'],
+                ],
             ]
-        ]);
+        );
 
         $this->assertResourcesPaginated(
             $response,
@@ -206,11 +233,14 @@ class StandardIndexFilteringOperationsTest extends TestCase
 
         Gate::policy(Post::class, GreenPolicy::class);
 
-        $response = $this->post('/api/posts/search', [
-            'filters' => [
-                ['field' => 'title', 'operator' => 'in', 'value' => ['match', 'another match']],
+        $response = $this->post(
+            '/api/posts/search',
+            [
+                'filters' => [
+                    ['field' => 'title', 'operator' => 'in', 'value' => ['match', 'another match']],
+                ],
             ]
-        ]);
+        );
 
         $this->assertResourcesPaginated(
             $response,
@@ -226,11 +256,14 @@ class StandardIndexFilteringOperationsTest extends TestCase
 
         Gate::policy(Post::class, GreenPolicy::class);
 
-        $response = $this->post('/api/posts/search', [
-            'filters' => [
-                ['field' => 'title', 'operator' => 'not in', 'value' => ['different']],
+        $response = $this->post(
+            '/api/posts/search',
+            [
+                'filters' => [
+                    ['field' => 'title', 'operator' => 'not in', 'value' => ['different']],
+                ],
             ]
-        ]);
+        );
 
         $this->assertResourcesPaginated(
             $response,
@@ -247,11 +280,14 @@ class StandardIndexFilteringOperationsTest extends TestCase
 
         Gate::policy(Post::class, GreenPolicy::class);
 
-        $response = $this->post('/api/posts/search', [
-            'filters' => [
-                ['field' => 'meta->nested_field', 'operator' => 'in', 'value' => ['match', 'another match']],
+        $response = $this->post(
+            '/api/posts/search',
+            [
+                'filters' => [
+                    ['field' => 'meta->nested_field', 'operator' => 'in', 'value' => ['match', 'another match']],
+                ],
             ]
-        ]);
+        );
 
         $this->assertResourcesPaginated(
             $response,
@@ -270,11 +306,14 @@ class StandardIndexFilteringOperationsTest extends TestCase
 
         Gate::policy(Post::class, GreenPolicy::class);
 
-        $response = $this->post('/api/posts/search', [
-            'filters' => [
-                ['field' => 'user.name', 'operator' => '=', 'value' => 'match'],
+        $response = $this->post(
+            '/api/posts/search',
+            [
+                'filters' => [
+                    ['field' => 'user.name', 'operator' => '=', 'value' => 'match'],
+                ],
             ]
-        ]);
+        );
 
         $this->assertResourcesPaginated(
             $response,
@@ -290,11 +329,14 @@ class StandardIndexFilteringOperationsTest extends TestCase
 
         Gate::policy(Post::class, GreenPolicy::class);
 
-        $response = $this->post('/api/posts/search', [
-            'filters' => [
-                ['field' => 'body', 'operator' => '=', 'value' => 'match']
+        $response = $this->post(
+            '/api/posts/search',
+            [
+                'filters' => [
+                    ['field' => 'body', 'operator' => '=', 'value' => 'match'],
+                ],
             ]
-        ]);
+        );
 
         $response->assertStatus(422);
         $response->assertJsonStructure(['message', 'errors' => ['filters.0.field']]);
@@ -308,11 +350,14 @@ class StandardIndexFilteringOperationsTest extends TestCase
 
         Gate::policy(Team::class, GreenPolicy::class);
 
-        $response = $this->post('/api/teams/search', [
-            'filters' => [
-                ['field' => 'name', 'operator' => '=', 'value' => 'match']
+        $response = $this->post(
+            '/api/teams/search',
+            [
+                'filters' => [
+                    ['field' => 'name', 'operator' => '=', 'value' => 'match'],
+                ],
             ]
-        ]);
+        );
 
         $this->assertResourcesPaginated(
             $response,
@@ -330,11 +375,14 @@ class StandardIndexFilteringOperationsTest extends TestCase
 
         Gate::policy(Team::class, GreenPolicy::class);
 
-        $response = $this->post('/api/teams/search', [
-            'filters' => [
-                ['field' => 'company.name', 'operator' => '=', 'value' => 'match']
+        $response = $this->post(
+            '/api/teams/search',
+            [
+                'filters' => [
+                    ['field' => 'company.name', 'operator' => '=', 'value' => 'match'],
+                ],
             ]
-        ]);
+        );
 
         $this->assertResourcesPaginated(
             $response,
@@ -346,15 +394,18 @@ class StandardIndexFilteringOperationsTest extends TestCase
     public function getting_a_list_of_resources_filtered_by_model_field_using_nullable_value(): void
     {
         $matchingPost = factory(Post::class)->create(['publish_at' => null])->fresh();
-        factory(Post::class)->create(['publish_at' =>  Carbon::now()])->fresh();
+        factory(Post::class)->create(['publish_at' => Carbon::now()])->fresh();
 
         Gate::policy(Post::class, GreenPolicy::class);
 
-        $response = $this->post('/api/posts/search', [
-            'filters' => [
-                ['field' => 'publish_at', 'operator' => '=', 'value' => null]
+        $response = $this->post(
+            '/api/posts/search',
+            [
+                'filters' => [
+                    ['field' => 'publish_at', 'operator' => '=', 'value' => null],
+                ],
             ]
-        ]);
+        );
 
         $this->assertResourcesPaginated(
             $response,

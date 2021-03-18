@@ -111,9 +111,12 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
                 $relation = $this->relationsResolver->relationFromParamConstraint($filterDescriptor['field']);
                 $relationField = $this->relationsResolver->relationFieldFromParamConstraint($filterDescriptor['field']);
 
-                $query->{$or ? 'orWhereHas' : 'whereHas'}($relation, function ($relationQuery) use ($relationField, $filterDescriptor) {
-                    $this->buildFilterQueryWhereClause($relationField, $filterDescriptor, $relationQuery);
-                });
+                $query->{$or ? 'orWhereHas' : 'whereHas'}(
+                    $relation,
+                    function ($relationQuery) use ($relationField, $filterDescriptor) {
+                        $this->buildFilterQueryWhereClause($relationField, $filterDescriptor, $relationQuery);
+                    }
+                );
             } else {
                 $this->buildFilterQueryWhereClause($this->getQualifiedFieldName($filterDescriptor['field']), $filterDescriptor, $query, $or);
             }
@@ -141,6 +144,18 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
     }
 
     /**
+     * Builds a complete field name with table.
+     *
+     * @param string $field
+     * @return string
+     */
+    protected function getQualifiedFieldName(string $field): string
+    {
+        $table = (new $this->resourceModelClass)->getTable();
+        return "{$table}.{$field}";
+    }
+
+    /**
      * Apply search query to the given query builder based on the "q" query parameter.
      *
      * @param Builder|Relation $query
@@ -156,27 +171,32 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
 
         $searchables = $this->searchBuilder->searchableBy();
 
-        $query->where(function ($whereQuery) use ($searchables, $requestedSearchDescriptor) {
-            $requestedSearchString = $requestedSearchDescriptor['value'];
-            /**
-             * @var Builder $whereQuery
-             */
-            foreach ($searchables as $searchable) {
-                if (strpos($searchable, '.') !== false) {
-                    $relation = $this->relationsResolver->relationFromParamConstraint($searchable);
-                    $relationField = $this->relationsResolver->relationFieldFromParamConstraint($searchable);
+        $query->where(
+            function ($whereQuery) use ($searchables, $requestedSearchDescriptor) {
+                $requestedSearchString = $requestedSearchDescriptor['value'];
+                /**
+                 * @var Builder $whereQuery
+                 */
+                foreach ($searchables as $searchable) {
+                    if (strpos($searchable, '.') !== false) {
+                        $relation = $this->relationsResolver->relationFromParamConstraint($searchable);
+                        $relationField = $this->relationsResolver->relationFieldFromParamConstraint($searchable);
 
-                    $whereQuery->orWhereHas($relation, function ($relationQuery) use ($relationField, $requestedSearchString) {
-                        /**
-                         * @var Builder $relationQuery
-                         */
-                        return $relationQuery->where($relationField, 'like', '%'.$requestedSearchString.'%');
-                    });
-                } else {
-                    $whereQuery->orWhere($this->getQualifiedFieldName($searchable), 'like', '%'.$requestedSearchString.'%');
+                        $whereQuery->orWhereHas(
+                            $relation,
+                            function ($relationQuery) use ($relationField, $requestedSearchString) {
+                                /**
+                                 * @var Builder $relationQuery
+                                 */
+                                return $relationQuery->where($relationField, 'like', '%'.$requestedSearchString.'%');
+                            }
+                        );
+                    } else {
+                        $whereQuery->orWhere($this->getQualifiedFieldName($searchable), 'like', '%'.$requestedSearchString.'%');
+                    }
                 }
             }
-        });
+        );
     }
 
     /**
@@ -240,17 +260,5 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
         }
 
         return true;
-    }
-
-    /**
-     * Builds a complete field name with table.
-     *
-     * @param string $field
-     * @return string
-     */
-    protected function getQualifiedFieldName(string $field): string
-    {
-        $table = (new $this->resourceModelClass)->getTable();
-        return "{$table}.{$field}";
     }
 }

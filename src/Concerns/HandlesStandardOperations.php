@@ -62,6 +62,30 @@ trait HandlesStandardOperations
     }
 
     /**
+     * Builds Eloquent query for fetching entity(-ies).
+     *
+     * @param Request $request
+     * @param array $requestedRelations
+     * @return Builder
+     */
+    protected function buildFetchQuery(Request $request, array $requestedRelations): Builder
+    {
+        return $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
+            ->with($requestedRelations);
+    }
+
+    /**
+     * The hooks is executed before fetching the list of resources.
+     *
+     * @param Request $request
+     * @return mixed
+     */
+    protected function beforeIndex(Request $request)
+    {
+        return null;
+    }
+
+    /**
      * Runs the given query for fetching entities in index method.
      *
      * @param Request $request
@@ -72,6 +96,18 @@ trait HandlesStandardOperations
     protected function runIndexFetchQuery(Request $request, Builder $query, int $paginationLimit)
     {
         return $this->shouldPaginate($request, $paginationLimit) ? $query->paginate($paginationLimit) : $query->get();
+    }
+
+    /**
+     * The hooks is executed after fetching the list of resources.
+     *
+     * @param Request $request
+     * @param Paginator|Collection $entities
+     * @return mixed
+     */
+    protected function afterIndex(Request $request, $entities)
+    {
+        return null;
     }
 
     /**
@@ -104,7 +140,9 @@ trait HandlesStandardOperations
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
 
         $this->performStore(
-            $request, $entity, $request->all()
+            $request,
+            $entity,
+            $request->all()
         );
 
         $entity = $entity->fresh($requestedRelations);
@@ -126,6 +164,30 @@ trait HandlesStandardOperations
     }
 
     /**
+     * The hook is executed before creating new resource.
+     *
+     * @param Request $request
+     * @param Model $entity
+     * @return mixed
+     */
+    protected function beforeStore(Request $request, Model $entity)
+    {
+        return null;
+    }
+
+    /**
+     * The hook is executed before creating or updating a resource.
+     *
+     * @param Request $request
+     * @param Model $entity
+     * @return mixed
+     */
+    protected function beforeSave(Request $request, Model $entity)
+    {
+        return null;
+    }
+
+    /**
      * Fills attributes on the given entity and stores it in database.
      *
      * @param Request $request
@@ -138,6 +200,30 @@ trait HandlesStandardOperations
             Arr::except($attributes, array_keys($entity->getDirty()))
         );
         $entity->save();
+    }
+
+    /**
+     * The hook is executed after creating or updating a resource.
+     *
+     * @param Request $request
+     * @param Model $entity
+     * @return mixed
+     */
+    protected function afterSave(Request $request, Model $entity)
+    {
+        return null;
+    }
+
+    /**
+     * The hook is executed after creating new resource.
+     *
+     * @param Request $request
+     * @param Model $entity
+     * @return mixed
+     */
+    protected function afterStore(Request $request, Model $entity)
+    {
+        return null;
     }
 
     /**
@@ -185,6 +271,18 @@ trait HandlesStandardOperations
     }
 
     /**
+     * The hook is executed before fetching a resource.
+     *
+     * @param Request $request
+     * @param int|string $key
+     * @return mixed
+     */
+    protected function beforeShow(Request $request, $key)
+    {
+        return null;
+    }
+
+    /**
      * Runs the given query for fetching entity in show method.
      *
      * @param Request $request
@@ -195,6 +293,31 @@ trait HandlesStandardOperations
     protected function runShowFetchQuery(Request $request, Builder $query, $key): Model
     {
         return $this->runFetchQuery($request, $query, $key);
+    }
+
+    /**
+     * Runs the given query for fetching entity.
+     *
+     * @param Request $request
+     * @param Builder $query
+     * @param int|string $key
+     * @return Model
+     */
+    protected function runFetchQuery(Request $request, Builder $query, $key): Model
+    {
+        return $query->where($this->resolveQualifiedKeyName(), $key)->firstOrFail();
+    }
+
+    /**
+     * The hook is executed after fetching a resource
+     *
+     * @param Request $request
+     * @param Model $entity
+     * @return mixed
+     */
+    protected function afterShow(Request $request, Model $entity)
+    {
+        return null;
     }
 
     /**
@@ -224,7 +347,9 @@ trait HandlesStandardOperations
         }
 
         $this->performUpdate(
-            $request, $entity, $request->all()
+            $request,
+            $entity,
+            $request->all()
         );
 
         $entity = $entity->fresh($requestedRelations);
@@ -270,6 +395,18 @@ trait HandlesStandardOperations
     }
 
     /**
+     * The hook is executed before updating a resource.
+     *
+     * @param Request $request
+     * @param Model $entity
+     * @return mixed
+     */
+    protected function beforeUpdate(Request $request, Model $entity)
+    {
+        return null;
+    }
+
+    /**
      * Fills attributes on the given entity and persists changes in database.
      *
      * @param Request $request
@@ -282,6 +419,18 @@ trait HandlesStandardOperations
             Arr::except($attributes, array_keys($entity->getDirty()))
         );
         $entity->save();
+    }
+
+    /**
+     * The hook is executed after updating a resource.
+     *
+     * @param Request $request
+     * @param Model $entity
+     * @return mixed
+     */
+    protected function afterUpdate(Request $request, Model $entity)
+    {
+        return null;
     }
 
     /**
@@ -343,9 +492,12 @@ trait HandlesStandardOperations
     protected function buildDestroyFetchQuery(Request $request, array $requestedRelations, bool $softDeletes): Builder
     {
         return $this->buildFetchQuery($request, $requestedRelations)
-            ->when($softDeletes, function ($query) {
-                $query->withTrashed();
-            });
+            ->when(
+                $softDeletes,
+                function ($query) {
+                    $query->withTrashed();
+                }
+            );
     }
 
     /**
@@ -359,6 +511,18 @@ trait HandlesStandardOperations
     protected function runDestroyFetchQuery(Request $request, Builder $query, $key): Model
     {
         return $this->runFetchQuery($request, $query, $key);
+    }
+
+    /**
+     * The hook is executed before deleting a resource.
+     *
+     * @param Request $request
+     * @param Model $entity
+     * @return mixed
+     */
+    protected function beforeDestroy(Request $request, Model $entity)
+    {
+        return null;
     }
 
     /**
@@ -380,6 +544,18 @@ trait HandlesStandardOperations
     protected function performForceDestroy(Model $entity): void
     {
         $entity->forceDelete();
+    }
+
+    /**
+     * The hook is executed after deleting a resource.
+     *
+     * @param Request $request
+     * @param Model $entity
+     * @return mixed
+     */
+    protected function afterDestroy(Request $request, Model $entity)
+    {
+        return null;
     }
 
     /**
@@ -445,161 +621,6 @@ trait HandlesStandardOperations
     }
 
     /**
-     * Restores the given entity.
-     *
-     * @param Model|SoftDeletes $entity
-     */
-    protected function performRestore(Model $entity): void
-    {
-        $entity->restore();
-    }
-
-    /**
-     * Builds Eloquent query for fetching entity(-ies).
-     *
-     * @param Request $request
-     * @param array $requestedRelations
-     * @return Builder
-     */
-    protected function buildFetchQuery(Request $request, array $requestedRelations): Builder
-    {
-        return $this->queryBuilder->buildQuery($this->newModelQuery(), $request)
-            ->with($requestedRelations);
-    }
-
-    /**
-     * Runs the given query for fetching entity.
-     *
-     * @param Request $request
-     * @param Builder $query
-     * @param int|string $key
-     * @return Model
-     */
-    protected function runFetchQuery(Request $request, Builder $query, $key): Model
-    {
-        return $query->where($this->resolveQualifiedKeyName(), $key)->firstOrFail();
-    }
-
-    /**
-     * The hooks is executed before fetching the list of resources.
-     *
-     * @param Request $request
-     * @return mixed
-     */
-    protected function beforeIndex(Request $request)
-    {
-        return null;
-    }
-
-    /**
-     * The hooks is executed after fetching the list of resources.
-     *
-     * @param Request $request
-     * @param Paginator|Collection $entities
-     * @return mixed
-     */
-    protected function afterIndex(Request $request, $entities)
-    {
-        return null;
-    }
-
-    /**
-     * The hook is executed before creating new resource.
-     *
-     * @param Request $request
-     * @param Model $entity
-     * @return mixed
-     */
-    protected function beforeStore(Request $request, Model $entity)
-    {
-        return null;
-    }
-
-    /**
-     * The hook is executed after creating new resource.
-     *
-     * @param Request $request
-     * @param Model $entity
-     * @return mixed
-     */
-    protected function afterStore(Request $request, Model $entity)
-    {
-        return null;
-    }
-
-    /**
-     * The hook is executed before fetching a resource.
-     *
-     * @param Request $request
-     * @param int|string $key
-     * @return mixed
-     */
-    protected function beforeShow(Request $request, $key)
-    {
-        return null;
-    }
-
-    /**
-     * The hook is executed after fetching a resource
-     *
-     * @param Request $request
-     * @param Model $entity
-     * @return mixed
-     */
-    protected function afterShow(Request $request, Model $entity)
-    {
-        return null;
-    }
-
-    /**
-     * The hook is executed before updating a resource.
-     *
-     * @param Request $request
-     * @param Model $entity
-     * @return mixed
-     */
-    protected function beforeUpdate(Request $request, Model $entity)
-    {
-        return null;
-    }
-
-    /**
-     * The hook is executed after updating a resource.
-     *
-     * @param Request $request
-     * @param Model $entity
-     * @return mixed
-     */
-    protected function afterUpdate(Request $request, Model $entity)
-    {
-        return null;
-    }
-
-    /**
-     * The hook is executed before deleting a resource.
-     *
-     * @param Request $request
-     * @param Model $entity
-     * @return mixed
-     */
-    protected function beforeDestroy(Request $request, Model $entity)
-    {
-        return null;
-    }
-
-    /**
-     * The hook is executed after deleting a resource.
-     *
-     * @param Request $request
-     * @param Model $entity
-     * @return mixed
-     */
-    protected function afterDestroy(Request $request, Model $entity)
-    {
-        return null;
-    }
-
-    /**
      * The hook is executed before force restoring a previously deleted resource.
      *
      * @param Request $request
@@ -612,6 +633,16 @@ trait HandlesStandardOperations
     }
 
     /**
+     * Restores the given entity.
+     *
+     * @param Model|SoftDeletes $entity
+     */
+    protected function performRestore(Model $entity): void
+    {
+        $entity->restore();
+    }
+
+    /**
      * The hook is executed after force restoring a previously deleted resource.
      *
      * @param Request $request
@@ -619,30 +650,6 @@ trait HandlesStandardOperations
      * @return mixed
      */
     protected function afterRestore(Request $request, Model $entity)
-    {
-        return null;
-    }
-
-    /**
-     * The hook is executed before creating or updating a resource.
-     *
-     * @param Request $request
-     * @param Model $entity
-     * @return mixed
-     */
-    protected function beforeSave(Request $request, Model $entity)
-    {
-        return null;
-    }
-
-    /**
-     * The hook is executed after creating or updating a resource.
-     *
-     * @param Request $request
-     * @param Model $entity
-     * @return mixed
-     */
-    protected function afterSave(Request $request, Model $entity)
     {
         return null;
     }

@@ -12,6 +12,14 @@ class BaseControllerStubWithWhitelistedFieldsAndRelations extends BaseController
 
     protected $request = PostRequest::class;
 
+    /**
+     * @inheritDoc
+     */
+    public function resolveResourceModelClass(): string
+    {
+        return $this->getModel();
+    }
+
     protected function exposedScopes(): array
     {
         return ['testScope'];
@@ -40,14 +48,6 @@ class BaseControllerStubWithWhitelistedFieldsAndRelations extends BaseController
     protected function alwaysIncludes(): array
     {
         return ['testAlwaysIncludedRelation'];
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function resolveResourceModelClass(): string
-    {
-        return $this->getModel();
     }
 
     protected function bindComponents(): void

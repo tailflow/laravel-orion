@@ -40,7 +40,8 @@ class HasOneRelationStandardUpdateOperationsTest extends TestCase
 
         $response = $this->patch("/api/posts/{$post->id}/meta", $payload);
 
-        $this->assertResourceUpdated($response,
+        $this->assertResourceUpdated(
+            $response,
             PostMeta::class,
             $postMeta->toArray(),
             $payload
@@ -58,7 +59,8 @@ class HasOneRelationStandardUpdateOperationsTest extends TestCase
 
         $response = $this->patch("/api/posts/{$post->id}/meta", $payload);
 
-        $this->assertResourceUpdated($response,
+        $this->assertResourceUpdated(
+            $response,
             PostMeta::class,
             $postMeta->toArray(),
             ['notes' => 'test updated']
@@ -74,12 +76,15 @@ class HasOneRelationStandardUpdateOperationsTest extends TestCase
         factory(PostMeta::class)->create(['post_id' => $post->id]);
         $payload = ['notes' => 'abc'];
 
-        app()->bind(ComponentsResolver::class, function () {
-            $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
-            $componentsResolverMock->shouldReceive('resolveRequestClass')->once()->andReturn(PostMetaRequest::class);
+        app()->bind(
+            ComponentsResolver::class,
+            function () {
+                $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
+                $componentsResolverMock->shouldReceive('resolveRequestClass')->once()->andReturn(PostMetaRequest::class);
 
-            return $componentsResolverMock;
-        });
+                return $componentsResolverMock;
+            }
+        );
 
         Gate::policy(PostMeta::class, GreenPolicy::class);
 
@@ -97,18 +102,22 @@ class HasOneRelationStandardUpdateOperationsTest extends TestCase
         $postMeta = factory(PostMeta::class)->create(['post_id' => $post->id]);
         $payload = ['notes' => 'test updated'];
 
-        app()->bind(ComponentsResolver::class, function () {
-            $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
-            $componentsResolverMock->shouldReceive('resolveResourceClass')->once()->andReturn(SampleResource::class);
+        app()->bind(
+            ComponentsResolver::class,
+            function () {
+                $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
+                $componentsResolverMock->shouldReceive('resolveResourceClass')->once()->andReturn(SampleResource::class);
 
-            return $componentsResolverMock;
-        });
+                return $componentsResolverMock;
+            }
+        );
 
         Gate::policy(PostMeta::class, GreenPolicy::class);
 
         $response = $this->patch("/api/posts/{$post->id}/meta", $payload);
 
-        $this->assertResourceUpdated($response,
+        $this->assertResourceUpdated(
+            $response,
             PostMeta::class,
             $postMeta->toArray(),
             $payload,
@@ -127,7 +136,8 @@ class HasOneRelationStandardUpdateOperationsTest extends TestCase
 
         $response = $this->patch("/api/posts/{$post->id}/meta?include=post", $payload);
 
-        $this->assertResourceUpdated($response,
+        $this->assertResourceUpdated(
+            $response,
             PostMeta::class,
             $postMeta->toArray(),
             $payload,

@@ -24,9 +24,12 @@ class BelongsToManyRelationManyToManyOperationsTest extends TestCase
 
         self::assertEquals(0, $user->roles()->count());
 
-        $response = $this->post("/api/users/{$user->id}/roles/attach", [
-            'resources' => $roles->pluck('id')->toArray()
-        ]);
+        $response = $this->post(
+            "/api/users/{$user->id}/roles/attach",
+            [
+                'resources' => $roles->pluck('id')->toArray(),
+            ]
+        );
 
         $this->assertUnauthorizedResponse($response);
         self::assertEquals(0, $user->roles()->count());
@@ -44,9 +47,12 @@ class BelongsToManyRelationManyToManyOperationsTest extends TestCase
         self::assertEquals(0, $user->roles()->count());
 
 
-        $response = $this->post("/api/users/{$user->id}/roles/attach", [
-            'resources' => $roles->pluck('id')->toArray()
-        ]);
+        $response = $this->post(
+            "/api/users/{$user->id}/roles/attach",
+            [
+                'resources' => $roles->pluck('id')->toArray(),
+            ]
+        );
 
         $this->assertNoResourcesAttached($response, 'roles', $user);
     }
@@ -64,9 +70,12 @@ class BelongsToManyRelationManyToManyOperationsTest extends TestCase
 
         self::assertEquals(0, $user->roles()->count());
 
-        $response = $this->post("/api/users/{$user->id}/roles/attach", [
-            'resources' => [$roleA->id, $roleB->id]
-        ]);
+        $response = $this->post(
+            "/api/users/{$user->id}/roles/attach",
+            [
+                'resources' => [$roleA->id, $roleB->id],
+            ]
+        );
 
         $this->assertResourcesAttached(
             $response,
@@ -89,10 +98,13 @@ class BelongsToManyRelationManyToManyOperationsTest extends TestCase
 
         self::assertEquals(1, $user->roles()->count());
 
-        $response = $this->post("/api/users/{$user->id}/roles/attach", [
-            'resources' => [$roleA->id],
-            'duplicates' => false
-        ]);
+        $response = $this->post(
+            "/api/users/{$user->id}/roles/attach",
+            [
+                'resources' => [$roleA->id],
+                'duplicates' => false,
+            ]
+        );
 
         $this->assertResourcesAttached(
             $response,
@@ -116,10 +128,13 @@ class BelongsToManyRelationManyToManyOperationsTest extends TestCase
 
         self::assertEquals(1, $user->roles()->count());
 
-        $response = $this->post("/api/users/{$user->id}/roles/attach", [
-            'resources' => [$roleA->id],
-            'duplicates' => true
-        ]);
+        $response = $this->post(
+            "/api/users/{$user->id}/roles/attach",
+            [
+                'resources' => [$roleA->id],
+                'duplicates' => true,
+            ]
+        );
 
         $this->assertResourcesAttached(
             $response,
@@ -143,18 +158,21 @@ class BelongsToManyRelationManyToManyOperationsTest extends TestCase
 
         self::assertEquals(0, $user->roles()->count());
 
-        $response = $this->post("/api/users/{$user->id}/roles/attach", [
-            'resources' => [
-                $roleA->id => [
-                    'meta' => ['key1' => 'item1'],
-                    'custom_name' => 'test value 1'
-                ],
-                $roleB->id => [
-                    'meta' => ['key2' => 'item2'],
-                    'custom_name' => 'test value 2'
+        $response = $this->post(
+            "/api/users/{$user->id}/roles/attach",
+            [
+                'resources' => [
+                    $roleA->id => [
+                        'meta' => ['key1' => 'item1'],
+                        'custom_name' => 'test value 1',
+                    ],
+                    $roleB->id => [
+                        'meta' => ['key2' => 'item2'],
+                        'custom_name' => 'test value 2',
+                    ],
                 ],
             ]
-        ]);
+        );
 
         $this->assertResourcesAttached(
             $response,
@@ -164,12 +182,12 @@ class BelongsToManyRelationManyToManyOperationsTest extends TestCase
             [
                 $roleA->id => [
                     'meta' => null,
-                    'custom_name' => 'test value 1'
+                    'custom_name' => 'test value 1',
                 ],
                 $roleB->id => [
                     'meta' => null,
-                    'custom_name' => 'test value 2'
-                ]
+                    'custom_name' => 'test value 2',
+                ],
             ]
         );
     }
@@ -187,12 +205,15 @@ class BelongsToManyRelationManyToManyOperationsTest extends TestCase
 
         self::assertEquals(0, $user->roles()->count());
 
-        $response = $this->post("/api/users/{$user->id}/roles/attach", [
-            'resources' => [
-                $roleA->id => ['references' => ['key1' => 'item1']],
-                $roleB->id => ['references' => ['key2' => 'item2']],
+        $response = $this->post(
+            "/api/users/{$user->id}/roles/attach",
+            [
+                'resources' => [
+                    $roleA->id => ['references' => ['key1' => 'item1']],
+                    $roleB->id => ['references' => ['key2' => 'item2']],
+                ],
             ]
-        ]);
+        );
 
         $this->assertResourcesAttached(
             $response,
@@ -201,7 +222,7 @@ class BelongsToManyRelationManyToManyOperationsTest extends TestCase
             collect([$roleA, $roleB]),
             [
                 $roleA->id => ['references' => ['key1' => 'item1']],
-                $roleB->id => ['references' => ['key2' => 'item2']]
+                $roleB->id => ['references' => ['key2' => 'item2']],
             ]
         );
     }
@@ -218,9 +239,12 @@ class BelongsToManyRelationManyToManyOperationsTest extends TestCase
 
         self::assertEquals(5, $user->roles()->count());
 
-        $response = $this->delete("/api/users/{$user->id}/roles/detach", [
-            'resources' => $user->roles()->get()->pluck('id')->toArray()
-        ]);
+        $response = $this->delete(
+            "/api/users/{$user->id}/roles/detach",
+            [
+                'resources' => $user->roles()->get()->pluck('id')->toArray(),
+            ]
+        );
 
         $this->assertUnauthorizedResponse($response);
         self::assertEquals(5, $user->roles()->count());
@@ -238,9 +262,12 @@ class BelongsToManyRelationManyToManyOperationsTest extends TestCase
 
         self::assertEquals(5, $user->roles()->count());
 
-        $response = $this->delete("/api/users/{$user->id}/roles/detach", [
-            'resources' => $user->roles()->get()->pluck('id')->toArray()
-        ]);
+        $response = $this->delete(
+            "/api/users/{$user->id}/roles/detach",
+            [
+                'resources' => $user->roles()->get()->pluck('id')->toArray(),
+            ]
+        );
 
         $this->assertNoResourcesDetached($response, 'roles', $user, 5);
     }
@@ -260,9 +287,12 @@ class BelongsToManyRelationManyToManyOperationsTest extends TestCase
 
         self::assertEquals(5, $roles->count());
 
-        $response = $this->delete("/api/users/{$user->id}/roles/detach", [
-            'resources' => $roles->pluck('id')->toArray()
-        ]);
+        $response = $this->delete(
+            "/api/users/{$user->id}/roles/detach",
+            [
+                'resources' => $roles->pluck('id')->toArray(),
+            ]
+        );
 
         $this->assertResourcesDetached($response, 'roles', $user, $roles);
     }
@@ -278,9 +308,12 @@ class BelongsToManyRelationManyToManyOperationsTest extends TestCase
 
         self::assertEquals(0, $user->roles()->count());
 
-        $response = $this->patch("/api/users/{$user->id}/roles/sync", [
-            'resources' => $roles->pluck('id')->toArray()
-        ]);
+        $response = $this->patch(
+            "/api/users/{$user->id}/roles/sync",
+            [
+                'resources' => $roles->pluck('id')->toArray(),
+            ]
+        );
 
         $this->assertUnauthorizedResponse($response);
         self::assertEquals(0, $user->roles()->count());
@@ -297,9 +330,12 @@ class BelongsToManyRelationManyToManyOperationsTest extends TestCase
 
         self::assertEquals(0, $user->roles()->count());
 
-        $response = $this->patch("/api/users/{$user->id}/roles/sync", [
-            'resources' => $roles->pluck('id')->toArray()
-        ]);
+        $response = $this->patch(
+            "/api/users/{$user->id}/roles/sync",
+            [
+                'resources' => $roles->pluck('id')->toArray(),
+            ]
+        );
 
         $this->assertNoResourcesSynced($response, 'roles', $user);
     }
@@ -320,12 +356,15 @@ class BelongsToManyRelationManyToManyOperationsTest extends TestCase
 
         self::assertEquals(2, $user->roles()->count());
 
-        $response = $this->patch("/api/users/{$user->id}/roles/sync", [
-            'resources' => [
-                $roleToAttach->id,
-                $roleToUpdate->id => ['custom_name' => 'test updated']
+        $response = $this->patch(
+            "/api/users/{$user->id}/roles/sync",
+            [
+                'resources' => [
+                    $roleToAttach->id,
+                    $roleToUpdate->id => ['custom_name' => 'test updated'],
+                ],
             ]
-        ]);
+        );
 
         $this->assertResourcesSynced(
             $response,
@@ -352,18 +391,21 @@ class BelongsToManyRelationManyToManyOperationsTest extends TestCase
 
         self::assertEquals(2, $user->roles()->count());
 
-        $response = $this->patch("/api/users/{$user->id}/roles/sync", [
-            'resources' => [
-                $roleToAttach->id => [
-                    'meta' => ['key1' => 'value1'],
-                    'custom_name' => 'test value 1'
+        $response = $this->patch(
+            "/api/users/{$user->id}/roles/sync",
+            [
+                'resources' => [
+                    $roleToAttach->id => [
+                        'meta' => ['key1' => 'value1'],
+                        'custom_name' => 'test value 1',
+                    ],
+                    $roleToUpdate->id => [
+                        'meta' => ['key2' => 'value2'],
+                        'custom_name' => 'test value 2',
+                    ],
                 ],
-                $roleToUpdate->id => [
-                    'meta' => ['key2' => 'value2'],
-                    'custom_name' => 'test value 2'
-                ]
             ]
-        ]);
+        );
 
         $this->assertResourcesSynced(
             $response,
@@ -373,12 +415,12 @@ class BelongsToManyRelationManyToManyOperationsTest extends TestCase
             [
                 $roleToAttach->id => [
                     'meta' => null,
-                    'custom_name' => 'test value 1'
+                    'custom_name' => 'test value 1',
                 ],
                 $roleToUpdate->id => [
                     'meta' => null,
-                    'custom_name' => 'test value 2'
-                ]
+                    'custom_name' => 'test value 2',
+                ],
             ]
         );
     }
@@ -399,12 +441,15 @@ class BelongsToManyRelationManyToManyOperationsTest extends TestCase
 
         self::assertEquals(2, $user->roles()->count());
 
-        $response = $this->patch("/api/users/{$user->id}/roles/sync", [
-            'resources' => [
-                $roleToAttach->id => ['references' => ['key1' => 'value1']],
-                $roleToUpdate->id => ['references' => ['key2' => 'value updated']]
+        $response = $this->patch(
+            "/api/users/{$user->id}/roles/sync",
+            [
+                'resources' => [
+                    $roleToAttach->id => ['references' => ['key1' => 'value1']],
+                    $roleToUpdate->id => ['references' => ['key2' => 'value updated']],
+                ],
             ]
-        ]);
+        );
 
         $this->assertResourcesSynced(
             $response,
@@ -413,7 +458,7 @@ class BelongsToManyRelationManyToManyOperationsTest extends TestCase
             $this->buildSyncMap([$roleToAttach], [$roleToDetach], [$roleToUpdate]),
             [
                 $roleToAttach->id => ['references' => ['key1' => 'value1']],
-                $roleToUpdate->id => ['references' => ['key2' => 'value updated']]
+                $roleToUpdate->id => ['references' => ['key2' => 'value updated']],
             ]
         );
     }
@@ -432,10 +477,13 @@ class BelongsToManyRelationManyToManyOperationsTest extends TestCase
 
         self::assertEquals(1, $user->roles()->count());
 
-        $response = $this->patch("/api/users/{$user->id}/roles/sync", [
-            'resources' => [$roleToAttach->id],
-            'detaching' => false
-        ]);
+        $response = $this->patch(
+            "/api/users/{$user->id}/roles/sync",
+            [
+                'resources' => [$roleToAttach->id],
+                'detaching' => false,
+            ]
+        );
 
         $this->assertResourcesSynced(
             $response,
@@ -457,9 +505,12 @@ class BelongsToManyRelationManyToManyOperationsTest extends TestCase
 
         self::assertEquals(5, $user->roles()->count());
 
-        $response = $this->patch("/api/users/{$user->id}/roles/toggle", [
-            'resources' => $roles->pluck('id')->toArray()
-        ]);
+        $response = $this->patch(
+            "/api/users/{$user->id}/roles/toggle",
+            [
+                'resources' => $roles->pluck('id')->toArray(),
+            ]
+        );
 
         $this->assertUnauthorizedResponse($response);
         self::assertEquals(5, $user->roles()->count());
@@ -477,9 +528,12 @@ class BelongsToManyRelationManyToManyOperationsTest extends TestCase
 
         self::assertEquals(5, $user->roles()->count());
 
-        $response = $this->patch("/api/users/{$user->id}/roles/toggle", [
-            'resources' => $roles->pluck('id')->toArray()
-        ]);
+        $response = $this->patch(
+            "/api/users/{$user->id}/roles/toggle",
+            [
+                'resources' => $roles->pluck('id')->toArray(),
+            ]
+        );
 
         $this->assertNoResourcesToggled($response, 'roles', $user, 5);
     }
@@ -498,9 +552,12 @@ class BelongsToManyRelationManyToManyOperationsTest extends TestCase
 
         self::assertEquals(1, $user->roles()->count());
 
-        $response = $this->patch("/api/users/{$user->id}/roles/toggle", [
-            'resources' => [$roleToAttach->id, $roleToDetach->id]
-        ]);
+        $response = $this->patch(
+            "/api/users/{$user->id}/roles/toggle",
+            [
+                'resources' => [$roleToAttach->id, $roleToDetach->id],
+            ]
+        );
 
         $this->assertResourcesToggled(
             $response,
@@ -524,15 +581,18 @@ class BelongsToManyRelationManyToManyOperationsTest extends TestCase
 
         self::assertEquals(1, $user->roles()->count());
 
-        $response = $this->patch("/api/users/{$user->id}/roles/toggle", [
-            'resources' => [
-                $roleToAttach->id => [
-                    'meta' => ['key' => 'item'],
-                    'custom_name' => 'test value'
+        $response = $this->patch(
+            "/api/users/{$user->id}/roles/toggle",
+            [
+                'resources' => [
+                    $roleToAttach->id => [
+                        'meta' => ['key' => 'item'],
+                        'custom_name' => 'test value',
+                    ],
+                    $roleToDetach->id,
                 ],
-                $roleToDetach->id
             ]
-        ]);
+        );
 
         $this->assertResourcesToggled(
             $response,
@@ -542,8 +602,8 @@ class BelongsToManyRelationManyToManyOperationsTest extends TestCase
             [
                 $roleToAttach->id => [
                     'meta' => null,
-                    'custom_name' => 'test value'
-                ]
+                    'custom_name' => 'test value',
+                ],
             ]
         );
     }
@@ -562,14 +622,17 @@ class BelongsToManyRelationManyToManyOperationsTest extends TestCase
 
         self::assertEquals(1, $user->roles()->count());
 
-        $response = $this->patch("/api/users/{$user->id}/roles/toggle", [
-            'resources' => [
-                $roleToAttach->id => [
-                    'references' => ['key' => 'item']
+        $response = $this->patch(
+            "/api/users/{$user->id}/roles/toggle",
+            [
+                'resources' => [
+                    $roleToAttach->id => [
+                        'references' => ['key' => 'item'],
+                    ],
+                    $roleToDetach->id,
                 ],
-                $roleToDetach->id
             ]
-        ]);
+        );
 
         $this->assertResourcesToggled(
             $response,
@@ -578,8 +641,8 @@ class BelongsToManyRelationManyToManyOperationsTest extends TestCase
             $this->buildSyncMap([$roleToAttach], [$roleToDetach]),
             [
                 $roleToAttach->id => [
-                    'references' => ['key' => 'item']
-                ]
+                    'references' => ['key' => 'item'],
+                ],
             ]
         );
     }
@@ -594,11 +657,14 @@ class BelongsToManyRelationManyToManyOperationsTest extends TestCase
 
         Gate::policy(Role::class, RedPolicy::class);
 
-        $response = $this->patch("/api/users/{$user->id}/roles/{$role->id}/pivot", [
-            'pivot' => [
-                'custom_name' => 'test value'
+        $response = $this->patch(
+            "/api/users/{$user->id}/roles/{$role->id}/pivot",
+            [
+                'pivot' => [
+                    'custom_name' => 'test value',
+                ],
             ]
-        ]);
+        );
 
         $this->assertUnauthorizedResponse($response);
         $this->assertResourceAttached('roles', $user, $role, ['custom_name' => null]);
@@ -614,11 +680,14 @@ class BelongsToManyRelationManyToManyOperationsTest extends TestCase
 
         Gate::policy(Role::class, GreenPolicy::class);
 
-        $response = $this->patch("/api/users/{$user->id}/roles/{$role->id}/pivot", [
-            'pivot' => [
-                'custom_name' => 'test value'
+        $response = $this->patch(
+            "/api/users/{$user->id}/roles/{$role->id}/pivot",
+            [
+                'pivot' => [
+                    'custom_name' => 'test value',
+                ],
             ]
-        ]);
+        );
 
         $this->assertResourcePivotUpdated(
             $response,
@@ -639,12 +708,15 @@ class BelongsToManyRelationManyToManyOperationsTest extends TestCase
 
         Gate::policy(Role::class, GreenPolicy::class);
 
-        $response = $this->patch("/api/users/{$user->id}/roles/{$role->id}/pivot", [
-            'pivot' => [
-                'custom_name' => 'test value',
-                'meta' => ['key' => 'value']
+        $response = $this->patch(
+            "/api/users/{$user->id}/roles/{$role->id}/pivot",
+            [
+                'pivot' => [
+                    'custom_name' => 'test value',
+                    'meta' => ['key' => 'value'],
+                ],
             ]
-        ]);
+        );
 
         $this->assertResourcePivotUpdated(
             $response,
@@ -665,11 +737,14 @@ class BelongsToManyRelationManyToManyOperationsTest extends TestCase
 
         Gate::policy(Role::class, GreenPolicy::class);
 
-        $response = $this->patch("/api/users/{$user->id}/roles/{$role->id}/pivot", [
-            'pivot' => [
-                'references' => ['key' => 'value']
+        $response = $this->patch(
+            "/api/users/{$user->id}/roles/{$role->id}/pivot",
+            [
+                'pivot' => [
+                    'references' => ['key' => 'value'],
+                ],
             ]
-        ]);
+        );
 
         $this->assertResourcePivotUpdated(
             $response,

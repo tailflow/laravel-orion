@@ -105,6 +105,19 @@ trait HandlesRelationOneToManyOperations
     }
 
     /**
+     * The hook is executed before associating relation resource.
+     *
+     * @param Request $request
+     * @param Model $parentEntity
+     * @param Model $entity
+     * @return mixed
+     */
+    protected function beforeAssociate(Request $request, Model $parentEntity, Model $entity)
+    {
+        return null;
+    }
+
+    /**
      * Associates the given entity with parent entity.
      *
      * @param Request $request
@@ -114,6 +127,18 @@ trait HandlesRelationOneToManyOperations
     protected function performAssociate(Request $request, Model $parentEntity, Model $entity): void
     {
         $parentEntity->{$this->getRelation()}()->save($entity);
+    }
+
+    /**
+     * The hook is executed after associating relation resource.
+     *
+     * @param Request $request
+     * @param Model $entity
+     * @return mixed
+     */
+    protected function afterAssociate(Request $request, Model $entity)
+    {
+        return null;
     }
 
     /**
@@ -209,6 +234,19 @@ trait HandlesRelationOneToManyOperations
     }
 
     /**
+     * The hook is executed before dissociating relation resource.
+     *
+     * @param Request $request
+     * @param Model $parentEntity
+     * @param Model $entity
+     * @return mixed
+     */
+    protected function beforeDissociate(Request $request, Model $parentEntity, Model $entity)
+    {
+        return null;
+    }
+
+    /**
      * Dissociates the given entity from its parent entity.
      *
      * @param Request $request
@@ -221,44 +259,6 @@ trait HandlesRelationOneToManyOperations
 
         $entity->{$foreignKeyName} = null;
         $entity->save();
-    }
-
-    /**
-     * The hook is executed before associating relation resource.
-     *
-     * @param Request $request
-     * @param Model $parentEntity
-     * @param Model $entity
-     * @return mixed
-     */
-    protected function beforeAssociate(Request $request, Model $parentEntity, Model $entity)
-    {
-        return null;
-    }
-
-    /**
-     * The hook is executed after associating relation resource.
-     *
-     * @param Request $request
-     * @param Model $entity
-     * @return mixed
-     */
-    protected function afterAssociate(Request $request, Model $entity)
-    {
-        return null;
-    }
-
-    /**
-     * The hook is executed before dissociating relation resource.
-     *
-     * @param Request $request
-     * @param Model $parentEntity
-     * @param Model $entity
-     * @return mixed
-     */
-    protected function beforeDissociate(Request $request, Model $parentEntity, Model $entity)
-    {
-        return null;
     }
 
     /**

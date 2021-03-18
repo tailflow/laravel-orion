@@ -37,6 +37,22 @@ class Orion
     }
 
     /**
+     * Retrieves resource registrar from the container.
+     *
+     * @param string $registrarClass
+     * @return ResourceRegistrar
+     * @throws BindingResolutionException
+     */
+    protected function resolveRegistrar($registrarClass)
+    {
+        if (app()->bound($registrarClass)) {
+            return app()->make($registrarClass);
+        }
+
+        return new $registrarClass(app('router'));
+    }
+
+    /**
      * Register new resource for "hasOne" relation.
      *
      * @param string $resource
@@ -243,21 +259,5 @@ class Orion
         return new PendingResourceRegistration(
             $registrar, "{$resource}.{$relation}", $controller, $options
         );
-    }
-
-    /**
-     * Retrieves resource registrar from the container.
-     *
-     * @param string $registrarClass
-     * @return ResourceRegistrar
-     * @throws BindingResolutionException
-     */
-    protected function resolveRegistrar($registrarClass)
-    {
-        if (app()->bound($registrarClass)) {
-            return app()->make($registrarClass);
-        }
-
-        return new $registrarClass(app('router'));
     }
 }

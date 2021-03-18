@@ -40,7 +40,8 @@ class BelongsToRelationStandardUpdateOperationsTest extends TestCase
 
         $response = $this->patch("/api/posts/{$post->id}/user", $payload);
 
-        $this->assertResourceUpdated($response,
+        $this->assertResourceUpdated(
+            $response,
             User::class,
             $user->toArray(),
             $payload
@@ -58,7 +59,8 @@ class BelongsToRelationStandardUpdateOperationsTest extends TestCase
 
         $response = $this->patch("/api/posts/{$post->id}/user", $payload);
 
-        $this->assertResourceUpdated($response,
+        $this->assertResourceUpdated(
+            $response,
             User::class,
             $user->toArray(),
             ['name' => 'test user updated']
@@ -74,12 +76,15 @@ class BelongsToRelationStandardUpdateOperationsTest extends TestCase
         $post = factory(Post::class)->create(['user_id' => $user->id]);
         $payload = ['email' => 'test@example.com'];
 
-        app()->bind(ComponentsResolver::class, function () {
-            $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
-            $componentsResolverMock->shouldReceive('resolveRequestClass')->once()->andReturn(UserRequest::class);
+        app()->bind(
+            ComponentsResolver::class,
+            function () {
+                $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
+                $componentsResolverMock->shouldReceive('resolveRequestClass')->once()->andReturn(UserRequest::class);
 
-            return $componentsResolverMock;
-        });
+                return $componentsResolverMock;
+            }
+        );
 
         Gate::policy(User::class, GreenPolicy::class);
 
@@ -97,18 +102,22 @@ class BelongsToRelationStandardUpdateOperationsTest extends TestCase
         $post = factory(Post::class)->create(['user_id' => $user->id]);
         $payload = ['name' => 'test user updated'];
 
-        app()->bind(ComponentsResolver::class, function () {
-            $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
-            $componentsResolverMock->shouldReceive('resolveResourceClass')->once()->andReturn(SampleResource::class);
+        app()->bind(
+            ComponentsResolver::class,
+            function () {
+                $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
+                $componentsResolverMock->shouldReceive('resolveResourceClass')->once()->andReturn(SampleResource::class);
 
-            return $componentsResolverMock;
-        });
+                return $componentsResolverMock;
+            }
+        );
 
         Gate::policy(User::class, GreenPolicy::class);
 
         $response = $this->patch("/api/posts/{$post->id}/user", $payload);
 
-        $this->assertResourceUpdated($response,
+        $this->assertResourceUpdated(
+            $response,
             User::class,
             $user->toArray(),
             $payload,
@@ -127,7 +136,8 @@ class BelongsToRelationStandardUpdateOperationsTest extends TestCase
 
         $response = $this->patch("/api/posts/{$post->id}/user?include=posts", $payload);
 
-        $this->assertResourceUpdated($response,
+        $this->assertResourceUpdated(
+            $response,
             User::class,
             $user->toArray(),
             $payload,

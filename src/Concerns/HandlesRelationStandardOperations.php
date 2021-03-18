@@ -48,15 +48,17 @@ trait HandlesRelationStandardOperations
         $query = $this->buildIndexFetchQuery($request, $parentEntity, $requestedRelations);
         $entities = $this->runIndexFetchQuery($request, $query, $parentEntity, $this->paginator->resolvePaginationLimit($request));
 
-        ($entities instanceof Paginator ? $entities->getCollection() : $entities)->transform(function ($entity) {
-            $entity = $this->cleanupEntity($entity);
+        ($entities instanceof Paginator ? $entities->getCollection() : $entities)->transform(
+            function ($entity) {
+                $entity = $this->cleanupEntity($entity);
 
-            if (count($this->getPivotJson())) {
-                $entity = $this->castPivotJsonFields($entity);
+                if (count($this->getPivotJson())) {
+                    $entity = $this->castPivotJsonFields($entity);
+                }
+
+                return $entity;
             }
-
-            return $entity;
-        });
+        );
 
         $afterHookResult = $this->afterIndex($request, $entities);
         if ($this->hookResponds($afterHookResult)) {
@@ -72,6 +74,17 @@ trait HandlesRelationStandardOperations
     }
 
     /**
+     * The hooks is executed before fetching the list of relation resources.
+     *
+     * @param Request $request
+     * @return mixed
+     */
+    protected function beforeIndex(Request $request)
+    {
+        return null;
+    }
+
+    /**
      * Builds Eloquent query for fetching parent entity in index method.
      *
      * @param Request $request
@@ -81,6 +94,18 @@ trait HandlesRelationStandardOperations
     protected function buildIndexParentFetchQuery(Request $request, $parentKey): Builder
     {
         return $this->buildParentFetchQuery($request, $parentKey);
+    }
+
+    /**
+     * Builds Eloquent query for fetching parent entity.
+     *
+     * @param Request $request
+     * @param string|int $parentKey
+     * @return Builder
+     */
+    protected function buildParentFetchQuery(Request $request, $parentKey): Builder
+    {
+        return $this->queryBuilder->buildQuery($this->newModelQuery(), $request);
     }
 
     /**
@@ -97,6 +122,19 @@ trait HandlesRelationStandardOperations
     }
 
     /**
+     * Runs the given query for fetching parent entity.
+     *
+     * @param Request $request
+     * @param Builder $query
+     * @param string|int $parentKey
+     * @return Model
+     */
+    protected function runParentFetchQuery(Request $request, Builder $query, $parentKey): Model
+    {
+        return $query->where($this->resolveQualifiedParentKeyName(), $parentKey)->firstOrFail();
+    }
+
+    /**
      * Builds Eloquent query for fetching relation entities in index method.
      *
      * @param Request $request
@@ -107,6 +145,20 @@ trait HandlesRelationStandardOperations
     protected function buildIndexFetchQuery(Request $request, Model $parentEntity, array $requestedRelations): Relation
     {
         return $this->buildRelationFetchQuery($request, $parentEntity, $requestedRelations);
+    }
+
+    /**
+     * Builds Eloquent query for fetching relation entity.
+     *
+     * @param Request $request
+     * @param Model $parentEntity
+     * @param array $requestedRelations
+     * @return Relation
+     */
+    protected function buildRelationFetchQuery(Request $request, Model $parentEntity, array $requestedRelations): Relation
+    {
+        return $this->relationQueryBuilder->buildQuery($this->newRelationQuery($parentEntity), $request)
+            ->with($requestedRelations);
     }
 
     /**
@@ -121,6 +173,31 @@ trait HandlesRelationStandardOperations
     protected function runIndexFetchQuery(Request $request, Relation $query, Model $parentEntity, int $paginationLimit)
     {
         return $this->shouldPaginate($request, $paginationLimit) ? $query->paginate($paginationLimit) : $query->get();
+    }
+
+    /**
+     * Removes unrelated to model attributes, if any.
+     *
+     * @param Model $entity
+     * @return Model
+     */
+    protected function cleanupEntity(Model $entity)
+    {
+        $entity->makeHidden('laravel_through_key');
+
+        return $entity;
+    }
+
+    /**
+     * The hooks is executed after fetching the list of relation resources.
+     *
+     * @param Request $request
+     * @param Paginator|Collection $entities
+     * @return mixed
+     */
+    protected function afterIndex(Request $request, $entities)
+    {
+        return null;
     }
 
     /**
@@ -155,7 +232,11 @@ trait HandlesRelationStandardOperations
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
 
         $this->performStore(
-            $request, $parentEntity, $entity, $request->all(), $request->get('pivot', [])
+            $request,
+            $parentEntity,
+            $entity,
+            $request->all(),
+            $request->get('pivot', [])
         );
 
         $entity = $this->newRelationQuery($parentEntity)->with($requestedRelations)->find($entity->id);
@@ -208,6 +289,30 @@ trait HandlesRelationStandardOperations
     }
 
     /**
+     * The hook is executed before creating new relation resource.
+     *
+     * @param Request $request
+     * @param Model $entity
+     * @return mixed
+     */
+    protected function beforeStore(Request $request, Model $entity)
+    {
+        return null;
+    }
+
+    /**
+     * The hook is executed before creating or updating a relation resource.
+     *
+     * @param Request $request
+     * @param Model $entity
+     * @return mixed
+     */
+    protected function beforeSave(Request $request, Model $entity)
+    {
+        return null;
+    }
+
+    /**
      * Fills attributes on the given relation entity and stores it in database.
      *
      * @param Request $request
@@ -228,6 +333,30 @@ trait HandlesRelationStandardOperations
             $entity->save();
             $parentEntity->{$this->getRelation()}()->associate($entity);
         }
+    }
+
+    /**
+     * The hook is executed after creating or updating a relation resource.
+     *
+     * @param Request $request
+     * @param Model $entity
+     * @return mixed
+     */
+    protected function afterSave(Request $request, Model $entity)
+    {
+        return null;
+    }
+
+    /**
+     * The hook is executed after creating new relation resource.
+     *
+     * @param Request $request
+     * @param Model $entity
+     * @return mixed
+     */
+    protected function afterStore(Request $request, Model $entity)
+    {
+        return null;
     }
 
     /**
@@ -269,6 +398,18 @@ trait HandlesRelationStandardOperations
         $entity = $this->relationsResolver->guardRelations($entity, $requestedRelations);
 
         return $this->entityResponse($entity);
+    }
+
+    /**
+     * The hook is executed before fetching relation resource.
+     *
+     * @param Request $request
+     * @param int|string|null $key
+     * @return mixed
+     */
+    protected function beforeShow(Request $request, $key)
+    {
+        return null;
     }
 
     /**
@@ -321,6 +462,63 @@ trait HandlesRelationStandardOperations
     protected function runShowFetchQuery(Request $request, Relation $query, Model $parentEntity, $relatedKey): Model
     {
         return $this->runRelationFetchQuery($request, $query, $parentEntity, $relatedKey);
+    }
+
+    /**
+     * Runs the given query for fetching relation entity.
+     *
+     * @param Request $request
+     * @param Relation $query
+     * @param Model $parentEntity
+     * @param string|int $relatedKey
+     * @return Model
+     */
+    protected function runRelationFetchQuery(Request $request, Relation $query, Model $parentEntity, $relatedKey): Model
+    {
+        if ($this->isOneToOneRelation($parentEntity)) {
+            return $query->firstOrFail();
+        }
+
+        $this->abortIfMissingRelatedID($relatedKey);
+
+        return $query->where($this->resolveQualifiedKeyName(), $relatedKey)->firstOrFail();
+    }
+
+    /**
+     * Determines whether controller relation is one-to-one or not.
+     *
+     * @param Model $parentEntity
+     * @return bool
+     */
+    protected function isOneToOneRelation(Model $parentEntity)
+    {
+        $relation = $parentEntity->{$this->getRelation()}();
+        return $relation instanceof HasOne || $relation instanceof MorphOne || $relation instanceof BelongsTo;
+    }
+
+    /**
+     * Throws exception, if related ID is undefined and relation type is not one-to-one.
+     *
+     * @param int|string|null $relatedKey
+     */
+    protected function abortIfMissingRelatedID($relatedKey)
+    {
+        if ($relatedKey) {
+            return;
+        }
+        throw new InvalidArgumentException('Relation key is required, if relation type is not one-to-one');
+    }
+
+    /**
+     * The hook is executed after fetching a relation resource
+     *
+     * @param Request $request
+     * @param Model $entity
+     * @return mixed
+     */
+    protected function afterShow(Request $request, Model $entity)
+    {
+        return null;
     }
 
     /**
@@ -437,6 +635,18 @@ trait HandlesRelationStandardOperations
     }
 
     /**
+     * The hook is executed before updating a relation resource.
+     *
+     * @param Request $request
+     * @param Model $entity
+     * @return mixed
+     */
+    protected function beforeUpdate(Request $request, Model $entity)
+    {
+        return null;
+    }
+
+    /**
      * Fills attributes on the given relation entity and persists changes in database.
      *
      * @param Request $request
@@ -458,6 +668,18 @@ trait HandlesRelationStandardOperations
                 $relation->updateExistingPivot($entity->getKey(), $pivotFields);
             }
         }
+    }
+
+    /**
+     * The hook is executed after updating a relation resource.
+     *
+     * @param Request $request
+     * @param Model $entity
+     * @return mixed
+     */
+    protected function afterUpdate(Request $request, Model $entity)
+    {
+        return null;
     }
 
     /**
@@ -555,9 +777,12 @@ trait HandlesRelationStandardOperations
     protected function buildDestroyFetchQuery(Request $request, Model $parentEntity, array $requestedRelations, bool $softDeletes): Relation
     {
         return $this->buildRelationFetchQuery($request, $parentEntity, $requestedRelations)
-            ->when($softDeletes, function ($query) {
-                $query->withTrashed();
-            });
+            ->when(
+                $softDeletes,
+                function ($query) {
+                    $query->withTrashed();
+                }
+            );
     }
 
     /**
@@ -572,6 +797,18 @@ trait HandlesRelationStandardOperations
     protected function runDestroyFetchQuery(Request $request, Relation $query, Model $parentEntity, $relatedKey): Model
     {
         return $this->runRelationFetchQuery($request, $query, $parentEntity, $relatedKey);
+    }
+
+    /**
+     * The hook is executed before deleting a relation resource.
+     *
+     * @param Request $request
+     * @param Model $entity
+     * @return mixed
+     */
+    protected function beforeDestroy(Request $request, Model $entity)
+    {
+        return null;
     }
 
     /**
@@ -593,6 +830,18 @@ trait HandlesRelationStandardOperations
     protected function performForceDestroy(Model $entity): void
     {
         $entity->forceDelete();
+    }
+
+    /**
+     * The hook is executed after deleting a relation resource.
+     *
+     * @param Request $request
+     * @param Model $entity
+     * @return mixed
+     */
+    protected function afterDestroy(Request $request, Model $entity)
+    {
+        return null;
     }
 
     /**
@@ -694,232 +943,6 @@ trait HandlesRelationStandardOperations
     }
 
     /**
-     * Restores the given relation entity.
-     *
-     * @param Model|SoftDeletes $entity
-     */
-    protected function performRestore(Model $entity): void
-    {
-        $entity->restore();
-    }
-
-    /**
-     * Builds Eloquent query for fetching parent entity.
-     *
-     * @param Request $request
-     * @param string|int $parentKey
-     * @return Builder
-     */
-    protected function buildParentFetchQuery(Request $request, $parentKey): Builder
-    {
-        return $this->queryBuilder->buildQuery($this->newModelQuery(), $request);
-    }
-
-    /**
-     * Runs the given query for fetching parent entity.
-     *
-     * @param Request $request
-     * @param Builder $query
-     * @param string|int $parentKey
-     * @return Model
-     */
-    protected function runParentFetchQuery(Request $request, Builder $query, $parentKey): Model
-    {
-        return $query->where($this->resolveQualifiedParentKeyName(), $parentKey)->firstOrFail();
-    }
-
-    /**
-     * Builds Eloquent query for fetching relation entity.
-     *
-     * @param Request $request
-     * @param Model $parentEntity
-     * @param array $requestedRelations
-     * @return Relation
-     */
-    protected function buildRelationFetchQuery(Request $request, Model $parentEntity, array $requestedRelations): Relation
-    {
-        return $this->relationQueryBuilder->buildQuery($this->newRelationQuery($parentEntity), $request)
-            ->with($requestedRelations);
-    }
-
-    /**
-     * Runs the given query for fetching relation entity.
-     *
-     * @param Request $request
-     * @param Relation $query
-     * @param Model $parentEntity
-     * @param string|int $relatedKey
-     * @return Model
-     */
-    protected function runRelationFetchQuery(Request $request, Relation $query, Model $parentEntity, $relatedKey): Model
-    {
-        if ($this->isOneToOneRelation($parentEntity)) {
-            return $query->firstOrFail();
-        }
-
-        $this->abortIfMissingRelatedID($relatedKey);
-
-        return $query->where($this->resolveQualifiedKeyName(), $relatedKey)->firstOrFail();
-    }
-
-    /**
-     * Determines whether controller relation is one-to-one or not.
-     *
-     * @param Model $parentEntity
-     * @return bool
-     */
-    protected function isOneToOneRelation(Model $parentEntity)
-    {
-        $relation = $parentEntity->{$this->getRelation()}();
-        return $relation instanceof HasOne || $relation instanceof MorphOne || $relation instanceof BelongsTo;
-    }
-
-    /**
-     * Throws exception, if related ID is undefined and relation type is not one-to-one.
-     *
-     * @param int|string|null $relatedKey
-     */
-    protected function abortIfMissingRelatedID($relatedKey)
-    {
-        if ($relatedKey) {
-            return;
-        }
-        throw new InvalidArgumentException('Relation key is required, if relation type is not one-to-one');
-    }
-
-    /**
-     * Removes unrelated to model attributes, if any.
-     *
-     * @param Model $entity
-     * @return Model
-     */
-    protected function cleanupEntity(Model $entity)
-    {
-        $entity->makeHidden('laravel_through_key');
-
-        return $entity;
-    }
-
-    /**
-     * The hooks is executed before fetching the list of relation resources.
-     *
-     * @param Request $request
-     * @return mixed
-     */
-    protected function beforeIndex(Request $request)
-    {
-        return null;
-    }
-
-    /**
-     * The hooks is executed after fetching the list of relation resources.
-     *
-     * @param Request $request
-     * @param Paginator|Collection $entities
-     * @return mixed
-     */
-    protected function afterIndex(Request $request, $entities)
-    {
-        return null;
-    }
-
-    /**
-     * The hook is executed before creating new relation resource.
-     *
-     * @param Request $request
-     * @param Model $entity
-     * @return mixed
-     */
-    protected function beforeStore(Request $request, Model $entity)
-    {
-        return null;
-    }
-
-    /**
-     * The hook is executed after creating new relation resource.
-     *
-     * @param Request $request
-     * @param Model $entity
-     * @return mixed
-     */
-    protected function afterStore(Request $request, Model $entity)
-    {
-        return null;
-    }
-
-    /**
-     * The hook is executed before fetching relation resource.
-     *
-     * @param Request $request
-     * @param int|string|null $key
-     * @return mixed
-     */
-    protected function beforeShow(Request $request, $key)
-    {
-        return null;
-    }
-
-    /**
-     * The hook is executed after fetching a relation resource
-     *
-     * @param Request $request
-     * @param Model $entity
-     * @return mixed
-     */
-    protected function afterShow(Request $request, Model $entity)
-    {
-        return null;
-    }
-
-    /**
-     * The hook is executed before updating a relation resource.
-     *
-     * @param Request $request
-     * @param Model $entity
-     * @return mixed
-     */
-    protected function beforeUpdate(Request $request, Model $entity)
-    {
-        return null;
-    }
-
-    /**
-     * The hook is executed after updating a relation resource.
-     *
-     * @param Request $request
-     * @param Model $entity
-     * @return mixed
-     */
-    protected function afterUpdate(Request $request, Model $entity)
-    {
-        return null;
-    }
-
-    /**
-     * The hook is executed before deleting a relation resource.
-     *
-     * @param Request $request
-     * @param Model $entity
-     * @return mixed
-     */
-    protected function beforeDestroy(Request $request, Model $entity)
-    {
-        return null;
-    }
-
-    /**
-     * The hook is executed after deleting a relation resource.
-     *
-     * @param Request $request
-     * @param Model $entity
-     * @return mixed
-     */
-    protected function afterDestroy(Request $request, Model $entity)
-    {
-        return null;
-    }
-
-    /**
      * The hook is executed before restoring a relation resource.
      *
      * @param Request $request
@@ -932,6 +955,16 @@ trait HandlesRelationStandardOperations
     }
 
     /**
+     * Restores the given relation entity.
+     *
+     * @param Model|SoftDeletes $entity
+     */
+    protected function performRestore(Model $entity): void
+    {
+        $entity->restore();
+    }
+
+    /**
      * The hook is executed after restoring a relation resource.
      *
      * @param Request $request
@@ -939,30 +972,6 @@ trait HandlesRelationStandardOperations
      * @return mixed
      */
     protected function afterRestore(Request $request, Model $entity)
-    {
-        return null;
-    }
-
-    /**
-     * The hook is executed before creating or updating a relation resource.
-     *
-     * @param Request $request
-     * @param Model $entity
-     * @return mixed
-     */
-    protected function beforeSave(Request $request, Model $entity)
-    {
-        return null;
-    }
-
-    /**
-     * The hook is executed after creating or updating a relation resource.
-     *
-     * @param Request $request
-     * @param Model $entity
-     * @return mixed
-     */
-    protected function afterSave(Request $request, Model $entity)
     {
         return null;
     }

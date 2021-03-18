@@ -50,9 +50,12 @@ class StandardIndexOperationsTest extends TestCase
 
         Gate::policy(Post::class, GreenPolicy::class);
 
-        app()->bind('orion.paginationEnabled', function() {
-           return false;
-        });
+        app()->bind(
+            'orion.paginationEnabled',
+            function () {
+                return false;
+            }
+        );
 
         $response = $this->get('/api/posts');
 
@@ -123,11 +126,15 @@ class StandardIndexOperationsTest extends TestCase
             $response,
             $this->makePaginator($posts, 'posts')
         );
-        $response->assertJsonMissing([
-            'data' => $trashedPosts->map(function (Post $post) {
-                return $post->toArray();
-            })->toArray()
-        ]);
+        $response->assertJsonMissing(
+            [
+                'data' => $trashedPosts->map(
+                    function (Post $post) {
+                        return $post->toArray();
+                    }
+                )->toArray(),
+            ]
+        );
     }
 
     /** @test */
@@ -135,12 +142,15 @@ class StandardIndexOperationsTest extends TestCase
     {
         $posts = factory(Post::class)->times(5)->create();
 
-        app()->bind(ComponentsResolver::class, function () {
-            $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
-            $componentsResolverMock->shouldReceive('resolveResourceClass')->once()->andReturn(SampleResource::class);
+        app()->bind(
+            ComponentsResolver::class,
+            function () {
+                $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
+                $componentsResolverMock->shouldReceive('resolveResourceClass')->once()->andReturn(SampleResource::class);
 
-            return $componentsResolverMock;
-        });
+                return $componentsResolverMock;
+            }
+        );
 
         Gate::policy(Post::class, GreenPolicy::class);
 
@@ -158,12 +168,15 @@ class StandardIndexOperationsTest extends TestCase
     {
         $posts = factory(Post::class)->times(5)->create();
 
-        app()->bind(ComponentsResolver::class, function () {
-            $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
-            $componentsResolverMock->shouldReceive('resolveCollectionResourceClass')->once()->andReturn(SampleCollectionResource::class);
+        app()->bind(
+            ComponentsResolver::class,
+            function () {
+                $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
+                $componentsResolverMock->shouldReceive('resolveCollectionResourceClass')->once()->andReturn(SampleCollectionResource::class);
 
-            return $componentsResolverMock;
-        });
+                return $componentsResolverMock;
+            }
+        );
 
         Gate::policy(Post::class, GreenPolicy::class);
 
@@ -175,21 +188,25 @@ class StandardIndexOperationsTest extends TestCase
             [],
             false
         );
-        $response->assertJson([
-            'test-field-from-resource' => 'test-value'
-        ]);
+        $response->assertJson(
+            [
+                'test-field-from-resource' => 'test-value',
+            ]
+        );
     }
 
     /** @test */
     public function getting_a_list_of_resources_with_included_relation(): void
     {
-        $posts = factory(Post::class)->times(5)->create()->map(function (Post $post) {
-            $post->user()->associate(factory(User::class)->create());
-            $post->save();
-            $post->refresh();
+        $posts = factory(Post::class)->times(5)->create()->map(
+            function (Post $post) {
+                $post->user()->associate(factory(User::class)->create());
+                $post->save();
+                $post->refresh();
 
-            return $post->toArray();
-        });
+                return $post->toArray();
+            }
+        );
 
         Gate::policy(Post::class, GreenPolicy::class);
 

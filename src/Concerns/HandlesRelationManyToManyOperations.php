@@ -38,9 +38,23 @@ trait HandlesRelationManyToManyOperations
             return $afterHookResult;
         }
 
-        return response()->json([
-            'attached' => Arr::get($attachResult, 'attached', [])
-        ]);
+        return response()->json(
+            [
+                'attached' => Arr::get($attachResult, 'attached', []),
+            ]
+        );
+    }
+
+    /**
+     * The hook is executed before attaching relation resource.
+     *
+     * @param Request $request
+     * @param int|string $parentKey
+     * @return mixed
+     */
+    protected function beforeAttach(Request $request, $parentKey)
+    {
+        return null;
     }
 
     /**
@@ -84,11 +98,112 @@ trait HandlesRelationManyToManyOperations
         if ($duplicates) {
             $parentEntity->{$this->getRelation()}()->attach($resources);
             return [
-                'attached' => array_keys($resources)
+                'attached' => array_keys($resources),
             ];
         }
 
         return $parentEntity->{$this->getRelation()}()->sync($resources, false);
+    }
+
+    /**
+     * Retrieves only fillable pivot fields and json encodes any objects/arrays.
+     *
+     * @param array $resources
+     * @return array
+     */
+    protected function prepareResourcePivotFields(array $resources)
+    {
+        foreach ($resources as $key => &$pivotFields) {
+            if (!is_array($pivotFields)) {
+                continue;
+            }
+            $pivotFields = $this->preparePivotFields($pivotFields);
+        }
+
+        return $resources;
+    }
+
+    /**
+     * Json encodes any objects/arrays of the given pivot fields.
+     *
+     * @param array $pivotFields
+     * @return array mixed
+     */
+    protected function preparePivotFields(array $pivotFields)
+    {
+        foreach ($pivotFields as &$field) {
+            if (is_array($field) || is_object($field)) {
+                $field = json_encode($field);
+            }
+        }
+
+        $pivotFields = Arr::only($pivotFields, $this->getPivotFillable());
+
+        return $pivotFields;
+    }
+
+    /**
+     * Standardizes resources array structure and authorizes individual resources.
+     *
+     * @param array $resources
+     * @return array
+     */
+    protected function preparePivotResources(array $resources): array
+    {
+        $model = $this->getModel();
+        $resources = $this->standardizePivotResourcesArray($resources);
+        $resourceModel = (new $model)->{$this->getRelation()}()->getModel();
+        $resourceKeyName = $resourceModel->getKeyName();
+        $resourceModels = $resourceModel->whereIn($resourceKeyName, array_keys($resources))->get();
+
+        $resources = array_filter(
+            $resources,
+            function ($resourceKey) use ($resourceModels, $resourceKeyName) {
+                /**
+                 * @var Collection $resourceModels
+                 */
+                $resourceModel = $resourceModels->where($resourceKeyName, $resourceKey)->first();
+
+                return $resourceModel && (!$this->authorizationRequired() || Gate::forUser($this->resolveUser())->allows('view', $resourceModel));
+            },
+            ARRAY_FILTER_USE_KEY
+        );
+
+        return $resources;
+    }
+
+    /**
+     * Standardizes resources array structure.
+     *
+     * @param array $resources
+     * @return array
+     */
+    protected function standardizePivotResourcesArray($resources)
+    {
+        $resources = Arr::wrap($resources);
+
+        $standardizedResources = [];
+        foreach ($resources as $key => $pivotFields) {
+            if (!is_array($pivotFields)) {
+                $standardizedResources[$pivotFields] = [];
+            } else {
+                $standardizedResources[$key] = $pivotFields;
+            }
+        }
+
+        return $standardizedResources;
+    }
+
+    /**
+     * The hook is executed after attaching relation resource.
+     *
+     * @param Request $request
+     * @param array $attachResult
+     * @return mixed
+     */
+    protected function afterAttach(Request $request, array &$attachResult)
+    {
+        return null;
     }
 
     /**
@@ -117,9 +232,23 @@ trait HandlesRelationManyToManyOperations
             return $afterHookResult;
         }
 
-        return response()->json([
-            'detached' => $detachResult
-        ]);
+        return response()->json(
+            [
+                'detached' => $detachResult,
+            ]
+        );
+    }
+
+    /**
+     * The hook is executed before detaching relation resource.
+     *
+     * @param Request $request
+     * @param int|string $parentKey
+     * @return mixed
+     */
+    protected function beforeDetach(Request $request, $parentKey)
+    {
+        return null;
     }
 
     /**
@@ -165,6 +294,18 @@ trait HandlesRelationManyToManyOperations
     }
 
     /**
+     * The hook is executed after detaching relation resource.
+     *
+     * @param Request $request
+     * @param array $detachResult
+     * @return mixed
+     */
+    protected function afterDetach(Request $request, array &$detachResult)
+    {
+        return null;
+    }
+
+    /**
      * Sync relation resources.
      *
      * @param Request $request
@@ -191,6 +332,18 @@ trait HandlesRelationManyToManyOperations
         }
 
         return response()->json($syncResult);
+    }
+
+    /**
+     * The hook is executed before syncing relation resources.
+     *
+     * @param Request $request
+     * @param int|string $parentKey
+     * @return mixed
+     */
+    protected function beforeSync(Request $request, $parentKey)
+    {
+        return null;
     }
 
     /**
@@ -232,12 +385,25 @@ trait HandlesRelationManyToManyOperations
         $resources = $this->prepareResourcePivotFields($this->preparePivotResources($resources));
 
         $syncResult = $parentEntity->{$this->getRelation()}()->sync(
-            $resources, $detaching
+            $resources,
+            $detaching
         );
 
         $syncResult['detached'] = array_values($syncResult['detached']);
 
         return $syncResult;
+    }
+
+    /**
+     * The hook is executed after syncing relation resources.
+     *
+     * @param Request $request
+     * @param array $syncResult
+     * @return mixed
+     */
+    protected function afterSync(Request $request, array &$syncResult)
+    {
+        return null;
     }
 
     /**
@@ -267,6 +433,18 @@ trait HandlesRelationManyToManyOperations
         }
 
         return response()->json($toggleResult);
+    }
+
+    /**
+     * The hook is executed before toggling relation resources.
+     *
+     * @param Request $request
+     * @param int|string $parentKey
+     * @return mixed
+     */
+    protected function beforeToggle(Request $request, $parentKey)
+    {
+        return null;
     }
 
     /**
@@ -310,6 +488,18 @@ trait HandlesRelationManyToManyOperations
     }
 
     /**
+     * The hook is executed after toggling relation resources.
+     *
+     * @param Request $request
+     * @param array $toggleResult
+     * @return mixed
+     */
+    protected function afterToggle(Request $request, array &$toggleResult)
+    {
+        return null;
+    }
+
+    /**
      * Update relation resource pivot.
      *
      * @param Request $request
@@ -339,9 +529,23 @@ trait HandlesRelationManyToManyOperations
             return $afterHookResult;
         }
 
-        return response()->json([
-            'updated' => $updateResult
-        ]);
+        return response()->json(
+            [
+                'updated' => $updateResult,
+            ]
+        );
+    }
+
+    /**
+     * The hook is executed before updating relation resource pivot.
+     *
+     * @param Request $request
+     * @param int|string $relatedKey
+     * @return mixed
+     */
+    protected function beforeUpdatePivot(Request $request, $relatedKey)
+    {
+        return null;
     }
 
     /**
@@ -384,92 +588,19 @@ trait HandlesRelationManyToManyOperations
 
         $parentEntity->{$this->getRelation()}()->updateExistingPivot($relatedKey, $pivot);
 
-        return [is_numeric($relatedKey) ? (int) $relatedKey : $relatedKey];
+        return [is_numeric($relatedKey) ? (int)$relatedKey : $relatedKey];
     }
 
     /**
-     * Standardizes resources array structure and authorizes individual resources.
+     * The hook is executed after updating relation resource pivot.
      *
-     * @param array $resources
-     * @return array
+     * @param Request $request
+     * @param array $updateResult
+     * @return mixed
      */
-    protected function preparePivotResources(array $resources): array
+    protected function afterUpdatePivot(Request $request, array &$updateResult)
     {
-        $model = $this->getModel();
-        $resources = $this->standardizePivotResourcesArray($resources);
-        $resourceModel = (new $model)->{$this->getRelation()}()->getModel();
-        $resourceKeyName = $resourceModel->getKeyName();
-        $resourceModels = $resourceModel->whereIn($resourceKeyName, array_keys($resources))->get();
-
-        $resources = array_filter($resources, function ($resourceKey) use ($resourceModels, $resourceKeyName) {
-            /**
-             * @var Collection $resourceModels
-             */
-            $resourceModel = $resourceModels->where($resourceKeyName, $resourceKey)->first();
-
-            return $resourceModel && (!$this->authorizationRequired() || Gate::forUser($this->resolveUser())->allows('view', $resourceModel));
-        }, ARRAY_FILTER_USE_KEY);
-
-        return $resources;
-    }
-
-    /**
-     * Standardizes resources array structure.
-     *
-     * @param array $resources
-     * @return array
-     */
-    protected function standardizePivotResourcesArray($resources)
-    {
-        $resources = Arr::wrap($resources);
-
-        $standardizedResources = [];
-        foreach ($resources as $key => $pivotFields) {
-            if (!is_array($pivotFields)) {
-                $standardizedResources[$pivotFields] = [];
-            } else {
-                $standardizedResources[$key] = $pivotFields;
-            }
-        }
-
-        return $standardizedResources;
-    }
-
-    /**
-     * Retrieves only fillable pivot fields and json encodes any objects/arrays.
-     *
-     * @param array $resources
-     * @return array
-     */
-    protected function prepareResourcePivotFields(array $resources)
-    {
-        foreach ($resources as $key => &$pivotFields) {
-            if (!is_array($pivotFields)) {
-                continue;
-            }
-            $pivotFields = $this->preparePivotFields($pivotFields);
-        }
-
-        return $resources;
-    }
-
-    /**
-     * Json encodes any objects/arrays of the given pivot fields.
-     *
-     * @param array $pivotFields
-     * @return array mixed
-     */
-    protected function preparePivotFields(array $pivotFields)
-    {
-        foreach ($pivotFields as &$field) {
-            if (is_array($field) || is_object($field)) {
-                $field = json_encode($field);
-            }
-        }
-
-        $pivotFields = Arr::only($pivotFields, $this->getPivotFillable());
-
-        return $pivotFields;
+        return null;
     }
 
     /**
@@ -493,126 +624,5 @@ trait HandlesRelationManyToManyOperations
             $entity->pivot->{$pivotJsonField} = json_decode($entity->pivot->{$pivotJsonField}, true);
         }
         return $entity;
-    }
-
-
-    /**
-     * The hook is executed before syncing relation resources.
-     *
-     * @param Request $request
-     * @param int|string $parentKey
-     * @return mixed
-     */
-    protected function beforeSync(Request $request, $parentKey)
-    {
-        return null;
-    }
-
-    /**
-     * The hook is executed after syncing relation resources.
-     *
-     * @param Request $request
-     * @param array $syncResult
-     * @return mixed
-     */
-    protected function afterSync(Request $request, array &$syncResult)
-    {
-        return null;
-    }
-
-    /**
-     * The hook is executed before toggling relation resources.
-     *
-     * @param Request $request
-     * @param int|string $parentKey
-     * @return mixed
-     */
-    protected function beforeToggle(Request $request, $parentKey)
-    {
-        return null;
-    }
-
-    /**
-     * The hook is executed after toggling relation resources.
-     *
-     * @param Request $request
-     * @param array $toggleResult
-     * @return mixed
-     */
-    protected function afterToggle(Request $request, array &$toggleResult)
-    {
-        return null;
-    }
-
-    /**
-     * The hook is executed before attaching relation resource.
-     *
-     * @param Request $request
-     * @param int|string $parentKey
-     * @return mixed
-     */
-    protected function beforeAttach(Request $request, $parentKey)
-    {
-        return null;
-    }
-
-    /**
-     * The hook is executed after attaching relation resource.
-     *
-     * @param Request $request
-     * @param array $attachResult
-     * @return mixed
-     */
-    protected function afterAttach(Request $request, array &$attachResult)
-    {
-        return null;
-    }
-
-    /**
-     * The hook is executed before detaching relation resource.
-     *
-     * @param Request $request
-     * @param int|string $parentKey
-     * @return mixed
-     */
-    protected function beforeDetach(Request $request, $parentKey)
-    {
-        return null;
-    }
-
-    /**
-     * The hook is executed after detaching relation resource.
-     *
-     * @param Request $request
-     * @param array $detachResult
-     * @return mixed
-     */
-    protected function afterDetach(Request $request, array &$detachResult)
-    {
-        return null;
-    }
-
-    /**
-     * The hook is executed before updating relation resource pivot.
-     *
-     * @param Request $request
-     * @param int|string $relatedKey
-     * @return mixed
-     */
-    protected function beforeUpdatePivot(Request $request, $relatedKey)
-    {
-        return null;
-    }
-
-    /**
-     * The hook is executed after updating relation resource pivot.
-     *
-     * @param Request $request
-     * @param array $updateResult
-     * @return mixed
-     */
-    protected function afterUpdatePivot(Request $request, array &$updateResult)
-    {
-        return null;
     }
 }

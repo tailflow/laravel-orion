@@ -18,11 +18,14 @@ class StandardIndexSortingOperationsTest extends TestCase
 
         Gate::policy(Post::class, GreenPolicy::class);
 
-        $response = $this->post('/api/posts/search', [
-            'sort' => [
-                ['field' => 'title', 'direction' => 'asc']
+        $response = $this->post(
+            '/api/posts/search',
+            [
+                'sort' => [
+                    ['field' => 'title', 'direction' => 'asc'],
+                ],
             ]
-        ]);
+        );
 
         $this->assertResourcesPaginated(
             $response,
@@ -39,11 +42,14 @@ class StandardIndexSortingOperationsTest extends TestCase
 
         Gate::policy(Post::class, GreenPolicy::class);
 
-        $response = $this->post('/api/posts/search', [
-            'sort' => [
-                ['field' => 'title']
+        $response = $this->post(
+            '/api/posts/search',
+            [
+                'sort' => [
+                    ['field' => 'title'],
+                ],
             ]
-        ]);
+        );
 
         $this->assertResourcesPaginated(
             $response,
@@ -60,11 +66,14 @@ class StandardIndexSortingOperationsTest extends TestCase
 
         Gate::policy(Post::class, GreenPolicy::class);
 
-        $response = $this->post('/api/posts/search', [
-            'sort' => [
-                ['field' => 'title', 'direction' => 'desc']
+        $response = $this->post(
+            '/api/posts/search',
+            [
+                'sort' => [
+                    ['field' => 'title', 'direction' => 'desc'],
+                ],
             ]
-        ]);
+        );
 
         $this->assertResourcesPaginated(
             $response,
@@ -81,11 +90,14 @@ class StandardIndexSortingOperationsTest extends TestCase
 
         Gate::policy(Post::class, GreenPolicy::class);
 
-        $response = $this->post('/api/posts/search', [
-            'sort' => [
-                ['field' => 'body', 'direction' => 'asc']
+        $response = $this->post(
+            '/api/posts/search',
+            [
+                'sort' => [
+                    ['field' => 'body', 'direction' => 'asc'],
+                ],
             ]
-        ]);
+        );
 
         $response->assertStatus(422);
         $response->assertJsonStructure(['message', 'errors' => ['sort.0.field']]);
@@ -100,9 +112,12 @@ class StandardIndexSortingOperationsTest extends TestCase
 
         Gate::policy(Post::class, GreenPolicy::class);
 
-        $response = $this->post('/api/posts/search', [
-            'sort' => []
-        ]);
+        $response = $this->post(
+            '/api/posts/search',
+            [
+                'sort' => [],
+            ]
+        );
 
         $this->assertResourcesPaginated(
             $response,
@@ -119,11 +134,14 @@ class StandardIndexSortingOperationsTest extends TestCase
 
         Gate::policy(Post::class, GreenPolicy::class);
 
-        $response = $this->post('/api/posts/search', [
-            'sort' => [
-                ['field' => 'meta->nested_field', 'direction' => 'desc']
+        $response = $this->post(
+            '/api/posts/search',
+            [
+                'sort' => [
+                    ['field' => 'meta->nested_field', 'direction' => 'desc'],
+                ],
             ]
-        ]);
+        );
 
         $this->assertResourcesPaginated(
             $response,
@@ -140,11 +158,14 @@ class StandardIndexSortingOperationsTest extends TestCase
 
         Gate::policy(Post::class, GreenPolicy::class);
 
-        $response = $this->post('/api/posts/search', [
-            'sort' => [
-                ['field' => 'user.name', 'direction' => 'asc']
+        $response = $this->post(
+            '/api/posts/search',
+            [
+                'sort' => [
+                    ['field' => 'user.name', 'direction' => 'asc'],
+                ],
             ]
-        ]);
+        );
 
         $this->assertResourcesPaginated(
             $response,

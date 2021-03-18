@@ -11,10 +11,10 @@ class RequestStub extends Request
      *
      * @return array
      */
-    public function commonRules() : array
+    public function commonRules(): array
     {
         return [
-            'common-rules-field' => 'required'
+            'common-rules-field' => 'required',
         ];
     }
 
@@ -23,10 +23,10 @@ class RequestStub extends Request
      *
      * @return array
      */
-    public function storeRules() : array
+    public function storeRules(): array
     {
         return [
-            'store-rules-field' => 'required'
+            'store-rules-field' => 'required',
         ];
     }
 
@@ -35,10 +35,10 @@ class RequestStub extends Request
      *
      * @return array
      */
-    public function updateRules() : array
+    public function updateRules(): array
     {
         return [
-            'update-rules-field' => 'required'
+            'update-rules-field' => 'required',
         ];
     }
 
@@ -47,10 +47,10 @@ class RequestStub extends Request
      *
      * @return array
      */
-    public function associateRules() : array
+    public function associateRules(): array
     {
         return [
-            'associate-rules-field' => 'required'
+            'associate-rules-field' => 'required',
         ];
     }
 
@@ -59,10 +59,10 @@ class RequestStub extends Request
      *
      * @return array
      */
-    public function attachRules() : array
+    public function attachRules(): array
     {
         return [
-            'attach-rules-field' => 'required'
+            'attach-rules-field' => 'required',
         ];
     }
 
@@ -71,10 +71,10 @@ class RequestStub extends Request
      *
      * @return array
      */
-    public function detachRules() : array
+    public function detachRules(): array
     {
         return [
-            'detach-rules-field' => 'required'
+            'detach-rules-field' => 'required',
         ];
     }
 
@@ -83,10 +83,10 @@ class RequestStub extends Request
      *
      * @return array
      */
-    public function syncRules() : array
+    public function syncRules(): array
     {
         return [
-            'sync-rules-field' => 'required'
+            'sync-rules-field' => 'required',
         ];
     }
 
@@ -95,10 +95,10 @@ class RequestStub extends Request
      *
      * @return array
      */
-    public function toggleRules() : array
+    public function toggleRules(): array
     {
         return [
-            'toggle-rules-field' => 'required'
+            'toggle-rules-field' => 'required',
         ];
     }
 
@@ -107,10 +107,10 @@ class RequestStub extends Request
      *
      * @return array
      */
-    public function updatePivotRules() : array
+    public function updatePivotRules(): array
     {
         return [
-            'update-pivot-rules-field' => 'required'
+            'update-pivot-rules-field' => 'required',
         ];
     }
 }

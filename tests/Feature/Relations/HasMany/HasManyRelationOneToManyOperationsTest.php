@@ -23,9 +23,12 @@ class HasManyRelationOneToManyOperationsTest extends TestCase
         Gate::policy(Company::class, RedPolicy::class);
         Gate::policy(Team::class, GreenPolicy::class);
 
-        $response = $this->post("/api/companies/{$company->id}/teams/associate", [
-            'related_key' => $team->id
-        ]);
+        $response = $this->post(
+            "/api/companies/{$company->id}/teams/associate",
+            [
+                'related_key' => $team->id,
+            ]
+        );
 
         $this->assertUnauthorizedResponse($response);
     }
@@ -39,9 +42,12 @@ class HasManyRelationOneToManyOperationsTest extends TestCase
         Gate::policy(Company::class, GreenPolicy::class);
         Gate::policy(Team::class, RedPolicy::class);
 
-        $response = $this->post("/api/companies/{$company->id}/teams/associate", [
-            'related_key' => $team->id
-        ]);
+        $response = $this->post(
+            "/api/companies/{$company->id}/teams/associate",
+            [
+                'related_key' => $team->id,
+            ]
+        );
 
         $this->assertUnauthorizedResponse($response);
     }
@@ -70,9 +76,12 @@ class HasManyRelationOneToManyOperationsTest extends TestCase
         Gate::policy(Company::class, GreenPolicy::class);
         Gate::policy(Team::class, GreenPolicy::class);
 
-        $response = $this->post("/api/companies/{$company->id}/teams/associate", [
-            'related_key' => $team->id
-        ]);
+        $response = $this->post(
+            "/api/companies/{$company->id}/teams/associate",
+            [
+                'related_key' => $team->id,
+            ]
+        );
 
         $this->assertResourceAssociated($response, $company, $team, 'company');
     }
@@ -86,9 +95,12 @@ class HasManyRelationOneToManyOperationsTest extends TestCase
         Gate::policy(Company::class, GreenPolicy::class);
         Gate::policy(Team::class, GreenPolicy::class);
 
-        $response = $this->post("/api/companies/{$company->id}/teams/associate?include=company", [
-            'related_key' => $team->id
-        ]);
+        $response = $this->post(
+            "/api/companies/{$company->id}/teams/associate?include=company",
+            [
+                'related_key' => $team->id,
+            ]
+        );
 
         $this->assertResourceAssociated(
             $response,
@@ -108,16 +120,22 @@ class HasManyRelationOneToManyOperationsTest extends TestCase
         Gate::policy(Company::class, GreenPolicy::class);
         Gate::policy(Team::class, GreenPolicy::class);
 
-        app()->bind(ComponentsResolver::class, function () {
-            $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
-            $componentsResolverMock->shouldReceive('resolveResourceClass')->once()->andReturn(SampleResource::class);
+        app()->bind(
+            ComponentsResolver::class,
+            function () {
+                $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
+                $componentsResolverMock->shouldReceive('resolveResourceClass')->once()->andReturn(SampleResource::class);
 
-            return $componentsResolverMock;
-        });
+                return $componentsResolverMock;
+            }
+        );
 
-        $response = $this->post("/api/companies/{$company->id}/teams/associate", [
-            'related_key' => $team->id
-        ]);
+        $response = $this->post(
+            "/api/companies/{$company->id}/teams/associate",
+            [
+                'related_key' => $team->id,
+            ]
+        );
 
         $this->assertResourceAssociated(
             $response,
@@ -183,12 +201,15 @@ class HasManyRelationOneToManyOperationsTest extends TestCase
         Gate::policy(Company::class, GreenPolicy::class);
         Gate::policy(Team::class, GreenPolicy::class);
 
-        app()->bind(ComponentsResolver::class, function () {
-            $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
-            $componentsResolverMock->shouldReceive('resolveResourceClass')->once()->andReturn(SampleResource::class);
+        app()->bind(
+            ComponentsResolver::class,
+            function () {
+                $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
+                $componentsResolverMock->shouldReceive('resolveResourceClass')->once()->andReturn(SampleResource::class);
 
-            return $componentsResolverMock;
-        });
+                return $componentsResolverMock;
+            }
+        );
 
         $response = $this->delete("/api/companies/{$company->id}/teams/{$team->id}/dissociate");
 

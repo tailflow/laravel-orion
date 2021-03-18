@@ -54,12 +54,15 @@ abstract class RelationController extends BaseController
 
         parent::__construct();
 
-        $this->relationQueryBuilder = App::makeWith(QueryBuilder::class, [
-            'resourceModelClass' => $this->resolveResourceModelClass(),
-            'paramsValidator' => $this->paramsValidator,
-            'relationsResolver' => $this->relationsResolver,
-            'searchBuilder' => $this->searchBuilder
-        ]);
+        $this->relationQueryBuilder = App::makeWith(
+            QueryBuilder::class,
+            [
+                'resourceModelClass' => $this->resolveResourceModelClass(),
+                'paramsValidator' => $this->paramsValidator,
+                'relationsResolver' => $this->relationsResolver,
+                'searchBuilder' => $this->searchBuilder,
+            ]
+        );
     }
 
     /**
@@ -75,38 +78,11 @@ abstract class RelationController extends BaseController
     }
 
     /**
-     * The name of the field used to fetch parent resource from the database.
-     *
      * @return string
      */
-    protected function parentKeyName(): string
+    public function getRelation(): string
     {
-        $modelClass = $this->getModel();
-
-        return (new $modelClass)->getKeyName();
-    }
-
-    /**
-     * A qualified name of the field used to fetch parent resource from the database.
-     *
-     * @return string
-     */
-    protected function resolveQualifiedParentKeyName(): string
-    {
-        $modelClass = $this->getModel();
-
-        return (new $modelClass)->qualifyColumn($this->parentKeyName());
-    }
-
-    /**
-     * Creates new Eloquent query builder of the relation on the given parent model.
-     *
-     * @param Model $parentEntity
-     * @return Builder|Relation
-     */
-    public function newRelationQuery(Model $parentEntity)
-    {
-        return $parentEntity->{$this->getRelation()}();
+        return $this->relation;
     }
 
     /**
@@ -121,11 +97,22 @@ abstract class RelationController extends BaseController
     }
 
     /**
-     * @return string
+     * Creates new Eloquent query builder of the relation on the given parent model.
+     *
+     * @param Model $parentEntity
+     * @return Builder|Relation
      */
-    public function getRelation(): string
+    public function newRelationQuery(Model $parentEntity)
     {
-        return $this->relation;
+        return $parentEntity->{$this->getRelation()}();
+    }
+
+    /**
+     * @return array
+     */
+    public function getPivotFillable(): array
+    {
+        return $this->pivotFillable;
     }
 
     /**
@@ -142,9 +129,9 @@ abstract class RelationController extends BaseController
     /**
      * @return array
      */
-    public function getPivotFillable(): array
+    public function getPivotJson(): array
     {
-        return $this->pivotFillable;
+        return $this->pivotJson;
     }
 
     /**
@@ -159,11 +146,11 @@ abstract class RelationController extends BaseController
     }
 
     /**
-     * @return array
+     * @return QueryBuilder
      */
-    public function getPivotJson(): array
+    public function getRelationQueryBuilder(): QueryBuilder
     {
-        return $this->pivotJson;
+        return $this->relationQueryBuilder;
     }
 
     /**
@@ -178,10 +165,26 @@ abstract class RelationController extends BaseController
     }
 
     /**
-     * @return QueryBuilder
+     * A qualified name of the field used to fetch parent resource from the database.
+     *
+     * @return string
      */
-    public function getRelationQueryBuilder(): QueryBuilder
+    protected function resolveQualifiedParentKeyName(): string
     {
-        return $this->relationQueryBuilder;
+        $modelClass = $this->getModel();
+
+        return (new $modelClass)->qualifyColumn($this->parentKeyName());
+    }
+
+    /**
+     * The name of the field used to fetch parent resource from the database.
+     *
+     * @return string
+     */
+    protected function parentKeyName(): string
+    {
+        $modelClass = $this->getModel();
+
+        return (new $modelClass)->getKeyName();
     }
 }

@@ -44,50 +44,88 @@ class Request extends FormRequest
         }
 
         if ($this->route()->getActionMethod() === 'associate') {
-            return array_merge([
-                'related_key' => 'required'
-            ], $this->associateRules());
+            return array_merge(
+                [
+                    'related_key' => 'required',
+                ],
+                $this->associateRules()
+            );
         }
 
         if ($this->route()->getActionMethod() === 'attach') {
-            return array_merge([
-                'resources' => 'present',
-                'duplicates' => ['sometimes', 'boolean']
-            ], $this->attachRules());
+            return array_merge(
+                [
+                    'resources' => 'present',
+                    'duplicates' => ['sometimes', 'boolean'],
+                ],
+                $this->attachRules()
+            );
         }
 
         if ($this->route()->getActionMethod() === 'detach') {
-            return array_merge([
-                'resources' => 'present'
-            ], $this->detachRules());
+            return array_merge(
+                [
+                    'resources' => 'present',
+                ],
+                $this->detachRules()
+            );
         }
 
         if ($this->route()->getActionMethod() === 'sync') {
-            return array_merge([
-                'resources' => 'present',
-                'detaching' => ['sometimes', 'boolean']
-            ], $this->syncRules());
+            return array_merge(
+                [
+                    'resources' => 'present',
+                    'detaching' => ['sometimes', 'boolean'],
+                ],
+                $this->syncRules()
+            );
         }
 
         if ($this->route()->getActionMethod() === 'toggle') {
-            return array_merge([
-                'resources' => 'present'
-            ], $this->toggleRules());
+            return array_merge(
+                [
+                    'resources' => 'present',
+                ],
+                $this->toggleRules()
+            );
         }
 
         if ($this->route()->getActionMethod() === 'updatePivot') {
-            return array_merge([
-                'pivot' => ['required', 'array']
-            ], $this->updatePivotRules());
+            return array_merge(
+                [
+                    'pivot' => ['required', 'array'],
+                ],
+                $this->updatePivotRules()
+            );
         }
 
         return [];
     }
 
-    protected function buildBatchRules($definedRules, $definedBatchRules) : array
+    /**
+     * Default rules for the request.
+     *
+     * @return array
+     */
+    public function commonRules(): array
+    {
+        return [];
+    }
+
+    /**
+     * Rules for the "store" (POST) endpoint.
+     *
+     * @return array
+     */
+    public function storeRules(): array
+    {
+        return [];
+    }
+
+    protected function buildBatchRules($definedRules, $definedBatchRules): array
     {
         $batchRules = [
-            'resources' => ['array', 'required']
+            'resources' => ['array', 'required'],
         ];
 
         $mergedRules = array_merge($this->commonRules(), $definedRules, $definedBatchRules);
@@ -100,31 +138,11 @@ class Request extends FormRequest
     }
 
     /**
-     * Default rules for the request.
-     *
-     * @return array
-     */
-    public function commonRules() : array
-    {
-        return [];
-    }
-
-    /**
-     * Rules for the "store" (POST) endpoint.
-     *
-     * @return array
-     */
-    public function storeRules() : array
-    {
-        return [];
-    }
-
-    /**
      * Rules for the "batch store" (POST) endpoint.
      *
      * @return array
      */
-    public function batchStoreRules() : array
+    public function batchStoreRules(): array
     {
         return [];
     }
@@ -134,7 +152,7 @@ class Request extends FormRequest
      *
      * @return array
      */
-    public function updateRules() : array
+    public function updateRules(): array
     {
         return [];
     }
@@ -144,7 +162,7 @@ class Request extends FormRequest
      *
      * @return array
      */
-    public function batchUpdateRules() : array
+    public function batchUpdateRules(): array
     {
         return [];
     }
@@ -154,7 +172,7 @@ class Request extends FormRequest
      *
      * @return array
      */
-    public function associateRules() : array
+    public function associateRules(): array
     {
         return [];
     }
@@ -164,7 +182,7 @@ class Request extends FormRequest
      *
      * @return array
      */
-    public function attachRules() : array
+    public function attachRules(): array
     {
         return [];
     }
@@ -174,7 +192,7 @@ class Request extends FormRequest
      *
      * @return array
      */
-    public function detachRules() : array
+    public function detachRules(): array
     {
         return [];
     }
@@ -184,7 +202,7 @@ class Request extends FormRequest
      *
      * @return array
      */
-    public function syncRules() : array
+    public function syncRules(): array
     {
         return [];
     }
@@ -194,7 +212,7 @@ class Request extends FormRequest
      *
      * @return array
      */
-    public function toggleRules() : array
+    public function toggleRules(): array
     {
         return [];
     }
@@ -204,7 +222,7 @@ class Request extends FormRequest
      *
      * @return array
      */
-    public function updatePivotRules() : array
+    public function updatePivotRules(): array
     {
         return [];
     }

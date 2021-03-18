@@ -14,12 +14,18 @@ class ExtendsResourcesTest extends TestCase
     public function merging_data_with_array_representation_of_resource()
     {
         $stub = new ExtendsResourcesStub(new Post(['title' => 'test']));
-        $this->assertSame([
-            'title' => 'test',
-            'additional-value' => 'test'
-        ], $stub->toArrayWithMerge(new Request(), [
-            'additional-value' => 'test'
-        ]));
+        $this->assertSame(
+            [
+                'title' => 'test',
+                'additional-value' => 'test',
+            ],
+            $stub->toArrayWithMerge(
+                new Request(),
+                [
+                    'additional-value' => 'test',
+                ]
+            )
+        );
     }
 }
 

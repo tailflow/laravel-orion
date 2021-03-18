@@ -47,7 +47,8 @@ class StandardStoreOperationsTest extends TestCase
 
         $response = $this->post('/api/posts', $payload);
 
-        $this->assertResourceStored($response,
+        $this->assertResourceStored(
+            $response,
             Post::class,
             ['title' => 'test post title', 'body' => 'test post body']
         );
@@ -60,12 +61,15 @@ class StandardStoreOperationsTest extends TestCase
     {
         $payload = ['body' => 'test post body'];
 
-        app()->bind(ComponentsResolver::class, function () {
-            $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
-            $componentsResolverMock->shouldReceive('resolveRequestClass')->once()->andReturn(PostRequest::class);
+        app()->bind(
+            ComponentsResolver::class,
+            function () {
+                $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
+                $componentsResolverMock->shouldReceive('resolveRequestClass')->once()->andReturn(PostRequest::class);
 
-            return $componentsResolverMock;
-        });
+                return $componentsResolverMock;
+            }
+        );
 
         Gate::policy(Post::class, GreenPolicy::class);
 
@@ -81,12 +85,15 @@ class StandardStoreOperationsTest extends TestCase
     {
         $payload = ['title' => 'test post title', 'body' => 'test post body'];
 
-        app()->bind(ComponentsResolver::class, function () {
-            $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
-            $componentsResolverMock->shouldReceive('resolveResourceClass')->once()->andReturn(SampleResource::class);
+        app()->bind(
+            ComponentsResolver::class,
+            function () {
+                $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
+                $componentsResolverMock->shouldReceive('resolveResourceClass')->once()->andReturn(SampleResource::class);
 
-            return $componentsResolverMock;
-        });
+                return $componentsResolverMock;
+            }
+        );
 
         Gate::policy(Post::class, GreenPolicy::class);
 

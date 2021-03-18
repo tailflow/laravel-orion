@@ -51,9 +51,12 @@ class BelongsToManyRelationStandardShowOperationsTest extends TestCase
         /** @var User $user */
         $user = factory(User::class)->create();
         $role = factory(Role::class)->make();
-        $user->roles()->save($role, [
-            'meta' => json_encode(['key' => 'value'])
-        ]);
+        $user->roles()->save(
+            $role,
+            [
+                'meta' => json_encode(['key' => 'value']),
+            ]
+        );
 
         Gate::policy(Role::class, GreenPolicy::class);
 
@@ -103,12 +106,15 @@ class BelongsToManyRelationStandardShowOperationsTest extends TestCase
         $role = factory(Role::class)->make();
         $user->roles()->save($role);
 
-        app()->bind(ComponentsResolver::class, function () {
-            $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
-            $componentsResolverMock->shouldReceive('resolveResourceClass')->once()->andReturn(SampleResource::class);
+        app()->bind(
+            ComponentsResolver::class,
+            function () {
+                $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
+                $componentsResolverMock->shouldReceive('resolveResourceClass')->once()->andReturn(SampleResource::class);
 
-            return $componentsResolverMock;
-        });
+                return $componentsResolverMock;
+            }
+        );
 
         Gate::policy(Role::class, GreenPolicy::class);
 

@@ -58,7 +58,7 @@ class HasOneRelationStandardShowOperationsTest extends TestCase
     public function getting_a_single_trashed_relation_resource_when_with_trashed_query_parameter_is_present(): void
     {
         $post = factory(Post::class)->create();
-        $trashedPostMeta =  factory(PostImage::class)->state('trashed')->create(['post_id' => $post->id]);
+        $trashedPostMeta = factory(PostImage::class)->state('trashed')->create(['post_id' => $post->id]);
 
         Gate::policy(PostImage::class, GreenPolicy::class);
 
@@ -74,12 +74,15 @@ class HasOneRelationStandardShowOperationsTest extends TestCase
         $post = factory(Post::class)->create();
         $postMeta = factory(PostMeta::class)->create(['post_id' => $post->id]);
 
-        app()->bind(ComponentsResolver::class, function () {
-            $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
-            $componentsResolverMock->shouldReceive('resolveResourceClass')->once()->andReturn(SampleResource::class);
+        app()->bind(
+            ComponentsResolver::class,
+            function () {
+                $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
+                $componentsResolverMock->shouldReceive('resolveResourceClass')->once()->andReturn(SampleResource::class);
 
-            return $componentsResolverMock;
-        });
+                return $componentsResolverMock;
+            }
+        );
 
         Gate::policy(PostMeta::class, GreenPolicy::class);
 
