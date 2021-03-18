@@ -127,4 +127,24 @@ class RelationsResolverTest extends TestCase
         self::assertArrayHasKey('user', $guardedPosts[1]->getRelations());
         self::assertArrayNotHasKey('editors', $guardedPosts[1]->getRelations());
     }
+
+    /** @test */
+    public function resolving_relation_from_param_constraint(): void
+    {
+        $relationsResolver = new RelationsResolver([], []);
+
+        $relation = $relationsResolver->relationFromParamConstraint('user.name');
+
+        self::assertSame('user', $relation);
+    }
+
+    /** @test */
+    public function resolving_deep_relation_from_param_constraint(): void
+    {
+        $relationsResolver = new RelationsResolver([], []);
+
+        $relation = $relationsResolver->relationFromParamConstraint('user.posts.tags');
+
+        self::assertSame('user.posts', $relation);
+    }
 }
