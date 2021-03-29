@@ -459,7 +459,7 @@ trait InteractsWithResources
     {
         return [
             'url' => $url,
-            'label' => $label,
+            'label' => (string) $label,
             'active' => $active
         ];
     }
