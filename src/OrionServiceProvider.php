@@ -37,5 +37,11 @@ class OrionServiceProvider extends ServiceProvider
     public function boot()
     {
         app('router')->pushMiddlewareToGroup('api', EnforceExpectsJson::class);
+
+        $this->publishes(
+            [
+                __DIR__.'/../config/orion.php' => config_path('orion.php'),
+            ]
+        );
     }
 }

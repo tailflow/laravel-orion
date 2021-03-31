@@ -8,23 +8,27 @@ class Builder
 {
     /** @var InfoBuilder */
     protected $infoBuilder;
-    /** @var PathsBuilder  */
+    /** @var ServersBuilder */
+    protected $serversBuilder;
+    /** @var PathsBuilder */
     protected $pathsBuilder;
-    /** @var ComponentsBuilder  */
+    /** @var ComponentsBuilder */
     protected $componentsBuilder;
-    /** @var SecurityBuilder  */
+    /** @var SecurityBuilder */
     protected $securityBuilder;
-    /** @var TagsBuilder  */
+    /** @var TagsBuilder */
     protected $tagsBuilder;
 
     public function __construct(
         InfoBuilder $infoBuilder,
+        ServersBuilder $serversBuilder,
         SecurityBuilder $securityBuilder,
         PathsBuilder $pathsBuilder,
         ComponentsBuilder $componentsBuilder,
         TagsBuilder $tagsBuilder
     ) {
         $this->infoBuilder = $infoBuilder;
+        $this->serversBuilder = $serversBuilder;
         $this->pathsBuilder = $pathsBuilder;
         $this->componentsBuilder = $componentsBuilder;
         $this->securityBuilder = $securityBuilder;
@@ -33,10 +37,14 @@ class Builder
 
     public function build(): array
     {
-        $info = $this->infoBuilder->build();
-        $security = $this->securityBuilder->build();
-        $tags = $this->tagsBuilder->build();
-        $paths = $this->pathsBuilder->build();
-        $components = $this->componentsBuilder->build();
+        return [
+            'openapi' => '3.0.3',
+            'info' => $this->infoBuilder->build(),
+            'servers' => $this->serversBuilder->build(),
+            'security' => $this->securityBuilder->build(),
+            'paths' => $this->pathsBuilder->build(),
+            'components' => $this->componentsBuilder->build(),
+            'tags' => $this->tagsBuilder->build(),
+        ];
     }
 }

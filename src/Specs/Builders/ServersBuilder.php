@@ -6,7 +6,8 @@ namespace Orion\Specs\Builders;
 
 class ServersBuilder
 {
-    public function build(): array {
-
+    public function build(): array
+    {
+        return config('orion.specs.servers');
     }
 }
