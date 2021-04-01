@@ -64,8 +64,8 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
     {
         $actionMethod = $request->route()->getActionMethod();
 
-        if (!$this->intermediateMode && in_array($actionMethod, ['index', 'show'])) {
-            if ($actionMethod === 'index') {
+        if (!$this->intermediateMode && in_array($actionMethod, ['index', 'search', 'show'])) {
+            if ($actionMethod === 'search') {
                 $this->applyScopesToQuery($query, $request);
                 $this->applyFiltersToQuery($query, $request);
                 $this->applySearchingToQuery($query, $request);

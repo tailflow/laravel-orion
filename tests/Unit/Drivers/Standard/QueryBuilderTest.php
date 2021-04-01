@@ -30,6 +30,29 @@ class QueryBuilderTest extends TestCase
         $query = Post::query();
 
         $queryBuilderMock = Mockery::mock(QueryBuilder::class)->makePartial();
+        $queryBuilderMock->shouldReceive('applyScopesToQuery')->with($query, $request)->never();
+        $queryBuilderMock->shouldReceive('applyFiltersToQuery')->with($query, $request)->never();
+        $queryBuilderMock->shouldReceive('applySearchingToQuery')->with($query, $request)->never();
+        $queryBuilderMock->shouldReceive('applySortingToQuery')->with($query, $request)->never();
+
+        $queryBuilderMock->shouldReceive('applySoftDeletesToQuery')->with($query, $request)->once();
+
+        $this->assertSame($query, $queryBuilderMock->buildQuery($query, $request));
+    }
+
+    /** @test */
+    public function building_query_for_search_endpoint()
+    {
+        $request = new Request();
+        $request->setRouteResolver(
+            function () {
+                return new Route('GET', '/api/posts', [ControllerStub::class, 'search']);
+            }
+        );
+
+        $query = Post::query();
+
+        $queryBuilderMock = Mockery::mock(QueryBuilder::class)->makePartial();
         $queryBuilderMock->shouldReceive('applyScopesToQuery')->with($query, $request)->once();
         $queryBuilderMock->shouldReceive('applyFiltersToQuery')->with($query, $request)->once();
         $queryBuilderMock->shouldReceive('applySearchingToQuery')->with($query, $request)->once();

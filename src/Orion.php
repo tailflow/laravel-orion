@@ -15,22 +15,19 @@ use Orion\Http\Routing\MorphToManyRelationResourceRegistrar;
 use Orion\Http\Routing\MorphToRelationResourceRegistrar;
 use Orion\Http\Routing\PendingResourceRegistration;
 use Orion\Http\Routing\ResourceRegistrar;
+use Orion\Specs\ResourcesCacheStore;
 
 class Orion
 {
     /**
-     * Registers new standard resource.
-     *
+     * @param ResourceRegistrar $registrar
      * @param string $name
      * @param string $controller
      * @param array $options
-     * @return \Illuminate\Routing\PendingResourceRegistration
-     * @throws BindingResolutionException
+     * @return PendingResourceRegistration
      */
-    public function resource($name, $controller, $options = [])
+    protected function makePendingResourceRegistration(ResourceRegistrar $registrar, string $name, string $controller, array $options): PendingResourceRegistration
     {
-        $registrar = $this->resolveRegistrar(ResourceRegistrar::class);
-
         return new PendingResourceRegistration(
             $registrar, $name, $controller, $options
         );
@@ -43,13 +40,44 @@ class Orion
      * @return ResourceRegistrar
      * @throws BindingResolutionException
      */
-    protected function resolveRegistrar($registrarClass)
+    protected function resolveRegistrar(string $registrarClass): ResourceRegistrar
     {
         if (app()->bound($registrarClass)) {
             return app()->make($registrarClass);
         }
 
-        return new $registrarClass(app('router'));
+        return new $registrarClass(app('router'), $this->resolveResourcesCacheStore());
+    }
+
+    /**
+     * Retrieves resources cache store from the container.
+     *
+     * @return ResourcesCacheStore
+     * @throws BindingResolutionException
+     */
+    protected function resolveResourcesCacheStore(): ResourcesCacheStore
+    {
+        if (app()->bound(ResourcesCacheStore::class)) {
+            return app()->make(ResourcesCacheStore::class);
+        }
+
+        throw new BindingResolutionException('ResourcesCacheStore is not bound to the container');
+    }
+
+    /**
+     * Registers new standard resource.
+     *
+     * @param string $name
+     * @param string $controller
+     * @param array $options
+     * @return \Illuminate\Routing\PendingResourceRegistration
+     * @throws BindingResolutionException
+     */
+    public function resource(string $name, string $controller, array $options = [])
+    {
+        $registrar = $this->resolveRegistrar(ResourceRegistrar::class);
+
+        return $this->makePendingResourceRegistration($registrar, $name, $controller, $options);
     }
 
     /**
@@ -62,11 +90,11 @@ class Orion
      * @return \Illuminate\Routing\PendingResourceRegistration
      * @throws BindingResolutionException
      */
-    public function hasOneResource($resource, $relation, $controller, $options = [])
+    public function hasOneResource(string $resource, string $relation, string $controller, array $options = [])
     {
         $registrar = $this->resolveRegistrar(HasOneRelationResourceRegistrar::class);
 
-        return new PendingResourceRegistration(
+        return $this->makePendingResourceRegistration(
             $registrar, "{$resource}.{$relation}", $controller, $options
         );
     }
@@ -81,11 +109,11 @@ class Orion
      * @return PendingResourceRegistration
      * @throws BindingResolutionException
      */
-    public function belongsToResource($resource, $relation, $controller, $options = [])
+    public function belongsToResource(string $resource, string $relation, string $controller, array $options = []): PendingResourceRegistration
     {
         $registrar = $this->resolveRegistrar(BelongsToRelationResourceRegistrar::class);
 
-        return new PendingResourceRegistration(
+        return $this->makePendingResourceRegistration(
             $registrar, "{$resource}.{$relation}", $controller, $options
         );
     }
@@ -100,11 +128,11 @@ class Orion
      * @return PendingResourceRegistration
      * @throws BindingResolutionException
      */
-    public function hasManyResource($resource, $relation, $controller, $options = [])
+    public function hasManyResource(string $resource, string $relation, string $controller, array $options = []): PendingResourceRegistration
     {
         $registrar = $this->resolveRegistrar(HasManyRelationResourceRegistrar::class);
 
-        return new PendingResourceRegistration(
+        return $this->makePendingResourceRegistration(
             $registrar, "{$resource}.{$relation}", $controller, $options
         );
     }
@@ -119,11 +147,11 @@ class Orion
      * @return PendingResourceRegistration
      * @throws BindingResolutionException
      */
-    public function belongsToManyResource($resource, $relation, $controller, $options = [])
+    public function belongsToManyResource(string $resource, string $relation, string $controller, array $options = []): PendingResourceRegistration
     {
         $registrar = $this->resolveRegistrar(BelongsToManyRelationResourceRegistrar::class);
 
-        return new PendingResourceRegistration(
+        return $this->makePendingResourceRegistration(
             $registrar, "{$resource}.{$relation}", $controller, $options
         );
     }
@@ -138,11 +166,11 @@ class Orion
      * @return PendingResourceRegistration
      * @throws BindingResolutionException
      */
-    public function hasOneThroughResource($resource, $relation, $controller, $options = [])
+    public function hasOneThroughResource(string $resource, string $relation, string $controller, array $options = []): PendingResourceRegistration
     {
         $registrar = $this->resolveRegistrar(HasOneThroughRelationResourceRegistrar::class);
 
-        return new PendingResourceRegistration(
+        return $this->makePendingResourceRegistration(
             $registrar, "{$resource}.{$relation}", $controller, $options
         );
     }
@@ -157,11 +185,11 @@ class Orion
      * @return PendingResourceRegistration
      * @throws BindingResolutionException
      */
-    public function hasManyThroughResource($resource, $relation, $controller, $options = [])
+    public function hasManyThroughResource(string $resource, string $relation, string $controller, array $options = []): PendingResourceRegistration
     {
         $registrar = $this->resolveRegistrar(HasManyThroughRelationResourceRegistrar::class);
 
-        return new PendingResourceRegistration(
+        return $this->makePendingResourceRegistration(
             $registrar, "{$resource}.{$relation}", $controller, $options
         );
     }
@@ -176,11 +204,11 @@ class Orion
      * @return PendingResourceRegistration
      * @throws BindingResolutionException
      */
-    public function morphOneResource($resource, $relation, $controller, $options = [])
+    public function morphOneResource(string $resource, string $relation, string $controller, array $options = []): PendingResourceRegistration
     {
         $registrar = $this->resolveRegistrar(MorphOneRelationResourceRegistrar::class);
 
-        return new PendingResourceRegistration(
+        return $this->makePendingResourceRegistration(
             $registrar, "{$resource}.{$relation}", $controller, $options
         );
     }
@@ -195,11 +223,11 @@ class Orion
      * @return PendingResourceRegistration
      * @throws BindingResolutionException
      */
-    public function morphManyResource($resource, $relation, $controller, $options = [])
+    public function morphManyResource(string $resource, string $relation, string $controller, array $options = []): PendingResourceRegistration
     {
         $registrar = $this->resolveRegistrar(MorphManyRelationResourceRegistrar::class);
 
-        return new PendingResourceRegistration(
+        return $this->makePendingResourceRegistration(
             $registrar, "{$resource}.{$relation}", $controller, $options
         );
     }
@@ -214,11 +242,11 @@ class Orion
      * @return PendingResourceRegistration
      * @throws BindingResolutionException
      */
-    public function morphToResource($resource, $relation, $controller, $options = [])
+    public function morphToResource(string $resource, string $relation, string $controller, array $options = []): PendingResourceRegistration
     {
         $registrar = $this->resolveRegistrar(MorphToRelationResourceRegistrar::class);
 
-        return new PendingResourceRegistration(
+        return $this->makePendingResourceRegistration(
             $registrar, "{$resource}.{$relation}", $controller, $options
         );
     }
@@ -233,11 +261,11 @@ class Orion
      * @return PendingResourceRegistration
      * @throws BindingResolutionException
      */
-    public function morphToManyResource($resource, $relation, $controller, $options = [])
+    public function morphToManyResource(string $resource, string $relation, string $controller, array $options = []): PendingResourceRegistration
     {
         $registrar = $this->resolveRegistrar(MorphToManyRelationResourceRegistrar::class);
 
-        return new PendingResourceRegistration(
+        return $this->makePendingResourceRegistration(
             $registrar, "{$resource}.{$relation}", $controller, $options
         );
     }
@@ -252,11 +280,11 @@ class Orion
      * @return PendingResourceRegistration
      * @throws BindingResolutionException
      */
-    public function morphedByManyResource($resource, $relation, $controller, $options = [])
+    public function morphedByManyResource(string $resource, string $relation, string $controller, array $options = []): PendingResourceRegistration
     {
         $registrar = $this->resolveRegistrar(MorphToManyRelationResourceRegistrar::class);
 
-        return new PendingResourceRegistration(
+        return $this->makePendingResourceRegistration(
             $registrar, "{$resource}.{$relation}", $controller, $options
         );
     }

@@ -1,6 +1,9 @@
 <?php
 
 return [
+    'namespaces' => [
+        'models' => 'App\\Models\\',
+    ],
     'specs' => [
         'info' => [
             'title' => env('APP_NAME'),

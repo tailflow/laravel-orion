@@ -111,6 +111,17 @@ trait HandlesStandardOperations
     }
 
     /**
+     * Filters, sorts, and fetches the list of resources.
+     *
+     * @param Request $request
+     * @return CollectionResource
+     */
+    public function search(Request $request)
+    {
+        return $this->index($request);
+    }
+
+    /**
      * Creates new resource.
      *
      * @param Request $request
