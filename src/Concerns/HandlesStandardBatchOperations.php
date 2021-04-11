@@ -89,7 +89,7 @@ trait HandlesStandardBatchOperations
             $this->beforeSave($request, $entity);
 
             $this->performUpdate(
-                $request, $entity, $request->input("resources.{$entity->getKey()}")
+                $request, $entity, $request->input("resources.{$entity->{$this->keyName()}}")
             );
 
             $entity = $entity->fresh($requestedRelations);
