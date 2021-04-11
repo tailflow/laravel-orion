@@ -13,6 +13,7 @@ class ShowOperationBuilder extends OperationBuilder
     public function build(): Operation
     {
         $operation = $this->makeBaseOperation();
+        $operation->summary = 'Get resource';
 
         return $operation;
     }

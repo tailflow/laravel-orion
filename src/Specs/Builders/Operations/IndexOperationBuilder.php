@@ -9,10 +9,10 @@ use Orion\ValueObjects\Specs\Operation;
 
 class IndexOperationBuilder extends OperationBuilder
 {
-
     public function build(): Operation
     {
         $operation = $this->makeBaseOperation();
+        $operation->summary = 'Get a list of resources';
 
         return $operation;
     }

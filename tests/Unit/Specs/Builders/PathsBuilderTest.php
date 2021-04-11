@@ -23,6 +23,6 @@ class PathsBuilderTest extends TestCase
     /** @test */
     public function building_paths(): void
     {
-//        dd($this->pathsBuilder->build());
+        dd($this->pathsBuilder->build());
     }
 }

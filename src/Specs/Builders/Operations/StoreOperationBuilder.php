@@ -13,6 +13,7 @@ class StoreOperationBuilder extends OperationBuilder
     public function build(): Operation
     {
         $operation = $this->makeBaseOperation();
+        $operation->summary = 'Create resource';
 
         return $operation;
     }

@@ -9,12 +9,17 @@ use Illuminate\Contracts\Support\Arrayable;
 class Operation implements Arrayable
 {
     /** @var string */
-    public $path;
+    public $id;
+    /** @var string */
+    public $method;
+    /** @var string */
+    public $summary;
 
     public function toArray(): array
     {
         return [
-
+            'operationId' => $this->id,
+            'summary' => $this->summary
         ];
     }
 }

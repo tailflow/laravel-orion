@@ -11,8 +11,9 @@ class DestroyOperationBuilder extends OperationBuilder
 {
     public function build(): Operation
     {
-       $operation = $this->makeBaseOperation();
+        $operation = $this->makeBaseOperation();
+        $operation->summary = 'Delete resource';
 
-       return $operation;
+        return $operation;
     }
 }

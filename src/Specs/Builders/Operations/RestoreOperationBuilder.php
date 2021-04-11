@@ -13,6 +13,7 @@ class RestoreOperationBuilder extends OperationBuilder
     public function build(): Operation
     {
         $operation = $this->makeBaseOperation();
+        $operation->summary = 'Restore resource';
 
         return $operation;
     }

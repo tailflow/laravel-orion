@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Orion\Specs\Builders;
 
+use Illuminate\Routing\Route;
+use Illuminate\Routing\Router;
 use Orion\Specs\ResourcesCacheStore;
 use Orion\ValueObjects\Specs\Path;
 
@@ -12,9 +14,13 @@ class PathsBuilder
     /** @var ResourcesCacheStore */
     protected $resourcesCacheStore;
 
-    public function __construct(ResourcesCacheStore $resourcesCacheStore)
+    /** @var Router */
+    protected $router;
+
+    public function __construct(ResourcesCacheStore $resourcesCacheStore, Router $router)
     {
         $this->resourcesCacheStore = $resourcesCacheStore;
+        $this->router = $router;
     }
 
     /**
@@ -31,32 +37,55 @@ class PathsBuilder
                     continue;
                 }
 
-                $operationBuilder = $this->resolveOperationBuilder($resource->controller, $operationName);
+                $route = $this->resolveRoute($resource->controller, $operationName);
+
+                $operationBuilder = $this->resolveOperationBuilder($resource->controller, $operationName, $route);
                 $operation = $operationBuilder->build();
 
-                if (!$path = $paths->where('path', $operation->path)->first()) {
-                    $path = new Path($operation->path);
-                    $paths->push($path);
+                if (!$path = $paths->where('path', $route->uri())->first()) {
+                    $path = new Path($route->uri());
+                    $path->parameters = $this->buildParameters($route);
+
+                    $paths->put($path->path, $path);
                 }
 
-                /** @var Path $path */
-                $path->operations->push($operation);
+                $path->operations->put($operation->method, $operation);
             }
         }
 
-        return $paths->mapWithKeys(
-            function (Path $path) {
-                return [$path->path => $path->toArray()];
+        return $paths->toArray();
+    }
+
+    public function buildParameters(Route $route): array
+    {
+        $parameterNames = $route->parameterNames();
+
+        return collect($parameterNames)->map(
+            function (string $parameterName) use ($route) {
+                return [
+                    'schema' => [
+                        'type' => 'integer' //TODO: resolve from model key type
+                    ],
+                    'name' => $parameterName,
+                    'in' => 'path',
+                    'required' => strpos($route->uri(), "{{$parameterName}?}") === false,
+                ];
             }
         )->toArray();
+    }
+
+    public function resolveRoute(string $controller, string $operationName): Route
+    {
+        return $this->router->getRoutes()->getByAction("{$controller}@{$operationName}");
     }
 
     /**
      * @param string $controller
      * @param string $operation
+     * @param Route $route
      * @return OperationBuilder
      */
-    public function resolveOperationBuilder(string $controller, string $operation): OperationBuilder
+    public function resolveOperationBuilder(string $controller, string $operation, Route $route): OperationBuilder
     {
         $operationClassName = "Orion\\Specs\\Builders\\Operations\\".ucfirst($operation).'OperationBuilder';
 
@@ -65,6 +94,7 @@ class PathsBuilder
             [
                 'controller' => $controller,
                 'operation' => $operation,
+                'route' => $route,
             ]
         );
     }

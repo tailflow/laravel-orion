@@ -12,6 +12,9 @@ class Path implements Arrayable
     /** @var string */
     public $path;
 
+    /** @var array */
+    public $parameters;
+
     /** @var Operation[]|Collection */
     public $operations;
 
@@ -28,6 +31,11 @@ class Path implements Arrayable
 
     public function toArray(): array
     {
-        return $this->operations->toArray();
+        return array_merge(
+            [
+                'parameters' => $this->parameters,
+            ],
+            $this->operations->toArray()
+        );
     }
 }

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Orion\Specs\Builders;
 
 use Illuminate\Routing\Route;
-use Illuminate\Routing\Router;
+use Illuminate\Support\Arr;
 use Orion\ValueObjects\Specs\Operation;
 
 abstract class OperationBuilder
@@ -19,20 +19,15 @@ abstract class OperationBuilder
      */
     protected $operation;
     /**
-     * @var Router
-     */
-    protected $router;
-    /**
      * @var Route
      */
     protected $route;
 
-    public function __construct(string $controller, string $operation, Router $router)
+    public function __construct(string $controller, string $operation, Route $route)
     {
         $this->controller = $controller;
         $this->operation = $operation;
-        $this->router = $router;
-        $this->route = $this->resolveRoute();
+        $this->route = $route;
     }
 
     /**
@@ -53,15 +48,11 @@ abstract class OperationBuilder
 
     abstract public function build(): Operation;
 
-    protected function resolveRoute(): Route
-    {
-        return $this->router->getRoutes()->getByAction("{$this->controller}@{$this->operation}");
-    }
-
     protected function makeBaseOperation(): Operation
     {
         $operation = new Operation();
-        $operation->path = $this->route->uri();
+        $operation->id = $this->route->getName();
+        $operation->method = Arr::first($this->route->methods());
 
         return $operation;
     }
