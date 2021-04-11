@@ -126,7 +126,7 @@ trait HandlesRelationStandardBatchOperations
             /** @var Model $entity */
             $this->authorize('update', $entity);
 
-            $resource = $request->input("resources.{$entity->getKey()}");
+            $resource = $request->input("resources.{$entity->{$this->keyName()}}");
 
             $this->beforeUpdate($request, $entity);
             $this->beforeSave($request, $entity);
