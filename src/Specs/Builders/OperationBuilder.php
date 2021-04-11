@@ -9,6 +9,9 @@ use Illuminate\Routing\Route;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Orion\ValueObjects\Specs\Operation;
+use Orion\ValueObjects\Specs\Responses\ResourceNotFoundResponse;
+use Orion\ValueObjects\Specs\Responses\UnauthenticatedResponse;
+use Orion\ValueObjects\Specs\Responses\UnauthorizedResponse;
 
 abstract class OperationBuilder
 {
@@ -55,8 +58,18 @@ abstract class OperationBuilder
         $operation = new Operation();
         $operation->id = $this->route->getName();
         $operation->method = Arr::first($this->route->methods());
+        $operation->responses = $this->resolveResponses();
 
         return $operation;
+    }
+
+    protected function resolveResponses(): array
+    {
+        return [
+            new UnauthenticatedResponse(),
+            new UnauthorizedResponse(),
+            new ResourceNotFoundResponse(),
+        ];
     }
 
     protected function resolveResourceName(bool $pluralize = false): string

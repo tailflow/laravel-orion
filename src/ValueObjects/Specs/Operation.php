@@ -14,12 +14,19 @@ class Operation implements Arrayable
     public $method;
     /** @var string */
     public $summary;
+    /** @var Response[] */
+    public $responses;
 
     public function toArray(): array
     {
         return [
             'operationId' => $this->id,
-            'summary' => $this->summary
+            'summary' => $this->summary,
+            'responses' => collect($this->responses)->mapWithKeys(
+                function (Response $response) {
+                    return [$response->statusCode => $response->toArray()];
+                }
+            )->toArray(),
         ];
     }
 }

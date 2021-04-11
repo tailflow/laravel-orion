@@ -6,6 +6,8 @@ namespace Orion\Specs\Builders\Operations;
 
 use Orion\Specs\Builders\OperationBuilder;
 use Orion\ValueObjects\Specs\Operation;
+use Orion\ValueObjects\Specs\Responses\UnauthenticatedResponse;
+use Orion\ValueObjects\Specs\Responses\UnauthorizedResponse;
 
 class IndexOperationBuilder extends OperationBuilder
 {
@@ -15,5 +17,13 @@ class IndexOperationBuilder extends OperationBuilder
         $operation->summary = "Get a list of {$this->resolveResourceName(true)}";
 
         return $operation;
+    }
+
+    protected function resolveResponses(): array
+    {
+        return [
+            new UnauthenticatedResponse(),
+            new UnauthorizedResponse(),
+        ];
     }
 }
