@@ -13,7 +13,7 @@ class UpdateOperationBuilder extends OperationBuilder
     public function build(): Operation
     {
         $operation = $this->makeBaseOperation();
-        $operation->summary = 'Update resource';
+        $operation->summary = "Update {$this->resolveResourceName()}";
 
         return $operation;
     }

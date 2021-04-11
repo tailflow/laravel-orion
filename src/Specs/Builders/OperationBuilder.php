@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Orion\Specs\Builders;
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Routing\Route;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 use Orion\ValueObjects\Specs\Operation;
 
 abstract class OperationBuilder
@@ -55,5 +57,20 @@ abstract class OperationBuilder
         $operation->method = Arr::first($this->route->methods());
 
         return $operation;
+    }
+
+    protected function resolveResourceName(bool $pluralize = false): string
+    {
+        $resourceModelClass = app()->make($this->controller)->resolveResourceModelClass();
+        /** @var Model $resourceModel */
+        $resourceModel = app()->make($resourceModelClass);
+
+        $resourceName = Str::lower(Str::replaceArray('_', [' '], $resourceModel->getTable()));
+
+        if (!$pluralize) {
+            return Str::singular($resourceName);
+        }
+
+        return $resourceName;
     }
 }

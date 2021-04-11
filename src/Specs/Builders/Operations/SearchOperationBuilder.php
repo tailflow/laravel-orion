@@ -13,7 +13,7 @@ class SearchOperationBuilder extends OperationBuilder
     public function build(): Operation
     {
         $operation = $this->makeBaseOperation();
-        $operation->summary = 'Search for resources';
+        $operation->summary = "Search for {$this->resolveResourceName(true)}";
 
         return $operation;
     }

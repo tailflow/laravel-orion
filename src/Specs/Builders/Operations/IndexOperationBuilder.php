@@ -12,7 +12,7 @@ class IndexOperationBuilder extends OperationBuilder
     public function build(): Operation
     {
         $operation = $this->makeBaseOperation();
-        $operation->summary = 'Get a list of resources';
+        $operation->summary = "Get a list of {$this->resolveResourceName(true)}";
 
         return $operation;
     }
