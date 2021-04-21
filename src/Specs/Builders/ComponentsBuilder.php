@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 namespace Orion\Specs\Builders;
 
-use Carbon\Carbon;
 use Doctrine\DBAL\Schema\Column;
 use Illuminate\Database\Eloquent\Model;
+use Orion\Specs\Builders\Components\Properties\BooleanPropertyBuilder;
+use Orion\Specs\Builders\Components\Properties\DateTimePropertyBuilder;
+use Orion\Specs\Builders\Components\Properties\NumberPropertyBuilder;
+use Orion\Specs\Builders\Components\Properties\IntegerPropertyBuilder;
+use Orion\Specs\Builders\Components\Properties\StringPropertyBuilder;
+use Orion\Specs\Builders\Components\PropertyBuilder;
 use Orion\Specs\ResourcesCacheStore;
 use Orion\ValueObjects\Specs\Component;
-use Orion\ValueObjects\Specs\Schema\SchemaColumn;
-use Orion\ValueObjects\Specs\Schema\SchemaProperty;
 
 class ComponentsBuilder
 {
@@ -49,9 +52,15 @@ class ComponentsBuilder
         $resourceModel = app()->make($resourceModelClass);
 
         $columns = $this->getSchemaColumns($resourceModel);
-        $columns = $this->castSchemaColumnTypes($columns, $resourceModel);
 
-        return $this->buildPropertiesFromSchemaColumns($columns);
+        return collect($columns)->map(
+            function (Column $column) use ($resourceModel) {
+                $propertyBuilder = $this->resolvePropertyBuilder($column, $resourceModel);
+                $baseProperty = $propertyBuilder->makeBaseProperty($column);
+
+                return $propertyBuilder->build($column, $baseProperty);
+            }
+        )->toArray();
     }
 
     public function getSchemaColumns(Model $resourceModel): array
@@ -70,63 +79,23 @@ class ComponentsBuilder
         return $schema->listTableColumns($table, $database) ?? [];
     }
 
-    public function castSchemaColumnTypes(array $columns, Model $resourceModel): array
+    protected function resolvePropertyBuilder(Column $column, Model $resourceModel): PropertyBuilder
     {
-        return collect($columns)->map(
-            function (Column $column) use ($resourceModel) {
-                $name = $column->getName();
+        if (in_array($column->getName(), $resourceModel->getDates(), true)) {
+            return app()->make(DateTimePropertyBuilder::class);
+        }
 
-                if (in_array($name, $resourceModel->getDates(), true)) {
-                    $type = Carbon::class;
-                } else {
-                    $type = $column->getType()->getName();
-                    switch ($type) {
-                        case 'string':
-                        case 'text':
-                        case 'date':
-                        case 'time':
-                        case 'guid':
-                        case 'datetimetz':
-                        case 'datetime':
-                        case 'decimal':
-                            $type = 'string';
-                            break;
-                        case 'integer':
-                        case 'bigint':
-                        case 'smallint':
-                            $type = 'integer';
-                            break;
-                        case 'boolean':
-                            $type = 'boolean';
-                            break;
-                        case 'float':
-                            $type = 'float';
-                            break;
-                        default:
-                            $type = 'mixed';
-                            break;
-                    }
-                }
-
-                $schemaColumn = new SchemaColumn();
-                $schemaColumn->name = $column->getName();
-                $schemaColumn->type = $type;
-
-                return $schemaColumn;
-            }
-        )->toArray();
-    }
-
-    public function buildPropertiesFromSchemaColumns(array $columns): array
-    {
-        return collect($columns)->map(
-            function (SchemaColumn $column) {
-                $property = new SchemaProperty();
-                $property->name = $column->name;
-                $property->type = $column->type;
-
-                return $property;
-            }
-        )->toArray();
+        switch ($column->getType()->getName()) {
+            case 'integer':
+            case 'bigint':
+            case 'smallint':
+                return app()->make(IntegerPropertyBuilder::class);
+            case 'boolean':
+                return app()->make(BooleanPropertyBuilder::class);
+            case 'float':
+                return app()->make(NumberPropertyBuilder::class);
+            default:
+                return app()->make(StringPropertyBuilder::class);
+        }
     }
 }
