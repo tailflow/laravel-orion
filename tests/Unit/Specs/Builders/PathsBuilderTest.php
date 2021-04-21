@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Orion\Tests\Unit\Specs\Builders;
 
+use Orion\Specs\Builders\ComponentsBuilder;
 use Orion\Specs\Builders\PathsBuilder;
 use Orion\Tests\Unit\TestCase;
 
@@ -23,6 +24,6 @@ class PathsBuilderTest extends TestCase
     /** @test */
     public function building_paths(): void
     {
-        dd($this->pathsBuilder->build());
+//        dd(app()->make(ComponentsBuilder::class)->build());
     }
 }
