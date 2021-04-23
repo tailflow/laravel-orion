@@ -7,6 +7,6 @@ namespace Orion\Specs\Builders;
 class TagsBuilder
 {
     public function build(): array {
-
+        return [];
     }
 }

@@ -6,6 +6,7 @@ namespace Orion\Specs\Builders\Operations;
 
 use Orion\Specs\Builders\OperationBuilder;
 use Orion\ValueObjects\Specs\Operation;
+use Orion\ValueObjects\Specs\Responses\EntityResponse;
 use Orion\ValueObjects\Specs\Responses\UnauthenticatedResponse;
 use Orion\ValueObjects\Specs\Responses\UnauthorizedResponse;
 use Orion\ValueObjects\Specs\Responses\ValidationErrorResponse;
@@ -24,9 +25,10 @@ class StoreOperationBuilder extends OperationBuilder
     protected function resolveResponses(): array
     {
         return [
+            new EntityResponse($this->resolveResourceComponentBaseName(), 201),
             new UnauthenticatedResponse(),
             new UnauthorizedResponse(),
-            new ValidationErrorResponse()
+            new ValidationErrorResponse(),
         ];
     }
 }

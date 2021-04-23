@@ -4,16 +4,18 @@ declare(strict_types=1);
 
 namespace Orion\Specs\Builders;
 
+use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\Schema\Column;
+use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Database\Eloquent\Model;
-use Orion\Specs\Builders\Components\Properties\BooleanPropertyBuilder;
-use Orion\Specs\Builders\Components\Properties\DateTimePropertyBuilder;
-use Orion\Specs\Builders\Components\Properties\NumberPropertyBuilder;
-use Orion\Specs\Builders\Components\Properties\IntegerPropertyBuilder;
-use Orion\Specs\Builders\Components\Properties\StringPropertyBuilder;
 use Orion\Specs\Builders\Components\PropertyBuilder;
 use Orion\Specs\ResourcesCacheStore;
 use Orion\ValueObjects\Specs\Component;
+use Orion\ValueObjects\Specs\Schema\Properties\BooleanSchemaProperty;
+use Orion\ValueObjects\Specs\Schema\Properties\DateTimeSchemaProperty;
+use Orion\ValueObjects\Specs\Schema\Properties\IntegerSchemaProperty;
+use Orion\ValueObjects\Specs\Schema\Properties\NumberSchemaProperty;
+use Orion\ValueObjects\Specs\Schema\Properties\StringSchemaProperty;
 
 class ComponentsBuilder
 {
@@ -21,12 +23,27 @@ class ComponentsBuilder
      * @var ResourcesCacheStore
      */
     protected $resourcesCacheStore;
+    /**
+     * @var PropertyBuilder
+     */
+    protected $propertyBuilder;
 
-    public function __construct(ResourcesCacheStore $resourcesCacheStore)
+    /**
+     * ComponentsBuilder constructor.
+     *
+     * @param ResourcesCacheStore $resourcesCacheStore
+     * @param PropertyBuilder $propertyBuilder
+     */
+    public function __construct(ResourcesCacheStore $resourcesCacheStore, PropertyBuilder $propertyBuilder)
     {
         $this->resourcesCacheStore = $resourcesCacheStore;
+        $this->propertyBuilder = $propertyBuilder;
     }
 
+    /**
+     * @return array
+     * @throws BindingResolutionException
+     */
     public function build(): array
     {
         $resources = $this->resourcesCacheStore->getResources();
@@ -35,34 +52,98 @@ class ComponentsBuilder
 
         foreach ($resources as $resource) {
             $resourceModelClass = app()->make($resource->controller)->resolveResourceModelClass();
+            $resourceModel = app()->make($resourceModelClass);
 
-            $component = new Component();
-            $component->title = class_basename($resourceModelClass);
-            $component->type = 'object';
-            $component->properties = $this->getPropertiesFromSchema($resourceModelClass);
+            $baseModelComponent = $this->buildBaseModelComponent($resourceModel);
+            $modelResourceComponent = $this->buildModelResourceComponent($resourceModel);
 
-            $components->put($component->title, $component);
+            $components->put($baseModelComponent->title, $baseModelComponent);
+            $components->put($modelResourceComponent->title, $modelResourceComponent);
         }
 
         return $components->toArray();
     }
 
-    public function getPropertiesFromSchema(string $resourceModelClass): array
+    /**
+     * @param Model $resourceModel
+     * @return Component
+     */
+    public function buildBaseModelComponent(Model $resourceModel): Component
     {
-        $resourceModel = app()->make($resourceModelClass);
+        $component = new Component();
+        $component->title = class_basename($resourceModel);
+        $component->type = 'object';
+        $component->properties = $this->getPropertiesFromSchema(
+            $resourceModel,
+            [
+                $resourceModel->getKeyName(),
+                'created_at',
+                'updated_at',
+                'deleted_at',
+            ]
+        );
 
-        $columns = $this->getSchemaColumns($resourceModel);
-
-        return collect($columns)->map(
-            function (Column $column) use ($resourceModel) {
-                $propertyBuilder = $this->resolvePropertyBuilder($column, $resourceModel);
-                $baseProperty = $propertyBuilder->makeBaseProperty($column);
-
-                return $propertyBuilder->build($column, $baseProperty);
-            }
-        )->toArray();
+        return $component;
     }
 
+    /**
+     * @param Model $resourceModel
+     * @return Component
+     */
+    public function buildModelResourceComponent(Model $resourceModel): Component
+    {
+        $resourceComponentBaseName = class_basename($resourceModel);
+
+        $component = new Component();
+        $component->title = "{$resourceComponentBaseName}Resource";
+        $component->type = 'object';
+        //TODO: extract key and timestamps to a shared schema component
+        //TODO: handle soft deletes
+        $component->properties = [
+            'allOf' => [
+                ['$ref' => "#/components/schemas/{$resourceComponentBaseName}Resource"],
+                [
+                    'type' => 'object',
+                    'properties' => [
+                        $resourceModel->getKeyName() => [
+                            'type' => $resourceModel->getKeyType() === 'int' ? 'integer' : 'string',
+                        ],
+                        'created_at' => [
+                            'type' => 'string',
+                            'format' => 'date-time',
+                        ],
+                        'updated_at' => [
+                            'type' => 'string',
+                            'format' => 'date-time',
+                        ],
+                    ],
+                ],
+            ],
+        ];
+
+        return $component;
+    }
+
+    public function getPropertiesFromSchema(Model $resourceModel, array $exclude = []): array
+    {
+        $columns = $this->getSchemaColumns($resourceModel);
+
+        return collect($columns)->filter(
+            function (Column $column) use ($exclude) {
+                return !in_array($column->getName(), $exclude, true);
+            }
+        )->map(
+            function (Column $column) use ($resourceModel) {
+                $propertyClass = $this->resolveSchemaPropertyClass($column, $resourceModel);
+
+                return $this->propertyBuilder->build($column, $propertyClass);
+            }
+        )->values()->toArray();
+    }
+
+    /**
+     * @throws Exception
+     */
     public function getSchemaColumns(Model $resourceModel): array
     {
         $table = $resourceModel->getConnection()->getTablePrefix().$resourceModel->getTable();
@@ -79,23 +160,28 @@ class ComponentsBuilder
         return $schema->listTableColumns($table, $database) ?? [];
     }
 
-    protected function resolvePropertyBuilder(Column $column, Model $resourceModel): PropertyBuilder
+    /**
+     * @param Column $column
+     * @param Model $resourceModel
+     * @return string
+     */
+    protected function resolveSchemaPropertyClass(Column $column, Model $resourceModel): string
     {
         if (in_array($column->getName(), $resourceModel->getDates(), true)) {
-            return app()->make(DateTimePropertyBuilder::class);
+            return DateTimeSchemaProperty::class;
         }
 
         switch ($column->getType()->getName()) {
             case 'integer':
             case 'bigint':
             case 'smallint':
-                return app()->make(IntegerPropertyBuilder::class);
+                return IntegerSchemaProperty::class;
             case 'boolean':
-                return app()->make(BooleanPropertyBuilder::class);
+                return BooleanSchemaProperty::class;
             case 'float':
-                return app()->make(NumberPropertyBuilder::class);
+                return NumberSchemaProperty::class;
             default:
-                return app()->make(StringPropertyBuilder::class);
+                return StringSchemaProperty::class;
         }
     }
 }

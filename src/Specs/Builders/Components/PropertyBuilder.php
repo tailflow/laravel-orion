@@ -7,26 +7,19 @@ namespace Orion\Specs\Builders\Components;
 use Doctrine\DBAL\Schema\Column;
 use Orion\ValueObjects\Specs\Schema\SchemaProperty;
 
-abstract class PropertyBuilder
+class PropertyBuilder
 {
     /**
      * @param Column $column
-     * @param SchemaProperty $baseProperty
+     * @param string|SchemaProperty $concretePropertyClass
      *
      * @return SchemaProperty
      */
-    abstract public function build(Column $column, SchemaProperty $baseProperty);
-
-    /**
-     * @param Column $column
-     *
-     * @return SchemaProperty
-     */
-    public function makeBaseProperty(Column $column)
+    public function build(Column $column, string $concretePropertyClass): SchemaProperty
     {
-        $property = new SchemaProperty();
+        /** @var SchemaProperty $property */
+        $property = new $concretePropertyClass();
         $property->name = $column->getName();
-        $property->type = $column->getType();
 
         return $property;
     }

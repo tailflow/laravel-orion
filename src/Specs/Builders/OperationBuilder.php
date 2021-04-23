@@ -86,4 +86,9 @@ abstract class OperationBuilder
 
         return $resourceName;
     }
+
+    protected function resolveResourceComponentBaseName(): string
+    {
+        return class_basename(app()->make($this->controller)->resolveResourceModelClass());
+    }
 }

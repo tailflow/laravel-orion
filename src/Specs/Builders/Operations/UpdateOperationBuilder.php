@@ -6,6 +6,7 @@ namespace Orion\Specs\Builders\Operations;
 
 use Orion\Specs\Builders\OperationBuilder;
 use Orion\ValueObjects\Specs\Operation;
+use Orion\ValueObjects\Specs\Responses\EntityResponse;
 use Orion\ValueObjects\Specs\Responses\ResourceNotFoundResponse;
 use Orion\ValueObjects\Specs\Responses\UnauthenticatedResponse;
 use Orion\ValueObjects\Specs\Responses\UnauthorizedResponse;
@@ -25,6 +26,7 @@ class UpdateOperationBuilder extends OperationBuilder
     protected function resolveResponses(): array
     {
         return [
+            new EntityResponse($this->resolveResourceComponentBaseName()),
             new UnauthenticatedResponse(),
             new UnauthorizedResponse(),
             new ResourceNotFoundResponse(),

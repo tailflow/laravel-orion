@@ -7,6 +7,6 @@ namespace Orion\Specs\Builders;
 class SecurityBuilder
 {
     public function build(): array {
-
+        return [];
     }
 }

@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace Orion\Specs\Builders;
 
+use Illuminate\Contracts\Container\BindingResolutionException;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Routing\Route;
 use Illuminate\Routing\Router;
+use Orion\Http\Controllers\Controller;
 use Orion\Specs\ResourcesCacheStore;
 use Orion\ValueObjects\Specs\Path;
 
@@ -25,6 +28,7 @@ class PathsBuilder
 
     /**
      * @return array
+     * @throws BindingResolutionException
      */
     public function build(): array
     {
@@ -44,7 +48,7 @@ class PathsBuilder
 
                 if (!$path = $paths->where('path', $route->uri())->first()) {
                     $path = new Path($route->uri());
-                    $path->parameters = $this->buildParameters($route);
+                    $path->parameters = $this->buildParameters($route, $resource->controller);
 
                     $paths->put($path->path, $path);
                 }
@@ -56,15 +60,19 @@ class PathsBuilder
         return $paths->toArray();
     }
 
-    public function buildParameters(Route $route): array
+    public function buildParameters(Route $route, string $controllerClass): array
     {
         $parameterNames = $route->parameterNames();
+        /** @var Controller $controller */
+        $controller = app()->make($controllerClass);
+        /** @var Model $model */
+        $model = app()->make($controller->resolveResourceModelClass());
 
         return collect($parameterNames)->map(
-            function (string $parameterName) use ($route) {
+            function (string $parameterName) use ($route, $model) {
                 return [
                     'schema' => [
-                        'type' => 'integer' //TODO: resolve from model key type
+                        'type' => $model->getKeyType() === 'int' ? 'integer' : $model->getKeyType(),
                     ],
                     'name' => $parameterName,
                     'in' => 'path',
@@ -84,6 +92,7 @@ class PathsBuilder
      * @param string $operation
      * @param Route $route
      * @return OperationBuilder
+     * @throws BindingResolutionException
      */
     public function resolveOperationBuilder(string $controller, string $operation, Route $route): OperationBuilder
     {

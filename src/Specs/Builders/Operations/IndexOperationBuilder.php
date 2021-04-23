@@ -6,6 +6,7 @@ namespace Orion\Specs\Builders\Operations;
 
 use Orion\Specs\Builders\OperationBuilder;
 use Orion\ValueObjects\Specs\Operation;
+use Orion\ValueObjects\Specs\Responses\PaginatedCollectionResponse;
 use Orion\ValueObjects\Specs\Responses\UnauthenticatedResponse;
 use Orion\ValueObjects\Specs\Responses\UnauthorizedResponse;
 
@@ -22,6 +23,7 @@ class IndexOperationBuilder extends OperationBuilder
     protected function resolveResponses(): array
     {
         return [
+            new PaginatedCollectionResponse($this->resolveResourceComponentBaseName()),
             new UnauthenticatedResponse(),
             new UnauthorizedResponse(),
         ];

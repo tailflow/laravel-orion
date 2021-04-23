@@ -8,6 +8,6 @@ class ServersBuilder
 {
     public function build(): array
     {
-        return config('orion.specs.servers');
+        return config('orion.specs.servers', []);
     }
 }

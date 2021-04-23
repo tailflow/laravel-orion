@@ -6,6 +6,7 @@ namespace Orion\Specs\Builders\Operations;
 
 use Orion\Specs\Builders\OperationBuilder;
 use Orion\ValueObjects\Specs\Operation;
+use Orion\ValueObjects\Specs\Responses\EntityResponse;
 
 class ShowOperationBuilder extends OperationBuilder
 {
@@ -16,5 +17,15 @@ class ShowOperationBuilder extends OperationBuilder
         $operation->summary = "Get {$this->resolveResourceName()}";
 
         return $operation;
+    }
+
+    protected function resolveResponses(): array
+    {
+        return array_merge(
+            [
+                new EntityResponse($this->resolveResourceComponentBaseName()),
+            ],
+            parent::resolveResponses()
+        );
     }
 }

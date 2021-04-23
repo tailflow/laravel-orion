@@ -13,19 +13,6 @@ class SchemaProperty implements Arrayable
     /** @var string */
     public $type;
 
-    /**
-     * @param SchemaProperty $baseSchemaProperty
-     *
-     * @return static
-     */
-    public static function fromBase(SchemaProperty $baseSchemaProperty)
-    {
-        $schemaProperty = new static();
-        $schemaProperty->name = $baseSchemaProperty->name;
-
-        return $schemaProperty;
-    }
-
     public function toArray(): array
     {
         return [
