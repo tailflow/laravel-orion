@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Orion\Specs\Builders\Components;
+namespace Orion\Specs\Builders;
 
 use Doctrine\DBAL\Schema\Column;
 use Orion\ValueObjects\Specs\Schema\SchemaProperty;
