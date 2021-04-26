@@ -17,7 +17,6 @@ class CollectionResponse extends Response
         $this->resourceComponentBaseName = $resourceComponentBaseName;
     }
 
-    // TODO: move links and meta definitions to components
     public function toArray(): array
     {
         return array_merge(

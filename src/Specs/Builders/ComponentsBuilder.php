@@ -8,9 +8,14 @@ use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\Schema\Column;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
 use Orion\Specs\Builders\Components\PropertyBuilder;
 use Orion\Specs\ResourcesCacheStore;
 use Orion\ValueObjects\Specs\Component;
+use Orion\ValueObjects\Specs\Schema\Components\ResourceLinksComponent;
+use Orion\ValueObjects\Specs\Schema\Components\ResourceMetaComponent;
+use Orion\ValueObjects\Specs\Schema\Components\ResourceTimestampsComponent;
+use Orion\ValueObjects\Specs\Schema\Components\SoftDeletableResourceTimestampsComponent;
 use Orion\ValueObjects\Specs\Schema\Properties\BooleanSchemaProperty;
 use Orion\ValueObjects\Specs\Schema\Properties\DateTimeSchemaProperty;
 use Orion\ValueObjects\Specs\Schema\Properties\IntegerSchemaProperty;
@@ -43,6 +48,7 @@ class ComponentsBuilder
     /**
      * @return array
      * @throws BindingResolutionException
+     * @throws Exception
      */
     public function build(): array
     {
@@ -50,16 +56,9 @@ class ComponentsBuilder
 
         $components = collect([]);
 
-        foreach ($resources as $resource) {
-            $resourceModelClass = app()->make($resource->controller)->resolveResourceModelClass();
-            $resourceModel = app()->make($resourceModelClass);
-
-            $baseModelComponent = $this->buildBaseModelComponent($resourceModel);
-            $modelResourceComponent = $this->buildModelResourceComponent($resourceModel);
-
-            $components->put($baseModelComponent->title, $baseModelComponent);
-            $components->put($modelResourceComponent->title, $modelResourceComponent);
-        }
+        //TODO: use decorators?
+        $components = $this->buildModelComponents($components, $resources);
+        $components = $this->buildSharedComponents($components);
 
         return $components->toArray();
     }
@@ -67,20 +66,27 @@ class ComponentsBuilder
     /**
      * @param Model $resourceModel
      * @return Component
+     * @throws Exception
      */
-    public function buildBaseModelComponent(Model $resourceModel): Component
+    protected function buildBaseModelComponent(Model $resourceModel): Component
     {
         $component = new Component();
         $component->title = class_basename($resourceModel);
         $component->type = 'object';
+
+        $excludedColumns = [
+            $resourceModel->getKeyName(),
+            'created_at',
+            'updated_at',
+        ];
+
+        if (method_exists($resourceModel, 'trashed')) {
+            $excludedColumns[] = $resourceModel->getDeletedAtColumn();
+        }
+
         $component->properties = $this->getPropertiesFromSchema(
             $resourceModel,
-            [
-                $resourceModel->getKeyName(),
-                'created_at',
-                'updated_at',
-                'deleted_at',
-            ]
+            $excludedColumns,
         );
 
         return $component;
@@ -90,31 +96,23 @@ class ComponentsBuilder
      * @param Model $resourceModel
      * @return Component
      */
-    public function buildModelResourceComponent(Model $resourceModel): Component
+    protected function buildModelResourceComponent(Model $resourceModel): Component
     {
         $resourceComponentBaseName = class_basename($resourceModel);
+        $timestampsComponent = method_exists($resourceModel, 'trashed') ? 'SoftDeletableResourceTimestampsComponent' : 'ResourceTimestampsComponent';
 
         $component = new Component();
         $component->title = "{$resourceComponentBaseName}Resource";
         $component->type = 'object';
-        //TODO: extract key and timestamps to a shared schema component
-        //TODO: handle soft deletes
         $component->properties = [
             'allOf' => [
                 ['$ref' => "#/components/schemas/{$resourceComponentBaseName}Resource"],
+                ['$ref' => "#/components/schemas/{$timestampsComponent}"],
                 [
                     'type' => 'object',
                     'properties' => [
                         $resourceModel->getKeyName() => [
                             'type' => $resourceModel->getKeyType() === 'int' ? 'integer' : 'string',
-                        ],
-                        'created_at' => [
-                            'type' => 'string',
-                            'format' => 'date-time',
-                        ],
-                        'updated_at' => [
-                            'type' => 'string',
-                            'format' => 'date-time',
                         ],
                     ],
                 ],
@@ -124,7 +122,57 @@ class ComponentsBuilder
         return $component;
     }
 
-    public function getPropertiesFromSchema(Model $resourceModel, array $exclude = []): array
+    /**
+     * @param Collection $components
+     * @param array $resources
+     * @return Collection
+     * @throws Exception
+     * @throws BindingResolutionException
+     */
+    protected function buildModelComponents(Collection $components, array $resources): Collection
+    {
+        foreach ($resources as $resource) {
+            $resourceModelClass = app()->make($resource->controller)->resolveResourceModelClass();
+            $resourceModel = app()->make($resourceModelClass);
+
+            $baseModelComponent = $this->buildBaseModelComponent($resourceModel);
+            $components->put($baseModelComponent->title, $baseModelComponent);
+
+            $modelResourceComponent = $this->buildModelResourceComponent($resourceModel);
+            $components->put($modelResourceComponent->title, $modelResourceComponent);
+        }
+
+        return $components;
+    }
+
+    /**
+     * @param Collection $components
+     * @return Collection
+     */
+    protected function buildSharedComponents(Collection $components): Collection
+    {
+        $resourceLinksComponent = new ResourceLinksComponent();
+        $components->put($resourceLinksComponent->title, $resourceLinksComponent);
+
+        $resourceMetaComponent = new ResourceMetaComponent();
+        $components->put($resourceMetaComponent->title, $resourceMetaComponent);
+
+        $resourceTimestampsComponent = new ResourceTimestampsComponent();
+        $components->put($resourceTimestampsComponent->title, $resourceTimestampsComponent);
+
+        $softDeletableResourceTimestampComponent = new SoftDeletableResourceTimestampsComponent();
+        $components->put($softDeletableResourceTimestampComponent->title, $softDeletableResourceTimestampComponent);
+
+        return $components;
+    }
+
+    /**
+     * @param Model $resourceModel
+     * @param array $exclude
+     * @return array
+     * @throws Exception
+     */
+    protected function getPropertiesFromSchema(Model $resourceModel, array $exclude = []): array
     {
         $columns = $this->getSchemaColumns($resourceModel);
 
@@ -144,7 +192,7 @@ class ComponentsBuilder
     /**
      * @throws Exception
      */
-    public function getSchemaColumns(Model $resourceModel): array
+    protected function getSchemaColumns(Model $resourceModel): array
     {
         $table = $resourceModel->getConnection()->getTablePrefix().$resourceModel->getTable();
         $schema = $resourceModel->getConnection()->getDoctrineSchemaManager();

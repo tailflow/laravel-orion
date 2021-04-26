@@ -17,7 +17,6 @@ class PaginatedCollectionResponse extends Response
         $this->resourceComponentBaseName = $resourceComponentBaseName;
     }
 
-    // TODO: move links and meta definitions to components
     public function toArray(): array
     {
         return array_merge(
@@ -35,48 +34,10 @@ class PaginatedCollectionResponse extends Response
                                     ],
                                 ],
                                 'links' => [
-                                    'type' => 'object',
-                                    'properties' => [
-                                        'first' => [
-                                            'type' => 'string',
-                                            'format' => 'uri',
-                                        ],
-                                        'last' => [
-                                            'type' => 'string',
-                                            'format' => 'uri',
-                                        ],
-                                        'prev' => [
-                                            'type' => 'string',
-                                            'format' => 'uri',
-                                        ],
-                                        'next' => [
-                                            'type' => 'string',
-                                            'format' => 'uri',
-                                        ],
-                                    ],
+                                    '$ref' => "#/components/schemas/ResourceLinks",
                                 ],
                                 'meta' => [
-                                    'current_page' => [
-                                        'type' => 'integer',
-                                    ],
-                                    'from' => [
-                                        'type' => 'integer',
-                                    ],
-                                    'last_page' => [
-                                        'type' => 'integer',
-                                    ],
-                                    'path' => [
-                                        'type' => 'string',
-                                    ],
-                                    'per_page' => [
-                                        'type' => 'integer',
-                                    ],
-                                    'to' => [
-                                        'type' => 'integer',
-                                    ],
-                                    'total' => [
-                                        'type' => 'integer',
-                                    ],
+                                    '$ref' => "#/components/schemas/ResourceMeta",
                                 ],
                             ],
                         ],
