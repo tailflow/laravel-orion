@@ -2,10 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Orion\Specs\Builders\Components;
+namespace Orion\Specs\Builders\Components\Model;
 
 use Illuminate\Database\Eloquent\Model;
 use Orion\ValueObjects\Specs\Component;
+
+use function class_basename;
 
 class ModelResourceComponentBuilder
 {

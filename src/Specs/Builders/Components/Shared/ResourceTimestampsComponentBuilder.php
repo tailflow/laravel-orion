@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Orion\Specs\Builders\Components;
+namespace Orion\Specs\Builders\Components\Shared;
 
 use Orion\ValueObjects\Specs\Component;
 
-class SoftDeletableResourceTimestampsBuilder
+class ResourceTimestampsComponentBuilder
 {
     public function build(): Component
     {
         $component = new Component();
-        $component->title = 'SoftDeletableResourceTimestamps';
+        $component->title = 'ResourceTimestamps';
         $component->type = 'object';
         $component->properties = [
             'created_at' => [
@@ -19,10 +19,6 @@ class SoftDeletableResourceTimestampsBuilder
                 'format' => 'date-time',
             ],
             'updated_at' => [
-                'type' => 'string',
-                'format' => 'date-time',
-            ],
-            'deleted_at' => [
                 'type' => 'string',
                 'format' => 'date-time',
             ],

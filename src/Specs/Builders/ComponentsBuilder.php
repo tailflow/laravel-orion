@@ -6,12 +6,12 @@ namespace Orion\Specs\Builders;
 
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Support\Collection;
-use Orion\Specs\Builders\Components\BaseModelComponentBuilder;
-use Orion\Specs\Builders\Components\ModelResourceComponentBuilder;
-use Orion\Specs\Builders\Components\ResourceLinksComponentBuilder;
-use Orion\Specs\Builders\Components\ResourceMetaComponentBuilder;
-use Orion\Specs\Builders\Components\ResourceTimestampsComponentBuilder;
-use Orion\Specs\Builders\Components\SoftDeletableResourceTimestampsBuilder;
+use Orion\Specs\Builders\Components\Model\BaseModelComponentBuilder;
+use Orion\Specs\Builders\Components\Model\ModelResourceComponentBuilder;
+use Orion\Specs\Builders\Components\Shared\ResourceLinksComponentBuilder;
+use Orion\Specs\Builders\Components\Shared\ResourceMetaComponentBuilder;
+use Orion\Specs\Builders\Components\Shared\ResourceTimestampsComponentBuilder;
+use Orion\Specs\Builders\Components\Shared\SoftDeletableResourceTimestampsBuilder;
 use Orion\Specs\ResourcesCacheStore;
 
 class ComponentsBuilder

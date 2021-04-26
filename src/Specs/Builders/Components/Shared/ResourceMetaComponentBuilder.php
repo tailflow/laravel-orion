@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Orion\Specs\Builders\Components;
+namespace Orion\Specs\Builders\Components\Shared;
 
 use Orion\ValueObjects\Specs\Component;
 
