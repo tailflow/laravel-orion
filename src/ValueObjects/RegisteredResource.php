@@ -23,7 +23,7 @@ class RegisteredResource
             str_replace(
                 '_',
                 ' ',
-                Str::snake(Str::remove('Controller', class_basename($controller)))
+                Str::snake(str_replace('Controller', '', class_basename($controller)))
             )
         );
     }
