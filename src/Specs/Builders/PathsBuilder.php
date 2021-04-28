@@ -10,6 +10,7 @@ use Illuminate\Routing\Route;
 use Illuminate\Routing\Router;
 use Orion\Http\Controllers\Controller;
 use Orion\Specs\ResourcesCacheStore;
+use Orion\ValueObjects\RegisteredResource;
 use Orion\ValueObjects\Specs\Path;
 
 class PathsBuilder
@@ -43,7 +44,7 @@ class PathsBuilder
 
                 $route = $this->resolveRoute($resource->controller, $operationName);
 
-                $operationBuilder = $this->resolveOperationBuilder($resource->controller, $operationName, $route);
+                $operationBuilder = $this->resolveOperationBuilder($resource, $operationName, $route);
                 $operation = $operationBuilder->build();
 
                 if (!$path = $paths->where('path', $route->uri())->first()) {
@@ -88,20 +89,20 @@ class PathsBuilder
     }
 
     /**
-     * @param string $controller
+     * @param RegisteredResource $resource
      * @param string $operation
      * @param Route $route
      * @return OperationBuilder
      * @throws BindingResolutionException
      */
-    public function resolveOperationBuilder(string $controller, string $operation, Route $route): OperationBuilder
+    public function resolveOperationBuilder(RegisteredResource $resource, string $operation, Route $route): OperationBuilder
     {
         $operationClassName = "Orion\\Specs\\Builders\\Operations\\".ucfirst($operation).'OperationBuilder';
 
         return app()->makeWith(
             $operationClassName,
             [
-                'controller' => $controller,
+                'resource' => $resource,
                 'operation' => $operation,
                 'route' => $route,
             ]

@@ -16,6 +16,8 @@ class Operation implements Arrayable
     public $summary;
     /** @var Response[] */
     public $responses;
+    /** @var string[] */
+    public $tags;
 
     public function toArray(): array
     {
@@ -27,6 +29,7 @@ class Operation implements Arrayable
                     return [$response->statusCode => $response->toArray()];
                 }
             )->toArray(),
+            'tags' => $this->tags
         ];
     }
 }

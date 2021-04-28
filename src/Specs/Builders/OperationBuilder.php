@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Routing\Route;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
+use Orion\ValueObjects\RegisteredResource;
 use Orion\ValueObjects\Specs\Operation;
 use Orion\ValueObjects\Specs\Responses\ResourceNotFoundResponse;
 use Orion\ValueObjects\Specs\Responses\UnauthenticatedResponse;
@@ -16,9 +17,9 @@ use Orion\ValueObjects\Specs\Responses\UnauthorizedResponse;
 abstract class OperationBuilder
 {
     /**
-     * @var string
+     * @var RegisteredResource
      */
-    protected $controller;
+    protected $resource;
     /**
      * @var string
      */
@@ -28,19 +29,19 @@ abstract class OperationBuilder
      */
     protected $route;
 
-    public function __construct(string $controller, string $operation, Route $route)
+    public function __construct(RegisteredResource $resource, string $operation, Route $route)
     {
-        $this->controller = $controller;
+        $this->resource = $resource;
         $this->operation = $operation;
         $this->route = $route;
     }
 
     /**
-     * @return string
+     * @return RegisteredResource
      */
-    public function getController(): string
+    public function getResource(): RegisteredResource
     {
-        return $this->controller;
+        return $this->resource;
     }
 
     /**
@@ -59,6 +60,7 @@ abstract class OperationBuilder
         $operation->id = $this->route->getName();
         $operation->method = Arr::first($this->route->methods());
         $operation->responses = $this->resolveResponses();
+        $operation->tags = [$this->resource->tag];
 
         return $operation;
     }
@@ -74,7 +76,7 @@ abstract class OperationBuilder
 
     protected function resolveResourceName(bool $pluralize = false): string
     {
-        $resourceModelClass = app()->make($this->controller)->resolveResourceModelClass();
+        $resourceModelClass = app()->make($this->resource->controller)->resolveResourceModelClass();
         /** @var Model $resourceModel */
         $resourceModel = app()->make($resourceModelClass);
 
@@ -89,6 +91,6 @@ abstract class OperationBuilder
 
     protected function resolveResourceComponentBaseName(): string
     {
-        return class_basename(app()->make($this->controller)->resolveResourceModelClass());
+        return class_basename(app()->make($this->resource->controller)->resolveResourceModelClass());
     }
 }
