@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Orion\Tests\Unit\Specs\Builders;
 
 use Orion\Specs\Builders\PathsBuilder;
+use Orion\Specs\Builders\Builder;
 use Orion\Tests\Unit\TestCase;
 
 class PathsBuilderTest extends TestCase

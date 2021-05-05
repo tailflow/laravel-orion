@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace Orion\Specs\Builders\Components\Shared;
 
+use Orion\Specs\Builders\Components\SharedComponentBuilder;
 use Orion\ValueObjects\Specs\Component;
 
-class ResourceMetaComponentBuilder
+class ResourceMetaComponentBuilder extends SharedComponentBuilder
 {
     public function build(): Component
     {

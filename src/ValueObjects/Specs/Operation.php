@@ -14,6 +14,8 @@ class Operation implements Arrayable
     public $method;
     /** @var string */
     public $summary;
+    /** @var Request|null */
+    public $request;
     /** @var Response[] */
     public $responses;
     /** @var string[] */
@@ -24,6 +26,7 @@ class Operation implements Arrayable
         return [
             'operationId' => $this->id,
             'summary' => $this->summary,
+            'requestBody' => $this->request ? $this->request->toArray() : null,
             'responses' => collect($this->responses)->mapWithKeys(
                 function (Response $response) {
                     return [$response->statusCode => $response->toArray()];

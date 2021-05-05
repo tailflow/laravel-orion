@@ -6,12 +6,10 @@ namespace Orion\Specs\Builders;
 
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Support\Collection;
-use Orion\Specs\Builders\Components\Model\BaseModelComponentBuilder;
-use Orion\Specs\Builders\Components\Model\ModelResourceComponentBuilder;
+use Orion\Specs\Builders\Components\Model\BaseModelComponentComponentBuilder;
+use Orion\Specs\Builders\Components\Model\ModelResourceComponentComponentBuilder;
 use Orion\Specs\Builders\Components\Shared\ResourceLinksComponentBuilder;
 use Orion\Specs\Builders\Components\Shared\ResourceMetaComponentBuilder;
-use Orion\Specs\Builders\Components\Shared\ResourceTimestampsComponentBuilder;
-use Orion\Specs\Builders\Components\Shared\SoftDeletableResourceTimestampsBuilder;
 use Orion\Specs\ResourcesCacheStore;
 
 class ComponentsBuilder
@@ -25,8 +23,8 @@ class ComponentsBuilder
      * @const array MODEL_COMPONENT_BUILDERS
      */
     protected const MODEL_COMPONENT_BUILDERS = [
-        BaseModelComponentBuilder::class,
-        ModelResourceComponentBuilder::class,
+        BaseModelComponentComponentBuilder::class,
+        ModelResourceComponentComponentBuilder::class,
     ];
 
     /**
@@ -35,8 +33,6 @@ class ComponentsBuilder
     protected const SHARED_COMPONENT_BUILDERS = [
         ResourceLinksComponentBuilder::class,
         ResourceMetaComponentBuilder::class,
-        ResourceTimestampsComponentBuilder::class,
-        SoftDeletableResourceTimestampsBuilder::class,
     ];
 
     /**
