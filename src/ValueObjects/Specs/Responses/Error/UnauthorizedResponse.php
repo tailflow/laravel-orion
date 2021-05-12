@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Orion\ValueObjects\Specs\Responses;
+namespace Orion\ValueObjects\Specs\Responses\Error;
 
 use Orion\ValueObjects\Specs\Response;
 

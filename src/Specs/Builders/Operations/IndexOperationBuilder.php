@@ -7,9 +7,9 @@ namespace Orion\Specs\Builders\Operations;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Orion\Specs\Builders\OperationBuilder;
 use Orion\ValueObjects\Specs\Operation;
-use Orion\ValueObjects\Specs\Responses\PaginatedCollectionResponse;
-use Orion\ValueObjects\Specs\Responses\UnauthenticatedResponse;
-use Orion\ValueObjects\Specs\Responses\UnauthorizedResponse;
+use Orion\ValueObjects\Specs\Responses\Error\UnauthenticatedResponse;
+use Orion\ValueObjects\Specs\Responses\Error\UnauthorizedResponse;
+use Orion\ValueObjects\Specs\Responses\Success\PaginatedCollectionResponse;
 
 class IndexOperationBuilder extends OperationBuilder
 {

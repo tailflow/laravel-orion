@@ -63,10 +63,13 @@ class PathsBuilder
             foreach ($resource->operations as $operationName) {
                 $route = $this->resolveRoute($resource->controller, $operationName);
 
+                // TODO: batch operations
                 if (in_array($operationName, ['index', 'search', 'store', 'show', 'update', 'destroy', 'restore'])) {
                     $operationBuilder = $this->resolveStandardOperationBuilder($resource, $operationName, $route);
                 } elseif (in_array($operationName, ['associate', 'dissociate'])) {
                     $operationBuilder = $this->resolveRelationOneToManyOperationBuilder($resource, $operationName, $route);
+                } elseif (in_array($operationName, ['attach', 'detach', 'sync', 'toggle', 'updatePivot'])) {
+                    $operationBuilder = $this->resolveRelationManyToManyOperationBuilder($resource, $operationName, $route);
                 } else {
                     continue;
                 }
@@ -93,7 +96,7 @@ class PathsBuilder
      * @return array
      * @throws BindingResolutionException
      */
-    public function buildParameters(Route $route, string $controllerClass): array
+    protected function buildParameters(Route $route, string $controllerClass): array
     {
         $parameterNames = $route->parameterNames();
         /** @var Controller $controller */
@@ -113,7 +116,13 @@ class PathsBuilder
         )->toArray();
     }
 
-    public function buildParameter(Model $model, string $parameterName, Route $route): array
+    /**
+     * @param Model $model
+     * @param string $parameterName
+     * @param Route $route
+     * @return array
+     */
+    protected function buildParameter(Model $model, string $parameterName, Route $route): array
     {
         return [
             'schema' => [
@@ -130,7 +139,7 @@ class PathsBuilder
      * @param string $operationName
      * @return Route
      */
-    public function resolveRoute(string $controller, string $operationName): Route
+    protected function resolveRoute(string $controller, string $operationName): Route
     {
         return $this->router->getRoutes()->getByAction("{$controller}@{$operationName}");
     }
@@ -142,7 +151,7 @@ class PathsBuilder
      * @return OperationBuilder
      * @throws BindingResolutionException
      */
-    public function resolveStandardOperationBuilder(RegisteredResource $resource, string $operation, Route $route): OperationBuilder
+    protected function resolveStandardOperationBuilder(RegisteredResource $resource, string $operation, Route $route): OperationBuilder
     {
         $operationClassName = "Orion\\Specs\\Builders\\Operations\\".ucfirst($operation).'OperationBuilder';
 
@@ -156,9 +165,23 @@ class PathsBuilder
      * @return RelationOperationBuilder
      * @throws BindingResolutionException
      */
-    public function resolveRelationOneToManyOperationBuilder(RegisteredResource $resource, string $operation, Route $route): RelationOperationBuilder
+    protected function resolveRelationOneToManyOperationBuilder(RegisteredResource $resource, string $operation, Route $route): RelationOperationBuilder
     {
         $operationClassName = "Orion\\Specs\\Builders\\Operations\\Relations\\OneToMany\\".ucfirst($operation).'OperationBuilder';
+
+        return $this->relationOperationBuilderFactory->make($operationClassName, $resource, $operation, $route);
+    }
+
+    /**
+     * @param RegisteredResource $resource
+     * @param string $operation
+     * @param Route $route
+     * @return RelationOperationBuilder
+     * @throws BindingResolutionException
+     */
+    protected function resolveRelationManyToManyOperationBuilder(RegisteredResource $resource, string $operation, Route $route): RelationOperationBuilder
+    {
+        $operationClassName = "Orion\\Specs\\Builders\\Operations\\Relations\\ManyToMany\\".ucfirst($operation).'OperationBuilder';
 
         return $this->relationOperationBuilderFactory->make($operationClassName, $resource, $operation, $route);
     }

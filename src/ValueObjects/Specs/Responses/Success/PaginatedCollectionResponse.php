@@ -2,14 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Orion\ValueObjects\Specs\Responses;
+namespace Orion\ValueObjects\Specs\Responses\Success;
 
 use Orion\ValueObjects\Specs\Response;
 
-class CollectionResponse extends Response
+class PaginatedCollectionResponse extends Response
 {
-    public $statusCode = 200;
-    public $description = 'OK';
     public $resourceComponentBaseName;
 
     public function __construct(string $resourceComponentBaseName)
@@ -32,6 +30,12 @@ class CollectionResponse extends Response
                                     'items' => [
                                         '$ref' => "#/components/schemas/{$this->resourceComponentBaseName}Resource",
                                     ],
+                                ],
+                                'links' => [
+                                    '$ref' => "#/components/schemas/ResourceLinks",
+                                ],
+                                'meta' => [
+                                    '$ref' => "#/components/schemas/ResourceMeta",
                                 ],
                             ],
                         ],

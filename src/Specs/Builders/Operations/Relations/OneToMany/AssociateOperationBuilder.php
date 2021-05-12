@@ -7,11 +7,11 @@ namespace Orion\Specs\Builders\Operations\Relations\OneToMany;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Orion\Specs\Builders\RelationOperationBuilder;
 use Orion\ValueObjects\Specs\Operation;
-use Orion\ValueObjects\Specs\Responses\EntityResponse;
-use Orion\ValueObjects\Specs\Responses\ResourceNotFoundResponse;
-use Orion\ValueObjects\Specs\Responses\UnauthenticatedResponse;
-use Orion\ValueObjects\Specs\Responses\UnauthorizedResponse;
-use Orion\ValueObjects\Specs\Responses\ValidationErrorResponse;
+use Orion\ValueObjects\Specs\Responses\Error\ResourceNotFoundResponse;
+use Orion\ValueObjects\Specs\Responses\Error\UnauthenticatedResponse;
+use Orion\ValueObjects\Specs\Responses\Error\UnauthorizedResponse;
+use Orion\ValueObjects\Specs\Responses\Error\ValidationErrorResponse;
+use Orion\ValueObjects\Specs\Responses\Success\EntityResponse;
 
 class AssociateOperationBuilder extends RelationOperationBuilder
 {

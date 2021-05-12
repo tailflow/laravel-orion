@@ -12,9 +12,9 @@ use Illuminate\Support\Str;
 use Orion\ValueObjects\RegisteredResource;
 use Orion\ValueObjects\Specs\Operation;
 use Orion\ValueObjects\Specs\Request;
-use Orion\ValueObjects\Specs\Responses\ResourceNotFoundResponse;
-use Orion\ValueObjects\Specs\Responses\UnauthenticatedResponse;
-use Orion\ValueObjects\Specs\Responses\UnauthorizedResponse;
+use Orion\ValueObjects\Specs\Responses\Error\ResourceNotFoundResponse;
+use Orion\ValueObjects\Specs\Responses\Error\UnauthenticatedResponse;
+use Orion\ValueObjects\Specs\Responses\Error\UnauthorizedResponse;
 
 abstract class OperationBuilder
 {

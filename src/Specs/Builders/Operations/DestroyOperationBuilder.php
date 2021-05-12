@@ -7,7 +7,7 @@ namespace Orion\Specs\Builders\Operations;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Orion\Specs\Builders\OperationBuilder;
 use Orion\ValueObjects\Specs\Operation;
-use Orion\ValueObjects\Specs\Responses\EntityResponse;
+use Orion\ValueObjects\Specs\Responses\Success\EntityResponse;
 
 class DestroyOperationBuilder extends OperationBuilder
 {

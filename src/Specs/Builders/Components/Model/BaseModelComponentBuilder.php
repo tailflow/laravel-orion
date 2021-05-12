@@ -13,7 +13,7 @@ use Orion\ValueObjects\Specs\Component;
 
 use function class_basename;
 
-class BaseModelComponentComponentBuilder extends ModelComponentBuilder
+class BaseModelComponentBuilder extends ModelComponentBuilder
 {
     /**
      * @param Model $resourceModel
@@ -42,7 +42,7 @@ class BaseModelComponentComponentBuilder extends ModelComponentBuilder
      * @return array
      * @throws Exception
      */
-    public function getPropertiesFromSchema(Model $resourceModel, array $excludedColumns = []): array
+    protected function getPropertiesFromSchema(Model $resourceModel, array $excludedColumns = []): array
     {
         $columns = $this->schemaManager->getSchemaColumns($resourceModel);
 

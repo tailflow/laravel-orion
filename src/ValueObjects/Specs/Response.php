@@ -6,12 +6,12 @@ namespace Orion\ValueObjects\Specs;
 
 use Illuminate\Contracts\Support\Arrayable;
 
-class Response implements Arrayable
+abstract class Response implements Arrayable
 {
+    /** @var int */
+    public $statusCode = 200;
     /** @var string */
-    public $statusCode;
-    /** @var string */
-    public $description;
+    public $description = 'OK';
 
     public function toArray(): array
     {

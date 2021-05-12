@@ -9,10 +9,10 @@ use Orion\Specs\Builders\OperationBuilder;
 use Orion\ValueObjects\Specs\Operation;
 use Orion\ValueObjects\Specs\Request;
 use Orion\ValueObjects\Specs\Requests\StoreRequest;
-use Orion\ValueObjects\Specs\Responses\EntityResponse;
-use Orion\ValueObjects\Specs\Responses\UnauthenticatedResponse;
-use Orion\ValueObjects\Specs\Responses\UnauthorizedResponse;
-use Orion\ValueObjects\Specs\Responses\ValidationErrorResponse;
+use Orion\ValueObjects\Specs\Responses\Error\UnauthenticatedResponse;
+use Orion\ValueObjects\Specs\Responses\Error\UnauthorizedResponse;
+use Orion\ValueObjects\Specs\Responses\Error\ValidationErrorResponse;
+use Orion\ValueObjects\Specs\Responses\Success\EntityResponse;
 
 class StoreOperationBuilder extends OperationBuilder
 {

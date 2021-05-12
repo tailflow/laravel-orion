@@ -29,7 +29,7 @@ class Operation implements Arrayable
             'requestBody' => $this->request ? $this->request->toArray() : null,
             'responses' => collect($this->responses)->mapWithKeys(
                 function (Response $response) {
-                    return [$response->statusCode => $response->toArray()];
+                    return [(string)$response->statusCode => $response->toArray()];
                 }
             )->toArray(),
             'tags' => $this->tags

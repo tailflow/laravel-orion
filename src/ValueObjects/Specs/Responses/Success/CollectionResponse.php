@@ -2,19 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Orion\ValueObjects\Specs\Responses;
+namespace Orion\ValueObjects\Specs\Responses\Success;
 
 use Orion\ValueObjects\Specs\Response;
 
-class EntityResponse extends Response
+class CollectionResponse extends Response
 {
-    public $description = 'OK';
     public $resourceComponentBaseName;
 
-    public function __construct(string $resourceComponentBaseName, int $statusCode = 200)
+    public function __construct(string $resourceComponentBaseName)
     {
         $this->resourceComponentBaseName = $resourceComponentBaseName;
-        $this->statusCode = $statusCode;
     }
 
     public function toArray(): array
@@ -28,7 +26,10 @@ class EntityResponse extends Response
                             'type' => 'object',
                             'properties' => [
                                 'data' => [
-                                    '$ref' => "#/components/schemas/{$this->resourceComponentBaseName}Resource",
+                                    'type' => 'array',
+                                    'items' => [
+                                        '$ref' => "#/components/schemas/{$this->resourceComponentBaseName}Resource",
+                                    ],
                                 ],
                             ],
                         ],

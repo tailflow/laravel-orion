@@ -2,20 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Orion\Specs\Builders\Operations;
+namespace Orion\Specs\Builders\Operations\Relations\ManyToMany;
 
 use Illuminate\Contracts\Container\BindingResolutionException;
-use Orion\Specs\Builders\OperationBuilder;
+use Orion\Http\Controllers\RelationController;
+use Orion\Specs\Builders\RelationOperationBuilder;
 use Orion\ValueObjects\Specs\Operation;
-use Orion\ValueObjects\Specs\Request;
-use Orion\ValueObjects\Specs\Requests\UpdateRequest;
 use Orion\ValueObjects\Specs\Responses\Error\ResourceNotFoundResponse;
 use Orion\ValueObjects\Specs\Responses\Error\UnauthenticatedResponse;
 use Orion\ValueObjects\Specs\Responses\Error\UnauthorizedResponse;
 use Orion\ValueObjects\Specs\Responses\Error\ValidationErrorResponse;
-use Orion\ValueObjects\Specs\Responses\Success\EntityResponse;
+use Orion\ValueObjects\Specs\Responses\Success\Relation\ManyToMany\ToggleResponse;
 
-class UpdateOperationBuilder extends OperationBuilder
+class ToggleOperationBuilder extends RelationOperationBuilder
 {
     /**
      * @return Operation
@@ -24,18 +23,9 @@ class UpdateOperationBuilder extends OperationBuilder
     public function build(): Operation
     {
         $operation = $this->makeBaseOperation();
-        $operation->summary = "Update {$this->resolveResourceName()}";
+        $operation->summary = "Toggle {$this->resolveResourceName(true)}";
 
         return $operation;
-    }
-
-    /**
-     * @return Request|null
-     * @throws BindingResolutionException
-     */
-    protected function request(): ?Request
-    {
-        return new UpdateRequest($this->resolveResourceComponentBaseName());
     }
 
     /**
@@ -44,8 +34,12 @@ class UpdateOperationBuilder extends OperationBuilder
      */
     protected function responses(): array
     {
+        /** @var RelationController $controller */
+        $controller = app()->make($this->getResource()->controller);
+        $resourceModel = app()->make($controller->resolveResourceModelClass());
+
         return [
-            new EntityResponse($this->resolveResourceComponentBaseName()),
+            new ToggleResponse($resourceModel),
             new UnauthenticatedResponse(),
             new UnauthorizedResponse(),
             new ResourceNotFoundResponse(),
