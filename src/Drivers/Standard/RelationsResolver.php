@@ -79,11 +79,8 @@ class RelationsResolver implements \Orion\Contracts\RelationsResolver
     public function relationFromParamConstraint(string $paramConstraint): string
     {
         $paramConstraintParts = explode('.', $paramConstraint);
-        if (count($paramConstraintParts) === 2) {
-            return Arr::first($paramConstraintParts);
-        }
 
-        return implode('.', array_slice($paramConstraintParts, -1));
+        return implode('.', array_slice($paramConstraintParts, 0, count($paramConstraintParts) - 1));
     }
 
     /**
