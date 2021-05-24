@@ -233,9 +233,9 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
             return false;
         }
 
-        if ($request->has('with_trashed')) {
+        if (filter_var($request->query('with_trashed', false), FILTER_VALIDATE_BOOLEAN)) {
             $query->withTrashed();
-        } elseif ($request->has('only_trashed')) {
+        } elseif (filter_var($request->query('only_trashed', false), FILTER_VALIDATE_BOOLEAN)) {
             $query->onlyTrashed();
         }
 

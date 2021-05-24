@@ -78,7 +78,7 @@ class StandardIndexOperationsTest extends TestCase
     }
 
     /** @test */
-    public function getting_a_list_of_soft_deletable_resources_when_with_trashed_query_parameter_is_present(): void
+    public function getting_a_list_of_soft_deletable_resources_when_with_trashed_query_parameter_is_set_to_true(): void
     {
         $trashedPosts = factory(Post::class)->state('trashed')->times(5)->create();
         $posts = factory(Post::class)->times(5)->create();
@@ -94,7 +94,23 @@ class StandardIndexOperationsTest extends TestCase
     }
 
     /** @test */
-    public function getting_a_list_of_soft_deletable_resources_when_only_trashed_query_parameter_is_present(): void
+    public function getting_a_list_of_soft_deletable_resources_when_with_trashed_query_parameter_is_set_to_false(): void
+    {
+        factory(Post::class)->state('trashed')->times(5)->create();
+        $posts = factory(Post::class)->times(5)->create();
+
+        Gate::policy(Post::class, GreenPolicy::class);
+
+        $response = $this->get('/api/posts?with_trashed=false');
+
+        $this->assertResourcesPaginated(
+            $response,
+            $this->makePaginator($posts, 'posts')
+        );
+    }
+
+    /** @test */
+    public function getting_a_list_of_soft_deletable_resources_when_only_trashed_query_parameter_is_set_to_true(): void
     {
         $trashedPosts = factory(Post::class)->state('trashed')->times(5)->create();
         factory(Post::class)->times(5)->create();
@@ -106,6 +122,22 @@ class StandardIndexOperationsTest extends TestCase
         $this->assertResourcesPaginated(
             $response,
             $this->makePaginator($trashedPosts, 'posts')
+        );
+    }
+
+    /** @test */
+    public function getting_a_list_of_soft_deletable_resources_when_only_trashed_query_parameter_is_set_to_false(): void
+    {
+        factory(Post::class)->state('trashed')->times(5)->create();
+        $posts = factory(Post::class)->times(5)->create();
+
+        Gate::policy(Post::class, GreenPolicy::class);
+
+        $response = $this->get('/api/posts?only_trashed=false');
+
+        $this->assertResourcesPaginated(
+            $response,
+            $this->makePaginator($posts, 'posts')
         );
     }
 
