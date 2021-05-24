@@ -64,6 +64,18 @@ class StandardDeleteOperationsTest extends TestCase
     }
 
     /** @test */
+    public function trashing_a_single_soft_deletable_resource_when_authorized_with_force_set_to_false(): void
+    {
+        $post = factory(Post::class)->create(['user_id' => factory(User::class)->create()->id]);
+
+        Gate::policy(Post::class, GreenPolicy::class);
+
+        $response = $this->delete("/api/posts/{$post->id}?force=false");
+
+        $this->assertResourceTrashed($response, $post);
+    }
+
+    /** @test */
     public function trashing_a_single_soft_deletable_resource_with_custom_key(): void
     {
         $accessKey = factory(AccessKey::class)->create();

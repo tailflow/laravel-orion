@@ -28,7 +28,7 @@ trait InteractsWithSoftDeletes
      */
     protected function forceDeletes(Request $request, bool $softDeletes): bool
     {
-        return $softDeletes && $request->get('force');
+        return $softDeletes && filter_var($request->query('force', false), FILTER_VALIDATE_BOOLEAN);
     }
 
     /**
