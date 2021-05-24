@@ -8,6 +8,8 @@ use Illuminate\Contracts\Container\BindingResolutionException;
 use Orion\Http\Controllers\RelationController;
 use Orion\Specs\Builders\RelationOperationBuilder;
 use Orion\ValueObjects\Specs\Operation;
+use Orion\ValueObjects\Specs\Request;
+use Orion\ValueObjects\Specs\Requests\Relations\ManyToMany\ToggleRequest;
 use Orion\ValueObjects\Specs\Responses\Error\ResourceNotFoundResponse;
 use Orion\ValueObjects\Specs\Responses\Error\UnauthenticatedResponse;
 use Orion\ValueObjects\Specs\Responses\Error\UnauthorizedResponse;
@@ -26,6 +28,14 @@ class ToggleOperationBuilder extends RelationOperationBuilder
         $operation->summary = "Toggle {$this->resolveResourceName(true)}";
 
         return $operation;
+    }
+
+    /**
+     * @return Request|null
+     */
+    protected function request(): ?Request
+    {
+        return new ToggleRequest();
     }
 
     /**
