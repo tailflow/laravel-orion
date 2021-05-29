@@ -25,22 +25,22 @@ class PostsController extends Controller
         }
     }
 
-    protected function sortableBy() : array
+    public function sortableBy() : array
     {
         return ['title', 'user.name', 'meta->nested_field'];
     }
 
-    protected function filterableBy() : array
+    public function filterableBy() : array
     {
         return ['title', 'position', 'publish_at', 'user.name', 'meta->nested_field'];
     }
 
-    protected function searchableBy() : array
+    public function searchableBy() : array
     {
         return ['title', 'user.name'];
     }
 
-    protected function exposedScopes() : array
+    public function exposedScopes() : array
     {
         return ['published', 'publishedAt'];
     }

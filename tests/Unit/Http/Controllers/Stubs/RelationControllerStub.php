@@ -17,22 +17,22 @@ class RelationControllerStub extends RelationController
      */
     protected $relation = 'user';
 
-    protected function exposedScopes(): array
+    public function exposedScopes(): array
     {
         return ['testScope'];
     }
 
-    protected function filterableBy(): array
+    public function filterableBy(): array
     {
         return ['test_filterable_field'];
     }
 
-    protected function sortableBy(): array
+    public function sortableBy(): array
     {
         return ['test_sortable_field'];
     }
 
-    protected function searchableBy(): array
+    public function searchableBy(): array
     {
         return ['test_searchable_field'];
     }
@@ -42,7 +42,7 @@ class RelationControllerStub extends RelationController
         return ['testRelation'];
     }
 
-    protected function alwaysIncludes(): array
+    public function alwaysIncludes(): array
     {
         return ['testAlwaysIncludedRelation'];
     }

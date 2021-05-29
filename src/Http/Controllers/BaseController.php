@@ -155,7 +155,7 @@ abstract class BaseController extends \Illuminate\Routing\Controller
      *
      * @return array
      */
-    protected function exposedScopes(): array
+    public function exposedScopes(): array
     {
         return [];
     }
@@ -165,7 +165,7 @@ abstract class BaseController extends \Illuminate\Routing\Controller
      *
      * @return array
      */
-    protected function filterableBy(): array
+    public function filterableBy(): array
     {
         return [];
     }
@@ -175,7 +175,7 @@ abstract class BaseController extends \Illuminate\Routing\Controller
      *
      * @return array
      */
-    protected function sortableBy(): array
+    public function sortableBy(): array
     {
         return [];
     }
@@ -195,7 +195,7 @@ abstract class BaseController extends \Illuminate\Routing\Controller
      *
      * @return array
      */
-    protected function alwaysIncludes(): array
+    public function alwaysIncludes(): array
     {
         return [];
     }
@@ -205,7 +205,7 @@ abstract class BaseController extends \Illuminate\Routing\Controller
      *
      * @return int
      */
-    protected function limit(): int
+    public function limit(): int
     {
         return 15;
     }
@@ -215,7 +215,7 @@ abstract class BaseController extends \Illuminate\Routing\Controller
      *
      * @return array
      */
-    protected function searchableBy(): array
+    public function searchableBy(): array
     {
         return [];
     }

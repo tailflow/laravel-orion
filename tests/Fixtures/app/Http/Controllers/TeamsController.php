@@ -12,7 +12,7 @@ class TeamsController extends Controller
      */
     protected $model = Team::class;
 
-    protected function filterableBy() : array
+    public function filterableBy() : array
     {
         return ['*', 'company.*'];
     }

@@ -7,6 +7,8 @@ namespace Orion\Specs\Builders\Operations;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Orion\Specs\Builders\OperationBuilder;
 use Orion\ValueObjects\Specs\Operation;
+use Orion\ValueObjects\Specs\Request;
+use Orion\ValueObjects\Specs\Requests\SearchRequest;
 use Orion\ValueObjects\Specs\Responses\Error\UnauthenticatedResponse;
 use Orion\ValueObjects\Specs\Responses\Error\UnauthorizedResponse;
 use Orion\ValueObjects\Specs\Responses\Success\PaginatedCollectionResponse;
@@ -25,7 +27,14 @@ class SearchOperationBuilder extends OperationBuilder
         return $operation;
     }
 
-    //TODO: request
+    /**
+     * @return SearchRequest
+     * @throws BindingResolutionException
+     */
+    protected function request(): ?Request
+    {
+        return new SearchRequest($this->resource->controller);
+    }
 
     /**
      * @return array
