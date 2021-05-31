@@ -11,7 +11,7 @@ class PostPostImageController extends RelationController
 
     protected $relation = 'image';
 
-    protected function includes(): array
+    public function includes(): array
     {
         return ['post'];
     }

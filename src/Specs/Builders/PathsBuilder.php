@@ -141,27 +141,6 @@ class PathsBuilder
         )->toArray();
     }
 
-    protected function buildQueryParameters(Route $route, string $controllerClass): array
-    {
-        /** @var Controller $controller */
-        $controller = app()->make($controllerClass);
-        $softDeletes = $this->softDeletes($controller->resolveResourceModelClass());
-
-        switch ($route->getActionMethod()) {
-            case 'destroy':
-                return $softDeletes ? [$this->buildQueryParameter('boolean', 'force')] : [];
-            case 'index':
-            case 'search':
-            case 'show':
-                return $softDeletes ? [
-                    $this->buildQueryParameter('boolean', 'with_trashed'),
-                    $this->buildQueryParameter('boolean', 'only_trashed')
-                ] : [];
-            default:
-                return [];
-        }
-    }
-
     /**
      * @param Model $model
      * @param string $parameterName
@@ -180,9 +159,60 @@ class PathsBuilder
         ];
     }
 
-    protected function buildQueryParameter(string $type, string $name): array
+    /**
+     * @param Route $route
+     * @param string $controllerClass
+     * @return array
+     * @throws BindingResolutionException
+     */
+    protected function buildQueryParameters(Route $route, string $controllerClass): array
     {
-        return [
+        /** @var Controller $controller */
+        $controller = app()->make($controllerClass);
+
+        $softDeletes = $this->softDeletes($controller->resolveResourceModelClass());
+
+        $includes = array_merge($controller->alwaysIncludes(), $controller->includes());
+        $hasIncludes = (bool)count($includes);
+
+        switch ($route->getActionMethod()) {
+            case 'destroy':
+                $parameters = [];
+
+                if ($softDeletes) {
+                    $parameters[] = $this->buildQueryParameter('boolean', 'force');
+                }
+
+                if ($hasIncludes) {
+                    $parameters[] = $this->buildQueryParameter('string', 'include', $includes);
+                }
+
+                return $parameters;
+            case 'index':
+            case 'search':
+            case 'show':
+                $parameters = [];
+
+                if ($softDeletes) {
+                    $parameters[] = $this->buildQueryParameter('boolean', 'with_trashed');
+                    $parameters[] = $this->buildQueryParameter('boolean', 'only_trashed');
+                }
+
+                if ($hasIncludes) {
+                    $parameters[] = $this->buildQueryParameter('string', 'include', $includes);
+                }
+
+                return $parameters;
+            default:
+                return $hasIncludes ? [
+                    $this->buildQueryParameter('string', 'include', $includes)
+                ] : [];
+        }
+    }
+
+    protected function buildQueryParameter(string $type, string $name, array $enum = []): array
+    {
+        $descriptor = [
             'schema' => [
                 'type' => $type,
             ],
@@ -190,6 +220,12 @@ class PathsBuilder
             'in' => 'query',
             'required' => false,
         ];
+
+        if (count($enum)) {
+            $descriptor['schema']['enum'] = $enum;
+        }
+
+        return $descriptor;
     }
 
     /**

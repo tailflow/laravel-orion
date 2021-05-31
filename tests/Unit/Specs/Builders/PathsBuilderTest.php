@@ -18,12 +18,13 @@ class PathsBuilderTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+
         $this->pathsBuilder = app()->make(PathsBuilder::class);
     }
 
     /** @test */
     public function building_paths(): void
     {
-//        dd(app()->make(Builder::class)->build()['paths']['api/teams/search']);
+//        dd(app()->make(Builder::class)->build()['paths']['']);
     }
 }

@@ -185,7 +185,7 @@ abstract class BaseController extends \Illuminate\Routing\Controller
      *
      * @return array
      */
-    protected function includes(): array
+    public function includes(): array
     {
         return [];
     }

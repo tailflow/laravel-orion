@@ -37,7 +37,7 @@ class RelationControllerStub extends RelationController
         return ['test_searchable_field'];
     }
 
-    protected function includes(): array
+    public function includes(): array
     {
         return ['testRelation'];
     }

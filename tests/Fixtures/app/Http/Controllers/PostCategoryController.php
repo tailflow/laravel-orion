@@ -17,7 +17,7 @@ class PostCategoryController extends RelationController
      */
     protected $relation = 'category';
 
-    protected function includes(): array
+    public function includes(): array
     {
         return ['posts'];
     }
