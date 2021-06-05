@@ -25,6 +25,6 @@ class PathsBuilderTest extends TestCase
     /** @test */
     public function building_paths(): void
     {
-//        dd(app()->make(Builder::class)->build()['paths']);
+//        dd(app()->make(Builder::class)->build());
     }
 }

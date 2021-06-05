@@ -10,6 +10,7 @@ use Orion\Specs\Builders\Components\Model\BaseModelComponentBuilder;
 use Orion\Specs\Builders\Components\Model\ModelResourceComponentBuilder;
 use Orion\Specs\Builders\Components\Shared\ResourceLinksComponentBuilder;
 use Orion\Specs\Builders\Components\Shared\ResourceMetaComponentBuilder;
+use Orion\Specs\Builders\Components\Shared\SecurityComponentBuilder;
 use Orion\Specs\ResourcesCacheStore;
 
 class ComponentsBuilder
@@ -33,6 +34,7 @@ class ComponentsBuilder
     protected const SHARED_COMPONENT_BUILDERS = [
         ResourceLinksComponentBuilder::class,
         ResourceMetaComponentBuilder::class,
+        SecurityComponentBuilder::class
     ];
 
     /**
