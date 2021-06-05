@@ -10,7 +10,7 @@ use Orion\Specs\Builders\Builder;
 use Orion\Specs\Formatters\YamlFormatter;
 use Orion\Specs\Parsers\YamlParser;
 
-class BuildSpecs extends Command
+class BuildSpecsCommand extends Command
 {
     protected $signature = 'orion:specs {--path=}';
 
