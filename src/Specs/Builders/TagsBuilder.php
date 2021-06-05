@@ -24,7 +24,9 @@ class TagsBuilder
         $tags = collect([]);
 
         foreach ($resources as $resource) {
-            $tags[] = $resource->tag;
+            $tags[] = [
+                'name' => $resource->tag
+            ];
         }
 
         return $tags->toArray();
