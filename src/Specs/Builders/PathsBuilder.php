@@ -178,6 +178,7 @@ class PathsBuilder
 
         switch ($route->getActionMethod()) {
             case 'destroy':
+            case 'batchDestroy':
                 $parameters = [];
 
                 if ($softDeletes) {

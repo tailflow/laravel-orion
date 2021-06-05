@@ -112,7 +112,7 @@ abstract class OperationBuilder
         /** @var Model $resourceModel */
         $resourceModel = app()->make($resourceModelClass);
 
-        $resourceName = Str::lower(Str::replaceArray('_', [' '], $resourceModel->getTable()));
+        $resourceName = Str::lower(str_replace('_', ' ', $resourceModel->getTable()));
 
         if (!$pluralize) {
             return Str::singular($resourceName);
