@@ -3,6 +3,7 @@
 return [
     'namespaces' => [
         'models' => 'App\\Models\\',
+        'controllers' => 'App\\Http\\Controllers\\'
     ],
     'specs' => [
         'info' => [

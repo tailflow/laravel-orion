@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace Orion\Commands;
 
-use File;
 use Illuminate\Console\Command;
 use Orion\Specs\Builders\Builder;
 use Orion\Specs\Formatters\YamlFormatter;
 use Orion\Specs\Parsers\YamlParser;
+use Storage;
+use Throwable;
 
 class BuildSpecsCommand extends Command
 {
@@ -16,16 +17,28 @@ class BuildSpecsCommand extends Command
 
     protected $description = 'Generates API specifications in the given format';
 
+    /**
+     * @param Builder $builder
+     * @param YamlParser $parser
+     * @param YamlFormatter $formatter
+     * @return int
+     */
     public function handle(Builder $builder, YamlParser $parser, YamlFormatter $formatter): int
     {
         if (!$path = $this->option('path')) {
-            $path = base_path('specs/specs.yaml');
+            $path = 'specs/specs.yaml';
         }
 
         $existingSpecs = [];
 
-        if (File::exists($path)) {
-            $existingSpecs = $parser->parse(File::get($path));
+        try {
+            if (Storage::disk('local')->exists($path)) {
+                $existingSpecs = $parser->parse(Storage::disk('local')->get($path));
+            }
+        } catch (Throwable $exception) {
+            $this->error($exception->getMessage());
+
+            return -1;
         }
 
         $specs = array_merge_recursive(
@@ -35,7 +48,13 @@ class BuildSpecsCommand extends Command
 
         $formattedSpecs = $formatter->format($specs);
 
-        File::put($path, $formattedSpecs);
+        try {
+            Storage::disk('local')->put($path, $formattedSpecs);
+        } catch (Throwable $exception) {
+            $this->error($exception->getMessage());
+
+            return -1;
+        }
 
         return 0;
     }

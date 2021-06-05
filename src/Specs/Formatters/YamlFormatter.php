@@ -11,6 +11,6 @@ class YamlFormatter implements Formatter
 {
     public function format(array $specs): string
     {
-        return Yaml::dump($specs, 14);
+        return Yaml::dump($specs, 14, 2);
     }
 }

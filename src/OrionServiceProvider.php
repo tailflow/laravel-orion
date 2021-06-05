@@ -42,11 +42,14 @@ class OrionServiceProvider extends ServiceProvider
     {
         app('router')->pushMiddlewareToGroup('api', EnforceExpectsJson::class);
 
+
         $this->publishes(
             [
                 __DIR__ . '/../config/orion.php' => config_path('orion.php'),
             ]
         );
+
+        $this->mergeConfigFrom(__DIR__ . '/../config/orion.php', 'orion');
 
         if ($this->app->runningInConsole()) {
             $this->commands(
