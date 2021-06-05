@@ -19,7 +19,7 @@
     "require": {
         "php": ">=7.3",
         "ext-json": "*",
-        "doctrine/dbal": "^3.1",
+        "doctrine/dbal": "^2.9|^3.1",
         "illuminate/bus": ">=5.7",
         "illuminate/contracts": ">=5.7",
         "illuminate/database": ">=5.7",
