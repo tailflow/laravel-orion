@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Orion\Specs\Builders\Partials;
+namespace Orion\Specs\Builders\Partials\RequestBody;
 
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Orion\Http\Controllers\BaseController;

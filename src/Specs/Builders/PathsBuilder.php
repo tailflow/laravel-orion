@@ -5,12 +5,10 @@ declare(strict_types=1);
 namespace Orion\Specs\Builders;
 
 use Illuminate\Contracts\Container\BindingResolutionException;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Routing\Route;
 use Illuminate\Routing\Router;
-use Orion\Concerns\InteractsWithSoftDeletes;
-use Orion\Http\Controllers\Controller;
-use Orion\Http\Controllers\RelationController;
+use Orion\Specs\Builders\Partials\Parameters\PathParametersBuilder;
+use Orion\Specs\Builders\Partials\Parameters\QueryParametersBuilder;
 use Orion\Specs\Factories\OperationBuilderFactory;
 use Orion\Specs\Factories\RelationOperationBuilderFactory;
 use Orion\Specs\ResourcesCacheStore;
@@ -19,8 +17,6 @@ use Orion\ValueObjects\Specs\Path;
 
 class PathsBuilder
 {
-    use InteractsWithSoftDeletes;
-
     /** @var ResourcesCacheStore */
     protected $resourcesCacheStore;
 
@@ -33,6 +29,12 @@ class PathsBuilder
     /** @var RelationOperationBuilderFactory */
     protected $relationOperationBuilderFactory;
 
+    /** @var PathParametersBuilder */
+    protected $pathParametersBuilder;
+
+    /** @var QueryParametersBuilder */
+    protected $queryParametersBuilder;
+
     /**
      * PathsBuilder constructor.
      *
@@ -40,17 +42,23 @@ class PathsBuilder
      * @param Router $router
      * @param OperationBuilderFactory $operationBuilderFactory
      * @param RelationOperationBuilderFactory $relationOperationBuilderFactory
+     * @param PathParametersBuilder $pathParametersBuilder
+     * @param QueryParametersBuilder $queryParametersBuilder
      */
     public function __construct(
         ResourcesCacheStore $resourcesCacheStore,
         Router $router,
         OperationBuilderFactory $operationBuilderFactory,
-        RelationOperationBuilderFactory $relationOperationBuilderFactory
+        RelationOperationBuilderFactory $relationOperationBuilderFactory,
+        PathParametersBuilder $pathParametersBuilder,
+        QueryParametersBuilder $queryParametersBuilder
     ) {
         $this->resourcesCacheStore = $resourcesCacheStore;
         $this->router = $router;
         $this->operationBuilderFactory = $operationBuilderFactory;
         $this->relationOperationBuilderFactory = $relationOperationBuilderFactory;
+        $this->queryParametersBuilder = $queryParametersBuilder;
+        $this->pathParametersBuilder = $pathParametersBuilder;
     }
 
     /**
@@ -110,124 +118,10 @@ class PathsBuilder
      */
     protected function buildParameters(Route $route, string $controllerClass): array
     {
-        $pathParameters = $this->buildPathParameters($route, $controllerClass);
-        $queryParameters = $this->buildQueryParameters($route, $controllerClass);
+        $pathParameters = $this->pathParametersBuilder->build($route, $controllerClass);
+        $queryParameters = $this->queryParametersBuilder->build($route, $controllerClass);
 
         return collect($pathParameters)->merge($queryParameters)->toArray();
-    }
-
-    /**
-     * @param Route $route
-     * @param string $controllerClass
-     * @return array
-     * @throws BindingResolutionException
-     */
-    protected function buildPathParameters(Route $route, string $controllerClass): array
-    {
-        $parameterNames = $route->parameterNames();
-        /** @var Controller $controller */
-        $controller = app()->make($controllerClass);
-
-        return collect($parameterNames)->map(
-            function (string $parameterName, int $index) use ($route, $controller) {
-                /** @var Model $model */
-                if ($index === 0 && $controller instanceof RelationController) {
-                    $model = app()->make($controller->getModel());
-                } else {
-                    $model = app()->make($controller->resolveResourceModelClass());
-                }
-
-                return $this->buildPathParameter($model, $parameterName, $route);
-            }
-        )->toArray();
-    }
-
-    /**
-     * @param Model $model
-     * @param string $parameterName
-     * @param Route $route
-     * @return array
-     */
-    protected function buildPathParameter(Model $model, string $parameterName, Route $route): array
-    {
-        return [
-            'schema' => [
-                'type' => $model->getKeyType() === 'int' ? 'integer' : $model->getKeyType(),
-            ],
-            'name' => $parameterName,
-            'in' => 'path',
-            'required' => strpos($route->uri(), "{{$parameterName}?}") === false,
-        ];
-    }
-
-    /**
-     * @param Route $route
-     * @param string $controllerClass
-     * @return array
-     * @throws BindingResolutionException
-     */
-    protected function buildQueryParameters(Route $route, string $controllerClass): array
-    {
-        /** @var Controller $controller */
-        $controller = app()->make($controllerClass);
-
-        $softDeletes = $this->softDeletes($controller->resolveResourceModelClass());
-
-        $includes = array_merge($controller->alwaysIncludes(), $controller->includes());
-        $hasIncludes = (bool)count($includes);
-
-        switch ($route->getActionMethod()) {
-            case 'destroy':
-            case 'batchDestroy':
-                $parameters = [];
-
-                if ($softDeletes) {
-                    $parameters[] = $this->buildQueryParameter('boolean', 'force');
-                }
-
-                if ($hasIncludes) {
-                    $parameters[] = $this->buildQueryParameter('string', 'include', $includes);
-                }
-
-                return $parameters;
-            case 'index':
-            case 'search':
-            case 'show':
-                $parameters = [];
-
-                if ($softDeletes) {
-                    $parameters[] = $this->buildQueryParameter('boolean', 'with_trashed');
-                    $parameters[] = $this->buildQueryParameter('boolean', 'only_trashed');
-                }
-
-                if ($hasIncludes) {
-                    $parameters[] = $this->buildQueryParameter('string', 'include', $includes);
-                }
-
-                return $parameters;
-            default:
-                return $hasIncludes ? [
-                    $this->buildQueryParameter('string', 'include', $includes)
-                ] : [];
-        }
-    }
-
-    protected function buildQueryParameter(string $type, string $name, array $enum = []): array
-    {
-        $descriptor = [
-            'schema' => [
-                'type' => $type,
-            ],
-            'name' => $name,
-            'in' => 'query',
-            'required' => false,
-        ];
-
-        if (count($enum)) {
-            $descriptor['schema']['enum'] = $enum;
-        }
-
-        return $descriptor;
     }
 
     /**

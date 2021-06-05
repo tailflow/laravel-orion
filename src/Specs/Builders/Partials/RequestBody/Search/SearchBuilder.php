@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Orion\Specs\Builders\Partials\Search;
+namespace Orion\Specs\Builders\Partials\RequestBody\Search;
 
-use Orion\Specs\Builders\Partials\SearchPartialBuilder;
+use Orion\Specs\Builders\Partials\RequestBody\SearchPartialBuilder;
 
 class SearchBuilder extends SearchPartialBuilder
 {

@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Orion\ValueObjects\Specs\Requests;
 
 use Illuminate\Contracts\Container\BindingResolutionException;
-use Orion\Specs\Builders\Partials\Search\FiltersBuilder;
-use Orion\Specs\Builders\Partials\Search\ScopesBuilder;
-use Orion\Specs\Builders\Partials\Search\SearchBuilder;
-use Orion\Specs\Builders\Partials\Search\SortBuilder;
+use Orion\Specs\Builders\Partials\RequestBody\Search\FiltersBuilder;
+use Orion\Specs\Builders\Partials\RequestBody\Search\ScopesBuilder;
+use Orion\Specs\Builders\Partials\RequestBody\Search\SearchBuilder;
+use Orion\Specs\Builders\Partials\RequestBody\Search\SortBuilder;
 use Orion\ValueObjects\Specs\Request;
 
 class SearchRequest extends Request

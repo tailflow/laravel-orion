@@ -9,8 +9,6 @@ use Orion\Specs\Builders\OperationBuilder;
 use Orion\ValueObjects\Specs\Operation;
 use Orion\ValueObjects\Specs\Request;
 use Orion\ValueObjects\Specs\Requests\Batch\BatchStoreRequest;
-use Orion\ValueObjects\Specs\Responses\Error\UnauthenticatedResponse;
-use Orion\ValueObjects\Specs\Responses\Error\UnauthorizedResponse;
 use Orion\ValueObjects\Specs\Responses\Error\ValidationErrorResponse;
 use Orion\ValueObjects\Specs\Responses\Success\CollectionResponse;
 
@@ -43,11 +41,12 @@ class BatchStoreOperationBuilder extends OperationBuilder
      */
     protected function responses(): array
     {
-        return [
-            new CollectionResponse($this->resolveResourceComponentBaseName()),
-            new UnauthenticatedResponse(),
-            new UnauthorizedResponse(),
-            new ValidationErrorResponse(),
-        ];
+        return array_merge(
+            [
+                new CollectionResponse($this->resolveResourceComponentBaseName()),
+                new ValidationErrorResponse(),
+            ],
+            parent::responses()
+        );
     }
 }
