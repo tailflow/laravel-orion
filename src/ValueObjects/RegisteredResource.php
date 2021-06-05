@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Orion\ValueObjects;
 
+use Illuminate\Contracts\Container\BindingResolutionException;
+use Orion\Http\Controllers\Controller;
 use Str;
 
 class RegisteredResource
@@ -28,4 +30,17 @@ class RegisteredResource
         );
     }
 
+    /**
+     * @return string
+     * @throws BindingResolutionException
+     */
+    public function getKeyType(): string
+    {
+        /** @var Controller $controller */
+        $controller = app()->make($this->controller);
+
+        $model = app()->make($controller->resolveResourceModelClass());
+
+        return $model->getKeyType() === 'int' ? 'integer' : $model->getKeyType();
+    }
 }

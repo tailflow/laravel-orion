@@ -66,9 +66,10 @@ class PathsBuilder
             foreach ($resource->operations as $operationName) {
                 $route = $this->resolveRoute($resource->controller, $operationName);
 
-                // TODO: batch operations
                 if (in_array($operationName, ['index', 'search', 'store', 'show', 'update', 'destroy', 'restore'])) {
                     $operationBuilder = $this->resolveStandardOperationBuilder($resource, $operationName, $route);
+                } elseif (in_array($operationName, ['batchStore', 'batchUpdate', 'batchDestroy', 'batchRestore'])) {
+                    $operationBuilder = $this->resolveStandardBatchOperationBuilder($resource, $operationName, $route);
                 } elseif (in_array($operationName, ['associate', 'dissociate'])) {
                     $operationBuilder = $this->resolveRelationOneToManyOperationBuilder(
                         $resource,
@@ -251,6 +252,23 @@ class PathsBuilder
         Route $route
     ): OperationBuilder {
         $operationClassName = "Orion\\Specs\\Builders\\Operations\\" . ucfirst($operation) . 'OperationBuilder';
+
+        return $this->operationBuilderFactory->make($operationClassName, $resource, $operation, $route);
+    }
+
+    /**
+     * @param RegisteredResource $resource
+     * @param string $operation
+     * @param Route $route
+     * @return OperationBuilder
+     * @throws BindingResolutionException
+     */
+    protected function resolveStandardBatchOperationBuilder(
+        RegisteredResource $resource,
+        string $operation,
+        Route $route
+    ): OperationBuilder {
+        $operationClassName = "Orion\\Specs\\Builders\\Operations\\Batch\\" . ucfirst($operation) . 'OperationBuilder';
 
         return $this->operationBuilderFactory->make($operationClassName, $resource, $operation, $route);
     }
