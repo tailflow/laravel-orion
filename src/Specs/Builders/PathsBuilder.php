@@ -7,8 +7,7 @@ namespace Orion\Specs\Builders;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Routing\Route;
 use Illuminate\Routing\Router;
-use Orion\Specs\Builders\Partials\Parameters\PathParametersBuilder;
-use Orion\Specs\Builders\Partials\Parameters\QueryParametersBuilder;
+use Illuminate\Support\Str;
 use Orion\Specs\Factories\OperationBuilderFactory;
 use Orion\Specs\Factories\RelationOperationBuilderFactory;
 use Orion\Specs\ResourcesCacheStore;
@@ -29,12 +28,6 @@ class PathsBuilder
     /** @var RelationOperationBuilderFactory */
     protected $relationOperationBuilderFactory;
 
-    /** @var PathParametersBuilder */
-    protected $pathParametersBuilder;
-
-    /** @var QueryParametersBuilder */
-    protected $queryParametersBuilder;
-
     /**
      * PathsBuilder constructor.
      *
@@ -42,23 +35,17 @@ class PathsBuilder
      * @param Router $router
      * @param OperationBuilderFactory $operationBuilderFactory
      * @param RelationOperationBuilderFactory $relationOperationBuilderFactory
-     * @param PathParametersBuilder $pathParametersBuilder
-     * @param QueryParametersBuilder $queryParametersBuilder
      */
     public function __construct(
         ResourcesCacheStore $resourcesCacheStore,
         Router $router,
         OperationBuilderFactory $operationBuilderFactory,
-        RelationOperationBuilderFactory $relationOperationBuilderFactory,
-        PathParametersBuilder $pathParametersBuilder,
-        QueryParametersBuilder $queryParametersBuilder
+        RelationOperationBuilderFactory $relationOperationBuilderFactory
     ) {
         $this->resourcesCacheStore = $resourcesCacheStore;
         $this->router = $router;
         $this->operationBuilderFactory = $operationBuilderFactory;
         $this->relationOperationBuilderFactory = $relationOperationBuilderFactory;
-        $this->queryParametersBuilder = $queryParametersBuilder;
-        $this->pathParametersBuilder = $pathParametersBuilder;
     }
 
     /**
@@ -98,30 +85,15 @@ class PathsBuilder
 
                 if (!$path = $paths->where('path', $route->uri())->first()) {
                     $path = new Path($route->uri());
-                    $path->parameters = $this->buildParameters($route, $resource->controller);
 
-                    $paths->put($path->path, $path);
+                    $paths->put(Str::start($path->path, '/'), $path);
                 }
 
-                $path->operations->put($operation->method, $operation);
+                $path->operations->put(strtolower($operation->method), $operation);
             }
         }
 
         return $paths->toArray();
-    }
-
-    /**
-     * @param Route $route
-     * @param string $controllerClass
-     * @return array
-     * @throws BindingResolutionException
-     */
-    protected function buildParameters(Route $route, string $controllerClass): array
-    {
-        $pathParameters = $this->pathParametersBuilder->build($route, $controllerClass);
-        $queryParameters = $this->queryParametersBuilder->build($route, $controllerClass);
-
-        return collect($pathParameters)->merge($queryParameters)->toArray();
     }
 
     /**

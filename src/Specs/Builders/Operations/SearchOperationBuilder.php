@@ -33,7 +33,14 @@ class SearchOperationBuilder extends OperationBuilder
      */
     protected function request(): ?Request
     {
-        return new SearchRequest($this->resource->controller);
+        $request = new SearchRequest($this->resource->controller);
+        $descriptor = $request->toArray();
+
+        if (!($descriptor['content']['application/json']['schema']['properties'])) {
+            return null;
+        }
+
+        return $request;
     }
 
     /**

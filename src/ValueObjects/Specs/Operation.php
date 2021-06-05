@@ -12,6 +12,8 @@ class Operation implements Arrayable
     public $id;
     /** @var string */
     public $method;
+    /** @var array */
+    public $parameters;
     /** @var string */
     public $summary;
     /** @var Request|null */
@@ -23,10 +25,9 @@ class Operation implements Arrayable
 
     public function toArray(): array
     {
-        return [
-            'operationId' => $this->id,
+        $operation = [
+            'parameters' => $this->parameters,
             'summary' => $this->summary,
-            'requestBody' => $this->request ? $this->request->toArray() : null,
             'responses' => collect($this->responses)->mapWithKeys(
                 function (Response $response) {
                     return [(string)$response->statusCode => $response->toArray()];
@@ -34,5 +35,13 @@ class Operation implements Arrayable
             )->toArray(),
             'tags' => $this->tags
         ];
+
+        if ($this->request) {
+            $operation['requestBody'] = $this->request->toArray();
+        }
+
+        ksort($operation);
+
+        return $operation;
     }
 }

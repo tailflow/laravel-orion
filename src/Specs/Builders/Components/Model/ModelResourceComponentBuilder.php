@@ -8,22 +8,20 @@ use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\Schema\Column;
 use Illuminate\Database\Eloquent\Model;
 use Orion\Specs\Builders\Components\ModelComponentBuilder;
-use Orion\ValueObjects\Specs\Component;
-
-use function class_basename;
+use Orion\ValueObjects\Specs\ModelResourceComponent;
 
 class ModelResourceComponentBuilder extends ModelComponentBuilder
 {
     /**
      * @param Model $resourceModel
-     * @return Component
+     * @return ModelResourceComponent
      * @throws Exception
      */
-    public function build(Model $resourceModel): Component
+    public function build(Model $resourceModel): ModelResourceComponent
     {
         $resourceComponentBaseName = class_basename($resourceModel);
 
-        $component = new Component();
+        $component = new ModelResourceComponent();
         $component->title = "{$resourceComponentBaseName}Resource";
         $component->type = 'object';
         $component->properties = [

@@ -21,19 +21,22 @@ class ComponentsBuilder
     protected $resourcesCacheStore;
 
     /**
-     * @const array MODEL_COMPONENT_BUILDERS
+     * @const array SCHEMA_MODEL_COMPONENT_BUILDERS
      */
-    protected const MODEL_COMPONENT_BUILDERS = [
+    protected const SCHEMA_MODEL_COMPONENT_BUILDERS = [
         BaseModelComponentBuilder::class,
         ModelResourceComponentBuilder::class,
     ];
 
     /**
-     * @const array SHARED_COMPONENT_BUILDERS
+     * @const array SCHEMA_SHARED_COMPONENT_BUILDERS
      */
-    protected const SHARED_COMPONENT_BUILDERS = [
+    protected const SCHEMA_SHARED_COMPONENT_BUILDERS = [
         ResourceLinksComponentBuilder::class,
         ResourceMetaComponentBuilder::class,
+    ];
+
+    protected const ROOT_COMPONENT_BUILDERS = [
         SecurityComponentBuilder::class
     ];
 
@@ -57,10 +60,30 @@ class ComponentsBuilder
 
         $components = collect([]);
 
+        $components = $this->buildRootComponents($components);
         $components = $this->buildModelComponents($components, $resources);
         $components = $this->buildSharedComponents($components);
 
         return $components->toArray();
+    }
+
+
+    /**
+     * @param Collection $components
+     * @return Collection
+     * @throws BindingResolutionException
+     */
+    protected function buildRootComponents(Collection $components): Collection
+    {
+        foreach (static::ROOT_COMPONENT_BUILDERS as $sharedComponentBuilderClass) {
+            $sharedComponentBuilder = app()->make($sharedComponentBuilderClass);
+
+            $sharedComponent = $sharedComponentBuilder->build();
+
+            $components->put($sharedComponent->title, $sharedComponent);
+        }
+
+        return $components;
     }
 
     /**
@@ -71,18 +94,22 @@ class ComponentsBuilder
      */
     protected function buildModelComponents(Collection $components, array $resources): Collection
     {
+        $schemas = $components->get('schemas', []);
+
         foreach ($resources as $resource) {
             $resourceModelClass = app()->make($resource->controller)->resolveResourceModelClass();
             $resourceModel = app()->make($resourceModelClass);
 
-            foreach (static::MODEL_COMPONENT_BUILDERS as $modelComponentBuilderClass) {
+            foreach (static::SCHEMA_MODEL_COMPONENT_BUILDERS as $modelComponentBuilderClass) {
                 $modelComponentBuilder = app()->make($modelComponentBuilderClass);
 
                 $modelComponent = $modelComponentBuilder->build($resourceModel);
 
-                $components->put($modelComponent->title, $modelComponent);
+                $schemas[$modelComponent->title] = $modelComponent->toArray();
             }
         }
+
+        $components->put('schemas', $schemas);
 
         return $components;
     }
@@ -94,13 +121,17 @@ class ComponentsBuilder
      */
     protected function buildSharedComponents(Collection $components): Collection
     {
-        foreach (static::SHARED_COMPONENT_BUILDERS as $sharedComponentBuilderClass) {
+        $schemas = $components->get('schemas', []);
+
+        foreach (static::SCHEMA_SHARED_COMPONENT_BUILDERS as $sharedComponentBuilderClass) {
             $sharedComponentBuilder = app()->make($sharedComponentBuilderClass);
 
             $sharedComponent = $sharedComponentBuilder->build();
 
-            $components->put($sharedComponent->title, $sharedComponent);
+            $schemas[$sharedComponent->title] = $sharedComponent->toArray();
         }
+
+        $components->put('schemas', $schemas);
 
         return $components;
     }

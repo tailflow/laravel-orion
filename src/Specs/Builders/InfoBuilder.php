@@ -8,8 +8,11 @@ class InfoBuilder
 {
     public function build(): array
     {
-        return [
-            'title' => config('orion.specs.info.title'),
+        $info = [
+            'title' => config('orion.specs.info.title')
+        ];
+
+        $optionalFields = [
             'description' => config('orion.specs.info.description'),
             'termsOfService' => config('orion.specs.info.terms_of_service'),
             'contact' => [
@@ -23,5 +26,31 @@ class InfoBuilder
             ],
             'version' => config('orion.specs.info.version'),
         ];
+
+        $optionalFields = $this->resolveOptionalFields($optionalFields);
+
+        return array_merge($info, $optionalFields);
+    }
+
+    protected function resolveOptionalFields(array $optionalFields): array
+    {
+        $fields = [];
+
+        foreach ($optionalFields as $optionalField => $value) {
+            if (!$value) {
+                continue;
+            }
+
+            if (is_array($value)) {
+                $value = $this->resolveOptionalFields($value);
+                if (!$value) {
+                    continue;
+                }
+            }
+
+            $fields[$optionalField] = $value;
+        }
+
+        return $fields;
     }
 }
