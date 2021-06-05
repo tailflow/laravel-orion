@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace Orion\Tests\Unit\Specs\Builders;
 
-use Orion\Specs\Builders\PathsBuilder;
 use Orion\Specs\Builders\Builder;
+use Orion\Specs\Builders\PathsBuilder;
+use Orion\Specs\Formatters\YamlFormatter;
 use Orion\Tests\Unit\TestCase;
 
 class PathsBuilderTest extends TestCase
@@ -25,6 +26,7 @@ class PathsBuilderTest extends TestCase
     /** @test */
     public function building_paths(): void
     {
-//        dd(app()->make(Builder::class)->build());
+//        $specs = app()->make(Builder::class)->build();
+//        dd(app()->make(YamlWriter::class)->format($specs));
     }
 }
