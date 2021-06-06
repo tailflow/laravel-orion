@@ -72,8 +72,7 @@ class QueryParametersBuilder
                 'type' => $type,
             ],
             'name' => $name,
-            'in' => 'query',
-            'required' => false,
+            'in' => 'query'
         ];
 
         if (count($enum)) {

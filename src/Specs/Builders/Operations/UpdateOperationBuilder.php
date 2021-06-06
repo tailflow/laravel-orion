@@ -25,6 +25,7 @@ class UpdateOperationBuilder extends OperationBuilder
     {
         $operation = $this->makeBaseOperation();
         $operation->summary = "Update {$this->resolveResourceName()}";
+        $operation->method = 'patch';
 
         return $operation;
     }

@@ -22,12 +22,14 @@ class SortBuilder extends SearchPartialBuilder
                     'field' => [
                         'type' => 'string',
                         'enum' => $this->controller->sortableBy(),
-                        'required' => true
                     ],
                     'direction' => [
                         'type' => 'string',
                         'enum' => ['asc', 'desc']
                     ]
+                ],
+                'required' => [
+                    'field'
                 ]
             ]
         ];

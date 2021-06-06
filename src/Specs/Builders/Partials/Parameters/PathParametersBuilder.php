@@ -46,13 +46,15 @@ class PathParametersBuilder
      */
     protected function buildPathParameter(Model $model, string $parameterName, Route $route): array
     {
-        return [
+        $parameter = [
             'schema' => [
                 'type' => $model->getKeyType() === 'int' ? 'integer' : $model->getKeyType(),
             ],
             'name' => $parameterName,
             'in' => 'path',
-            'required' => strpos($route->uri(), "{{$parameterName}?}") === false,
+            'required' => true
         ];
+
+        return $parameter;
     }
 }

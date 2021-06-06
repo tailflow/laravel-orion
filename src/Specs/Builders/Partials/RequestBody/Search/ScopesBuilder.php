@@ -22,7 +22,6 @@ class ScopesBuilder extends SearchPartialBuilder
                     'name' => [
                         'type' => 'string',
                         'enum' => $this->controller->exposedScopes(),
-                        'required' => true
                     ],
                     'parameters' => [
                         'type' => 'array',
@@ -30,6 +29,9 @@ class ScopesBuilder extends SearchPartialBuilder
                             'type' => 'string'
                         ]
                     ]
+                ],
+                'required' => [
+                    'name'
                 ]
             ]
         ];
