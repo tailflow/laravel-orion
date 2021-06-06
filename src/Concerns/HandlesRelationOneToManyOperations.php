@@ -39,7 +39,7 @@ trait HandlesRelationOneToManyOperations
 
         $entity = $this->runAssociateFetchQuery($request, $query, $parentEntity, $request->get('related_key'));
 
-        $afterHookResult = $this->afterAssociate($request, $entity);
+        $afterHookResult = $this->afterAssociate($request, $parentEntity, $entity);
         if ($this->hookResponds($afterHookResult)) {
             return $afterHookResult;
         }
@@ -133,10 +133,11 @@ trait HandlesRelationOneToManyOperations
      * The hook is executed after associating relation resource.
      *
      * @param Request $request
+     * @param Model $parentEntity
      * @param Model $entity
      * @return mixed
      */
-    protected function afterAssociate(Request $request, Model $entity)
+    protected function afterAssociate(Request $request, Model $parentEntity, Model $entity)
     {
         return null;
     }
@@ -171,7 +172,7 @@ trait HandlesRelationOneToManyOperations
         $entity = $this->relationQueryBuilder->buildQuery($entity::query(), $request)
             ->with($this->relationsResolver->requestedRelations($request))->first();
 
-        $afterHookResult = $this->afterDissociate($request, $entity);
+        $afterHookResult = $this->afterDissociate($request, $parentEntity,$entity);
         if ($this->hookResponds($afterHookResult)) {
             return $afterHookResult;
         }
@@ -265,10 +266,11 @@ trait HandlesRelationOneToManyOperations
      * The hook is executed after dissociating relation resource.
      *
      * @param Request $request
+     * @param Model $parentEntity
      * @param Model $entity
      * @return mixed
      */
-    protected function afterDissociate(Request $request, Model $entity)
+    protected function afterDissociate(Request $request, Model $parentEntity, Model $entity)
     {
         return null;
     }

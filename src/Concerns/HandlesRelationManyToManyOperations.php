@@ -21,19 +21,24 @@ trait HandlesRelationManyToManyOperations
      */
     public function attach(Request $request, $parentKey)
     {
-        $beforeHookResult = $this->beforeAttach($request, $parentKey);
+        $parentQuery = $this->buildAttachParentFetchQuery($request, $parentKey);
+        $parentEntity = $this->runAttachParentFetchQuery($request, $parentQuery, $parentKey);
+
+        $beforeHookResult = $this->beforeAttach($request, $parentEntity);
         if ($this->hookResponds($beforeHookResult)) {
             return $beforeHookResult;
         }
 
-        $parentQuery = $this->buildAttachParentFetchQuery($request, $parentKey);
-        $parentEntity = $this->runAttachParentFetchQuery($request, $parentQuery, $parentKey);
-
         $this->authorize('update', $parentEntity);
 
-        $attachResult = $this->performAttach($request, $parentEntity, $request->get('resources'), $request->get('duplicates', false));
+        $attachResult = $this->performAttach(
+            $request,
+            $parentEntity,
+            $request->get('resources'),
+            $request->get('duplicates', false)
+        );
 
-        $afterHookResult = $this->afterAttach($request, $attachResult);
+        $afterHookResult = $this->afterAttach($request, $parentEntity, $attachResult);
         if ($this->hookResponds($afterHookResult)) {
             return $afterHookResult;
         }
@@ -49,10 +54,10 @@ trait HandlesRelationManyToManyOperations
      * The hook is executed before attaching relation resource.
      *
      * @param Request $request
-     * @param int|string $parentKey
+     * @param Model $parentEntity
      * @return mixed
      */
-    protected function beforeAttach(Request $request, $parentKey)
+    protected function beforeAttach(Request $request, Model $parentEntity)
     {
         return null;
     }
@@ -164,7 +169,9 @@ trait HandlesRelationManyToManyOperations
                  */
                 $resourceModel = $resourceModels->where($resourceKeyName, $resourceKey)->first();
 
-                return $resourceModel && (!$this->authorizationRequired() || Gate::forUser($this->resolveUser())->allows('view', $resourceModel));
+                return $resourceModel && (!$this->authorizationRequired() || Gate::forUser(
+                            $this->resolveUser()
+                        )->allows('view', $resourceModel));
             },
             ARRAY_FILTER_USE_KEY
         );
@@ -198,10 +205,11 @@ trait HandlesRelationManyToManyOperations
      * The hook is executed after attaching relation resource.
      *
      * @param Request $request
+     * @param Model $parentEntity
      * @param array $attachResult
      * @return mixed
      */
-    protected function afterAttach(Request $request, array &$attachResult)
+    protected function afterAttach(Request $request, Model $parentEntity, array &$attachResult)
     {
         return null;
     }
@@ -215,19 +223,19 @@ trait HandlesRelationManyToManyOperations
      */
     public function detach(Request $request, $parentKey)
     {
-        $beforeHookResult = $this->beforeDetach($request, $parentKey);
+        $parentQuery = $this->buildDetachParentFetchQuery($request, $parentKey);
+        $parentEntity = $this->runDetachParentFetchQuery($request, $parentQuery, $parentKey);
+
+        $beforeHookResult = $this->beforeDetach($request, $parentEntity);
         if ($this->hookResponds($beforeHookResult)) {
             return $beforeHookResult;
         }
-
-        $parentQuery = $this->buildDetachParentFetchQuery($request, $parentKey);
-        $parentEntity = $this->runDetachParentFetchQuery($request, $parentQuery, $parentKey);
 
         $this->authorize('update', $parentEntity);
 
         $detachResult = $this->performDetach($request, $parentEntity, $request->get('resources'));
 
-        $afterHookResult = $this->afterDetach($request, $detachResult);
+        $afterHookResult = $this->afterDetach($request, $parentEntity, $detachResult);
         if ($this->hookResponds($afterHookResult)) {
             return $afterHookResult;
         }
@@ -243,10 +251,10 @@ trait HandlesRelationManyToManyOperations
      * The hook is executed before detaching relation resource.
      *
      * @param Request $request
-     * @param int|string $parentKey
+     * @param Model $parentEntity
      * @return mixed
      */
-    protected function beforeDetach(Request $request, $parentKey)
+    protected function beforeDetach(Request $request, Model $parentEntity)
     {
         return null;
     }
@@ -297,10 +305,11 @@ trait HandlesRelationManyToManyOperations
      * The hook is executed after detaching relation resource.
      *
      * @param Request $request
+     * @param Model $parentEntity
      * @param array $detachResult
      * @return mixed
      */
-    protected function afterDetach(Request $request, array &$detachResult)
+    protected function afterDetach(Request $request, Model $parentEntity, array &$detachResult)
     {
         return null;
     }
@@ -314,19 +323,24 @@ trait HandlesRelationManyToManyOperations
      */
     public function sync(Request $request, $parentKey)
     {
-        $beforeHookResult = $this->beforeSync($request, $parentKey);
+        $parentQuery = $this->buildSyncParentFetchQuery($request, $parentKey);
+        $parentEntity = $this->runSyncParentFetchQuery($request, $parentQuery, $parentKey);
+
+        $beforeHookResult = $this->beforeSync($request, $parentEntity);
         if ($this->hookResponds($beforeHookResult)) {
             return $beforeHookResult;
         }
 
-        $parentQuery = $this->buildSyncParentFetchQuery($request, $parentKey);
-        $parentEntity = $this->runSyncParentFetchQuery($request, $parentQuery, $parentKey);
-
         $this->authorize('update', $parentEntity);
 
-        $syncResult = $this->performSync($request, $parentEntity, $request->get('resources'), $request->get('detaching', true));
+        $syncResult = $this->performSync(
+            $request,
+            $parentEntity,
+            $request->get('resources'),
+            $request->get('detaching', true)
+        );
 
-        $afterHookResult = $this->afterSync($request, $syncResult);
+        $afterHookResult = $this->afterSync($request, $parentEntity, $syncResult);
         if ($this->hookResponds($afterHookResult)) {
             return $afterHookResult;
         }
@@ -338,10 +352,10 @@ trait HandlesRelationManyToManyOperations
      * The hook is executed before syncing relation resources.
      *
      * @param Request $request
-     * @param int|string $parentKey
+     * @param Model $parentEntity
      * @return mixed
      */
-    protected function beforeSync(Request $request, $parentKey)
+    protected function beforeSync(Request $request, Model $parentEntity)
     {
         return null;
     }
@@ -398,10 +412,11 @@ trait HandlesRelationManyToManyOperations
      * The hook is executed after syncing relation resources.
      *
      * @param Request $request
+     * @param Model $parentEntity
      * @param array $syncResult
      * @return mixed
      */
-    protected function afterSync(Request $request, array &$syncResult)
+    protected function afterSync(Request $request, Model $parentEntity, array &$syncResult)
     {
         return null;
     }
@@ -415,19 +430,19 @@ trait HandlesRelationManyToManyOperations
      */
     public function toggle(Request $request, $parentKey)
     {
-        $beforeHookResult = $this->beforeToggle($request, $parentKey);
+        $parentQuery = $this->buildToggleParentFetchQuery($request, $parentKey);
+        $parentEntity = $this->runToggleParentFetchQuery($request, $parentQuery, $parentKey);
+
+        $beforeHookResult = $this->beforeToggle($request, $parentEntity);
         if ($this->hookResponds($beforeHookResult)) {
             return $beforeHookResult;
         }
-
-        $parentQuery = $this->buildToggleParentFetchQuery($request, $parentKey);
-        $parentEntity = $this->runToggleParentFetchQuery($request, $parentQuery, $parentKey);
 
         $this->authorize('update', $parentEntity);
 
         $toggleResult = $this->performToggle($request, $parentEntity, $request->get('resources'));
 
-        $afterHookResult = $this->afterToggle($request, $toggleResult);
+        $afterHookResult = $this->afterToggle($request, $parentEntity, $toggleResult);
         if ($this->hookResponds($afterHookResult)) {
             return $afterHookResult;
         }
@@ -439,10 +454,10 @@ trait HandlesRelationManyToManyOperations
      * The hook is executed before toggling relation resources.
      *
      * @param Request $request
-     * @param int|string $parentKey
+     * @param Model $parentEntity
      * @return mixed
      */
-    protected function beforeToggle(Request $request, $parentKey)
+    protected function beforeToggle(Request $request, Model $parentEntity)
     {
         return null;
     }
@@ -491,10 +506,11 @@ trait HandlesRelationManyToManyOperations
      * The hook is executed after toggling relation resources.
      *
      * @param Request $request
+     * @param Model $parentEntity
      * @param array $toggleResult
      * @return mixed
      */
-    protected function afterToggle(Request $request, array &$toggleResult)
+    protected function afterToggle(Request $request, Model $parentEntity, array &$toggleResult)
     {
         return null;
     }
@@ -509,13 +525,13 @@ trait HandlesRelationManyToManyOperations
      */
     public function updatePivot(Request $request, $parentKey, $relatedKey)
     {
-        $beforeHookResult = $this->beforeUpdatePivot($request, $relatedKey);
+        $parentQuery = $this->buildUpdatePivotParentFetchQuery($request, $parentKey);
+        $parentEntity = $this->runUpdatePivotParentFetchQuery($request, $parentQuery, $parentKey);
+
+        $beforeHookResult = $this->beforeUpdatePivot($request, $parentEntity);
         if ($this->hookResponds($beforeHookResult)) {
             return $beforeHookResult;
         }
-
-        $parentQuery = $this->buildUpdatePivotParentFetchQuery($request, $parentKey);
-        $parentEntity = $this->runUpdatePivotParentFetchQuery($request, $parentQuery, $parentKey);
 
         $query = $this->buildShowFetchQuery($request, $parentEntity, []);
         $entity = $this->runShowFetchQuery($request, $query, $parentEntity, $relatedKey);
@@ -524,7 +540,7 @@ trait HandlesRelationManyToManyOperations
 
         $updateResult = $this->performUpdatePivot($request, $parentEntity, $relatedKey, $request->get('pivot', []));
 
-        $afterHookResult = $this->afterUpdatePivot($request, $updateResult);
+        $afterHookResult = $this->afterUpdatePivot($request, $parentEntity, $updateResult);
         if ($this->hookResponds($afterHookResult)) {
             return $afterHookResult;
         }
@@ -540,10 +556,10 @@ trait HandlesRelationManyToManyOperations
      * The hook is executed before updating relation resource pivot.
      *
      * @param Request $request
-     * @param int|string $relatedKey
+     * @param Model $parentEntity
      * @return mixed
      */
-    protected function beforeUpdatePivot(Request $request, $relatedKey)
+    protected function beforeUpdatePivot(Request $request, Model $parentEntity)
     {
         return null;
     }
@@ -595,10 +611,11 @@ trait HandlesRelationManyToManyOperations
      * The hook is executed after updating relation resource pivot.
      *
      * @param Request $request
+     * @param Model $parentEntity
      * @param array $updateResult
      * @return mixed
      */
-    protected function afterUpdatePivot(Request $request, array &$updateResult)
+    protected function afterUpdatePivot(Request $request, Model $parentEntity, array &$updateResult)
     {
         return null;
     }

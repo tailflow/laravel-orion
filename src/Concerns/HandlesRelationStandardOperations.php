@@ -35,18 +35,23 @@ trait HandlesRelationStandardOperations
 
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
 
-        $beforeHookResult = $this->beforeIndex($request);
+        $parentQuery = $this->buildIndexParentFetchQuery($request, $parentKey);
+        $parentEntity = $this->runIndexParentFetchQuery($request, $parentQuery, $parentKey);
+
+        $beforeHookResult = $this->beforeIndex($request, $parentEntity);
         if ($this->hookResponds($beforeHookResult)) {
             return $beforeHookResult;
         }
 
-        $parentQuery = $this->buildIndexParentFetchQuery($request, $parentKey);
-        $parentEntity = $this->runIndexParentFetchQuery($request, $parentQuery, $parentKey);
-
         $this->authorize('view', $parentEntity);
 
         $query = $this->buildIndexFetchQuery($request, $parentEntity, $requestedRelations);
-        $entities = $this->runIndexFetchQuery($request, $query, $parentEntity, $this->paginator->resolvePaginationLimit($request));
+        $entities = $this->runIndexFetchQuery(
+            $request,
+            $query,
+            $parentEntity,
+            $this->paginator->resolvePaginationLimit($request)
+        );
 
         ($entities instanceof Paginator ? $entities->getCollection() : $entities)->transform(
             function ($entity) {
@@ -60,7 +65,7 @@ trait HandlesRelationStandardOperations
             }
         );
 
-        $afterHookResult = $this->afterIndex($request, $entities);
+        $afterHookResult = $this->afterIndex($request, $parentEntity, $entities);
         if ($this->hookResponds($afterHookResult)) {
             return $afterHookResult;
         }
@@ -77,9 +82,10 @@ trait HandlesRelationStandardOperations
      * The hooks is executed before fetching the list of relation resources.
      *
      * @param Request $request
+     * @param Model $parentEntity
      * @return mixed
      */
-    protected function beforeIndex(Request $request)
+    protected function beforeIndex(Request $request, Model $parentEntity)
     {
         return null;
     }
@@ -155,8 +161,11 @@ trait HandlesRelationStandardOperations
      * @param array $requestedRelations
      * @return Relation
      */
-    protected function buildRelationFetchQuery(Request $request, Model $parentEntity, array $requestedRelations): Relation
-    {
+    protected function buildRelationFetchQuery(
+        Request $request,
+        Model $parentEntity,
+        array $requestedRelations
+    ): Relation {
         return $this->relationQueryBuilder->buildQuery($this->newRelationQuery($parentEntity), $request)
             ->with($requestedRelations);
     }
@@ -192,10 +201,11 @@ trait HandlesRelationStandardOperations
      * The hooks is executed after fetching the list of relation resources.
      *
      * @param Request $request
+     * @param Model $parentEntity
      * @param Paginator|Collection $entities
      * @return mixed
      */
-    protected function afterIndex(Request $request, $entities)
+    protected function afterIndex(Request $request, Model $parentEntity, $entities)
     {
         return null;
     }
@@ -219,12 +229,12 @@ trait HandlesRelationStandardOperations
         /** @var Model $entity */
         $entity = new $resourceModelClass;
 
-        $beforeHookResult = $this->beforeStore($request, $entity);
+        $beforeHookResult = $this->beforeStore($request, $parentEntity, $entity);
         if ($this->hookResponds($beforeHookResult)) {
             return $beforeHookResult;
         }
 
-        $beforeSaveHookResult = $this->beforeSave($request, $entity);
+        $beforeSaveHookResult = $this->beforeSave($request, $parentEntity, $entity);
         if ($this->hookResponds($beforeSaveHookResult)) {
             return $beforeSaveHookResult;
         }
@@ -248,12 +258,12 @@ trait HandlesRelationStandardOperations
             $entity = $this->castPivotJsonFields($entity);
         }
 
-        $afterSaveHookResult = $this->afterSave($request, $entity);
+        $afterSaveHookResult = $this->afterSave($request, $parentEntity, $entity);
         if ($this->hookResponds($afterSaveHookResult)) {
             return $afterSaveHookResult;
         }
 
-        $afterHookResult = $this->afterStore($request, $entity);
+        $afterHookResult = $this->afterStore($request, $parentEntity, $entity);
         if ($this->hookResponds($afterHookResult)) {
             return $afterHookResult;
         }
@@ -292,10 +302,11 @@ trait HandlesRelationStandardOperations
      * The hook is executed before creating new relation resource.
      *
      * @param Request $request
+     * @param Model $parentEntity
      * @param Model $entity
      * @return mixed
      */
-    protected function beforeStore(Request $request, Model $entity)
+    protected function beforeStore(Request $request, Model $parentEntity, Model $entity)
     {
         return null;
     }
@@ -304,10 +315,11 @@ trait HandlesRelationStandardOperations
      * The hook is executed before creating or updating a relation resource.
      *
      * @param Request $request
+     * @param Model $parentEntity
      * @param Model $entity
      * @return mixed
      */
-    protected function beforeSave(Request $request, Model $entity)
+    protected function beforeSave(Request $request, Model $parentEntity, Model $entity)
     {
         return null;
     }
@@ -321,8 +333,13 @@ trait HandlesRelationStandardOperations
      * @param array $attributes
      * @param array $pivot
      */
-    protected function performStore(Request $request, Model $parentEntity, Model $entity, array $attributes, array $pivot): void
-    {
+    protected function performStore(
+        Request $request,
+        Model $parentEntity,
+        Model $entity,
+        array $attributes,
+        array $pivot
+    ): void {
         $entity->fill(
             Arr::except($attributes, array_keys($entity->getDirty()))
         );
@@ -339,10 +356,11 @@ trait HandlesRelationStandardOperations
      * The hook is executed after creating or updating a relation resource.
      *
      * @param Request $request
+     * @param Model $parentEntity
      * @param Model $entity
      * @return mixed
      */
-    protected function afterSave(Request $request, Model $entity)
+    protected function afterSave(Request $request, Model $parentEntity, Model $entity)
     {
         return null;
     }
@@ -351,10 +369,11 @@ trait HandlesRelationStandardOperations
      * The hook is executed after creating new relation resource.
      *
      * @param Request $request
+     * @param Model $parentEntity
      * @param Model $entity
      * @return mixed
      */
-    protected function afterStore(Request $request, Model $entity)
+    protected function afterStore(Request $request, Model $parentEntity, Model $entity)
     {
         return null;
     }
@@ -369,13 +388,13 @@ trait HandlesRelationStandardOperations
      */
     public function show(Request $request, $parentKey, $relatedKey = null)
     {
-        $beforeHookResult = $this->beforeShow($request, $relatedKey);
+        $parentQuery = $this->buildShowParentFetchQuery($request, $parentKey);
+        $parentEntity = $this->runShowParentFetchQuery($request, $parentQuery, $parentKey);
+
+        $beforeHookResult = $this->beforeShow($request, $parentEntity, $relatedKey);
         if ($this->hookResponds($beforeHookResult)) {
             return $beforeHookResult;
         }
-
-        $parentQuery = $this->buildShowParentFetchQuery($request, $parentKey);
-        $parentEntity = $this->runShowParentFetchQuery($request, $parentQuery, $parentKey);
 
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
 
@@ -390,7 +409,7 @@ trait HandlesRelationStandardOperations
             $entity = $this->castPivotJsonFields($entity);
         }
 
-        $afterHookResult = $this->afterShow($request, $entity);
+        $afterHookResult = $this->afterShow($request, $parentEntity, $entity);
         if ($this->hookResponds($afterHookResult)) {
             return $afterHookResult;
         }
@@ -404,10 +423,11 @@ trait HandlesRelationStandardOperations
      * The hook is executed before fetching relation resource.
      *
      * @param Request $request
+     * @param Model $parentEntity
      * @param int|string|null $key
      * @return mixed
      */
-    protected function beforeShow(Request $request, $key)
+    protected function beforeShow(Request $request, Model $parentEntity, $key)
     {
         return null;
     }
@@ -513,10 +533,11 @@ trait HandlesRelationStandardOperations
      * The hook is executed after fetching a relation resource
      *
      * @param Request $request
+     * @param Model $parentEntity
      * @param Model $entity
      * @return mixed
      */
-    protected function afterShow(Request $request, Model $entity)
+    protected function afterShow(Request $request, Model $parentEntity, Model $entity)
     {
         return null;
     }
@@ -541,12 +562,12 @@ trait HandlesRelationStandardOperations
 
         $this->authorize('update', $entity);
 
-        $beforeHookResult = $this->beforeUpdate($request, $entity);
+        $beforeHookResult = $this->beforeUpdate($request, $parentEntity, $entity);
         if ($this->hookResponds($beforeHookResult)) {
             return $beforeHookResult;
         }
 
-        $beforeSaveHookResult = $this->beforeSave($request, $entity);
+        $beforeSaveHookResult = $this->beforeSave($request, $parentEntity, $entity);
         if ($this->hookResponds($beforeSaveHookResult)) {
             return $beforeSaveHookResult;
         }
@@ -567,12 +588,12 @@ trait HandlesRelationStandardOperations
             $entity = $this->castPivotJsonFields($entity);
         }
 
-        $afterSaveHookResult = $this->afterSave($request, $entity);
+        $afterSaveHookResult = $this->afterSave($request, $parentEntity, $entity);
         if ($this->hookResponds($afterSaveHookResult)) {
             return $afterSaveHookResult;
         }
 
-        $afterHookResult = $this->afterUpdate($request, $entity);
+        $afterHookResult = $this->afterUpdate($request, $parentEntity, $entity);
         if ($this->hookResponds($afterHookResult)) {
             return $afterHookResult;
         }
@@ -638,10 +659,11 @@ trait HandlesRelationStandardOperations
      * The hook is executed before updating a relation resource.
      *
      * @param Request $request
+     * @param Model $parentEntity
      * @param Model $entity
      * @return mixed
      */
-    protected function beforeUpdate(Request $request, Model $entity)
+    protected function beforeUpdate(Request $request, Model $parentEntity, Model $entity)
     {
         return null;
     }
@@ -655,8 +677,13 @@ trait HandlesRelationStandardOperations
      * @param array $attributes
      * @param array $pivot
      */
-    protected function performUpdate(Request $request, Model $parentEntity, Model $entity, array $attributes, array $pivot): void
-    {
+    protected function performUpdate(
+        Request $request,
+        Model $parentEntity,
+        Model $entity,
+        array $attributes,
+        array $pivot
+    ): void {
         $entity->fill(
             Arr::except($attributes, array_keys($entity->getDirty()))
         );
@@ -674,10 +701,11 @@ trait HandlesRelationStandardOperations
      * The hook is executed after updating a relation resource.
      *
      * @param Request $request
+     * @param Model $parentEntity
      * @param Model $entity
      * @return mixed
      */
-    protected function afterUpdate(Request $request, Model $entity)
+    protected function afterUpdate(Request $request, Model $parentEntity, Model $entity)
     {
         return null;
     }
@@ -710,7 +738,7 @@ trait HandlesRelationStandardOperations
 
         $this->authorize($forceDeletes ? 'forceDelete' : 'delete', $entity);
 
-        $beforeHookResult = $this->beforeDestroy($request, $entity);
+        $beforeHookResult = $this->beforeDestroy($request, $parentEntity, $entity);
         if ($this->hookResponds($beforeHookResult)) {
             return $beforeHookResult;
         }
@@ -718,7 +746,9 @@ trait HandlesRelationStandardOperations
         if (!$forceDeletes) {
             $this->performDestroy($entity);
             if ($softDeletes) {
-                $entity = $this->newRelationQuery($parentEntity)->withTrashed()->with($requestedRelations)->find($entity->id);
+                $entity = $this->newRelationQuery($parentEntity)->withTrashed()->with($requestedRelations)->find(
+                    $entity->id
+                );
             }
         } else {
             $this->performForceDestroy($entity);
@@ -730,7 +760,7 @@ trait HandlesRelationStandardOperations
             $entity = $this->castPivotJsonFields($entity);
         }
 
-        $afterHookResult = $this->afterDestroy($request, $entity);
+        $afterHookResult = $this->afterDestroy($request, $parentEntity, $entity);
         if ($this->hookResponds($afterHookResult)) {
             return $afterHookResult;
         }
@@ -774,8 +804,12 @@ trait HandlesRelationStandardOperations
      * @param bool $softDeletes
      * @return Relation
      */
-    protected function buildDestroyFetchQuery(Request $request, Model $parentEntity, array $requestedRelations, bool $softDeletes): Relation
-    {
+    protected function buildDestroyFetchQuery(
+        Request $request,
+        Model $parentEntity,
+        array $requestedRelations,
+        bool $softDeletes
+    ): Relation {
         return $this->buildRelationFetchQuery($request, $parentEntity, $requestedRelations)
             ->when(
                 $softDeletes,
@@ -803,10 +837,11 @@ trait HandlesRelationStandardOperations
      * The hook is executed before deleting a relation resource.
      *
      * @param Request $request
+     * @param Model $parentEntity
      * @param Model $entity
      * @return mixed
      */
-    protected function beforeDestroy(Request $request, Model $entity)
+    protected function beforeDestroy(Request $request, Model $parentEntity, Model $entity)
     {
         return null;
     }
@@ -836,10 +871,11 @@ trait HandlesRelationStandardOperations
      * The hook is executed after deleting a relation resource.
      *
      * @param Request $request
+     * @param Model $parentEntity
      * @param Model $entity
      * @return mixed
      */
-    protected function afterDestroy(Request $request, Model $entity)
+    protected function afterDestroy(Request $request, Model $parentEntity, Model $entity)
     {
         return null;
     }
@@ -864,7 +900,7 @@ trait HandlesRelationStandardOperations
 
         $this->authorize('restore', $entity);
 
-        $beforeHookResult = $this->beforeRestore($request, $entity);
+        $beforeHookResult = $this->beforeRestore($request, $parentEntity, $entity);
         if ($this->hookResponds($beforeHookResult)) {
             return $beforeHookResult;
         }
@@ -879,7 +915,7 @@ trait HandlesRelationStandardOperations
             $entity = $this->castPivotJsonFields($entity);
         }
 
-        $afterHookResult = $this->afterRestore($request, $entity);
+        $afterHookResult = $this->afterRestore($request, $parentEntity, $entity);
         if ($this->hookResponds($afterHookResult)) {
             return $afterHookResult;
         }
@@ -922,8 +958,11 @@ trait HandlesRelationStandardOperations
      * @param array $requestedRelations
      * @return Relation
      */
-    protected function buildRestoreFetchQuery(Request $request, Model $parentEntity, array $requestedRelations): Relation
-    {
+    protected function buildRestoreFetchQuery(
+        Request $request,
+        Model $parentEntity,
+        array $requestedRelations
+    ): Relation {
         return $this->buildRelationFetchQuery($request, $parentEntity, $requestedRelations)
             ->withTrashed();
     }
@@ -946,10 +985,11 @@ trait HandlesRelationStandardOperations
      * The hook is executed before restoring a relation resource.
      *
      * @param Request $request
+     * @param Model $parentEntity
      * @param Model $entity
      * @return mixed
      */
-    protected function beforeRestore(Request $request, Model $entity)
+    protected function beforeRestore(Request $request, Model $parentEntity, Model $entity)
     {
         return null;
     }
@@ -968,10 +1008,11 @@ trait HandlesRelationStandardOperations
      * The hook is executed after restoring a relation resource.
      *
      * @param Request $request
+     * @param Model $parentEntity
      * @param Model $entity
      * @return mixed
      */
-    protected function afterRestore(Request $request, Model $entity)
+    protected function afterRestore(Request $request, Model $parentEntity, Model $entity)
     {
         return null;
     }
