@@ -21,7 +21,7 @@ abstract class RelationOperationBuilder extends OperationBuilder
         /** @var Model $parentResourceModel */
         $parentResourceModel = app()->make($parentResourceModelClass);
 
-        $resourceName = Str::lower(Str::replaceArray('_', [' '], $parentResourceModel->getTable()));
+        $resourceName = Str::lower(str_replace('_', ' ', $parentResourceModel->getTable()));
 
         if (!$pluralize) {
             return Str::singular($resourceName);

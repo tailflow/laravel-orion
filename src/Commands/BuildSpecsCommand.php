@@ -49,7 +49,7 @@ class BuildSpecsCommand extends Command
             return -1;
         }
 
-        $specs = array_merge_recursive(
+        $specs = array_replace_recursive(
             $existingSpecs,
             $builder->build()
         );
