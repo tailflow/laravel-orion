@@ -311,7 +311,7 @@ abstract class BaseController extends \Illuminate\Routing\Controller
      */
     public function resolveUser()
     {
-        return Auth::guard('api')->user();
+        return Auth::guard(config('orion.auth.guard', 'api'))->user();
     }
 
     /**

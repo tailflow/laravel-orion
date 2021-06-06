@@ -5,6 +5,9 @@ return [
         'models' => 'App\\Models\\',
         'controllers' => 'App\\Http\\Controllers\\'
     ],
+    'auth' => [
+        'guard' => 'api'
+    ],
     'specs' => [
         'info' => [
             'title' => env('APP_NAME'),
