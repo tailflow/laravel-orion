@@ -158,7 +158,7 @@ trait HandlesRelationManyToManyOperations
         $model = $this->getModel();
         $resources = $this->standardizePivotResourcesArray($resources);
         $resourceModel = (new $model)->{$this->getRelation()}()->getModel();
-        $resourceKeyName = $resourceModel->getKeyName();
+        $resourceKeyName = $this->keyName();
         $resourceModels = $resourceModel->whereIn($resourceKeyName, array_keys($resources))->get();
 
         $resources = array_filter(
