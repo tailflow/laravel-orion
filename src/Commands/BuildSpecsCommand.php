@@ -64,6 +64,8 @@ class BuildSpecsCommand extends Command
             return -1;
         }
 
+        $this->info("Specifications are saved in storage/app/{$path}");
+
         return 0;
     }
 
