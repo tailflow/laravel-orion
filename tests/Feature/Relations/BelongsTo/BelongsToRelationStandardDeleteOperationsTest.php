@@ -129,12 +129,15 @@ class BelongsToRelationStandardDeleteOperationsTest extends TestCase
         $user = factory(User::class)->create()->fresh();
         $post = factory(Post::class)->create(['user_id' => $user->id]);
 
-        app()->bind(ComponentsResolver::class, function () {
-            $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
-            $componentsResolverMock->shouldReceive('resolveResourceClass')->once()->andReturn(SampleResource::class);
+        app()->bind(
+            ComponentsResolver::class,
+            function () {
+                $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
+                $componentsResolverMock->shouldReceive('resolveResourceClass')->once()->andReturn(SampleResource::class);
 
-            return $componentsResolverMock;
-        });
+                return $componentsResolverMock;
+            }
+        );
 
         Gate::policy(User::class, GreenPolicy::class);
 

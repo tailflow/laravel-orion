@@ -45,36 +45,54 @@ class BaseControllerTest extends TestCase
         $fakeSearchBuilder = new SearchBuilder([]);
         $fakeQueryBuilder = new QueryBuilder(Post::class, $fakeParamsValidator, $fakeRelationsResolver, $fakeSearchBuilder);
 
-        App::shouldReceive('makeWith')->with(\Orion\Contracts\ComponentsResolver::class, [
-            'resourceModelClass' => Post::class
-        ])->once()->andReturn($fakeComponentsResolver);
+        App::shouldReceive('makeWith')->with(
+            \Orion\Contracts\ComponentsResolver::class,
+            [
+                'resourceModelClass' => Post::class,
+            ]
+        )->once()->andReturn($fakeComponentsResolver);
 
-        App::shouldReceive('makeWith')->with(\Orion\Contracts\ParamsValidator::class, [
-            'exposedScopes' => ['testScope'],
-            'filterableBy' => ['test_filterable_field'],
-            'sortableBy' => ['test_sortable_field']
-        ])->once()->andReturn($fakeParamsValidator);
+        App::shouldReceive('makeWith')->with(
+            \Orion\Contracts\ParamsValidator::class,
+            [
+                'exposedScopes' => ['testScope'],
+                'filterableBy' => ['test_filterable_field'],
+                'sortableBy' => ['test_sortable_field'],
+            ]
+        )->once()->andReturn($fakeParamsValidator);
 
-        App::shouldReceive('makeWith')->with(\Orion\Contracts\RelationsResolver::class, [
-            'includableRelations' => ['testRelation'],
-            'alwaysIncludedRelations' => ['testAlwaysIncludedRelation'],
-        ])->once()->andReturn($fakeRelationsResolver);
+        App::shouldReceive('makeWith')->with(
+            \Orion\Contracts\RelationsResolver::class,
+            [
+                'includableRelations' => ['testRelation'],
+                'alwaysIncludedRelations' => ['testAlwaysIncludedRelation'],
+            ]
+        )->once()->andReturn($fakeRelationsResolver);
 
-        App::shouldReceive('makeWith')->with(\Orion\Contracts\Paginator::class, [
-            'defaultLimit' => 15,
-        ])->once()->andReturn($fakePaginator);
+        App::shouldReceive('makeWith')->with(
+            \Orion\Contracts\Paginator::class,
+            [
+                'defaultLimit' => 15,
+            ]
+        )->once()->andReturn($fakePaginator);
 
-        App::shouldReceive('makeWith')->with(\Orion\Contracts\SearchBuilder::class, [
-            'searchableBy' => ['test_searchable_field']
-        ])->once()->andReturn($fakeSearchBuilder);
+        App::shouldReceive('makeWith')->with(
+            \Orion\Contracts\SearchBuilder::class,
+            [
+                'searchableBy' => ['test_searchable_field'],
+            ]
+        )->once()->andReturn($fakeSearchBuilder);
 
-        App::shouldReceive('makeWith')->with(\Orion\Contracts\QueryBuilder::class, [
-            'resourceModelClass' => Post::class,
-            'paramsValidator' => $fakeParamsValidator,
-            'relationsResolver' => $fakeRelationsResolver,
-            'searchBuilder' => $fakeSearchBuilder,
-            'intermediateMode' => false
-        ])->once()->andReturn($fakeQueryBuilder);
+        App::shouldReceive('makeWith')->with(
+            \Orion\Contracts\QueryBuilder::class,
+            [
+                'resourceModelClass' => Post::class,
+                'paramsValidator' => $fakeParamsValidator,
+                'relationsResolver' => $fakeRelationsResolver,
+                'searchBuilder' => $fakeSearchBuilder,
+                'intermediateMode' => false,
+            ]
+        )->once()->andReturn($fakeQueryBuilder);
 
         $stub = new BaseControllerStubWithWhitelistedFieldsAndRelations();
         $this->assertEquals($fakeComponentsResolver, $stub->getComponentsResolver());
@@ -88,14 +106,17 @@ class BaseControllerTest extends TestCase
     /** @test */
     public function using_predefined_components()
     {
-        App::bind(\Orion\Contracts\ComponentsResolver::class, function () {
-            $componentsResolverMock = Mockery::mock(ComponentsResolver::class)->makePartial();
-            $componentsResolverMock->shouldReceive('resolveRequestClass')->never();
-            $componentsResolverMock->shouldReceive('resolveResourceClass')->never();
-            $componentsResolverMock->shouldReceive('resolveCollectionResourceClass')->never();
+        App::bind(
+            \Orion\Contracts\ComponentsResolver::class,
+            function () {
+                $componentsResolverMock = Mockery::mock(ComponentsResolver::class)->makePartial();
+                $componentsResolverMock->shouldReceive('resolveRequestClass')->never();
+                $componentsResolverMock->shouldReceive('resolveResourceClass')->never();
+                $componentsResolverMock->shouldReceive('resolveCollectionResourceClass')->never();
 
-            return $componentsResolverMock;
-        });
+                return $componentsResolverMock;
+            }
+        );
 
         $stub = new BaseControllerStub();
         $this->assertEquals(PostRequest::class, $stub->getRequest());
@@ -106,14 +127,17 @@ class BaseControllerTest extends TestCase
     /** @test */
     public function resolving_components()
     {
-        App::bind(\Orion\Contracts\ComponentsResolver::class, function () {
-            $componentsResolverMock = Mockery::mock(ComponentsResolver::class)->makePartial();
-            $componentsResolverMock->shouldReceive('resolveRequestClass')->once()->withNoArgs()->andReturn('testRequestClass');
-            $componentsResolverMock->shouldReceive('resolveResourceClass')->once()->withNoArgs()->andReturn('testResourceClass');
-            $componentsResolverMock->shouldReceive('resolveCollectionResourceClass')->once()->withNoArgs()->andReturn('testCollectionResourceClass');
+        App::bind(
+            \Orion\Contracts\ComponentsResolver::class,
+            function () {
+                $componentsResolverMock = Mockery::mock(ComponentsResolver::class)->makePartial();
+                $componentsResolverMock->shouldReceive('resolveRequestClass')->once()->withNoArgs()->andReturn('testRequestClass');
+                $componentsResolverMock->shouldReceive('resolveResourceClass')->once()->withNoArgs()->andReturn('testResourceClass');
+                $componentsResolverMock->shouldReceive('resolveCollectionResourceClass')->once()->withNoArgs()->andReturn('testCollectionResourceClass');
 
-            return $componentsResolverMock;
-        });
+                return $componentsResolverMock;
+            }
+        );
 
         $stub = new BaseControllerStubWithoutComponents();
         $this->assertEquals('testRequestClass', $stub->getRequest());
@@ -124,12 +148,15 @@ class BaseControllerTest extends TestCase
     /** @test */
     public function binding_components()
     {
-        App::bind(\Orion\Contracts\ComponentsResolver::class, function () {
-            $componentsResolverMock = Mockery::mock(ComponentsResolver::class)->makePartial();
-            $componentsResolverMock->shouldReceive('bindRequestClass')->with(PostRequest::class)->once();
+        App::bind(
+            \Orion\Contracts\ComponentsResolver::class,
+            function () {
+                $componentsResolverMock = Mockery::mock(ComponentsResolver::class)->makePartial();
+                $componentsResolverMock->shouldReceive('bindRequestClass')->with(PostRequest::class)->once();
 
-            return $componentsResolverMock;
-        });
+                return $componentsResolverMock;
+            }
+        );
 
         $stub = new BaseControllerStub();
     }

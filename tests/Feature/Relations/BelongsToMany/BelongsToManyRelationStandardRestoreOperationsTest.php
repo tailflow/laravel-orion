@@ -42,9 +42,13 @@ class BelongsToManyRelationStandardRestoreOperationsTest extends TestCase
 
         $response = $this->post("/api/users/{$user->id}/notifications/{$trashedNotification->id}/restore");
 
-        $this->assertResourceRestored($response, $trashedNotification, [
-            'pivot' => $user->notifications()->withTrashed()->first()->pivot->toArray()
-        ]);
+        $this->assertResourceRestored(
+            $response,
+            $trashedNotification,
+            [
+                'pivot' => $user->notifications()->withTrashed()->first()->pivot->toArray(),
+            ]
+        );
     }
 
     /** @test */
@@ -53,9 +57,12 @@ class BelongsToManyRelationStandardRestoreOperationsTest extends TestCase
         /** @var User $user */
         $user = factory(User::class)->create();
         $trashedNotification = factory(Notification::class)->state('trashed')->create();
-        $user->notifications()->save($trashedNotification, [
-            'meta' => json_encode(['key' => 'value'])
-        ]);
+        $user->notifications()->save(
+            $trashedNotification,
+            [
+                'meta' => json_encode(['key' => 'value']),
+            ]
+        );
 
         Gate::policy(Notification::class, GreenPolicy::class);
 
@@ -64,9 +71,13 @@ class BelongsToManyRelationStandardRestoreOperationsTest extends TestCase
         $notification = $user->notifications()->withTrashed()->first();
         $notification->pivot->meta = ['key' => 'value'];
 
-        $this->assertResourceRestored($response, $trashedNotification, [
-            'pivot' => $notification->pivot->toArray()
-        ]);
+        $this->assertResourceRestored(
+            $response,
+            $trashedNotification,
+            [
+                'pivot' => $notification->pivot->toArray(),
+            ]
+        );
     }
 
     /** @test */
@@ -81,9 +92,13 @@ class BelongsToManyRelationStandardRestoreOperationsTest extends TestCase
 
         $response = $this->post("/api/users/{$user->id}/notifications/{$notification->id}/restore");
 
-        $this->assertResourceRestored($response, $notification, [
-            'pivot' => $user->notifications()->withTrashed()->first()->pivot->toArray()
-        ]);
+        $this->assertResourceRestored(
+            $response,
+            $notification,
+            [
+                'pivot' => $user->notifications()->withTrashed()->first()->pivot->toArray(),
+            ]
+        );
     }
 
     /** @test */
@@ -111,19 +126,26 @@ class BelongsToManyRelationStandardRestoreOperationsTest extends TestCase
 
         Gate::policy(Notification::class, GreenPolicy::class);
 
-        app()->bind(ComponentsResolver::class, function () {
-            $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
-            $componentsResolverMock->shouldReceive('resolveResourceClass')->once()->andReturn(SampleResource::class);
+        app()->bind(
+            ComponentsResolver::class,
+            function () {
+                $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
+                $componentsResolverMock->shouldReceive('resolveResourceClass')->once()->andReturn(SampleResource::class);
 
-            return $componentsResolverMock;
-        });
+                return $componentsResolverMock;
+            }
+        );
 
         $response = $this->post("/api/users/{$user->id}/notifications/{$trashedNotification->id}/restore");
 
-        $this->assertResourceRestored($response, $trashedNotification, [
-            'pivot' => $user->notifications()->withTrashed()->first()->pivot->toArray(),
-            'test-field-from-resource' => 'test-value'
-        ]);
+        $this->assertResourceRestored(
+            $response,
+            $trashedNotification,
+            [
+                'pivot' => $user->notifications()->withTrashed()->first()->pivot->toArray(),
+                'test-field-from-resource' => 'test-value',
+            ]
+        );
     }
 
     /** @test */
@@ -140,9 +162,13 @@ class BelongsToManyRelationStandardRestoreOperationsTest extends TestCase
 
         $notification = $user->notifications()->with('users')->first();
 
-        $this->assertResourceRestored($response, $trashedNotification, [
-            'pivot' => $notification->pivot->toArray(),
-            'users' => $notification->users->toArray()
-        ]);
+        $this->assertResourceRestored(
+            $response,
+            $trashedNotification,
+            [
+                'pivot' => $notification->pivot->toArray(),
+                'users' => $notification->users->toArray(),
+            ]
+        );
     }
 }

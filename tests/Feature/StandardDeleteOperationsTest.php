@@ -157,12 +157,15 @@ class StandardDeleteOperationsTest extends TestCase
     {
         $post = factory(Post::class)->create()->fresh();
 
-        app()->bind(ComponentsResolver::class, function () {
-            $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
-            $componentsResolverMock->shouldReceive('resolveResourceClass')->once()->andReturn(SampleResource::class);
+        app()->bind(
+            ComponentsResolver::class,
+            function () {
+                $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
+                $componentsResolverMock->shouldReceive('resolveResourceClass')->once()->andReturn(SampleResource::class);
 
-            return $componentsResolverMock;
-        });
+                return $componentsResolverMock;
+            }
+        );
 
         Gate::policy(Post::class, GreenPolicy::class);
 

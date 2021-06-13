@@ -11,7 +11,7 @@ class PostPostMetaController extends RelationController
 
     protected $relation = 'meta';
 
-    protected function includes(): array
+    public function includes(): array
     {
         return ['post'];
     }

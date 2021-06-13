@@ -48,6 +48,24 @@ class ComponentsResolver implements \Orion\Contracts\ComponentsResolver
     }
 
     /**
+     * @return string
+     */
+    public function getRequestClassesNamespace(): string
+    {
+        return $this->requestClassesNamespace;
+    }
+
+    /**
+     * @param string $requestClassesNamespace
+     * @return $this
+     */
+    public function setRequestClassesNamespace(string $requestClassesNamespace): self
+    {
+        $this->requestClassesNamespace = $requestClassesNamespace;
+        return $this;
+    }
+
+    /**
      * Guesses resource class based on the resource model.
      */
     public function resolveResourceClass(): string
@@ -59,6 +77,24 @@ class ComponentsResolver implements \Orion\Contracts\ComponentsResolver
         }
 
         return Resource::class;
+    }
+
+    /**
+     * @return string
+     */
+    public function getResourceClassesNamespace(): string
+    {
+        return $this->resourceClassesNamespace;
+    }
+
+    /**
+     * @param string $resourceClassesNamespace
+     * @return $this
+     */
+    public function setResourceClassesNamespace(string $resourceClassesNamespace): self
+    {
+        $this->resourceClassesNamespace = $resourceClassesNamespace;
+        return $this;
     }
 
     /**
@@ -83,41 +119,5 @@ class ComponentsResolver implements \Orion\Contracts\ComponentsResolver
     public function bindRequestClass(string $requestClass): void
     {
         App::bind(Request::class, $requestClass);
-    }
-
-    /**
-     * @param string $requestClassesNamespace
-     * @return $this
-     */
-    public function setRequestClassesNamespace(string $requestClassesNamespace): self
-    {
-        $this->requestClassesNamespace = $requestClassesNamespace;
-        return $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function getRequestClassesNamespace(): string
-    {
-        return $this->requestClassesNamespace;
-    }
-
-    /**
-     * @param string $resourceClassesNamespace
-     * @return $this
-     */
-    public function setResourceClassesNamespace(string $resourceClassesNamespace): self
-    {
-        $this->resourceClassesNamespace = $resourceClassesNamespace;
-        return $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function getResourceClassesNamespace(): string
-    {
-        return $this->resourceClassesNamespace;
     }
 }

@@ -25,22 +25,22 @@ class PostsController extends Controller
         }
     }
 
-    protected function sortableBy() : array
+    public function sortableBy() : array
+    {
+        return ['title', 'user.name', 'meta->nested_field'];
+    }
+
+    public function filterableBy() : array
+    {
+        return ['title', 'position', 'publish_at', 'user.name', 'meta->nested_field'];
+    }
+
+    public function searchableBy() : array
     {
         return ['title', 'user.name'];
     }
 
-    protected function filterableBy() : array
-    {
-        return ['title', 'position', 'publish_at', 'user.name'];
-    }
-
-    protected function searchableBy() : array
-    {
-        return ['title', 'user.name'];
-    }
-
-    protected function exposedScopes() : array
+    public function exposedScopes() : array
     {
         return ['published', 'publishedAt'];
     }
@@ -48,7 +48,7 @@ class PostsController extends Controller
     /**
      * @return array
      */
-    protected function includes() : array
+    public function includes() : array
     {
         return ['user'];
     }

@@ -33,7 +33,7 @@ class RelationResourceRegistrar extends ResourceRegistrar
      * @param array $options
      * @return Route
      */
-    protected function addResourceShow($name, $base, $controller, $options) : Route
+    protected function addResourceShow($name, $base, $controller, $options): Route
     {
         $uri = $this->getResourceUri($name).'/{'.$base.'?}';
 
@@ -51,7 +51,7 @@ class RelationResourceRegistrar extends ResourceRegistrar
      * @param array $options
      * @return Route
      */
-    protected function addResourceDestroy($name, $base, $controller, $options) : Route
+    protected function addResourceDestroy($name, $base, $controller, $options): Route
     {
         $uri = $this->getResourceUri($name).'/{'.$base.'?}';
 
@@ -69,7 +69,7 @@ class RelationResourceRegistrar extends ResourceRegistrar
      * @param array $options
      * @return Route
      */
-    protected function addResourceRestore(string $name, string $base, string $controller, array $options) : Route
+    protected function addResourceRestore(string $name, string $base, string $controller, array $options): Route
     {
         $uri = $this->getResourceUri($name).'/{'.$base.'?}/restore';
 

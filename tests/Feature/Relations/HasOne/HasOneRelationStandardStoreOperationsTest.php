@@ -51,7 +51,8 @@ class HasOneRelationStandardStoreOperationsTest extends TestCase
 
         $response = $this->post("/api/posts/{$post->id}/meta", $payload);
 
-        $this->assertResourceStored($response,
+        $this->assertResourceStored(
+            $response,
             PostMeta::class,
             ['notes' => 'test stored']
         );
@@ -65,12 +66,15 @@ class HasOneRelationStandardStoreOperationsTest extends TestCase
         $post = factory(Post::class)->create();
         $payload = ['notes' => 'a'];
 
-        app()->bind(ComponentsResolver::class, function () {
-            $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
-            $componentsResolverMock->shouldReceive('resolveRequestClass')->once()->andReturn(PostMetaRequest::class);
+        app()->bind(
+            ComponentsResolver::class,
+            function () {
+                $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
+                $componentsResolverMock->shouldReceive('resolveRequestClass')->once()->andReturn(PostMetaRequest::class);
 
-            return $componentsResolverMock;
-        });
+                return $componentsResolverMock;
+            }
+        );
 
         Gate::policy(PostMeta::class, GreenPolicy::class);
 
@@ -87,12 +91,15 @@ class HasOneRelationStandardStoreOperationsTest extends TestCase
         $post = factory(Post::class)->create();
         $payload = ['notes' => 'test stored'];
 
-        app()->bind(ComponentsResolver::class, function () {
-            $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
-            $componentsResolverMock->shouldReceive('resolveResourceClass')->once()->andReturn(SampleResource::class);
+        app()->bind(
+            ComponentsResolver::class,
+            function () {
+                $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
+                $componentsResolverMock->shouldReceive('resolveResourceClass')->once()->andReturn(SampleResource::class);
 
-            return $componentsResolverMock;
-        });
+                return $componentsResolverMock;
+            }
+        );
 
         Gate::policy(PostMeta::class, GreenPolicy::class);
 

@@ -17,7 +17,7 @@ class UserRolesController extends RelationController
 
     protected $pivotFillable = ['custom_name', 'references'];
 
-    protected function includes(): array
+    public function includes(): array
     {
         return ['users'];
     }

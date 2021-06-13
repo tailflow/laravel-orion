@@ -12,6 +12,7 @@ use Orion\Contracts\RelationsResolver;
 use Orion\Contracts\SearchBuilder;
 use Orion\Http\Middleware\EnforceExpectsJson;
 use Orion\Orion;
+use Orion\Specs\ResourcesCacheStore;
 
 class OrionServiceProvider extends ServiceProvider
 {
@@ -30,6 +31,8 @@ class OrionServiceProvider extends ServiceProvider
         $this->app->bind(Paginator::class, \Orion\Drivers\Standard\Paginator::class);
         $this->app->bind(SearchBuilder::class, \Orion\Drivers\Standard\SearchBuilder::class);
         $this->app->bind(ComponentsResolver::class, \Orion\Drivers\Standard\ComponentsResolver::class);
+
+        $this->app->singleton(ResourcesCacheStore::class);
     }
 
     /**

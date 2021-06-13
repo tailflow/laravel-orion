@@ -42,7 +42,8 @@ class HasManyRelationStandardUpdateOperationsTest extends TestCase
 
         $response = $this->patch("/api/companies/{$company->id}/teams/{$team->id}", $payload);
 
-        $this->assertResourceUpdated($response,
+        $this->assertResourceUpdated(
+            $response,
             Team::class,
             $team->toArray(),
             $payload
@@ -60,7 +61,8 @@ class HasManyRelationStandardUpdateOperationsTest extends TestCase
 
         $response = $this->patch("/api/access_keys/{$accessKey->key}/scopes/{$accessKeyScope->scope}", $payload);
 
-        $this->assertResourceUpdated($response,
+        $this->assertResourceUpdated(
+            $response,
             AccessKeyScope::class,
             $accessKeyScope->toArray(),
             $payload
@@ -78,7 +80,8 @@ class HasManyRelationStandardUpdateOperationsTest extends TestCase
 
         $response = $this->patch("/api/companies/{$company->id}/teams/{$team->id}", $payload);
 
-        $this->assertResourceUpdated($response,
+        $this->assertResourceUpdated(
+            $response,
             Team::class,
             $team->toArray(),
             ['name' => 'test updated']
@@ -94,12 +97,15 @@ class HasManyRelationStandardUpdateOperationsTest extends TestCase
         $team = factory(Team::class)->create(['company_id' => $company->id]);
         $payload = ['name' => 'test updated', 'description' => 5];
 
-        app()->bind(ComponentsResolver::class, function () {
-            $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
-            $componentsResolverMock->shouldReceive('resolveRequestClass')->once()->andReturn(TeamRequest::class);
+        app()->bind(
+            ComponentsResolver::class,
+            function () {
+                $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
+                $componentsResolverMock->shouldReceive('resolveRequestClass')->once()->andReturn(TeamRequest::class);
 
-            return $componentsResolverMock;
-        });
+                return $componentsResolverMock;
+            }
+        );
 
         Gate::policy(Team::class, GreenPolicy::class);
 
@@ -117,18 +123,22 @@ class HasManyRelationStandardUpdateOperationsTest extends TestCase
         $team = factory(Team::class)->create(['company_id' => $company->id]);
         $payload = ['name' => 'test updated'];
 
-        app()->bind(ComponentsResolver::class, function () {
-            $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
-            $componentsResolverMock->shouldReceive('resolveResourceClass')->once()->andReturn(SampleResource::class);
+        app()->bind(
+            ComponentsResolver::class,
+            function () {
+                $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
+                $componentsResolverMock->shouldReceive('resolveResourceClass')->once()->andReturn(SampleResource::class);
 
-            return $componentsResolverMock;
-        });
+                return $componentsResolverMock;
+            }
+        );
 
         Gate::policy(Team::class, GreenPolicy::class);
 
         $response = $this->patch("/api/companies/{$company->id}/teams/{$team->id}", $payload);
 
-        $this->assertResourceUpdated($response,
+        $this->assertResourceUpdated(
+            $response,
             Team::class,
             $team->toArray(),
             $payload,
@@ -147,7 +157,8 @@ class HasManyRelationStandardUpdateOperationsTest extends TestCase
 
         $response = $this->patch("/api/companies/{$company->id}/teams/{$team->id}?include=company", $payload);
 
-        $this->assertResourceUpdated($response,
+        $this->assertResourceUpdated(
+            $response,
             Team::class,
             $team->toArray(),
             $payload,

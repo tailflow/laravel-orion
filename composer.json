@@ -17,14 +17,16 @@
         }
     ],
     "require": {
-        "php": ">=7.2",
+        "php": ">=7.3",
         "ext-json": "*",
+        "doctrine/dbal": "^2.9|^3.1",
         "illuminate/bus": ">=5.7",
         "illuminate/contracts": ">=5.7",
         "illuminate/database": ">=5.7",
         "illuminate/http": ">=5.7",
         "illuminate/pagination": ">=5.7",
-        "illuminate/support": ">=5.7"
+        "illuminate/support": ">=5.7",
+        "symfony/yaml": "^5.3"
     },
     "require-dev": {
         "mockery/mockery": "^1.0",

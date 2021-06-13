@@ -22,17 +22,17 @@ trait HandlesRelationStandardBatchOperations
      */
     public function batchStore(Request $request, $parentKey)
     {
-        $beforeHookResult = $this->beforeBatchStore($request);
-        if ($this->hookResponds($beforeHookResult)) {
-            return $beforeHookResult;
-        }
-
         $resourceModelClass = $this->resolveResourceModelClass();
 
         $this->authorize('create', $resourceModelClass);
 
         $parentQuery = $this->buildBatchStoreParentFetchQuery($request, $parentKey);
         $parentEntity = $this->runBatchStoreParentFetchQuery($request, $parentQuery, $parentKey);
+
+        $beforeHookResult = $this->beforeBatchStore($request, $parentEntity);
+        if ($this->hookResponds($beforeHookResult)) {
+            return $beforeHookResult;
+        }
 
         $resources = $request->get('resources', []);
         $entities = collect([]);
@@ -43,11 +43,15 @@ trait HandlesRelationStandardBatchOperations
             /** @var Model $entity */
             $entity = new $resourceModelClass;
 
-            $this->beforeStore($request, $entity);
-            $this->beforeSave($request, $entity);
+            $this->beforeStore($request, $parentEntity, $entity);
+            $this->beforeSave($request, $parentEntity, $entity);
 
             $this->performStore(
-                $request, $parentEntity, $entity, $resource, Arr::get($resource, 'pivot', [])
+                $request,
+                $parentEntity,
+                $entity,
+                $resource,
+                Arr::get($resource, 'pivot', [])
             );
 
             $entity = $this->newRelationQuery($parentEntity)->with($requestedRelations)->find($entity->id);
@@ -59,13 +63,13 @@ trait HandlesRelationStandardBatchOperations
                 $entity = $this->castPivotJsonFields($entity);
             }
 
-            $this->afterSave($request, $entity);
-            $this->afterStore($request, $entity);
+            $this->afterSave($request, $parentEntity, $entity);
+            $this->afterStore($request, $parentEntity, $entity);
 
             $entities->push($entity);
         }
 
-        $afterHookResult = $this->afterBatchStore($request, $entities);
+        $afterHookResult = $this->afterBatchStore($request, $parentEntity, $entities);
         if ($this->hookResponds($afterHookResult)) {
             return $afterHookResult;
         }
@@ -73,6 +77,18 @@ trait HandlesRelationStandardBatchOperations
         $this->relationsResolver->guardRelationsForCollection($entities, $requestedRelations);
 
         return $this->collectionResponse($entities);
+    }
+
+    /**
+     * The hook is executed before creating a batch of new resources.
+     *
+     * @param Request $request
+     * @param Model $parentEntity
+     * @return mixed
+     */
+    protected function beforeBatchStore(Request $request, Model $parentEntity)
+    {
+        return null;
     }
 
     /**
@@ -101,6 +117,19 @@ trait HandlesRelationStandardBatchOperations
     }
 
     /**
+     * The hook is executed after creating a batch of new resources.
+     *
+     * @param Request $request
+     * @param Model $parentEntity
+     * @param Collection $entities
+     * @return mixed
+     */
+    protected function afterBatchStore(Request $request, Model $parentEntity, Collection $entities)
+    {
+        return null;
+    }
+
+    /**
      * Updates a batch of relation resources.
      *
      * @param Request $request
@@ -109,13 +138,13 @@ trait HandlesRelationStandardBatchOperations
      */
     public function batchUpdate(Request $request, $parentKey)
     {
-        $beforeHookResult = $this->beforeBatchUpdate($request);
+        $parentQuery = $this->buildBatchUpdateParentFetchQuery($request, $parentKey);
+        $parentEntity = $this->runBatchUpdateParentFetchQuery($request, $parentQuery, $parentKey);
+
+        $beforeHookResult = $this->beforeBatchUpdate($request, $parentEntity);
         if ($this->hookResponds($beforeHookResult)) {
             return $beforeHookResult;
         }
-
-        $parentQuery = $this->buildBatchUpdateParentFetchQuery($request, $parentKey);
-        $parentEntity = $this->runBatchUpdateParentFetchQuery($request, $parentQuery, $parentKey);
 
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
 
@@ -128,11 +157,15 @@ trait HandlesRelationStandardBatchOperations
 
             $resource = $request->input("resources.{$entity->{$this->keyName()}}");
 
-            $this->beforeUpdate($request, $entity);
-            $this->beforeSave($request, $entity);
+            $this->beforeUpdate($request, $parentEntity, $entity);
+            $this->beforeSave($request, $parentEntity, $entity);
 
             $this->performUpdate(
-                $request, $parentEntity, $entity, $resource, Arr::get($resource, 'pivot', [])
+                $request,
+                $parentEntity,
+                $entity,
+                $resource,
+                Arr::get($resource, 'pivot', [])
             );
 
             $entity = $this->newRelationQuery($parentEntity)->with($requestedRelations)->find($entity->id);
@@ -143,11 +176,11 @@ trait HandlesRelationStandardBatchOperations
                 $entity = $this->castPivotJsonFields($entity);
             }
 
-            $this->afterSave($request, $entity);
-            $this->afterUpdate($request, $entity);
+            $this->afterSave($request, $parentEntity, $entity);
+            $this->afterUpdate($request, $parentEntity, $entity);
         }
 
-        $afterHookResult = $this->afterBatchUpdate($request, $entities);
+        $afterHookResult = $this->afterBatchUpdate($request, $parentEntity, $entities);
         if ($this->hookResponds($afterHookResult)) {
             return $afterHookResult;
         }
@@ -155,6 +188,18 @@ trait HandlesRelationStandardBatchOperations
         $this->relationsResolver->guardRelationsForCollection($entities, $requestedRelations);
 
         return $this->collectionResponse($entities);
+    }
+
+    /**
+     * The hook is executed before updating a batch of resources.
+     *
+     * @param Request $request
+     * @param Model $parentEntity
+     * @return mixed
+     */
+    protected function beforeBatchUpdate(Request $request, Model $parentEntity)
+    {
+        return null;
     }
 
     /**
@@ -190,9 +235,32 @@ trait HandlesRelationStandardBatchOperations
      * @param array $requestedRelations
      * @return Relation
      */
-    protected function buildBatchUpdateFetchQuery(Request $request, Model $parentEntity, array $requestedRelations): Relation
-    {
+    protected function buildBatchUpdateFetchQuery(
+        Request $request,
+        Model $parentEntity,
+        array $requestedRelations
+    ): Relation {
         return $this->buildRelationBatchFetchQuery($request, $parentEntity, $requestedRelations);
+    }
+
+    /**
+     * Builds Eloquent query for fetching a list of relation entities.
+     *
+     * @param Request $request
+     * @param Model $parentEntity
+     * @param array $requestedRelations
+     * @return Relation
+     */
+    protected function buildRelationBatchFetchQuery(
+        Request $request,
+        Model $parentEntity,
+        array $requestedRelations
+    ): Relation {
+        $resourceKeyName = $this->resolveQualifiedKeyName();
+        $resourceKeys = $this->resolveResourceKeys($request);
+
+        return $this->buildRelationFetchQuery($request, $parentEntity, $requestedRelations)
+            ->whereIn($resourceKeyName, $resourceKeys);
     }
 
     /**
@@ -209,6 +277,32 @@ trait HandlesRelationStandardBatchOperations
     }
 
     /**
+     * Runs the given query for fetching a list of relation entities.
+     *
+     * @param Request $request
+     * @param Relation $query
+     * @param Model $parentEntity
+     * @return Collection
+     */
+    protected function runRelationBatchFetchQuery(Request $request, Relation $query, Model $parentEntity): Collection
+    {
+        return $query->get();
+    }
+
+    /**
+     * The hook is executed after updating a batch of resources.
+     *
+     * @param Request $request
+     * @param Model $parentEntity
+     * @param Collection $entities
+     * @return mixed
+     */
+    protected function afterBatchUpdate(Request $request, Model $parentEntity, Collection $entities)
+    {
+        return null;
+    }
+
+    /**
      * Deletes a batch of relation resources.
      *
      * @param Request $request
@@ -218,13 +312,13 @@ trait HandlesRelationStandardBatchOperations
      */
     public function batchDestroy(Request $request, $parentKey)
     {
-        $beforeHookResult = $this->beforeBatchDestroy($request);
+        $parentQuery = $this->buildBatchDestroyParentFetchQuery($request, $parentKey);
+        $parentEntity = $this->runBatchDestroyParentFetchQuery($request, $parentQuery, $parentKey);
+
+        $beforeHookResult = $this->beforeBatchDestroy($request, $parentEntity);
         if ($this->hookResponds($beforeHookResult)) {
             return $beforeHookResult;
         }
-
-        $parentQuery = $this->buildBatchDestroyParentFetchQuery($request, $parentKey);
-        $parentEntity = $this->runBatchDestroyParentFetchQuery($request, $parentQuery, $parentKey);
 
         $softDeletes = $this->softDeletes($this->resolveResourceModelClass());
         $forceDeletes = $this->forceDeletes($request, $softDeletes);
@@ -237,12 +331,14 @@ trait HandlesRelationStandardBatchOperations
             /** @var Model $entity */
             $this->authorize($forceDeletes ? 'forceDelete' : 'delete', $entity);
 
-            $this->beforeDestroy($request, $entity);
+            $this->beforeDestroy($request, $parentEntity, $entity);
 
             if (!$forceDeletes) {
                 $this->performDestroy($entity);
                 if ($softDeletes) {
-                    $entity = $this->newRelationQuery($parentEntity)->withTrashed()->with($requestedRelations)->find($entity->id);
+                    $entity = $this->newRelationQuery($parentEntity)->withTrashed()->with($requestedRelations)->find(
+                        $entity->id
+                    );
                 }
             } else {
                 $this->performForceDestroy($entity);
@@ -254,10 +350,10 @@ trait HandlesRelationStandardBatchOperations
                 $entity = $this->castPivotJsonFields($entity);
             }
 
-            $this->afterDestroy($request, $entity);
+            $this->afterDestroy($request, $parentEntity, $entity);
         }
 
-        $afterHookResult = $this->afterBatchDestroy($request, $entities);
+        $afterHookResult = $this->afterBatchDestroy($request, $parentEntity, $entities);
         if ($this->hookResponds($afterHookResult)) {
             return $afterHookResult;
         }
@@ -265,6 +361,18 @@ trait HandlesRelationStandardBatchOperations
         $this->relationsResolver->guardRelationsForCollection($entities, $requestedRelations);
 
         return $this->collectionResponse($entities);
+    }
+
+    /**
+     * The hook is executed before deleting a batch of resources.
+     *
+     * @param Request $request
+     * @param Model $parentEntity
+     * @return mixed
+     */
+    protected function beforeBatchDestroy(Request $request, Model $parentEntity)
+    {
+        return null;
     }
 
     /**
@@ -301,12 +409,19 @@ trait HandlesRelationStandardBatchOperations
      * @param bool $softDeletes
      * @return Relation
      */
-    protected function buildBatchDestroyFetchQuery(Request $request, Model $parentEntity, array $requestedRelations, bool $softDeletes): Relation
-    {
+    protected function buildBatchDestroyFetchQuery(
+        Request $request,
+        Model $parentEntity,
+        array $requestedRelations,
+        bool $softDeletes
+    ): Relation {
         return $this->buildRelationBatchFetchQuery($request, $parentEntity, $requestedRelations)
-            ->when($softDeletes, function ($query) {
-                $query->withTrashed();
-            });
+            ->when(
+                $softDeletes,
+                function ($query) {
+                    $query->withTrashed();
+                }
+            );
     }
 
     /**
@@ -323,6 +438,19 @@ trait HandlesRelationStandardBatchOperations
     }
 
     /**
+     * The hook is executed after deleting a batch of resources.
+     *
+     * @param Request $request
+     * @param Model $parentEntity
+     * @param Collection $entities
+     * @return mixed
+     */
+    protected function afterBatchDestroy(Request $request, Model $parentEntity, Collection $entities)
+    {
+        return null;
+    }
+
+    /**
      * Restores a batch of relation resources.
      *
      * @param Request $request
@@ -332,13 +460,13 @@ trait HandlesRelationStandardBatchOperations
      */
     public function batchRestore(Request $request, $parentKey)
     {
-        $beforeHookResult = $this->beforeBatchRestore($request);
+        $parentQuery = $this->buildBatchRestoreParentFetchQuery($request, $parentKey);
+        $parentEntity = $this->runBatchRestoreParentFetchQuery($request, $parentQuery, $parentKey);
+
+        $beforeHookResult = $this->beforeBatchRestore($request, $parentEntity);
         if ($this->hookResponds($beforeHookResult)) {
             return $beforeHookResult;
         }
-
-        $parentQuery = $this->buildBatchRestoreParentFetchQuery($request, $parentKey);
-        $parentEntity = $this->runBatchRestoreParentFetchQuery($request, $parentQuery, $parentKey);
 
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
 
@@ -349,7 +477,7 @@ trait HandlesRelationStandardBatchOperations
             /** @var Model $entity */
             $this->authorize('restore', $entity);
 
-            $this->beforeRestore($request, $entity);
+            $this->beforeRestore($request, $parentEntity, $entity);
 
             $this->performRestore($entity);
 
@@ -361,10 +489,10 @@ trait HandlesRelationStandardBatchOperations
                 $entity = $this->castPivotJsonFields($entity);
             }
 
-            $this->afterRestore($request, $entity);
+            $this->afterRestore($request, $parentEntity, $entity);
         }
 
-        $afterHookResult = $this->afterBatchRestore($request, $entities);
+        $afterHookResult = $this->afterBatchRestore($request, $parentEntity, $entities);
         if ($this->hookResponds($afterHookResult)) {
             return $afterHookResult;
         }
@@ -372,6 +500,18 @@ trait HandlesRelationStandardBatchOperations
         $this->relationsResolver->guardRelationsForCollection($entities, $requestedRelations);
 
         return $this->collectionResponse($entities);
+    }
+
+    /**
+     * The hook is executed before restoring a batch of resources.
+     *
+     * @param Request $request
+     * @param Model $parentEntity
+     * @return mixed
+     */
+    protected function beforeBatchRestore(Request $request, Model $parentEntity)
+    {
+        return null;
     }
 
     /**
@@ -407,8 +547,11 @@ trait HandlesRelationStandardBatchOperations
      * @param array $requestedRelations
      * @return Relation
      */
-    protected function buildBatchRestoreFetchQuery(Request $request, Model $parentEntity, array $requestedRelations): Relation
-    {
+    protected function buildBatchRestoreFetchQuery(
+        Request $request,
+        Model $parentEntity,
+        array $requestedRelations
+    ): Relation {
         return $this->buildRelationBatchFetchQuery($request, $parentEntity, $requestedRelations)
             ->withTrashed();
     }
@@ -427,123 +570,14 @@ trait HandlesRelationStandardBatchOperations
     }
 
     /**
-     * Builds Eloquent query for fetching a list of relation entities.
-     *
-     * @param Request $request
-     * @param Model $parentEntity
-     * @param array $requestedRelations
-     * @return Relation
-     */
-    protected function buildRelationBatchFetchQuery(Request $request, Model $parentEntity, array $requestedRelations): Relation
-    {
-        $resourceKeyName = $this->resolveQualifiedKeyName();
-        $resourceKeys = $this->resolveResourceKeys($request);
-
-        return $this->buildRelationFetchQuery($request, $parentEntity, $requestedRelations)
-            ->whereIn($resourceKeyName, $resourceKeys);
-    }
-
-    /**
-     * Runs the given query for fetching a list of relation entities.
-     *
-     * @param Request $request
-     * @param Relation $query
-     * @param Model $parentEntity
-     * @return Collection
-     */
-    protected function runRelationBatchFetchQuery(Request $request, Relation $query, Model $parentEntity): Collection
-    {
-        return $query->get();
-    }
-
-    /**
-     * The hook is executed before creating a batch of new resources.
-     *
-     * @param Request $request
-     * @return mixed
-     */
-    protected function beforeBatchStore(Request $request)
-    {
-        return null;
-    }
-
-    /**
-     * The hook is executed after creating a batch of new resources.
-     *
-     * @param Request $request
-     * @param Collection $entities
-     * @return mixed
-     */
-    protected function afterBatchStore(Request $request, Collection $entities)
-    {
-        return null;
-    }
-
-    /**
-     * The hook is executed before updating a batch of resources.
-     *
-     * @param Request $request
-     * @return mixed
-     */
-    protected function beforeBatchUpdate(Request $request)
-    {
-        return null;
-    }
-
-    /**
-     * The hook is executed after updating a batch of resources.
-     *
-     * @param Request $request
-     * @param Collection $entities
-     * @return mixed
-     */
-    protected function afterBatchUpdate(Request $request, Collection $entities)
-    {
-        return null;
-    }
-
-    /**
-     * The hook is executed before deleting a batch of resources.
-     *
-     * @param Request $request
-     * @return mixed
-     */
-    protected function beforeBatchDestroy(Request $request)
-    {
-        return null;
-    }
-
-    /**
-     * The hook is executed after deleting a batch of resources.
-     *
-     * @param Request $request
-     * @param Collection $entities
-     * @return mixed
-     */
-    protected function afterBatchDestroy(Request $request, Collection $entities)
-    {
-        return null;
-    }
-
-    /**
-     * The hook is executed before restoring a batch of resources.
-     *
-     * @param Request $request
-     * @return mixed
-     */
-    protected function beforeBatchRestore(Request $request)
-    {
-        return null;
-    }
-
-    /**
      * The hook is executed after restoring a batch of resources.
      *
      * @param Request $request
+     * @param Model $parentEntity
      * @param Collection $entities
      * @return mixed
      */
-    protected function afterBatchRestore(Request $request, Collection $entities)
+    protected function afterBatchRestore(Request $request, Model $parentEntity, Collection $entities)
     {
         return null;
     }

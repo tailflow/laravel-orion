@@ -11,7 +11,7 @@ class CompanyTeamsController extends RelationController
 
     protected $relation = 'teams';
 
-    protected function includes(): array
+    public function includes(): array
     {
         return ['company'];
     }

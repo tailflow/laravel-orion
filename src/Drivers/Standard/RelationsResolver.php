@@ -113,7 +113,7 @@ class RelationsResolver implements \Orion\Contracts\RelationsResolver
      */
     public function relationForeignKeyFromRelationInstance(Relation $relationInstance): string
     {
-        $laravelVersion = (float) app()->version();
+        $laravelVersion = (float)app()->version();
 
         return $laravelVersion > 5.7 || get_class($relationInstance) === HasOne::class ? $relationInstance->getQualifiedForeignKeyName() : $relationInstance->getQualifiedForeignKey();
     }
@@ -151,9 +151,11 @@ class RelationsResolver implements \Orion\Contracts\RelationsResolver
      */
     public function guardRelationsForCollection(Collection $entities, array $requestedRelations, bool $normalized = false): Collection
     {
-        return $entities->transform(function ($entity) use ($requestedRelations, $normalized) {
-            return $this->guardRelations($entity, $requestedRelations, $normalized);
-        });
+        return $entities->transform(
+            function ($entity) use ($requestedRelations, $normalized) {
+                return $this->guardRelations($entity, $requestedRelations, $normalized);
+            }
+        );
     }
 
     /**

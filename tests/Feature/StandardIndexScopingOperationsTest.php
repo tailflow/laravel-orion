@@ -17,11 +17,14 @@ class StandardIndexScopingOperationsTest extends TestCase
 
         Gate::policy(Post::class, GreenPolicy::class);
 
-        $response = $this->post('/api/posts/search', [
-            'scopes' => [
-                ['name' => 'published']
+        $response = $this->post(
+            '/api/posts/search',
+            [
+                'scopes' => [
+                    ['name' => 'published'],
+                ],
             ]
-        ]);
+        );
 
         $this->assertResourcesPaginated(
             $response,
@@ -37,11 +40,14 @@ class StandardIndexScopingOperationsTest extends TestCase
 
         Gate::policy(Post::class, GreenPolicy::class);
 
-        $response = $this->post('/api/posts/search', [
-            'scopes' => [
-                ['name' => 'publishedAt', 'parameters' => ['2019-01-10 09:35:21']]
+        $response = $this->post(
+            '/api/posts/search',
+            [
+                'scopes' => [
+                    ['name' => 'publishedAt', 'parameters' => ['2019-01-10 09:35:21']],
+                ],
             ]
-        ]);
+        );
 
         $this->assertResourcesPaginated(
             $response,
@@ -56,11 +62,14 @@ class StandardIndexScopingOperationsTest extends TestCase
 
         Gate::policy(Post::class, GreenPolicy::class);
 
-        $response = $this->post('/api/posts/search', [
-            'scopes' => [
-                ['name' => 'withMeta']
+        $response = $this->post(
+            '/api/posts/search',
+            [
+                'scopes' => [
+                    ['name' => 'withMeta'],
+                ],
             ]
-        ]);
+        );
 
         $response->assertStatus(422);
         $response->assertJsonStructure(['message', 'errors' => ['scopes.0.name']]);

@@ -21,9 +21,34 @@ class QueryBuilderTest extends TestCase
     public function building_query_for_index_endpoint()
     {
         $request = new Request();
-        $request->setRouteResolver(function () {
-            return new Route('GET', '/api/posts', [ControllerStub::class, 'index']);
-        });
+        $request->setRouteResolver(
+            function () {
+                return new Route('GET', '/api/posts', [ControllerStub::class, 'index']);
+            }
+        );
+
+        $query = Post::query();
+
+        $queryBuilderMock = Mockery::mock(QueryBuilder::class)->makePartial();
+        $queryBuilderMock->shouldReceive('applyScopesToQuery')->with($query, $request)->never();
+        $queryBuilderMock->shouldReceive('applyFiltersToQuery')->with($query, $request)->never();
+        $queryBuilderMock->shouldReceive('applySearchingToQuery')->with($query, $request)->never();
+        $queryBuilderMock->shouldReceive('applySortingToQuery')->with($query, $request)->never();
+
+        $queryBuilderMock->shouldReceive('applySoftDeletesToQuery')->with($query, $request)->once();
+
+        $this->assertSame($query, $queryBuilderMock->buildQuery($query, $request));
+    }
+
+    /** @test */
+    public function building_query_for_search_endpoint()
+    {
+        $request = new Request();
+        $request->setRouteResolver(
+            function () {
+                return new Route('GET', '/api/posts', [ControllerStub::class, 'search']);
+            }
+        );
 
         $query = Post::query();
 
@@ -41,9 +66,11 @@ class QueryBuilderTest extends TestCase
     public function building_query_for_show_endpoint()
     {
         $request = new Request();
-        $request->setRouteResolver(function () {
-            return new Route('GET', '/api/posts/1', [ControllerStub::class, 'show']);
-        });
+        $request->setRouteResolver(
+            function () {
+                return new Route('GET', '/api/posts/1', [ControllerStub::class, 'show']);
+            }
+        );
 
         $query = Post::query();
 
@@ -61,13 +88,18 @@ class QueryBuilderTest extends TestCase
     public function applying_scopes_to_query()
     {
         $request = new Request();
-        $request->setRouteResolver(function () {
-            return new Route('GET', '/api/posts', [ControllerStub::class, 'index']);
-        });
-        $request->query->set('scopes', [
-            ['name' => 'published'],
-            ['name' => 'publishedAt', 'parameters' => ['2019-01-01 09:35:14']]
-        ]);
+        $request->setRouteResolver(
+            function () {
+                return new Route('GET', '/api/posts', [ControllerStub::class, 'index']);
+            }
+        );
+        $request->query->set(
+            'scopes',
+            [
+                ['name' => 'published'],
+                ['name' => 'publishedAt', 'parameters' => ['2019-01-01 09:35:14']],
+            ]
+        );
 
         $postA = factory(Post::class)->create(['publish_at' => '2019-01-01 09:35:14']);
         $postB = factory(Post::class)->create(['publish_at' => '2020-02-01 09:35:14']);
@@ -92,10 +124,12 @@ class QueryBuilderTest extends TestCase
     /** @test */
     public function applying_model_level_fields_filters_with_singular_values()
     {
-        $request = $this->makeRequestWithFilters([
-            ['field' => 'title', 'operator' => '=', 'value' => 'test post'],
-            ['type' => 'or', 'field' => 'tracking_id', 'operator' => '=', 'value' => 5]
-        ]);
+        $request = $this->makeRequestWithFilters(
+            [
+                ['field' => 'title', 'operator' => '=', 'value' => 'test post'],
+                ['type' => 'or', 'field' => 'tracking_id', 'operator' => '=', 'value' => 5],
+            ]
+        );
 
         $postA = factory(Post::class)->create(['title' => 'test post', 'tracking_id' => 1]);
         $postB = factory(Post::class)->create(['title' => 'another test post', 'tracking_id' => 5]);
@@ -119,13 +153,28 @@ class QueryBuilderTest extends TestCase
         $this->assertFalse($posts->contains('id', $postC->id));
     }
 
+    protected function makeRequestWithFilters(array $filters)
+    {
+        $request = new Request();
+        $request->setRouteResolver(
+            function () {
+                return new Route('GET', '/api/tags', [ControllerStub::class, 'index']);
+            }
+        );
+        $request->query->set('filters', $filters);
+
+        return $request;
+    }
+
     /** @test */
     public function applying_model_level_fields_filters_with_multiple_values()
     {
-        $request = $this->makeRequestWithFilters([
-            ['field' => 'title', 'operator' => 'in', 'value' => ['test post', 'something else']],
-            ['type' => 'or', 'field' => 'tracking_id', 'operator' => 'in', 'value' => [5, 10]]
-        ]);
+        $request = $this->makeRequestWithFilters(
+            [
+                ['field' => 'title', 'operator' => 'in', 'value' => ['test post', 'something else']],
+                ['type' => 'or', 'field' => 'tracking_id', 'operator' => 'in', 'value' => [5, 10]],
+            ]
+        );
 
         $postA = factory(Post::class)->create(['title' => 'test post', 'tracking_id' => 1]);
         $postB = factory(Post::class)->create(['title' => 'another test post', 'tracking_id' => 10]);
@@ -152,10 +201,12 @@ class QueryBuilderTest extends TestCase
     /** @test */
     public function applying_relation_level_fields_filters_with_singular_values()
     {
-        $request = $this->makeRequestWithFilters([
-            ['field' => 'user.name', 'operator' => '=', 'value' => 'test user A'],
-            ['type' => 'or', 'field' => 'user.name', 'operator' => '=', 'value' => 'test user B']
-        ]);
+        $request = $this->makeRequestWithFilters(
+            [
+                ['field' => 'user.name', 'operator' => '=', 'value' => 'test user A'],
+                ['type' => 'or', 'field' => 'user.name', 'operator' => '=', 'value' => 'test user B'],
+            ]
+        );
 
         $postAUser = factory(User::class)->create(['name' => 'test user A']);
         $postA = factory(Post::class)->create(['user_id' => $postAUser->id]);
@@ -187,10 +238,12 @@ class QueryBuilderTest extends TestCase
     /** @test */
     public function applying_relation_level_fields_filters_with_multiple_values()
     {
-        $request = $this->makeRequestWithFilters([
-            ['field' => 'user.name', 'operator' => 'in', 'value' => ['test user A', 'test user B']],
-            ['type' => 'or', 'field' => 'user.name', 'operator' => 'in', 'value' => ['test user C']]
-        ]);
+        $request = $this->makeRequestWithFilters(
+            [
+                ['field' => 'user.name', 'operator' => 'in', 'value' => ['test user A', 'test user B']],
+                ['type' => 'or', 'field' => 'user.name', 'operator' => 'in', 'value' => ['test user C']],
+            ]
+        );
 
         $postAUser = factory(User::class)->create(['name' => 'test user A']);
         $postA = factory(Post::class)->create(['user_id' => $postAUser->id]);
@@ -222,9 +275,11 @@ class QueryBuilderTest extends TestCase
     /** @test */
     public function applying_filters_with_not_in_operator()
     {
-        $request = $this->makeRequestWithFilters([
-            ['field' => 'title', 'operator' => 'not in', 'value' => ['test post A', 'test post B']]
-        ]);
+        $request = $this->makeRequestWithFilters(
+            [
+                ['field' => 'title', 'operator' => 'not in', 'value' => ['test post A', 'test post B']],
+            ]
+        );
 
         $postA = factory(Post::class)->create(['title' => 'test post A']);
         $postB = factory(Post::class)->create(['title' => 'test post B']);
@@ -251,9 +306,11 @@ class QueryBuilderTest extends TestCase
     /** @test */
     public function searching_on_model_fields()
     {
-        $request = $this->makeRequestWithSearch([
-            'value' => 'example'
-        ]);
+        $request = $this->makeRequestWithSearch(
+            [
+                'value' => 'example',
+            ]
+        );
 
         $postA = factory(Post::class)->create(['title' => 'title example']);
         $postB = factory(Post::class)->create(['title' => 'example title']);
@@ -281,12 +338,27 @@ class QueryBuilderTest extends TestCase
         $this->assertFalse($posts->contains('id', $postE->id));
     }
 
+    protected function makeRequestWithSearch(array $search)
+    {
+        $request = new Request();
+        $request->setRouteResolver(
+            function () {
+                return new Route('GET', '/api/tags', [ControllerStub::class, 'index']);
+            }
+        );
+        $request->query->set('search', $search);
+
+        return $request;
+    }
+
     /** @test */
     public function searching_on_relation_fields()
     {
-        $request = $this->makeRequestWithSearch([
-            'value' => 'example'
-        ]);
+        $request = $this->makeRequestWithSearch(
+            [
+                'value' => 'example',
+            ]
+        );
 
         $postAUser = factory(User::class)->create(['name' => 'name example']);
         $postA = factory(Post::class)->create(['user_id' => $postAUser->id]);
@@ -327,9 +399,11 @@ class QueryBuilderTest extends TestCase
     public function search_query_constraints_are_not_applied_if_descriptor_is_missing_in_request()
     {
         $request = new Request();
-        $request->setRouteResolver(function () {
-            return new Route('GET', '/api/posts', [ControllerStub::class, 'index']);
-        });
+        $request->setRouteResolver(
+            function () {
+                return new Route('GET', '/api/posts', [ControllerStub::class, 'index']);
+            }
+        );
 
         factory(Post::class)->times(3)->create(['title' => 'not matching']);
 
@@ -348,12 +422,16 @@ class QueryBuilderTest extends TestCase
         $this->assertCount(3, $posts);
     }
 
+    //TODO: test sorting on different relation types
+
     /** @test */
     public function default_sorting_based_on_model_fields()
     {
-        $request = $this->makeRequestWithSort([
-            ['field' => 'title']
-        ]);
+        $request = $this->makeRequestWithSort(
+            [
+                ['field' => 'title'],
+            ]
+        );
 
         $postA = factory(Post::class)->create(['title' => 'post A']);
         $postB = factory(Post::class)->create(['title' => 'post B']);
@@ -376,12 +454,27 @@ class QueryBuilderTest extends TestCase
         $this->assertEquals($postC->id, $posts[2]->id);
     }
 
+    protected function makeRequestWithSort(array $sort)
+    {
+        $request = new Request();
+        $request->setRouteResolver(
+            function () {
+                return new Route('GET', '/api/tags', [ControllerStub::class, 'index']);
+            }
+        );
+        $request->query->set('sort', $sort);
+
+        return $request;
+    }
+
     /** @test */
     public function desc_sorting_based_on_model_fields()
     {
-        $request = $this->makeRequestWithSort([
-            ['field' => 'title', 'direction' => 'desc']
-        ]);
+        $request = $this->makeRequestWithSort(
+            [
+                ['field' => 'title', 'direction' => 'desc'],
+            ]
+        );
 
         $postA = factory(Post::class)->create(['title' => 'post A']);
         $postB = factory(Post::class)->create(['title' => 'post B']);
@@ -404,14 +497,14 @@ class QueryBuilderTest extends TestCase
         $this->assertEquals($postA->id, $posts[2]->id);
     }
 
-    //TODO: test sorting on different relation types
-
     /** @test */
     public function default_sorting_based_on_relation_fields()
     {
-        $request = $this->makeRequestWithSort([
-            ['field' => 'user.name']
-        ]);
+        $request = $this->makeRequestWithSort(
+            [
+                ['field' => 'user.name'],
+            ]
+        );
 
         $postAUser = factory(User::class)->create(['name' => 'user A']);
         $postA = factory(Post::class)->create(['user_id' => $postAUser->id]);
@@ -442,9 +535,11 @@ class QueryBuilderTest extends TestCase
     /** @test */
     public function desc_sorting_based_on_relation_fields()
     {
-        $request = $this->makeRequestWithSort([
-            ['field' => 'user.name', 'direction' => 'desc']
-        ]);
+        $request = $this->makeRequestWithSort(
+            [
+                ['field' => 'user.name', 'direction' => 'desc'],
+            ]
+        );
 
         $postAUser = factory(User::class)->create(['name' => 'user A']);
         $postA = factory(Post::class)->create(['user_id' => $postAUser->id]);
@@ -476,9 +571,11 @@ class QueryBuilderTest extends TestCase
     public function soft_deletes_query_constraints_are_not_applied_if_model_is_not_soft_deletable()
     {
         $request = new Request();
-        $request->setRouteResolver(function () {
-            return new Route('GET', '/api/teams', [ControllerStub::class, 'index']);
-        });
+        $request->setRouteResolver(
+            function () {
+                return new Route('GET', '/api/teams', [ControllerStub::class, 'index']);
+            }
+        );
 
         $queryMock = Mockery::mock(Team::query())->makePartial();
         $queryMock->shouldNotReceive('withTrashed');
@@ -498,9 +595,11 @@ class QueryBuilderTest extends TestCase
     public function trashed_models_are_returned_when_requested()
     {
         $request = new Request();
-        $request->setRouteResolver(function () {
-            return new Route('GET', '/api/posts', [ControllerStub::class, 'index']);
-        });
+        $request->setRouteResolver(
+            function () {
+                return new Route('GET', '/api/posts', [ControllerStub::class, 'index']);
+            }
+        );
         $request->query->set('with_trashed', true);
 
         $post = factory(Post::class)->create();
@@ -527,9 +626,11 @@ class QueryBuilderTest extends TestCase
     public function only_trashed_models_are_returned_when_requested()
     {
         $request = new Request();
-        $request->setRouteResolver(function () {
-            return new Route('GET', '/api/posts', [ControllerStub::class, 'index']);
-        });
+        $request->setRouteResolver(
+            function () {
+                return new Route('GET', '/api/posts', [ControllerStub::class, 'index']);
+            }
+        );
         $request->query->set('only_trashed', true);
 
         $post = factory(Post::class)->create();
@@ -550,38 +651,5 @@ class QueryBuilderTest extends TestCase
         $this->assertCount(1, $posts);
         $this->assertFalse($posts->contains('id', $post->id));
         $this->assertTrue($posts->contains('id', $softDeletedPost->id));
-    }
-
-    protected function makeRequestWithFilters(array $filters)
-    {
-        $request = new Request();
-        $request->setRouteResolver(function () {
-            return new Route('GET', '/api/tags', [ControllerStub::class, 'index']);
-        });
-        $request->query->set('filters', $filters);
-
-        return $request;
-    }
-
-    protected function makeRequestWithSearch(array $search)
-    {
-        $request = new Request();
-        $request->setRouteResolver(function () {
-            return new Route('GET', '/api/tags', [ControllerStub::class, 'index']);
-        });
-        $request->query->set('search', $search);
-
-        return $request;
-    }
-
-    protected function makeRequestWithSort(array $sort)
-    {
-        $request = new Request();
-        $request->setRouteResolver(function () {
-            return new Route('GET', '/api/tags', [ControllerStub::class, 'index']);
-        });
-        $request->query->set('sort', $sort);
-
-        return $request;
     }
 }

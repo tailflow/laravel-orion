@@ -64,8 +64,8 @@ class BelongsToManyRelationStandardUpdateOperationsTest extends TestCase
         $payload = [
             'name' => 'test updated',
             'pivot' => [
-                'references' => ['key' => 'value']
-            ]
+                'references' => ['key' => 'value'],
+            ],
         ];
 
         Gate::policy(Role::class, GreenPolicy::class);
@@ -82,9 +82,14 @@ class BelongsToManyRelationStandardUpdateOperationsTest extends TestCase
             $payload,
             ['pivot' => $updatedRole->pivot->toArray()]
         );
-        $this->assertResourceAttached('roles', $user, $role, [
-            'references' => ['key' => 'value']
-        ]);
+        $this->assertResourceAttached(
+            'roles',
+            $user,
+            $role,
+            [
+                'references' => ['key' => 'value'],
+            ]
+        );
     }
 
     /** @test */
@@ -100,7 +105,8 @@ class BelongsToManyRelationStandardUpdateOperationsTest extends TestCase
 
         $response = $this->patch("/api/users/{$user->id}/roles/{$role->id}", $payload);
 
-        $this->assertResourceUpdated($response,
+        $this->assertResourceUpdated(
+            $response,
             Role::class,
             $role->toArray(),
             ['name' => 'test updated'],
@@ -121,30 +127,38 @@ class BelongsToManyRelationStandardUpdateOperationsTest extends TestCase
             'name' => 'test updated',
             'pivot' => [
                 'meta' => ['key' => 'value'],
-                'custom_name' => 'test custom'
-            ]
+                'custom_name' => 'test custom',
+            ],
         ];
 
         Gate::policy(Role::class, GreenPolicy::class);
 
         $response = $this->patch("/api/users/{$user->id}/roles/{$role->id}", $payload);
 
-        $this->assertResourceUpdated($response,
+        $this->assertResourceUpdated(
+            $response,
             Role::class,
             $role->toArray(),
             ['name' => 'test updated'],
             ['pivot' => $user->roles()->first()->pivot->toArray()]
         );
         $this->assertDatabaseHas('role_user', ['meta' => null]);
-        $response->assertJsonMissing([
-            'pivot' => [
-                'meta' => ['key' => 'value']
+        $response->assertJsonMissing(
+            [
+                'pivot' => [
+                    'meta' => ['key' => 'value'],
+                ],
             ]
-        ]);
-        $this->assertResourceAttached('roles', $user, $role, [
-            'meta' => null,
-            'custom_name' => 'test custom'
-        ]);
+        );
+        $this->assertResourceAttached(
+            'roles',
+            $user,
+            $role,
+            [
+                'meta' => null,
+                'custom_name' => 'test custom',
+            ]
+        );
     }
 
     /** @test */
@@ -157,16 +171,19 @@ class BelongsToManyRelationStandardUpdateOperationsTest extends TestCase
         $payload = [
             'name' => 'test stored',
             'pivot' => [
-                'custom_name' => 'test'
-            ]
+                'custom_name' => 'test',
+            ],
         ];
 
-        app()->bind(ComponentsResolver::class, function () {
-            $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
-            $componentsResolverMock->shouldReceive('resolveRequestClass')->once()->andReturn(RoleRequest::class);
+        app()->bind(
+            ComponentsResolver::class,
+            function () {
+                $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
+                $componentsResolverMock->shouldReceive('resolveRequestClass')->once()->andReturn(RoleRequest::class);
 
-            return $componentsResolverMock;
-        });
+                return $componentsResolverMock;
+            }
+        );
 
         Gate::policy(Role::class, GreenPolicy::class);
 
@@ -174,11 +191,13 @@ class BelongsToManyRelationStandardUpdateOperationsTest extends TestCase
 
         $response->assertStatus(422);
         $this->assertDatabaseMissing('role_user', ['custom_name' => 'test']);
-        $response->assertJsonMissing([
-            'pivot' => [
-                'custom_name' => 'test'
+        $response->assertJsonMissing(
+            [
+                'pivot' => [
+                    'custom_name' => 'test',
+                ],
             ]
-        ]);
+        );
     }
 
     /** @test */
@@ -190,12 +209,15 @@ class BelongsToManyRelationStandardUpdateOperationsTest extends TestCase
         $user->roles()->save($role);
         $payload = ['description' => 'a'];
 
-        app()->bind(ComponentsResolver::class, function () {
-            $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
-            $componentsResolverMock->shouldReceive('resolveRequestClass')->once()->andReturn(RoleRequest::class);
+        app()->bind(
+            ComponentsResolver::class,
+            function () {
+                $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
+                $componentsResolverMock->shouldReceive('resolveRequestClass')->once()->andReturn(RoleRequest::class);
 
-            return $componentsResolverMock;
-        });
+                return $componentsResolverMock;
+            }
+        );
 
         Gate::policy(Role::class, GreenPolicy::class);
 
@@ -215,24 +237,28 @@ class BelongsToManyRelationStandardUpdateOperationsTest extends TestCase
         $user->roles()->save($role);
         $payload = ['name' => 'test updated'];
 
-        app()->bind(ComponentsResolver::class, function () {
-            $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
-            $componentsResolverMock->shouldReceive('resolveResourceClass')->once()->andReturn(SampleResource::class);
+        app()->bind(
+            ComponentsResolver::class,
+            function () {
+                $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
+                $componentsResolverMock->shouldReceive('resolveResourceClass')->once()->andReturn(SampleResource::class);
 
-            return $componentsResolverMock;
-        });
+                return $componentsResolverMock;
+            }
+        );
 
         Gate::policy(Role::class, GreenPolicy::class);
 
         $response = $this->patch("/api/users/{$user->id}/roles/{$role->id}", $payload);
 
-        $this->assertResourceUpdated($response,
+        $this->assertResourceUpdated(
+            $response,
             Role::class,
             $role->toArray(),
             $payload,
             [
                 'pivot' => $user->roles()->first()->pivot->toArray(),
-                'test-field-from-resource' => 'test-value'
+                'test-field-from-resource' => 'test-value',
             ]
         );
     }
@@ -252,13 +278,14 @@ class BelongsToManyRelationStandardUpdateOperationsTest extends TestCase
 
         $updatedRole = $user->roles()->with('users')->first();
 
-        $this->assertResourceUpdated($response,
+        $this->assertResourceUpdated(
+            $response,
             Role::class,
             $role->toArray(),
             $payload,
             [
                 'pivot' => $updatedRole->pivot->toArray(),
-                'users' => $updatedRole->users->toArray()
+                'users' => $updatedRole->users->toArray(),
             ]
         );
     }

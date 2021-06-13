@@ -3,9 +3,24 @@
 namespace Orion\Http\Routing;
 
 use Illuminate\Routing\Route;
+use Illuminate\Routing\Router;
+use Orion\Specs\ResourcesCacheStore;
+use Orion\ValueObjects\RegisteredResource;
 
 class ResourceRegistrar extends \Illuminate\Routing\ResourceRegistrar
 {
+    /**
+     * @var ResourcesCacheStore
+     */
+    protected $resourcesCacheStore;
+
+    public function __construct(Router $router, ResourcesCacheStore $resourcesCacheStore)
+    {
+        parent::__construct($router);
+
+        $this->resourcesCacheStore = $resourcesCacheStore;
+    }
+
     /**
      * The default actions for a resourceful controller.
      *
@@ -26,9 +41,7 @@ class ResourceRegistrar extends \Illuminate\Routing\ResourceRegistrar
     {
         $uri = $this->getResourceUri($name).'/search';
 
-        $action = $this->getResourceAction($name, $controller, 'index', $options);
-
-        $action['as'] = str_replace('.index', '.search', $action['as']);
+        $action = $this->getResourceAction($name, $controller, 'search', $options);
 
         return $this->router->post($uri, $action);
     }
@@ -121,5 +134,17 @@ class ResourceRegistrar extends \Illuminate\Routing\ResourceRegistrar
         $action = $this->getResourceAction($name, $controller, 'batchRestore', $options);
 
         return $this->router->post($uri, $action);
+    }
+
+    public function register($name, $controller, array $options = [])
+    {
+        $this->resourcesCacheStore->addResource(
+            new RegisteredResource(
+                $controller,
+                $this->getResourceMethods($this->resourceDefaults, $options)
+            )
+        );
+
+        return parent::register($name, $controller, $options);
     }
 }

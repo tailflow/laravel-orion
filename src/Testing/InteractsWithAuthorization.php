@@ -35,9 +35,12 @@ trait InteractsWithAuthorization
      */
     protected function requireAuthorization()
     {
-        app()->bind('orion.authorizationRequired', function () {
-            return true;
-        });
+        app()->bind(
+            'orion.authorizationRequired',
+            function () {
+                return true;
+            }
+        );
 
         return $this;
     }
@@ -49,9 +52,12 @@ trait InteractsWithAuthorization
      */
     protected function bypassAuthorization()
     {
-        app()->bind('orion.authorizationRequired', function () {
-            return false;
-        });
+        app()->bind(
+            'orion.authorizationRequired',
+            function () {
+                return false;
+            }
+        );
 
         return $this;
     }
@@ -60,7 +66,7 @@ trait InteractsWithAuthorization
      *
      * @param \Illuminate\Testing\TestResponse|\Illuminate\Foundation\Testing\TestResponse $response
      */
-    protected function assertUnauthorizedResponse($response) : void
+    protected function assertUnauthorizedResponse($response): void
     {
         $response->assertStatus(403);
         $response->assertJson(['message' => 'This action is unauthorized.']);

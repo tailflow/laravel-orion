@@ -15,7 +15,7 @@ class UserNotificationsController extends RelationController
 
     protected $pivotJson = ['meta'];
 
-    protected function includes(): array
+    public function includes(): array
     {
         return ['users'];
     }

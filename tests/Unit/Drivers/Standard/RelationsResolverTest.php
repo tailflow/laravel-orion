@@ -40,10 +40,12 @@ class RelationsResolverTest extends TestCase
     public function guarding_entity_relations()
     {
         $post = new Post(['title' => 'test post']);
-        $post->setRelations([
-            'user' => new User(['name' => 'manager user']),
-            'editors' => collect([new User(['name' => 'editor user'])])
-        ]);
+        $post->setRelations(
+            [
+                'user' => new User(['name' => 'manager user']),
+                'editors' => collect([new User(['name' => 'editor user'])]),
+            ]
+        );
 
         $relationsResolver = new RelationsResolver(['user'], []);
         $guardedPost = $relationsResolver->guardRelations($post, ['user']);
@@ -56,15 +58,19 @@ class RelationsResolverTest extends TestCase
     public function guarding_entity_nested_relations_of_the_same_parent()
     {
         $user = new User(['name' => 'manager user']);
-        $user->setRelations([
-            'company' => new Company(),
-            'team' => new Team()
-        ]);
+        $user->setRelations(
+            [
+                'company' => new Company(),
+                'team' => new Team(),
+            ]
+        );
 
         $post = new Post(['title' => 'test post']);
-        $post->setRelations([
-            'user' => $user
-        ]);
+        $post->setRelations(
+            [
+                'user' => $user,
+            ]
+        );
 
         $relationsResolver = new RelationsResolver([], ['user.company', 'user.team']);
         $guardedPost = $relationsResolver->guardRelations($post, ['user.company', 'user.team']);
@@ -88,13 +94,15 @@ class RelationsResolverTest extends TestCase
         $editor = new User(['name' => 'editor user']);
         $editor->setRelation('team', $team);
 
-        $post->setRelations([
-            'user' => $manager,
-            'editors' => collect([$editor])
-        ]);
+        $post->setRelations(
+            [
+                'user' => $manager,
+                'editors' => collect([$editor]),
+            ]
+        );
 
         $relationsResolver = new RelationsResolver(['user', 'editors.team.users', 'editors.team.company'], []);
-        $guardedPost = $relationsResolver->guardRelations($post, ['user',  'editors.team.users', 'editors.team.company']);
+        $guardedPost = $relationsResolver->guardRelations($post, ['user', 'editors.team.users', 'editors.team.company']);
 
         self::assertArrayHasKey('user', $guardedPost->getRelations());
         self::assertArrayHasKey('editors', $guardedPost->getRelations());
@@ -107,15 +115,19 @@ class RelationsResolverTest extends TestCase
     public function guarding_collection_relations()
     {
         $postA = new Post(['title' => 'test post A']);
-        $postA->setRelations([
-            'user' => new User(['name' => 'test user']),
-            'editors' => collect([new User(['name' => 'another test user'])])
-        ]);
+        $postA->setRelations(
+            [
+                'user' => new User(['name' => 'test user']),
+                'editors' => collect([new User(['name' => 'another test user'])]),
+            ]
+        );
         $postB = new Post(['title' => 'test post B']);
-        $postB->setRelations([
-            'user' => new User(['name' => 'test user']),
-            'editors' => collect([new User(['name' => 'another test user'])])
-        ]);
+        $postB->setRelations(
+            [
+                'user' => new User(['name' => 'test user']),
+                'editors' => collect([new User(['name' => 'another test user'])]),
+            ]
+        );
 
         $postsCollection = collect([$postA, $postB]);
 
@@ -126,5 +138,25 @@ class RelationsResolverTest extends TestCase
         self::assertArrayNotHasKey('editors', $guardedPosts[0]->getRelations());
         self::assertArrayHasKey('user', $guardedPosts[1]->getRelations());
         self::assertArrayNotHasKey('editors', $guardedPosts[1]->getRelations());
+    }
+
+    /** @test */
+    public function resolving_relation_from_param_constraint(): void
+    {
+        $relationsResolver = new RelationsResolver([], []);
+
+        $relation = $relationsResolver->relationFromParamConstraint('user.name');
+
+        self::assertSame('user', $relation);
+    }
+
+    /** @test */
+    public function resolving_deep_relation_from_param_constraint(): void
+    {
+        $relationsResolver = new RelationsResolver([], []);
+
+        $relation = $relationsResolver->relationFromParamConstraint('user.posts.tags');
+
+        self::assertSame('user.posts', $relation);
     }
 }

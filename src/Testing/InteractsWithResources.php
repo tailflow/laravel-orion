@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 
 trait InteractsWithResources
 {
@@ -19,19 +18,23 @@ trait InteractsWithResources
     protected function assertResourcesPaginated($response, LengthAwarePaginator $paginator, array $mergeData = [], bool $exact = true): void
     {
         $response->assertStatus(200);
-        $response->assertJsonStructure([
-            'data',
-            'links' => ['first', 'last', 'prev', 'next'],
-            'meta' => ['current_page', 'from', 'last_page', 'path', 'per_page', 'to', 'total']
-        ]);
+        $response->assertJsonStructure(
+            [
+                'data',
+                'links' => ['first', 'last', 'prev', 'next'],
+                'meta' => ['current_page', 'from', 'last_page', 'path', 'per_page', 'to', 'total'],
+            ]
+        );
 
         $expected = [
-            'data' => $paginator->forPage($paginator->currentPage(), $paginator->perPage())->values()->map(function ($resource) use ($mergeData) {
-                $arrayRepresentation = is_array($resource) ? $resource : $resource->fresh()->toArray();
-                $arrayRepresentation = array_merge($arrayRepresentation, $mergeData);
+            'data' => $paginator->forPage($paginator->currentPage(), $paginator->perPage())->values()->map(
+                function ($resource) use ($mergeData) {
+                    $arrayRepresentation = is_array($resource) ? $resource : $resource->fresh()->toArray();
+                    $arrayRepresentation = array_merge($arrayRepresentation, $mergeData);
 
-                return $arrayRepresentation;
-            })->toArray(),
+                    return $arrayRepresentation;
+                }
+            )->toArray(),
             'links' => [
                 'first' => $this->resolveResourceLink($paginator, 1),
                 'last' => $this->resolveResourceLink($paginator, $paginator->lastPage()),
@@ -45,11 +48,11 @@ trait InteractsWithResources
                 'path' => $this->resolvePath($this->resolveBasePath($paginator)),
                 'per_page' => $paginator->perPage(),
                 'to' => $paginator->perPage() > $paginator->total() ? $paginator->total() : $paginator->currentPage() * $paginator->perPage(),
-                'total' => $paginator->total()
-            ]
+                'total' => $paginator->total(),
+            ],
         ];
 
-        if ((float) app()->version() >= 8.0) {
+        if ((float)app()->version() >= 8.0) {
             $expected['meta']['links'] = $this->buildMetaLinks($paginator);
             $meta = $expected['meta'];
             ksort($meta);
@@ -57,6 +60,78 @@ trait InteractsWithResources
         }
 
         $this->assertResponseContent($expected, $response, $exact);
+    }
+
+    protected function resolveResourceLink(LengthAwarePaginator $paginator, int $page): string
+    {
+        $path = $this->resolvePath($this->resolveBasePath($paginator));
+        return "{$path}?page={$page}";
+    }
+
+    protected function resolvePath(string $basePath): string
+    {
+        return config('app.url')."/api/$basePath";
+    }
+
+    protected function resolveBasePath(LengthAwarePaginator $paginator): string
+    {
+        if ((float)app()->version() >= 6.0) {
+            return $paginator->path();
+        }
+
+        $paginatorDescriptor = $paginator->toArray();
+        return $paginatorDescriptor['path'];
+    }
+
+    protected function buildMetaLinks(LengthAwarePaginator $paginator): array
+    {
+        $links = [
+            $this->buildMetaLink(
+                $paginator->currentPage() > 1 ? $this->resolveResourceLink($paginator, $paginator->currentPage() - 1) : null,
+                (float)app()->version() >= 8.0 ? '&laquo; Previous' : 'Previous',
+                false
+            ),
+        ];
+
+        for ($page = 1; $page <= $paginator->lastPage(); $page++) {
+            $links[] = $this->buildMetaLink(
+                $this->resolveResourceLink($paginator, $page),
+                (float)app()->version() >= 8.0 ? (string)$page : $page,
+                $paginator->currentPage() === $page
+            );
+        }
+
+        $links[] = $this->buildMetaLink(
+            $paginator->lastPage() > 1 ? $this->resolveResourceLink($paginator, $paginator->currentPage() + 1) : null,
+            (float)app()->version() >= 8.0 ? 'Next &raquo;' : 'Next',
+            false
+        );
+
+        return $links;
+    }
+
+    protected function buildMetaLink(?string $url, $label, bool $active): array
+    {
+        return [
+            'url' => $url,
+            'label' => $label,
+            'active' => $active,
+        ];
+    }
+
+    protected function assertResponseContent(array $expected, $response, bool $exact)
+    {
+        if ($exact) {
+            $this->assertJsonSame($expected, $response);
+        } else {
+            $response->assertJson($expected);
+        }
+    }
+
+    protected function assertJsonSame(array $expected, $response): void
+    {
+        $actual = json_decode($response->getContent(), true);
+        self::assertSame($expected, $actual);
     }
 
     /**
@@ -68,17 +143,21 @@ trait InteractsWithResources
     protected function assertResourcesListed($response, Collection $entities, array $mergeData = [], bool $exact = true): void
     {
         $response->assertStatus(200);
-        $response->assertJsonStructure([
-            'data',
-        ]);
+        $response->assertJsonStructure(
+            [
+                'data',
+            ]
+        );
 
         $expected = [
-            'data' => $entities->map(function ($resource) use ($mergeData) {
-                $arrayRepresentation = is_array($resource) ? $resource : $resource->fresh()->toArray();
-                $arrayRepresentation = array_merge($arrayRepresentation, $mergeData);
+            'data' => $entities->map(
+                function ($resource) use ($mergeData) {
+                    $arrayRepresentation = is_array($resource) ? $resource : $resource->fresh()->toArray();
+                    $arrayRepresentation = array_merge($arrayRepresentation, $mergeData);
 
-                return $arrayRepresentation;
-            })->toArray(),
+                    return $arrayRepresentation;
+                }
+            )->toArray(),
         ];
 
         $this->assertResponseContent($expected, $response, $exact);
@@ -218,8 +297,8 @@ trait InteractsWithResources
     protected function assertResourceAssociated($response, Model $parentModel, Model $relationModel, string $relation, array $mergeData = [], bool $exact = true): void
     {
         $relationModel = $relationModel->fresh();
-        $foreignKeyGetter = (float) app()->version() > 5.7 ? 'getForeignKeyName' : 'getForeignKey';
-        self::assertSame((string) $parentModel->getKey(), (string) $relationModel->{$relationModel->{$relation}()->{$foreignKeyGetter}()});
+        $foreignKeyGetter = (float)app()->version() > 5.7 ? 'getForeignKeyName' : 'getForeignKey';
+        self::assertSame((string)$parentModel->getKey(), (string)$relationModel->{$relationModel->{$relation}()->{$foreignKeyGetter}()});
 
         $response->assertStatus(200);
         $response->assertJsonStructure(['data']);
@@ -239,7 +318,7 @@ trait InteractsWithResources
     protected function assertResourceDissociated($response, Model $relationModel, string $relation, array $mergeData = [], bool $exact = true): void
     {
         $relationModel = $relationModel->fresh();
-        $foreignKeyGetter = (float) app()->version() > 5.7 ? 'getForeignKeyName' : 'getForeignKey';
+        $foreignKeyGetter = (float)app()->version() > 5.7 ? 'getForeignKeyName' : 'getForeignKey';
         self::assertSame(null, $relationModel->{$relationModel->{$relation}()->{$foreignKeyGetter}()});
 
         $response->assertStatus(200);
@@ -264,6 +343,22 @@ trait InteractsWithResources
         $this->assertResponseContent(['attached' => $relationModels->pluck('id')->toArray()], $response, $exact);
     }
 
+    protected function assertResourceAttached(string $relation, Model $parentModel, Model $relationModel, array $pivotFields = []): void
+    {
+        $pivotFields = $this->castFieldsToJson($pivotFields);
+
+        $this->assertDatabaseHas(
+            $parentModel->{$relation}()->getTable(),
+            array_merge(
+                [
+                    $parentModel->{$relation}()->getForeignPivotKeyName() => $parentModel->getKey(),
+                    $parentModel->{$relation}()->getRelatedPivotKeyName() => $relationModel->getKey(),
+                ],
+                $pivotFields
+            )
+        );
+    }
+
     protected function assertResourcesDetached($response, string $relation, Model $parentModel, Collection $relationModels, bool $exact = true): void
     {
         foreach ($relationModels as $relationModel) {
@@ -271,6 +366,17 @@ trait InteractsWithResources
         }
 
         $this->assertResponseContent(['detached' => $relationModels->pluck('id')->toArray()], $response, $exact);
+    }
+
+    protected function assertResourceDetached(string $relation, Model $parentModel, Model $relationModel): void
+    {
+        $this->assertDatabaseMissing(
+            $parentModel->{$relation}()->getTable(),
+            [
+                $parentModel->{$relation}()->getForeignPivotKeyName() => $parentModel->getKey(),
+                $parentModel->{$relation}()->getRelatedPivotKeyName() => $relationModel->getKey(),
+            ]
+        );
     }
 
     protected function assertResourcesSynced($response, string $relation, Model $parentModel, array $syncMap, array $pivotFields = [], bool $exact = true): void
@@ -324,34 +430,22 @@ trait InteractsWithResources
         );
     }
 
-    protected function assertResourceAttached(string $relation, Model $parentModel, Model $relationModel, array $pivotFields = []): void
-    {
-        $pivotFields = $this->castFieldsToJson($pivotFields);
-
-        $this->assertDatabaseHas($parentModel->{$relation}()->getTable(), array_merge([
-            $parentModel->{$relation}()->getForeignPivotKeyName() => $parentModel->getKey(),
-            $parentModel->{$relation}()->getRelatedPivotKeyName() => $relationModel->getKey()
-        ], $pivotFields));
-    }
-
-    protected function assertResourceDetached(string $relation, Model $parentModel, Model $relationModel): void
-    {
-        $this->assertDatabaseMissing($parentModel->{$relation}()->getTable(), [
-            $parentModel->{$relation}()->getForeignPivotKeyName() => $parentModel->getKey(),
-            $parentModel->{$relation}()->getRelatedPivotKeyName() => $relationModel->getKey()
-        ]);
-    }
-
     protected function assertResourcePivotUpdated($response, string $relation, Model $parentModel, Model $relationModel, array $pivotFields, bool $exact = true): void
     {
         $this->assertResponseContent(['updated' => [$relationModel->getKey()]], $response, $exact);
 
         $pivotFields = $this->castFieldsToJson($pivotFields);
 
-        $this->assertDatabaseHas($parentModel->{$relation}()->getTable(), array_merge([
-            $parentModel->{$relation}()->getForeignPivotKeyName() => $parentModel->getKey(),
-            $parentModel->{$relation}()->getRelatedPivotKeyName() => $relationModel->getKey()
-        ], $pivotFields));
+        $this->assertDatabaseHas(
+            $parentModel->{$relation}()->getTable(),
+            array_merge(
+                [
+                    $parentModel->{$relation}()->getForeignPivotKeyName() => $parentModel->getKey(),
+                    $parentModel->{$relation}()->getRelatedPivotKeyName() => $relationModel->getKey(),
+                ],
+                $pivotFields
+            )
+        );
     }
 
     protected function assertNoResourcesAttached($response, string $relation, Model $parentModel, bool $exact = true): void
@@ -375,26 +469,11 @@ trait InteractsWithResources
         $this->assertResponseContent(['attached' => [], 'detached' => [], 'updated' => []], $response, $exact);
     }
 
-    protected function assertNoResourcesToggled($response, string $relation, Model $parentModel,int $expectedCount, bool $exact = true): void
+    protected function assertNoResourcesToggled($response, string $relation, Model $parentModel, int $expectedCount, bool $exact = true): void
     {
         self::assertSame($expectedCount, $parentModel->{$relation}()->count());
 
         $this->assertResponseContent(['attached' => [], 'detached' => []], $response, $exact);
-    }
-
-    protected function assertResponseContent(array $expected, $response, bool $exact)
-    {
-        if ($exact) {
-            $this->assertJsonSame($expected, $response);
-        } else {
-            $response->assertJson($expected);
-        }
-    }
-
-    protected function assertJsonSame(array $expected, $response): void
-    {
-        $actual = json_decode($response->getContent(), true);
-        self::assertSame($expected, $actual);
     }
 
     protected function buildSyncMap(array $attached = [], array $detached = [], array $updated = [], array $remained = []): array
@@ -403,64 +482,7 @@ trait InteractsWithResources
             'attached' => $attached,
             'detached' => $detached,
             'updated' => $updated,
-            'remained' => $remained
-        ];
-    }
-
-    protected function resolveResourceLink(LengthAwarePaginator $paginator, int $page): string
-    {
-        $path = $this->resolvePath($this->resolveBasePath($paginator));
-        return "{$path}?page={$page}";
-    }
-
-    protected function resolveBasePath(LengthAwarePaginator $paginator): string
-    {
-        if ((float) app()->version() >= 6.0) {
-            return $paginator->path();
-        }
-
-        $paginatorDescriptor = $paginator->toArray();
-        return $paginatorDescriptor['path'];
-    }
-
-    protected function resolvePath(string $basePath): string
-    {
-        return config('app.url')."/api/$basePath";
-    }
-
-    protected function buildMetaLinks(LengthAwarePaginator $paginator): array
-    {
-        $links = [
-            $this->buildMetaLink(
-                $paginator->currentPage() > 1 ? $this->resolveResourceLink($paginator, $paginator->currentPage() - 1) : null,
-                (float) app()->version() >= 8.0 ? '&laquo; Previous' : 'Previous',
-                false
-            )
-        ];
-
-        for ($page = 1; $page <= $paginator->lastPage(); $page++) {
-            $links[] = $this->buildMetaLink(
-                $this->resolveResourceLink($paginator, $page),
-                $page,
-                $paginator->currentPage() === $page
-            );
-        }
-
-        $links[] = $this->buildMetaLink(
-            $paginator->lastPage() > 1 ? $this->resolveResourceLink($paginator, $paginator->currentPage() + 1) : null,
-            (float) app()->version() >= 8.0 ? 'Next &raquo;' : 'Next',
-            false
-        );
-
-        return $links;
-    }
-
-    protected function buildMetaLink(?string $url, $label, bool $active): array
-    {
-        return [
-            'url' => $url,
-            'label' => (string) $label,
-            'active' => $active
+            'remained' => $remained,
         ];
     }
 

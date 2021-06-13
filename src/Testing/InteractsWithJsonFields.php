@@ -11,13 +11,15 @@ trait InteractsWithJsonFields
 {
     protected function castFieldsToJson(array $fields): array
     {
-        return collect($fields)->map(function ($value) {
-            if (is_array($value) || $value instanceof Jsonable) {
-                return $this->castFieldToJson($value);
-            }
+        return collect($fields)->map(
+            function ($value) {
+                if (is_array($value) || $value instanceof Jsonable) {
+                    return $this->castFieldToJson($value);
+                }
 
-            return $value;
-        })->toArray();
+                return $value;
+            }
+        )->toArray();
     }
 
     protected function castFieldToJson($value)

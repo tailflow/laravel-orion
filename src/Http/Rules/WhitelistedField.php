@@ -28,7 +28,7 @@ class WhitelistedField implements Rule
      * @param string $field
      * @return bool
      */
-    public function passes($_, $field) : bool
+    public function passes($_, $field): bool
     {
         if (in_array('*', $this->constraints, true)) {
             return true;
@@ -41,9 +41,12 @@ class WhitelistedField implements Rule
             return false;
         }
 
-        $nestedParamConstraints = array_filter($this->constraints, function ($paramConstraint) {
-            return strpos($paramConstraint, '.*') !== false;
-        });
+        $nestedParamConstraints = array_filter(
+            $this->constraints,
+            function ($paramConstraint) {
+                return strpos($paramConstraint, '.*') !== false;
+            }
+        );
 
         foreach ($nestedParamConstraints as $nestedParamConstraint) {
             if (preg_match($this->convertConstraintToRegex($nestedParamConstraint), $field)) {

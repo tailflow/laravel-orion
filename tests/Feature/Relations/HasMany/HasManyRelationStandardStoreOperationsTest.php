@@ -51,7 +51,8 @@ class HasManyRelationStandardStoreOperationsTest extends TestCase
 
         $response = $this->post("/api/companies/{$company->id}/teams", $payload);
 
-        $this->assertResourceStored($response,
+        $this->assertResourceStored(
+            $response,
             Team::class,
             ['name' => 'test stored']
         );
@@ -65,12 +66,15 @@ class HasManyRelationStandardStoreOperationsTest extends TestCase
         $company = factory(Company::class)->create();
         $payload = ['name' => 'test stored', 'description' => 5];
 
-        app()->bind(ComponentsResolver::class, function () {
-            $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
-            $componentsResolverMock->shouldReceive('resolveRequestClass')->once()->andReturn(TeamRequest::class);
+        app()->bind(
+            ComponentsResolver::class,
+            function () {
+                $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
+                $componentsResolverMock->shouldReceive('resolveRequestClass')->once()->andReturn(TeamRequest::class);
 
-            return $componentsResolverMock;
-        });
+                return $componentsResolverMock;
+            }
+        );
 
         Gate::policy(Team::class, GreenPolicy::class);
 
@@ -87,12 +91,15 @@ class HasManyRelationStandardStoreOperationsTest extends TestCase
         $company = factory(Company::class)->create();
         $payload = ['name' => 'test stored'];
 
-        app()->bind(ComponentsResolver::class, function () {
-            $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
-            $componentsResolverMock->shouldReceive('resolveResourceClass')->once()->andReturn(SampleResource::class);
+        app()->bind(
+            ComponentsResolver::class,
+            function () {
+                $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
+                $componentsResolverMock->shouldReceive('resolveResourceClass')->once()->andReturn(SampleResource::class);
 
-            return $componentsResolverMock;
-        });
+                return $componentsResolverMock;
+            }
+        );
 
         Gate::policy(Team::class, GreenPolicy::class);
 

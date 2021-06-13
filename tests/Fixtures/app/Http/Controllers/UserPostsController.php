@@ -11,7 +11,7 @@ class UserPostsController extends RelationController
 
     protected $relation = 'posts';
 
-    protected function includes(): array
+    public function includes(): array
     {
         return ['user'];
     }

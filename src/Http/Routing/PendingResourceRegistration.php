@@ -18,9 +18,17 @@ class PendingResourceRegistration extends \Illuminate\Routing\PendingResourceReg
      */
     public function __construct(ResourceRegistrar $registrar, string $name, string $controller, array $options)
     {
-        parent::__construct($registrar, $name, $controller, array_merge([
-            'except' => ['restore', 'batchRestore']
-        ], $options));
+        parent::__construct(
+            $registrar,
+            $name,
+            $controller,
+            array_merge(
+                [
+                    'except' => ['restore', 'batchRestore'],
+                ],
+                $options
+            )
+        );
     }
 
     /**
@@ -28,7 +36,7 @@ class PendingResourceRegistration extends \Illuminate\Routing\PendingResourceReg
      *
      * @return $this
      */
-    public function withSoftDeletes() : PendingResourceRegistration
+    public function withSoftDeletes(): PendingResourceRegistration
     {
         $except = Arr::get($this->options, 'except');
 
@@ -45,7 +53,7 @@ class PendingResourceRegistration extends \Illuminate\Routing\PendingResourceReg
      *
      * @return $this
      */
-    public function withoutBatch() : PendingResourceRegistration
+    public function withoutBatch(): PendingResourceRegistration
     {
         $except = Arr::get($this->options, 'except');
 

@@ -17,7 +17,7 @@ use Orion\Tests\Fixtures\App\Policies\RedPolicy;
 class BelongsToManyRelationStandardIndexOperationsTest extends TestCase
 {
     /** @test */
-    public function getting_a_list_of_relation_resources_without_authorization(): void
+    public function getting_a_list_of_relation_resources_without_authorization_on_relation_model(): void
     {
         /** @var User $user */
         $user = factory(User::class)->create();
@@ -32,6 +32,22 @@ class BelongsToManyRelationStandardIndexOperationsTest extends TestCase
     }
 
     /** @test */
+    public function getting_a_list_of_relation_resources_without_authorization_on_parent_model(): void
+    {
+        /** @var User $user */
+        $user = factory(User::class)->create();
+        $roles = factory(Role::class)->times(5)->make();
+        $user->roles()->saveMany($roles);
+
+        Gate::policy(User::class, RedPolicy::class);
+        Gate::policy(Role::class, GreenPolicy::class);
+
+        $response = $this->get("/api/users/{$user->id}/roles");
+
+        $this->assertUnauthorizedResponse($response);
+    }
+
+    /** @test */
     public function getting_a_list_of_relation_resources_when_authorized(): void
     {
         /** @var User $user */
@@ -39,6 +55,7 @@ class BelongsToManyRelationStandardIndexOperationsTest extends TestCase
         $roles = factory(Role::class)->times(5)->make();
         $user->roles()->saveMany($roles);
 
+        Gate::policy(User::class, GreenPolicy::class);
         Gate::policy(Role::class, GreenPolicy::class);
 
         $response = $this->get("/api/users/{$user->id}/roles");
@@ -55,24 +72,33 @@ class BelongsToManyRelationStandardIndexOperationsTest extends TestCase
         /** @var User $user */
         $user = factory(User::class)->create();
         $roles = factory(Role::class)->times(5)->make();
-        $user->roles()->saveMany($roles,
-            $roles->map(function () {
-                return [
-                    'meta' => json_encode(['key' => 'value'])
-                ];
-            })->toArray()
+        $user->roles()->saveMany(
+            $roles,
+            $roles->map(
+                function () {
+                    return [
+                        'meta' => json_encode(['key' => 'value']),
+                    ];
+                }
+            )->toArray()
         );
 
+        Gate::policy(User::class, GreenPolicy::class);
         Gate::policy(Role::class, GreenPolicy::class);
 
         $response = $this->get("/api/users/{$user->id}/roles");
 
         $this->assertResourcesPaginated(
             $response,
-            $this->makePaginator($user->load('roles')->roles->map(function(Role $role) {
-                $role->pivot->meta = ['key' => 'value'];
-                return $role;
-            })->toArray(), "users/{$user->id}/roles")
+            $this->makePaginator(
+                $user->load('roles')->roles->map(
+                    function (Role $role) {
+                        $role->pivot->meta = ['key' => 'value'];
+                        return $role;
+                    }
+                )->toArray(),
+                "users/{$user->id}/roles"
+            )
         );
     }
 
@@ -84,6 +110,7 @@ class BelongsToManyRelationStandardIndexOperationsTest extends TestCase
         $roles = factory(Role::class)->times(45)->make();
         $user->roles()->saveMany($roles);
 
+        Gate::policy(User::class, GreenPolicy::class);
         Gate::policy(Role::class, GreenPolicy::class);
 
         $response = $this->get("/api/users/{$user->id}/roles?page=2");
@@ -104,6 +131,7 @@ class BelongsToManyRelationStandardIndexOperationsTest extends TestCase
         $user->notifications()->saveMany($trashedNotifications);
         $user->notifications()->saveMany($notifications);
 
+        Gate::policy(User::class, GreenPolicy::class);
         Gate::policy(Notification::class, GreenPolicy::class);
 
         $response = $this->get("/api/users/{$user->id}/notifications?with_trashed=true");
@@ -124,6 +152,7 @@ class BelongsToManyRelationStandardIndexOperationsTest extends TestCase
         $user->notifications()->saveMany($trashedNotifications);
         $user->notifications()->saveMany($notifications);
 
+        Gate::policy(User::class, GreenPolicy::class);
         Gate::policy(Notification::class, GreenPolicy::class);
 
         $response = $this->get("/api/users/{$user->id}/notifications?only_trashed=true");
@@ -144,6 +173,7 @@ class BelongsToManyRelationStandardIndexOperationsTest extends TestCase
         $user->notifications()->saveMany($trashedNotifications);
         $user->notifications()->saveMany($notifications);
 
+        Gate::policy(User::class, GreenPolicy::class);
         Gate::policy(Notification::class, GreenPolicy::class);
 
         $response = $this->get("/api/users/{$user->id}/notifications");
@@ -152,9 +182,11 @@ class BelongsToManyRelationStandardIndexOperationsTest extends TestCase
             $response,
             $this->makePaginator($user->notifications->toArray(), "users/{$user->id}/notifications")
         );
-        $response->assertJsonMissing([
-            'data' => $user->notifications()->onlyTrashed()->get()->toArray()
-        ]);
+        $response->assertJsonMissing(
+            [
+                'data' => $user->notifications()->onlyTrashed()->get()->toArray(),
+            ]
+        );
     }
 
     /** @test */
@@ -165,13 +197,17 @@ class BelongsToManyRelationStandardIndexOperationsTest extends TestCase
         $roles = factory(Role::class)->times(15)->make();
         $user->roles()->saveMany($roles);
 
-        app()->bind(ComponentsResolver::class, function () {
-            $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
-            $componentsResolverMock->shouldReceive('resolveResourceClass')->once()->andReturn(SampleResource::class);
+        app()->bind(
+            ComponentsResolver::class,
+            function () {
+                $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
+                $componentsResolverMock->shouldReceive('resolveResourceClass')->once()->andReturn(SampleResource::class);
 
-            return $componentsResolverMock;
-        });
+                return $componentsResolverMock;
+            }
+        );
 
+        Gate::policy(User::class, GreenPolicy::class);
         Gate::policy(Role::class, GreenPolicy::class);
 
         $response = $this->get("/api/users/{$user->id}/roles");
@@ -191,13 +227,17 @@ class BelongsToManyRelationStandardIndexOperationsTest extends TestCase
         $roles = factory(Role::class)->times(15)->make();
         $user->roles()->saveMany($roles);
 
-        app()->bind(ComponentsResolver::class, function () {
-            $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
-            $componentsResolverMock->shouldReceive('resolveCollectionResourceClass')->once()->andReturn(SampleCollectionResource::class);
+        app()->bind(
+            ComponentsResolver::class,
+            function () {
+                $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
+                $componentsResolverMock->shouldReceive('resolveCollectionResourceClass')->once()->andReturn(SampleCollectionResource::class);
 
-            return $componentsResolverMock;
-        });
+                return $componentsResolverMock;
+            }
+        );
 
+        Gate::policy(User::class, GreenPolicy::class);
         Gate::policy(Role::class, GreenPolicy::class);
 
         $response = $this->get("/api/users/{$user->id}/roles");
@@ -208,9 +248,11 @@ class BelongsToManyRelationStandardIndexOperationsTest extends TestCase
             [],
             false
         );
-        $response->assertJson([
-            'test-field-from-resource' => 'test-value'
-        ]);
+        $response->assertJson(
+            [
+                'test-field-from-resource' => 'test-value',
+            ]
+        );
     }
 
     /** @test */
@@ -221,6 +263,7 @@ class BelongsToManyRelationStandardIndexOperationsTest extends TestCase
         $roles = factory(Role::class)->times(15)->make();
         $user->roles()->saveMany($roles);
 
+        Gate::policy(User::class, GreenPolicy::class);
         Gate::policy(Role::class, GreenPolicy::class);
 
         $response = $this->get("/api/users/{$user->id}/roles?include=users");

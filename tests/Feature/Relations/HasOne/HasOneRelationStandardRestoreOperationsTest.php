@@ -36,7 +36,7 @@ class HasOneRelationStandardRestoreOperationsTest extends TestCase
 
         Gate::policy(PostImage::class, GreenPolicy::class);
 
-        $response =  $this->post("/api/posts/{$post->id}/image/{$trashedPostImage->id}/restore");
+        $response = $this->post("/api/posts/{$post->id}/image/{$trashedPostImage->id}/restore");
 
         $this->assertResourceRestored($response, $trashedPostImage);
     }
@@ -49,7 +49,7 @@ class HasOneRelationStandardRestoreOperationsTest extends TestCase
 
         Gate::policy(PostImage::class, GreenPolicy::class);
 
-        $response =  $this->post("/api/posts/{$post->id}/image/{$postImage->id}/restore");
+        $response = $this->post("/api/posts/{$post->id}/image/{$postImage->id}/restore");
 
         $this->assertResourceRestored($response, $postImage);
     }
@@ -75,14 +75,17 @@ class HasOneRelationStandardRestoreOperationsTest extends TestCase
 
         Gate::policy(PostImage::class, GreenPolicy::class);
 
-        app()->bind(ComponentsResolver::class, function () {
-            $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
-            $componentsResolverMock->shouldReceive('resolveResourceClass')->once()->andReturn(SampleResource::class);
+        app()->bind(
+            ComponentsResolver::class,
+            function () {
+                $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
+                $componentsResolverMock->shouldReceive('resolveResourceClass')->once()->andReturn(SampleResource::class);
 
-            return $componentsResolverMock;
-        });
+                return $componentsResolverMock;
+            }
+        );
 
-        $response =  $this->post("/api/posts/{$post->id}/image/{$trashedPostImage->id}/restore");
+        $response = $this->post("/api/posts/{$post->id}/image/{$trashedPostImage->id}/restore");
 
         $this->assertResourceRestored($response, $trashedPostImage, ['test-field-from-resource' => 'test-value']);
     }
@@ -95,7 +98,7 @@ class HasOneRelationStandardRestoreOperationsTest extends TestCase
 
         Gate::policy(PostImage::class, GreenPolicy::class);
 
-        $response =  $this->post("/api/posts/{$post->id}/image/{$trashedPostImage->id}/restore?include=post");
+        $response = $this->post("/api/posts/{$post->id}/image/{$trashedPostImage->id}/restore?include=post");
 
         $this->assertResourceRestored($response, $trashedPostImage, ['post' => $trashedPostImage->post->toArray()]);
     }
