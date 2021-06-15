@@ -22,7 +22,7 @@ class RequestTest extends TestCase
 
         $this->assertSame(
             [
-                'common-rules-field' => 'required',
+                'common-rules-field' => ['required', 'unique:users,id'],
                 'store-rules-field' => 'required',
             ],
             $stub->rules()
@@ -41,7 +41,7 @@ class RequestTest extends TestCase
 
         $this->assertSame(
             [
-                'common-rules-field' => 'required',
+                'common-rules-field' => ['required', 'max:255'],
                 'update-rules-field' => 'required',
             ],
             $stub->rules()

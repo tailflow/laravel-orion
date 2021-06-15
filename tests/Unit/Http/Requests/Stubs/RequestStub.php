@@ -26,6 +26,7 @@ class RequestStub extends Request
     public function storeRules(): array
     {
         return [
+            'common-rules-field' => ['unique:users,id'],
             'store-rules-field' => 'required',
         ];
     }
@@ -38,6 +39,7 @@ class RequestStub extends Request
     public function updateRules(): array
     {
         return [
+            'common-rules-field' => ['max:255'],
             'update-rules-field' => 'required',
         ];
     }

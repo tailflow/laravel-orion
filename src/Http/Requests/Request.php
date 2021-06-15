@@ -28,7 +28,7 @@ class Request extends FormRequest
         }
 
         if ($this->route()->getActionMethod() === 'store') {
-            return array_merge($this->commonRules(), $this->storeRules());
+            return array_merge_recursive($this->commonRules(), $this->storeRules());
         }
 
         if ($this->route()->getActionMethod() === 'batchStore') {
@@ -36,7 +36,7 @@ class Request extends FormRequest
         }
 
         if ($this->route()->getActionMethod() === 'update') {
-            return array_merge($this->commonRules(), $this->updateRules());
+            return array_merge_recursive($this->commonRules(), $this->updateRules());
         }
 
         if ($this->route()->getActionMethod() === 'batchUpdate') {
@@ -44,7 +44,7 @@ class Request extends FormRequest
         }
 
         if ($this->route()->getActionMethod() === 'associate') {
-            return array_merge(
+            return array_merge_recursive(
                 [
                     'related_key' => 'required',
                 ],
@@ -53,7 +53,7 @@ class Request extends FormRequest
         }
 
         if ($this->route()->getActionMethod() === 'attach') {
-            return array_merge(
+            return array_merge_recursive(
                 [
                     'resources' => 'present',
                     'duplicates' => ['sometimes', 'boolean'],
@@ -63,7 +63,7 @@ class Request extends FormRequest
         }
 
         if ($this->route()->getActionMethod() === 'detach') {
-            return array_merge(
+            return array_merge_recursive(
                 [
                     'resources' => 'present',
                 ],
@@ -72,7 +72,7 @@ class Request extends FormRequest
         }
 
         if ($this->route()->getActionMethod() === 'sync') {
-            return array_merge(
+            return array_merge_recursive(
                 [
                     'resources' => 'present',
                     'detaching' => ['sometimes', 'boolean'],
@@ -82,7 +82,7 @@ class Request extends FormRequest
         }
 
         if ($this->route()->getActionMethod() === 'toggle') {
-            return array_merge(
+            return array_merge_recursive(
                 [
                     'resources' => 'present',
                 ],
@@ -91,7 +91,7 @@ class Request extends FormRequest
         }
 
         if ($this->route()->getActionMethod() === 'updatePivot') {
-            return array_merge(
+            return array_merge_recursive(
                 [
                     'pivot' => ['required', 'array'],
                 ],
@@ -128,7 +128,7 @@ class Request extends FormRequest
             'resources' => ['array', 'required'],
         ];
 
-        $mergedRules = array_merge($this->commonRules(), $definedRules, $definedBatchRules);
+        $mergedRules = array_merge_recursive($this->commonRules(), $definedRules, $definedBatchRules);
 
         foreach ($mergedRules as $ruleField => $fieldRules) {
             $batchRules["resources.*.{$ruleField}"] = $fieldRules;
