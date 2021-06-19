@@ -115,7 +115,10 @@ class RelationsResolver implements \Orion\Contracts\RelationsResolver
     {
         $laravelVersion = (float)app()->version();
 
-        return $laravelVersion > 5.7 || get_class($relationInstance) === HasOne::class ? $relationInstance->getQualifiedForeignKeyName() : $relationInstance->getQualifiedForeignKey();
+        return $laravelVersion > 5.7 || get_class(
+            $relationInstance
+        ) === HasOne::class ? $relationInstance->getQualifiedForeignKeyName(
+        ) : $relationInstance->getQualifiedForeignKey();
     }
 
     /**
@@ -129,15 +132,12 @@ class RelationsResolver implements \Orion\Contracts\RelationsResolver
         switch (get_class($relationInstance)) {
             case HasOne::class:
             case MorphOne::class:
-                return $relationInstance->getParent()->getTable().'.'.$relationInstance->getLocalKeyName();
-                break;
+                return $relationInstance->getParent()->getTable() . '.' . $relationInstance->getLocalKeyName();
             case BelongsTo::class:
             case MorphTo::class:
                 return $relationInstance->getQualifiedOwnerKeyName();
-                break;
             default:
                 return $relationInstance->getQualifiedLocalKeyName();
-                break;
         }
     }
 
@@ -146,14 +146,19 @@ class RelationsResolver implements \Orion\Contracts\RelationsResolver
      *
      * @param Collection $entities
      * @param array $requestedRelations
+     * @param string|null $parentRelation
      * @param bool $normalized
      * @return Collection
      */
-    public function guardRelationsForCollection(Collection $entities, array $requestedRelations, bool $normalized = false): Collection
-    {
+    public function guardRelationsForCollection(
+        Collection $entities,
+        array $requestedRelations,
+        ?string $parentRelation = null,
+        bool $normalized = false
+    ): Collection {
         return $entities->transform(
-            function ($entity) use ($requestedRelations, $normalized) {
-                return $this->guardRelations($entity, $requestedRelations, $normalized);
+            function ($entity) use ($requestedRelations, $parentRelation, $normalized) {
+                return $this->guardRelations($entity, $requestedRelations, $parentRelation, $normalized);
             }
         );
     }
@@ -163,11 +168,16 @@ class RelationsResolver implements \Orion\Contracts\RelationsResolver
      *
      * @param Model $entity
      * @param array $requestedRelations
+     * @param string|null $parentRelation
      * @param bool $normalized
      * @return Model
      */
-    public function guardRelations(Model $entity, array $requestedRelations, bool $normalized = false): Model
-    {
+    public function guardRelations(
+        Model $entity,
+        array $requestedRelations,
+        ?string $parentRelation = null,
+        bool $normalized = false
+    ): Model {
         if (!$normalized) {
             $requestedRelations = $this->normalizeRequestedRelations($requestedRelations);
         }
@@ -176,7 +186,7 @@ class RelationsResolver implements \Orion\Contracts\RelationsResolver
         ksort($relations);
 
         foreach ($relations as $relationName => $relation) {
-            if ($relationName === 'pivot') {
+            if ($relationName === 'pivot' || $relationName === $parentRelation) {
                 continue;
             }
 
@@ -184,9 +194,19 @@ class RelationsResolver implements \Orion\Contracts\RelationsResolver
                 unset($relations[$relationName]);
             } elseif ($relation !== null) {
                 if ($relation instanceof Model) {
-                    $relation = $this->guardRelations($relation, $requestedRelations[$relationName], true);
+                    $relation = $this->guardRelations(
+                        $relation,
+                        $requestedRelations[$relationName],
+                        $relationName,
+                        true
+                    );
                 } else {
-                    $relation = $this->guardRelationsForCollection($relation, $requestedRelations[$relationName], true);
+                    $relation = $this->guardRelationsForCollection(
+                        $relation,
+                        $requestedRelations[$relationName],
+                        $relationName,
+                        true
+                    );
                 }
             }
         }
