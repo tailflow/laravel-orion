@@ -26,7 +26,7 @@ class ModelResourceComponentBuilder extends ModelComponentBuilder
         $component->type = 'object';
         $component->properties = [
             'allOf' => [
-                ['$ref' => "#/components/schemas/{$resourceComponentBaseName}Resource"],
+                ['$ref' => "#/components/schemas/{$resourceComponentBaseName}"],
                 [
                     'type' => 'object',
                     'properties' => $this->getPropertiesFromSchema($resourceModel)
