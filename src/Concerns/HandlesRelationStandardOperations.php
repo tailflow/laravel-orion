@@ -340,9 +340,7 @@ trait HandlesRelationStandardOperations
         array $attributes,
         array $pivot
     ): void {
-        $entity->fill(
-            Arr::except($attributes, array_keys($entity->getDirty()))
-        );
+        $this->performFill($request, $parentEntity, $entity, $attributes, $pivot);
 
         if (!$parentEntity->{$this->getRelation()}() instanceof BelongsTo) {
             $parentEntity->{$this->getRelation()}()->save($entity, $this->preparePivotFields($pivot));
@@ -684,9 +682,7 @@ trait HandlesRelationStandardOperations
         array $attributes,
         array $pivot
     ): void {
-        $entity->fill(
-            Arr::except($attributes, array_keys($entity->getDirty()))
-        );
+        $this->performFill($request, $parentEntity, $entity, $attributes, $pivot);
         $entity->save();
 
         $relation = $parentEntity->{$this->getRelation()}();
@@ -1015,5 +1011,26 @@ trait HandlesRelationStandardOperations
     protected function afterRestore(Request $request, Model $parentEntity, Model $entity)
     {
         return null;
+    }
+
+    /**
+     * Fills attributes on the given relation entity.
+     *
+     * @param Request $request
+     * @param Model $parentEntity
+     * @param Model $entity
+     * @param array $attributes
+     * @param array $pivot
+     */
+    protected function performFill(
+        Request $request,
+        Model $parentEntity,
+        Model $entity,
+        array $attributes,
+        array $pivot
+    ): void {
+        $entity->fill(
+            Arr::except($attributes, array_keys($entity->getDirty()))
+        );
     }
 }
