@@ -50,7 +50,7 @@ class RegisteredResource
      */
     protected function qualifyControllerClass(string $controller): string
     {
-        if (Str::startsWith($controller, config('orion.namespaces.controllers'))) {
+        if (class_exists($controller) || Str::startsWith($controller, config('orion.namespaces.controllers'))) {
             return $controller;
         }
 
