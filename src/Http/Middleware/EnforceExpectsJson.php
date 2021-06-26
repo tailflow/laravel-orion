@@ -13,10 +13,10 @@ class EnforceExpectsJson
      */
     public function handle(Request $request, $next)
     {
-        if (!$request->expectsJson()) {
+        if (! in_array('application/json', explode(',', $request->header('Accept')))) {
             $request->headers->add(['Accept' => 'application/json,' . $request->header('Accept')]);
         }
-        
+
         return $next($request);
     }
 }
