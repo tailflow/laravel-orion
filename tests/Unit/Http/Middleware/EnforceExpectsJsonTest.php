@@ -16,7 +16,7 @@ class EnforceExpectsJsonTest extends TestCase
         (new EnforceExpectsJson())->handle(
             $request,
             function ($processedRequest) {
-                $this->assertEquals('application/json', $processedRequest->header('Accept'));
+                $this->assertTrue($processedRequest->expectsJson());
             }
         );
     }
