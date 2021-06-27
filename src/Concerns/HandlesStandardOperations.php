@@ -207,9 +207,7 @@ trait HandlesStandardOperations
      */
     protected function performStore(Request $request, Model $entity, array $attributes): void
     {
-        $entity->fill(
-            Arr::except($attributes, array_keys($entity->getDirty()))
-        );
+        $this->performFill($request, $entity, $attributes);
         $entity->save();
     }
 
@@ -426,9 +424,7 @@ trait HandlesStandardOperations
      */
     protected function performUpdate(Request $request, Model $entity, array $attributes): void
     {
-        $entity->fill(
-            Arr::except($attributes, array_keys($entity->getDirty()))
-        );
+        $this->performFill($request, $entity, $attributes);
         $entity->save();
     }
 
@@ -663,5 +659,19 @@ trait HandlesStandardOperations
     protected function afterRestore(Request $request, Model $entity)
     {
         return null;
+    }
+
+    /**
+     * Fills attributes on the given entity.
+     *
+     * @param Request $request
+     * @param Model $entity
+     * @param array $attributes
+     */
+    protected function performFill(Request $request, Model $entity, array $attributes): void
+    {
+        $entity->fill(
+            Arr::except($attributes, array_keys($entity->getDirty()))
+        );
     }
 }

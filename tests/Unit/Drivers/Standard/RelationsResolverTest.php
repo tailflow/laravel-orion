@@ -4,6 +4,7 @@ namespace Orion\Tests\Unit\Drivers\Standard;
 
 use Orion\Drivers\Standard\RelationsResolver;
 use Orion\Http\Requests\Request;
+use Orion\Tests\Fixtures\App\Models\Category;
 use Orion\Tests\Fixtures\App\Models\Company;
 use Orion\Tests\Fixtures\App\Models\Post;
 use Orion\Tests\Fixtures\App\Models\Team;
@@ -85,6 +86,35 @@ class RelationsResolverTest extends TestCase
     {
         $post = new Post(['title' => 'test post']);
 
+        $parentCategory = new Category(['name' => 'parent category']); // categories
+        $childCategory = new Category(['name' => 'child category']); // categories.categories
+        $nestedChildCategory = new Category(['name' => 'nested child category']); // categories.categories.categories
+
+        $childCategory->setRelation('categories', collect([$nestedChildCategory]));
+        $parentCategory->setRelation('categories', collect([$childCategory]));
+
+        $post->setRelations(
+            [
+                'categories' => collect([$parentCategory]),
+            ]
+        );
+
+        $relationsResolver = new RelationsResolver(['categories'], []);
+        $guardedPost = $relationsResolver->guardRelations($post, ['categories']);
+
+        self::assertArrayHasKey('categories', $guardedPost->getRelations());
+        self::assertArrayHasKey('categories', $guardedPost->getRelation('categories')->first()->getRelations());
+        self::assertArrayHasKey(
+            'categories',
+            $guardedPost->getRelation('categories')->first()->getRelation('categories')->first()->getRelations()
+        );
+    }
+
+    /** @test */
+    public function guarding_entity_recursive_nested_relations()
+    {
+        $post = new Post(['title' => 'test post']);
+
         $manager = new User(['name' => 'manager user']);
 
         $team = new Team(['name' => 'test team']);
@@ -102,7 +132,10 @@ class RelationsResolverTest extends TestCase
         );
 
         $relationsResolver = new RelationsResolver(['user', 'editors.team.users', 'editors.team.company'], []);
-        $guardedPost = $relationsResolver->guardRelations($post, ['user', 'editors.team.users', 'editors.team.company']);
+        $guardedPost = $relationsResolver->guardRelations(
+            $post,
+            ['user', 'editors.team.users', 'editors.team.company']
+        );
 
         self::assertArrayHasKey('user', $guardedPost->getRelations());
         self::assertArrayHasKey('editors', $guardedPost->getRelations());
