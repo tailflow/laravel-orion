@@ -3,6 +3,7 @@
 namespace Orion\Http\Middleware;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class EnforceExpectsJson
 {
@@ -13,8 +14,8 @@ class EnforceExpectsJson
      */
     public function handle(Request $request, $next)
     {
-        if (strpos($request->header('Accept'), 'application/json') !== 0) {
-            $request->headers->add(['Accept' => 'application/json,' . $request->header('Accept')]);
+        if (!Str::contains($request->header('Accept'), 'application/json')) {
+            $request->headers->set('Accept', 'application/json, ' . $request->header('Accept'));
         }
 
         return $next($request);
