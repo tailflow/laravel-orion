@@ -211,6 +211,18 @@ trait HandlesRelationStandardOperations
     }
 
     /**
+     * Filters, sorts, and fetches the list of resources.
+     *
+     * @param Request $request
+     * @param $parentKey
+     * @return CollectionResource
+     */
+    public function search(Request $request, $parentKey)
+    {
+        return $this->index($request, $parentKey);
+    }
+
+    /**
      * Create new relation resource.
      *
      * @param Request $request
