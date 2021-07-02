@@ -279,7 +279,7 @@ trait HandlesStandardBatchOperations
      * @param bool $softDeletes
      * @return Builder
      */
-    protected function buildBatchDestroyFetchQuery(Request $request, array $requestedRelations): Builder
+    protected function buildBatchDestroyFetchQuery(Request $request, array $requestedRelations, bool $softDeletes): Builder
     {
         return $this->buildBatchFetchQuery($request, $requestedRelations)
             ->when($softDeletes, function ($query) {
