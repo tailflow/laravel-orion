@@ -31,7 +31,7 @@ class BatchUpdateRequest extends Request
                                 'resources' => [
                                     'type' => 'array',
                                     'items' => [
-                                        '$ref' => "#/components/schemas/{$this->resourceComponentBaseName}Resource",
+                                        '$ref' => "#/components/schemas/{$this->resourceComponentBaseName}",
                                     ]
                                 ]
                             ]
