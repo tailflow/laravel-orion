@@ -26,7 +26,7 @@ class UpdateRequest extends Request
                 'content' => [
                     'application/json' => [
                         'schema' => [
-                            '$ref' => "#/components/schemas/{$this->resourceComponentBaseName}Resource",
+                            '$ref' => "#/components/schemas/{$this->resourceComponentBaseName}",
                         ],
                     ],
                 ],
