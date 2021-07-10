@@ -261,7 +261,10 @@ trait HandlesRelationStandardOperations
             $request->get('pivot', [])
         );
 
-        $entity = $this->newRelationQuery($parentEntity)->with($requestedRelations)->find($entity->id);
+        $entity = $this->newRelationQuery($parentEntity)->with($requestedRelations)->where(
+            $this->resolveQualifiedKeyName(),
+            $entity->{$this->keyName()}
+        )->firstOrFail();
         $entity->wasRecentlyCreated = true;
 
         $entity = $this->cleanupEntity($entity);
@@ -590,7 +593,10 @@ trait HandlesRelationStandardOperations
             $request->get('pivot', [])
         );
 
-        $entity = $this->newRelationQuery($parentEntity)->with($requestedRelations)->find($entity->id);
+        $entity = $this->newRelationQuery($parentEntity)->with($requestedRelations)->where(
+            $this->resolveQualifiedKeyName(),
+            $entity->{$this->keyName()}
+        )->firstOrFail();
 
         $entity = $this->cleanupEntity($entity);
 
@@ -754,9 +760,10 @@ trait HandlesRelationStandardOperations
         if (!$forceDeletes) {
             $this->performDestroy($entity);
             if ($softDeletes) {
-                $entity = $this->newRelationQuery($parentEntity)->withTrashed()->with($requestedRelations)->find(
-                    $entity->id
-                );
+                $entity = $this->newRelationQuery($parentEntity)->withTrashed()->with($requestedRelations)->where(
+                    $this->resolveQualifiedKeyName(),
+                    $entity->{$this->keyName()}
+                )->firstOrFail();
             }
         } else {
             $this->performForceDestroy($entity);
@@ -915,7 +922,10 @@ trait HandlesRelationStandardOperations
 
         $this->performRestore($entity);
 
-        $entity = $this->newRelationQuery($parentEntity)->with($requestedRelations)->find($entity->id);
+        $entity = $this->newRelationQuery($parentEntity)->with($requestedRelations)->where(
+            $this->resolveQualifiedKeyName(),
+            $entity->{$this->keyName()}
+        )->firstOrFail();
 
         $entity = $this->cleanupEntity($entity);
 

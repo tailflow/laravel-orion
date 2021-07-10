@@ -54,7 +54,10 @@ trait HandlesRelationStandardBatchOperations
                 Arr::get($resource, 'pivot', [])
             );
 
-            $entity = $this->newRelationQuery($parentEntity)->with($requestedRelations)->find($entity->id);
+            $entity = $this->newRelationQuery($parentEntity)->with($requestedRelations)->where(
+                $this->resolveQualifiedKeyName(),
+                $entity->{$this->keyName()}
+            )->first();
             $entity->wasRecentlyCreated = true;
 
             $entity = $this->cleanupEntity($entity);
@@ -168,7 +171,10 @@ trait HandlesRelationStandardBatchOperations
                 Arr::get($resource, 'pivot', [])
             );
 
-            $entity = $this->newRelationQuery($parentEntity)->with($requestedRelations)->find($entity->id);
+            $entity = $this->newRelationQuery($parentEntity)->with($requestedRelations)->where(
+                $this->resolveQualifiedKeyName(),
+                $entity->{$this->keyName()}
+            )->first();
 
             $entity = $this->cleanupEntity($entity);
 
@@ -336,9 +342,10 @@ trait HandlesRelationStandardBatchOperations
             if (!$forceDeletes) {
                 $this->performDestroy($entity);
                 if ($softDeletes) {
-                    $entity = $this->newRelationQuery($parentEntity)->withTrashed()->with($requestedRelations)->find(
-                        $entity->id
-                    );
+                    $entity = $this->newRelationQuery($parentEntity)->withTrashed()->with($requestedRelations)->where(
+                        $this->resolveQualifiedKeyName(),
+                        $entity->{$this->keyName()}
+                    )->firstOrFail();
                 }
             } else {
                 $this->performForceDestroy($entity);
@@ -481,7 +488,10 @@ trait HandlesRelationStandardBatchOperations
 
             $this->performRestore($entity);
 
-            $entity = $this->newRelationQuery($parentEntity)->with($requestedRelations)->find($entity->id);
+            $entity = $this->newRelationQuery($parentEntity)->with($requestedRelations)->where(
+                $this->resolveQualifiedKeyName(),
+                $entity->{$this->keyName()}
+            )->firstOrFail();
 
             $entity = $this->cleanupEntity($entity);
 
