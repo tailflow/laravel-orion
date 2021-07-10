@@ -170,7 +170,10 @@ trait HandlesRelationOneToManyOperations
         $this->performDissociate($request, $parentEntity, $entity);
 
         $entity = $this->relationQueryBuilder->buildQuery($entity::query(), $request)
-            ->with($this->relationsResolver->requestedRelations($request))->first();
+            ->with($this->relationsResolver->requestedRelations($request))->where(
+                $this->resolveQualifiedKeyName(),
+                $entity->{$this->keyName()}
+            )->firstOrFail();
 
         $afterHookResult = $this->afterDissociate($request, $parentEntity,$entity);
         if ($this->hookResponds($afterHookResult)) {
