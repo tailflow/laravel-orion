@@ -12,11 +12,19 @@ class SchemaProperty implements Arrayable
     public $name;
     /** @var string */
     public $type;
+    /** @var bool */
+    public $nullable = false;
 
     public function toArray(): array
     {
-        return [
+        $descriptor = [
             'type' => $this->type,
         ];
+
+        if ($this->nullable) {
+            $descriptor['nullable'] = true;
+        }
+
+        return $descriptor;
     }
 }
