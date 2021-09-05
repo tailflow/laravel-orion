@@ -92,7 +92,7 @@ abstract class BaseController extends \Illuminate\Routing\Controller
     public function __construct()
     {
         if (!$this->model) {
-            throw new BindingException('Model is not defined for '.static::class);
+            throw new BindingException('Model is not defined for ' . static::class);
         }
 
         $this->componentsResolver = App::makeWith(
@@ -531,5 +531,16 @@ abstract class BaseController extends \Illuminate\Routing\Controller
         }
 
         return !property_exists($this, 'paginationDisabled');
+    }
+
+    /**
+     * Determine whether operation and its hooks are executed in a transaction or not.
+     *
+     * @param string $hookMethod
+     * @return bool
+     */
+    protected function shouldUseTransaction(string $hookMethod): bool
+    {
+        return config('orion.features.hooks.transactions');
     }
 }

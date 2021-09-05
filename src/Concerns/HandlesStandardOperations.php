@@ -129,6 +129,31 @@ trait HandlesStandardOperations
      */
     public function store(Request $request)
     {
+        /**
+         * Experimental Implementation
+         */
+//        $entity = new $resourceModelClass;
+//
+//        $payload = new StoreOperationPayload(
+//            $entity,
+//            $request,
+//            $this->relationsResolver->requestedRelations($request)
+//        );
+//
+//        $operation = app()->make(StoreOperation::class);
+//        $operation
+//            ->useTransaction($this->shouldUseTransaction('store'))
+//            ->registerAuthorizationCallback(function () use ($resourceModelClass) {
+//                $this->authorize('create', $resourceModelClass);
+//            })
+//            ->registerBeforeHook([$this, 'beforeStore'])
+//            ->registerBeforeHook([$this, 'beforeSave'])
+//            ->registerPerformCallback([$this, 'performStore'])
+//            ->registerAfterHook([$this, 'afterSave'])
+//            ->registerAfterHook([$this, 'afterStore']);
+//
+//        return $operation->send($payload)->thenReturn();
+
         $resourceModelClass = $this->resolveResourceModelClass();
 
         $this->authorize('create', $resourceModelClass);

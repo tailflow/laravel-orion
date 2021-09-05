@@ -8,6 +8,11 @@ return [
     'auth' => [
         'guard' => 'api'
     ],
+    'features' => [
+        'hooks' => [
+            'transactions' => false
+        ]
+    ],
     'specs' => [
         'info' => [
             'title' => env('APP_NAME'),
