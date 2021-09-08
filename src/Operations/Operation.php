@@ -9,31 +9,39 @@ use DB;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Pipeline\Pipeline;
+use Orion\Contracts\RelationsResolver;
 use Throwable;
 
 abstract class Operation extends Pipeline
 {
+    protected RelationsResolver $relationsResolver;
+
     protected bool $usesTransaction = false;
+
+    protected string $resourceClass;
+    protected ?string $collectionResourceClass;
 
     protected array $beforeHooks = [];
     protected array $afterHooks = [];
 
-    protected ?Closure $authorizeCallback = null;
+    protected ?Closure $authorizationCallback = null;
     protected ?Closure $performCallback = null;
-    protected ?Closure $refreshCallback = null;
     protected ?Closure $guardCallback = null;
     protected ?Closure $transformCallback = null;
 
-    public function __construct(Container $container = null)
+    public function __construct(RelationsResolver $relationsResolver, Container $container = null)
     {
         parent::__construct($container);
 
         $this->usesTransaction = config('orion.features.hooks.transactions');
+        $this->relationsResolver = $relationsResolver;
     }
 
-    abstract public function perform();
-    abstract public function guard();
-    abstract public function transform();
+    abstract public function perform($payload);
+
+    abstract public function guard($payload);
+
+    abstract public function transform($payload);
 
     public function useTransaction(bool $usesTransaction): self
     {
@@ -69,7 +77,7 @@ abstract class Operation extends Pipeline
 
     public function registerAuthorizationCallback(?callable $callback): self
     {
-        $this->authorizeCallback = $callback;
+        $this->authorizationCallback = $callback;
 
         return $this;
     }
@@ -77,13 +85,6 @@ abstract class Operation extends Pipeline
     public function registerPerformCallback(?callable $callback): self
     {
         $this->performCallback = $callback;
-
-        return $this;
-    }
-
-    public function registerRefreshCallback(?callable $callback): self
-    {
-        $this->refreshCallback = $callback;
 
         return $this;
     }
@@ -134,8 +135,8 @@ abstract class Operation extends Pipeline
     {
         $pipes = [];
 
-        if ($this->authorizeCallback) {
-            $pipes[] = $this->authorizeCallback;
+        if ($this->authorizationCallback) {
+            $pipes[] = $this->authorizationCallback;
         }
 
         if ($this->usesTransaction) {
@@ -147,10 +148,6 @@ abstract class Operation extends Pipeline
         }
 
         $pipes[] = $this->performCallback ?? [$this, 'perform'];
-
-        if ($this->refreshCallback) {
-            $pipes[] = $this->refreshCallback;
-        }
 
         foreach ($this->afterHooks as $afterHook) {
             $pipes[] = $afterHook;

@@ -12,6 +12,8 @@ use Illuminate\Support\Arr;
 use Orion\Http\Requests\Request;
 use Orion\Http\Resources\CollectionResource;
 use Orion\Http\Resources\Resource;
+use Orion\Operations\Standard\StoreOperation;
+use Orion\ValueObjects\Operations\Standard\StoreOperationPayload;
 
 trait HandlesStandardOperations
 {

@@ -6,7 +6,7 @@ namespace Orion\ValueObjects\Operations;
 
 use Orion\Http\Requests\Request;
 
-class OperationPayload
+abstract class OperationPayload
 {
     public Request $request;
     public array $requestedRelations;

@@ -11,6 +11,8 @@ use Orion\Contracts\QueryBuilder;
 use Orion\Contracts\RelationsResolver;
 use Orion\Contracts\SearchBuilder;
 use Orion\Http\Middleware\EnforceExpectsJson;
+use Orion\Http\Transformers\CollectionTransformer;
+use Orion\Http\Transformers\EntityTransformer;
 use Orion\Specs\ResourcesCacheStore;
 
 class OrionServiceProvider extends ServiceProvider
@@ -31,6 +33,8 @@ class OrionServiceProvider extends ServiceProvider
         $this->app->bind(ComponentsResolver::class, Drivers\Standard\ComponentsResolver::class);
 
         $this->app->singleton(ResourcesCacheStore::class);
+        $this->app->singleton(EntityTransformer::class);
+        $this->app->singleton(CollectionTransformer::class);
     }
 
     /**

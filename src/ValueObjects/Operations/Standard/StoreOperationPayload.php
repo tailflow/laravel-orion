@@ -6,9 +6,9 @@ namespace Orion\ValueObjects\Operations\Standard;
 
 use Illuminate\Database\Eloquent\Model;
 use Orion\Http\Requests\Request;
-use Orion\ValueObjects\Operations\OperationPayload;
+use Orion\ValueObjects\Operations\MutatingOperationPayload;
 
-class StoreOperationPayload extends OperationPayload
+class StoreOperationPayload extends MutatingOperationPayload
 {
     public Model $entity;
 
