@@ -9,13 +9,12 @@ use DB;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Pipeline\Pipeline;
-use Orion\Contracts\RelationsResolver;
+use Orion\Contracts\Http\Guards\GuardOptions;
+use Orion\ValueObjects\RegisteredGuard;
 use Throwable;
 
 abstract class Operation extends Pipeline
 {
-    protected RelationsResolver $relationsResolver;
-
     protected bool $usesTransaction = false;
 
     protected string $resourceClass;
@@ -24,17 +23,22 @@ abstract class Operation extends Pipeline
     protected array $beforeHooks = [];
     protected array $afterHooks = [];
 
-    protected ?Closure $authorizationCallback = null;
-    protected ?Closure $performCallback = null;
-    protected ?Closure $guardCallback = null;
-    protected ?Closure $transformCallback = null;
+    protected array $guards = [];
 
-    public function __construct(RelationsResolver $relationsResolver, Container $container = null)
+    /** @var callable|null $authorizationCallback */
+    protected $authorizationCallback = null;
+    /** @var callable|null $performCallback */
+    protected $performCallback = null;
+    /** @var callable|null $guardCallback */
+    protected $guardCallback = null;
+    /** @var callable|null $transformCallback */
+    protected $transformCallback = null;
+
+    public function __construct(Container $container = null)
     {
         parent::__construct($container);
 
-        $this->usesTransaction = config('orion.features.hooks.transactions');
-        $this->relationsResolver = $relationsResolver;
+        $this->usesTransaction = config('orion.features.hooks.transactions', false);
     }
 
     abstract public function perform($payload);
@@ -46,6 +50,20 @@ abstract class Operation extends Pipeline
     public function useTransaction(bool $usesTransaction): self
     {
         $this->usesTransaction = $usesTransaction;
+
+        return $this;
+    }
+
+    public function useResource(string $resourceClass): self
+    {
+        $this->resourceClass = $resourceClass;
+
+        return $this;
+    }
+
+    public function useCollectionResource(?string $collectionResourceClass): self
+    {
+        $this->collectionResourceClass = $collectionResourceClass;
 
         return $this;
     }
@@ -71,6 +89,17 @@ abstract class Operation extends Pipeline
     public function registerAfterHook(callable $hook): self
     {
         $this->afterHooks[] = $hook;
+
+        return $this;
+    }
+
+    public function registerGuard(string $guardClass, GuardOptions $options): self
+    {
+        $registeredGuard = new RegisteredGuard();
+        $registeredGuard->guardClass = $guardClass;
+        $registeredGuard->options = $options;
+
+        $this->guards[] = $registeredGuard;
 
         return $this;
     }

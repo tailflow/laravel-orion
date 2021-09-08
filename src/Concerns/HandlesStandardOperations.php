@@ -9,6 +9,8 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Arr;
+use Orion\Http\Guards\Relations\RelationsGuard;
+use Orion\Http\Guards\Relations\RelationsGuardOptions;
 use Orion\Http\Requests\Request;
 use Orion\Http\Resources\CollectionResource;
 use Orion\Http\Resources\Resource;
@@ -142,6 +144,9 @@ trait HandlesStandardOperations
 //            $this->relationsResolver->requestedRelations($request)
 //        );
 //
+//        $relationsGuardOptions = new RelationsGuardOptions();
+//        $relationsGuardOptions->requestedRelations = $this->getRelationsResolver()->requestedRelations($request);
+//
 //        $operation = app()->make(StoreOperation::class);
 //        $operation
 //            ->useTransaction($this->shouldUseTransaction('store'))
@@ -152,7 +157,10 @@ trait HandlesStandardOperations
 //            ->registerBeforeHook([$this, 'beforeSave'])
 //            ->registerPerformCallback([$this, 'performStore'])
 //            ->registerAfterHook([$this, 'afterSave'])
-//            ->registerAfterHook([$this, 'afterStore']);
+//            ->registerAfterHook([$this, 'afterStore'])
+//            ->registerGuard(RelationsGuard::class, $relationsGuardOptions)
+//            ->useResource($this->getResource())
+//            ->useCollectionResource($this->getCollectionResource());
 //
 //        return $operation->send($payload)->thenReturn();
 

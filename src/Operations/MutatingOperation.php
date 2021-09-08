@@ -4,17 +4,41 @@ declare(strict_types=1);
 
 namespace Orion\Operations;
 
-use Closure;
 use DB;
+use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Support\Arr;
+use Orion\Contracts\Http\Guards\Guard;
+use Orion\ValueObjects\Operations\MutatingOperationPayload;
+use Orion\ValueObjects\RegisteredGuard;
 
 abstract class MutatingOperation extends Operation
 {
-    protected ?Closure $attributesCallback = null;
-    protected ?Closure $fillCallback = null;
-    protected ?Closure $refreshCallback = null;
+    /** @var callable|null $attributesCallback */
+    protected $attributesCallback = null;
+    /** @var callable|null $fillCallback */
+    protected $fillCallback = null;
+    /** @var callable|null $refreshCallback */
+    protected $refreshCallback = null;
 
     abstract public function refresh($payload);
+
+    /**
+     * @param MutatingOperationPayload $payload
+     * @return MutatingOperationPayload
+     * @throws BindingResolutionException
+     */
+    public function guard($payload): MutatingOperationPayload
+    {
+        foreach ($this->guards as $registeredGuard) {
+            /** @var RegisteredGuard $registeredGuard */
+            /** @var Guard $guard */
+            $guard = app()->make($registeredGuard->guardClass);
+
+            $payload->entity = $guard->guardEntity($payload->entity, $registeredGuard->options);
+        }
+
+        return $payload;
+    }
 
     public function attributes($payload)
     {

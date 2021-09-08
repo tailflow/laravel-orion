@@ -541,6 +541,6 @@ abstract class BaseController extends \Illuminate\Routing\Controller
      */
     protected function shouldUseTransaction(string $hookMethod): bool
     {
-        return config('orion.features.hooks.transactions');
+        return config('orion.features.hooks.transactions', false);
     }
 }
