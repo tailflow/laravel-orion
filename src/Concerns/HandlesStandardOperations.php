@@ -137,7 +137,7 @@ trait HandlesStandardOperations
      * Creates new resource.
      *
      * @param Request $request
-     * @return resource
+     * @return Resource
      */
     public function store(Request $request)
     {
@@ -252,7 +252,7 @@ trait HandlesStandardOperations
      *
      * @param Request $request
      * @param int|string $key
-     * @return resource
+     * @return Resource
      */
     public function show(Request $request, $key)
     {
@@ -348,7 +348,7 @@ trait HandlesStandardOperations
      *
      * @param Request $request
      * @param int|string $key
-     * @return resource
+     * @return Resource
      */
     public function update(Request $request, $key)
     {
@@ -461,7 +461,7 @@ trait HandlesStandardOperations
      *
      * @param Request $request
      * @param int|string $key
-     * @return resource
+     * @return Resource
      * @throws Exception
      */
     public function destroy(Request $request, $key)
@@ -487,7 +487,7 @@ trait HandlesStandardOperations
             return $beforeHookResult;
         }
 
-        if (! $forceDeletes) {
+        if (!$forceDeletes) {
             $this->performDestroy($entity);
             if ($softDeletes) {
                 $entity = $entity->fresh($requestedRelations);
@@ -588,7 +588,7 @@ trait HandlesStandardOperations
      *
      * @param Request $request
      * @param int|string $key
-     * @return resource
+     * @return Resource
      * @throws Exception
      */
     public function restore(Request $request, $key)
