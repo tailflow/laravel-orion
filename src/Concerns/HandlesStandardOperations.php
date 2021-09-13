@@ -16,6 +16,18 @@ use Orion\Http\Resources\Resource;
 trait HandlesStandardOperations
 {
     /**
+     * Resolves route key for used to fetch resource.
+     *
+     * @param Request $request
+     * @param mixed|int $key
+     * @return string
+     */
+    public function resolveResourceRouteKey(Request $request, $key)
+    {
+        return property_exists($this, 'resourceRouteKeyName') ? $request->route($this->resourceRouteKeyName) : $key;
+    }
+
+    /**
      * Fetches the list of resources.
      *
      * @param Request $request
@@ -125,7 +137,7 @@ trait HandlesStandardOperations
      * Creates new resource.
      *
      * @param Request $request
-     * @return Resource
+     * @return resource
      */
     public function store(Request $request)
     {
@@ -240,10 +252,12 @@ trait HandlesStandardOperations
      *
      * @param Request $request
      * @param int|string $key
-     * @return Resource
+     * @return resource
      */
     public function show(Request $request, $key)
     {
+        $key = $this->resolveResourceRouteKey($request, $key);
+
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
 
         $query = $this->buildShowFetchQuery($request, $requestedRelations);
@@ -318,7 +332,7 @@ trait HandlesStandardOperations
     }
 
     /**
-     * The hook is executed after fetching a resource
+     * The hook is executed after fetching a resource.
      *
      * @param Request $request
      * @param Model $entity
@@ -334,10 +348,12 @@ trait HandlesStandardOperations
      *
      * @param Request $request
      * @param int|string $key
-     * @return Resource
+     * @return resource
      */
     public function update(Request $request, $key)
     {
+        $key = $this->resolveResourceRouteKey($request, $key);
+
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
 
         $query = $this->buildUpdateFetchQuery($request, $requestedRelations);
@@ -445,11 +461,13 @@ trait HandlesStandardOperations
      *
      * @param Request $request
      * @param int|string $key
-     * @return Resource
+     * @return resource
      * @throws Exception
      */
     public function destroy(Request $request, $key)
     {
+        $key = $this->resolveResourceRouteKey($request, $key);
+
         $softDeletes = $this->softDeletes($this->resolveResourceModelClass());
         $forceDeletes = $this->forceDeletes($request, $softDeletes);
 
@@ -469,7 +487,7 @@ trait HandlesStandardOperations
             return $beforeHookResult;
         }
 
-        if (!$forceDeletes) {
+        if (! $forceDeletes) {
             $this->performDestroy($entity);
             if ($softDeletes) {
                 $entity = $entity->fresh($requestedRelations);
@@ -570,11 +588,13 @@ trait HandlesStandardOperations
      *
      * @param Request $request
      * @param int|string $key
-     * @return Resource
+     * @return resource
      * @throws Exception
      */
     public function restore(Request $request, $key)
     {
+        $key = $this->resolveResourceRouteKey($request, $key);
+
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
 
         $query = $this->buildRestoreFetchQuery($request, $requestedRelations);
