@@ -78,6 +78,7 @@ class ParamsValidator implements \Orion\Contracts\ParamsValidator
             [
                 'search' => ['sometimes', 'array'],
                 'search.value' => ['string', 'nullable'],
+                'search.case-sensitive' => ['sometimes','boolean', 'nullable'],
             ]
         )->validate();
     }

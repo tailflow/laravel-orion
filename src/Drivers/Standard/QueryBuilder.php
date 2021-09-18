@@ -174,6 +174,7 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
         $query->where(
             function ($whereQuery) use ($searchables, $requestedSearchDescriptor) {
                 $requestedSearchString = $requestedSearchDescriptor['value'];
+                $isCaseSensitive = Arr::get($requestedSearchDescriptor, 'case-sensitive', true) === true;
                 /**
                  * @var Builder $whereQuery
                  */
@@ -184,15 +185,15 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
 
                         $whereQuery->orWhereHas(
                             $relation,
-                            function ($relationQuery) use ($relationField, $requestedSearchString) {
+                            function ($relationQuery) use ($relationField, $requestedSearchString, $isCaseSensitive) {
                                 /**
                                  * @var Builder $relationQuery
                                  */
-                                return $relationQuery->where($relationField, 'like', '%'.$requestedSearchString.'%');
+                                return $relationQuery->where($relationField, $isCaseSensitive ? 'like' : 'ilike', '%'.$requestedSearchString.'%');
                             }
                         );
                     } else {
-                        $whereQuery->orWhere($this->getQualifiedFieldName($searchable), 'like', '%'.$requestedSearchString.'%');
+                        $whereQuery->orWhere($this->getQualifiedFieldName($searchable), $isCaseSensitive ? 'like' : 'ilike', '%'.$requestedSearchString.'%');
                     }
                 }
             }
