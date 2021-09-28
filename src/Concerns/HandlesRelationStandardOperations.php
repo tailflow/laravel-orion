@@ -526,7 +526,7 @@ trait HandlesRelationStandardOperations
     protected function isOneToOneRelation(Model $parentEntity)
     {
         $relation = $parentEntity->{$this->getRelation()}();
-        return $relation instanceof HasOne || $relation instanceof MorphOne || $relation instanceof BelongsTo;
+        return $relation instanceof HasOne || $relation instanceof MorphOne || $relation instanceof BelongsTo || $relation instanceof HasOneThrough;
     }
 
     /**
