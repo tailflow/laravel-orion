@@ -22,6 +22,22 @@ abstract class MutatingOperation extends Operation
 
     abstract public function refresh($payload);
 
+    public function attributes($payload)
+    {
+        $payload->attributes = $payload->request->all();
+
+        return $payload;
+    }
+
+    public function fill($payload)
+    {
+        $payload->entity->fill(
+            Arr::except($payload->attributes, array_keys($payload->entity->getDirty()))
+        );
+
+        return $payload;
+    }
+
     /**
      * @param MutatingOperationPayload $payload
      * @return MutatingOperationPayload
@@ -36,22 +52,6 @@ abstract class MutatingOperation extends Operation
 
             $payload->entity = $guard->guardEntity($payload->entity, $registeredGuard->options);
         }
-
-        return $payload;
-    }
-
-    public function attributes($payload)
-    {
-        $payload->attributes = $payload->request->all();
-
-        return $payload;
-    }
-
-    public function fill($payload)
-    {
-        $payload->entity->fill(
-            Arr::except($payload->attributes, array_keys($payload->entity->getDirty()))
-        );
 
         return $payload;
     }

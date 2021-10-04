@@ -6,14 +6,14 @@ namespace Orion\Operations;
 
 use Closure;
 use DB;
-use Illuminate\Contracts\Container\Container;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\Support\Responsable;
-use Illuminate\Pipeline\Pipeline;
 use Orion\Contracts\Http\Guards\GuardOptions;
+use Orion\ValueObjects\Operations\OperationPayload;
 use Orion\ValueObjects\RegisteredGuard;
-use Throwable;
+use PDOException;
 
-abstract class Operation extends Pipeline
+abstract class Operation
 {
     protected bool $usesTransaction = false;
 
@@ -34,10 +34,8 @@ abstract class Operation extends Pipeline
     /** @var callable|null $transformCallback */
     protected $transformCallback = null;
 
-    public function __construct(Container $container = null)
+    public function __construct()
     {
-        parent::__construct($container);
-
         $this->usesTransaction = config('orion.features.hooks.transactions', false);
     }
 
@@ -135,29 +133,32 @@ abstract class Operation extends Pipeline
     /**
      * Run the pipeline with a final destination callback.
      *
-     * @param Closure $destination
+     * @param OperationPayload $payload
      * @return mixed
      */
-    public function then(Closure $destination)
+    public function handle(OperationPayload $payload)
     {
-        $this->through($this->buildPipes());
+        $pipes = $this->buildPipes();
+        $result = null;
 
-        $pipeline = $this->prepareDestination($destination);
-        $carry = $this->carry();
+        foreach ($pipes as $pipe) {
 
-        foreach (array_reverse($this->pipes()) as $pipe) {
             try {
-                $pipeline = $carry($pipeline, $pipe);
-            } catch (Throwable $exception) {
-                DB::rollBack();
+                $result = $pipe($payload);
+            } catch (PDOException $exception) {
+                if ($this->usesTransaction) {
+                    DB::rollBack();
+                } else {
+                    throw $exception;
+                }
             }
 
-            if ($pipeline($this->passable) instanceof Responsable) {
+            if ($result instanceof Responsable) {
                 break;
             }
         }
 
-        return $pipeline($this->passable);
+        return $result;
     }
 
     protected function buildPipes(): array

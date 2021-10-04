@@ -5,6 +5,8 @@ namespace Orion\Tests\Fixtures\App\Http\Controllers;
 use Orion\Http\Controllers\Controller;
 use Orion\Http\Requests\Request;
 use Orion\Tests\Fixtures\App\Models\Post;
+use Orion\ValueObjects\Operations\MutatingOperationPayload;
+use Orion\ValueObjects\Operations\Standard\StoreOperationPayload;
 
 class PostsController extends Controller
 {
@@ -14,14 +16,13 @@ class PostsController extends Controller
     protected $model = Post::class;
 
     /**
-     * @param Request $request
-     * @param Post $entity
-     * @return mixed|void
+     * @param MutatingOperationPayload $payload
+     * @return void
      */
-    protected function beforeSave(Request $request, $entity)
+    public function beforeSave(MutatingOperationPayload $payload)
     {
-        if ($user = $request->user()) {
-            $entity->user()->associate($user);
+        if ($user = $payload->request->user()) {
+            $payload->entity->user()->associate($user);
         }
     }
 

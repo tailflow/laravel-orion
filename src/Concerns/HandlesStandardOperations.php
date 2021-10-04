@@ -3,6 +3,8 @@
 namespace Orion\Concerns;
 
 use Exception;
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Contracts\Pagination\Paginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -15,7 +17,10 @@ use Orion\Http\Requests\Request;
 use Orion\Http\Resources\CollectionResource;
 use Orion\Http\Resources\Resource;
 use Orion\Operations\Standard\StoreOperation;
+use Orion\Operations\Standard\UpdateOperation;
+use Orion\ValueObjects\Operations\MutatingOperationPayload;
 use Orion\ValueObjects\Operations\Standard\StoreOperationPayload;
+use Orion\ValueObjects\Operations\Standard\UpdateOperationPayload;
 
 trait HandlesStandardOperations
 {
@@ -129,94 +134,54 @@ trait HandlesStandardOperations
      * Creates new resource.
      *
      * @param Request $request
+     *
      * @return Resource
+     *
+     * @throws BindingResolutionException
+     * @noinspection PhpDocRedundantThrowsInspection* @throws AuthorizationException
      */
     public function store(Request $request)
     {
-        /**
-         * Experimental Implementation
-         */
-//        $entity = new $resourceModelClass;
-//
-//        $payload = new StoreOperationPayload(
-//            $entity,
-//            $request,
-//            $this->relationsResolver->requestedRelations($request)
-//        );
-//
-//        $relationsGuardOptions = new RelationsGuardOptions();
-//        $relationsGuardOptions->requestedRelations = $this->getRelationsResolver()->requestedRelations($request);
-//
-//        $operation = app()->make(StoreOperation::class);
-//        $operation
-//            ->useTransaction($this->shouldUseTransaction('store'))
-//            ->registerAuthorizationCallback(function () use ($resourceModelClass) {
-//                $this->authorize('create', $resourceModelClass);
-//            })
-//            ->registerBeforeHook([$this, 'beforeStore'])
-//            ->registerBeforeHook([$this, 'beforeSave'])
-//            ->registerPerformCallback([$this, 'performStore'])
-//            ->registerAfterHook([$this, 'afterSave'])
-//            ->registerAfterHook([$this, 'afterStore'])
-//            ->registerGuard(RelationsGuard::class, $relationsGuardOptions)
-//            ->useResource($this->getResource())
-//            ->useCollectionResource($this->getCollectionResource());
-//
-//        return $operation->send($payload)->thenReturn();
-
         $resourceModelClass = $this->resolveResourceModelClass();
 
-        $this->authorize('create', $resourceModelClass);
-
-        /**
-         * @var Model $entity
-         */
         $entity = new $resourceModelClass;
 
-        $beforeHookResult = $this->beforeStore($request, $entity);
-        if ($this->hookResponds($beforeHookResult)) {
-            return $beforeHookResult;
-        }
-
-        $beforeSaveHookResult = $this->beforeSave($request, $entity);
-        if ($this->hookResponds($beforeSaveHookResult)) {
-            return $beforeSaveHookResult;
-        }
-
-        $requestedRelations = $this->relationsResolver->requestedRelations($request);
-
-        $this->performStore(
-            $request,
+        $payload = new StoreOperationPayload(
             $entity,
-            $request->all()
+            $request,
+            $this->relationsResolver->requestedRelations($request)
         );
 
-        $entity = $entity->fresh($requestedRelations);
-        $entity->wasRecentlyCreated = true;
+        $relationsGuardOptions = new RelationsGuardOptions();
+        $relationsGuardOptions->requestedRelations = $payload->requestedRelations;
 
-        $afterSaveHookResult = $this->afterSave($request, $entity);
-        if ($this->hookResponds($afterSaveHookResult)) {
-            return $afterSaveHookResult;
-        }
+        $operation = app()->make(StoreOperation::class);
+        $operation
+            ->useTransaction($this->shouldUseTransaction('store'))
+            ->registerAuthorizationCallback(function (StoreOperationPayload $payload) use ($resourceModelClass) {
+                $this->authorize('create', $resourceModelClass);
 
-        $afterHookResult = $this->afterStore($request, $entity);
-        if ($this->hookResponds($afterHookResult)) {
-            return $afterHookResult;
-        }
+                return $payload;
+            })
+            ->registerBeforeHook([$this, 'beforeStore'])
+            ->registerBeforeHook([$this, 'beforeSave'])
+            ->registerPerformCallback([$this, 'performStore'])
+            ->registerAfterHook([$this, 'afterSave'])
+            ->registerAfterHook([$this, 'afterStore'])
+            ->registerGuard(RelationsGuard::class, $relationsGuardOptions)
+            ->useResource($this->getResource())
+            ->useCollectionResource($this->getCollectionResource());
 
-        $entity = $this->relationsResolver->guardRelations($entity, $requestedRelations);
-
-        return $this->entityResponse($entity);
+        return $operation->handle($payload);
     }
 
     /**
      * The hook is executed before creating new resource.
      *
-     * @param Request $request
-     * @param Model $entity
+     * @param StoreOperationPayload $payload
      * @return mixed
      */
-    protected function beforeStore(Request $request, Model $entity)
+    public function beforeStore(StoreOperationPayload $payload)
     {
         return null;
     }
@@ -224,11 +189,10 @@ trait HandlesStandardOperations
     /**
      * The hook is executed before creating or updating a resource.
      *
-     * @param Request $request
-     * @param Model $entity
+     * @param MutatingOperationPayload $payload
      * @return mixed
      */
-    protected function beforeSave(Request $request, Model $entity)
+    public function beforeSave(MutatingOperationPayload $payload)
     {
         return null;
     }
@@ -236,24 +200,21 @@ trait HandlesStandardOperations
     /**
      * Fills attributes on the given entity and stores it in database.
      *
-     * @param Request $request
-     * @param Model $entity
-     * @param array $attributes
+     * @param StoreOperationPayload $payload
      */
-    protected function performStore(Request $request, Model $entity, array $attributes): void
+    public function performStore(StoreOperationPayload $payload): void
     {
-        $this->performFill($request, $entity, $attributes);
-        $entity->save();
+        $this->performFill($payload->request, $payload->entity, $payload->attributes);
+        $payload->entity->save();
     }
 
     /**
      * The hook is executed after creating or updating a resource.
      *
-     * @param Request $request
-     * @param Model $entity
+     * @param MutatingOperationPayload $payload
      * @return mixed
      */
-    protected function afterSave(Request $request, Model $entity)
+    public function afterSave(MutatingOperationPayload $payload)
     {
         return null;
     }
@@ -261,11 +222,10 @@ trait HandlesStandardOperations
     /**
      * The hook is executed after creating new resource.
      *
-     * @param Request $request
-     * @param Model $entity
+     * @param StoreOperationPayload $payload
      * @return mixed
      */
-    protected function afterStore(Request $request, Model $entity)
+    public function afterStore(StoreOperationPayload $payload)
     {
         return null;
     }
@@ -369,7 +329,11 @@ trait HandlesStandardOperations
      *
      * @param Request $request
      * @param int|string $key
+     *
      * @return Resource
+     *
+     * @throws BindingResolutionException
+     * @noinspection PhpDocRedundantThrowsInspection* @throws AuthorizationException
      */
     public function update(Request $request, $key)
     {
@@ -378,39 +342,33 @@ trait HandlesStandardOperations
         $query = $this->buildUpdateFetchQuery($request, $requestedRelations);
         $entity = $this->runUpdateFetchQuery($request, $query, $key);
 
-        $this->authorize('update', $entity);
-
-        $beforeHookResult = $this->beforeUpdate($request, $entity);
-        if ($this->hookResponds($beforeHookResult)) {
-            return $beforeHookResult;
-        }
-
-        $beforeSaveHookResult = $this->beforeSave($request, $entity);
-        if ($this->hookResponds($beforeSaveHookResult)) {
-            return $beforeSaveHookResult;
-        }
-
-        $this->performUpdate(
-            $request,
+        $payload = new UpdateOperationPayload(
             $entity,
-            $request->all()
+            $request,
+            $this->relationsResolver->requestedRelations($request)
         );
 
-        $entity = $entity->fresh($requestedRelations);
+        $relationsGuardOptions = new RelationsGuardOptions();
+        $relationsGuardOptions->requestedRelations = $payload->requestedRelations;
 
-        $afterSaveHookResult = $this->afterSave($request, $entity);
-        if ($this->hookResponds($afterSaveHookResult)) {
-            return $afterSaveHookResult;
-        }
+        $operation = app()->make(UpdateOperation::class);
+        $operation
+            ->useTransaction($this->shouldUseTransaction('update'))
+            ->registerAuthorizationCallback(function (UpdateOperationPayload $payload) {
+                $this->authorize('update', $payload->entity);
 
-        $afterHookResult = $this->afterUpdate($request, $entity);
-        if ($this->hookResponds($afterHookResult)) {
-            return $afterHookResult;
-        }
+                return $payload;
+            })
+            ->registerBeforeHook([$this, 'beforeUpdate'])
+            ->registerBeforeHook([$this, 'beforeSave'])
+            ->registerPerformCallback([$this, 'performUpdate'])
+            ->registerAfterHook([$this, 'afterSave'])
+            ->registerAfterHook([$this, 'afterUpdate'])
+            ->registerGuard(RelationsGuard::class, $relationsGuardOptions)
+            ->useResource($this->getResource())
+            ->useCollectionResource($this->getCollectionResource());
 
-        $entity = $this->relationsResolver->guardRelations($entity, $requestedRelations);
-
-        return $this->entityResponse($entity);
+        return $operation->handle($payload);
     }
 
     /**
@@ -441,11 +399,10 @@ trait HandlesStandardOperations
     /**
      * The hook is executed before updating a resource.
      *
-     * @param Request $request
-     * @param Model $entity
+     * @param UpdateOperationPayload $payload
      * @return mixed
      */
-    protected function beforeUpdate(Request $request, Model $entity)
+    public function beforeUpdate(UpdateOperationPayload $payload)
     {
         return null;
     }
@@ -453,24 +410,21 @@ trait HandlesStandardOperations
     /**
      * Fills attributes on the given entity and persists changes in database.
      *
-     * @param Request $request
-     * @param Model $entity
-     * @param array $attributes
+     * @param UpdateOperationPayload $payload
      */
-    protected function performUpdate(Request $request, Model $entity, array $attributes): void
+    public function performUpdate(UpdateOperationPayload $payload): void
     {
-        $this->performFill($request, $entity, $attributes);
-        $entity->save();
+        $this->performFill($payload->request, $payload->entity, $payload->attributes);
+        $payload->entity->save();
     }
 
     /**
      * The hook is executed after updating a resource.
      *
-     * @param Request $request
-     * @param Model $entity
+     * @param UpdateOperationPayload $payload
      * @return mixed
      */
-    protected function afterUpdate(Request $request, Model $entity)
+    public function afterUpdate(UpdateOperationPayload $payload)
     {
         return null;
     }
