@@ -6,6 +6,8 @@ use Illuminate\Support\Facades\DB;
 
 trait HandlesTransactions
 {
+    protected $transactionsEnabled = false;
+
     /**
      * Start database transaction
      *
@@ -13,6 +15,10 @@ trait HandlesTransactions
      */
     protected function startTransaction(): void
     {
+        if ($this->transactionsEnabled !== true) {
+            return;
+        }
+
         DB::beginTransaction();
     }
 
@@ -24,6 +30,10 @@ trait HandlesTransactions
      */
     protected function commitTransaction(): void
     {
+        if ($this->transactionsEnabled !== true) {
+            return;
+        }
+
         DB::commit();
     }
 
@@ -35,6 +45,10 @@ trait HandlesTransactions
      */
     protected function rollbackTransaction(): void
     {
+        if ($this->transactionsEnabled !== true) {
+            return;
+        }
+
         DB::rollBack();
     }
 
