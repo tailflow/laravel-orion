@@ -14,13 +14,32 @@ use Orion\Http\Resources\CollectionResource;
 trait HandlesRelationStandardBatchOperations
 {
     /**
-     * Create a batch of new relation resources.
+     * Create a batch of new relation resources in a transaction-safe way.
      *
      * @param Request $request
      * @param int|string $parentKey
      * @return CollectionResource
      */
     public function batchStore(Request $request, $parentKey)
+    {
+        try {
+            $this->beginTransaction();
+            $result = $this->batchStoreWithTransaction($request, $parentKey);
+            $this->commitTransaction();
+            return $result;
+        } catch (\Exception $exception) {
+            $this->rollbackTransactionAndRaise($exception);
+        }
+    }
+
+    /**
+     * Create a batch of new relation resources.
+     *
+     * @param Request $request
+     * @param int|string $parentKey
+     * @return CollectionResource
+     */
+    protected function batchStoreWithTransaction(Request $request, $parentKey)
     {
         $resourceModelClass = $this->resolveResourceModelClass();
 
@@ -133,13 +152,32 @@ trait HandlesRelationStandardBatchOperations
     }
 
     /**
-     * Updates a batch of relation resources.
+     * Updates a batch of relation resources in a transaction-safe way.
      *
      * @param Request $request
      * @param int|string $parentKey
      * @return CollectionResource
      */
     public function batchUpdate(Request $request, $parentKey)
+    {
+        try {
+            $this->beginTransaction();
+            $result = $this->batchUpdateWithTransaction($request, $parentKey);
+            $this->commitTransaction();
+            return $result;
+        } catch (\Exception $exception) {
+            $this->rollbackTransactionAndRaise($exception);
+        }
+    }
+
+    /**
+     * Updates a batch of relation resources.
+     *
+     * @param Request $request
+     * @param int|string $parentKey
+     * @return CollectionResource
+     */
+    protected function batchUpdateWithTransaction(Request $request, $parentKey)
     {
         $parentQuery = $this->buildBatchUpdateParentFetchQuery($request, $parentKey);
         $parentEntity = $this->runBatchUpdateParentFetchQuery($request, $parentQuery, $parentKey);
@@ -309,7 +347,7 @@ trait HandlesRelationStandardBatchOperations
     }
 
     /**
-     * Deletes a batch of relation resources.
+     * Deletes a batch of relation resources in a transaction-safe way.
      *
      * @param Request $request
      * @param int|string $parentKey
@@ -317,6 +355,26 @@ trait HandlesRelationStandardBatchOperations
      * @throws Exception
      */
     public function batchDestroy(Request $request, $parentKey)
+    {
+        try {
+            $this->beginTransaction();
+            $result = $this->batchDestroyWithTransaction($request, $parentKey);
+            $this->commitTransaction();
+            return $result;
+        } catch (\Exception $exception) {
+            $this->rollbackTransactionAndRaise($exception);
+        }
+    }
+
+    /**
+     * Deletes a batch of relation resources.
+     *
+     * @param Request $request
+     * @param int|string $parentKey
+     * @return CollectionResource
+     * @throws Exception
+     */
+    protected function batchDestroyWithTransaction(Request $request, $parentKey)
     {
         $parentQuery = $this->buildBatchDestroyParentFetchQuery($request, $parentKey);
         $parentEntity = $this->runBatchDestroyParentFetchQuery($request, $parentQuery, $parentKey);
@@ -458,7 +516,7 @@ trait HandlesRelationStandardBatchOperations
     }
 
     /**
-     * Restores a batch of relation resources.
+     * Restores a batch of relation resources in a transaction-safe way.
      *
      * @param Request $request
      * @param int|string $parentKey
@@ -466,6 +524,26 @@ trait HandlesRelationStandardBatchOperations
      * @throws Exception
      */
     public function batchRestore(Request $request, $parentKey)
+    {
+        try {
+            $this->beginTransaction();
+            $result = $this->batchRestoreWithTransaction($request, $parentKey);
+            $this->commitTransaction();
+            return $result;
+        } catch (\Exception $exception) {
+            $this->rollbackTransactionAndRaise($exception);
+        }
+    }
+
+    /**
+     * Restores a batch of relation resources.
+     *
+     * @param Request $request
+     * @param int|string $parentKey
+     * @return CollectionResource
+     * @throws Exception
+     */
+    protected function batchRestoreWithTransaction(Request $request, $parentKey)
     {
         $parentQuery = $this->buildBatchRestoreParentFetchQuery($request, $parentKey);
         $parentEntity = $this->runBatchRestoreParentFetchQuery($request, $parentQuery, $parentKey);

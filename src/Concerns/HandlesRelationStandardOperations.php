@@ -3,22 +3,23 @@
 namespace Orion\Concerns;
 
 use Exception;
-use Illuminate\Contracts\Pagination\Paginator;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
-use Illuminate\Database\Eloquent\Relations\MorphOne;
-use Illuminate\Database\Eloquent\Relations\MorphToMany;
-use Illuminate\Database\Eloquent\Relations\Relation;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Arr;
 use InvalidArgumentException;
 use Orion\Http\Requests\Request;
-use Orion\Http\Resources\CollectionResource;
 use Orion\Http\Resources\Resource;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
+use Orion\Http\Resources\CollectionResource;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Contracts\Pagination\Paginator;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
+use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 
 trait HandlesRelationStandardOperations
 {
@@ -230,6 +231,25 @@ trait HandlesRelationStandardOperations
      * @return Resource
      */
     public function store(Request $request, $parentKey)
+    {
+        try {
+            $this->beginTransaction();
+            $result = $this->storeWithTransaction($request, $parentKey);
+            $this->commitTransaction();
+            return $result;
+        } catch (\Exception $exception) {
+            $this->rollbackTransactionAndRaise($exception);
+        }
+    }
+
+    /**
+     * Create new relation resource.
+     *
+     * @param Request $request
+     * @param int|string $parentKey
+     * @return Resource
+     */
+    protected function storeWithTransaction(Request $request, $parentKey)
     {
         $resourceModelClass = $this->resolveResourceModelClass();
 
@@ -556,7 +576,7 @@ trait HandlesRelationStandardOperations
     }
 
     /**
-     * Update a relation resource.
+     * Update a relation resource in a transaction-safe way.
      *
      * @param Request $request
      * @param int|string $parentKey
@@ -564,6 +584,26 @@ trait HandlesRelationStandardOperations
      * @return Resource
      */
     public function update(Request $request, $parentKey, $relatedKey = null)
+    {
+        try {
+            $this->beginTransaction();
+            $result = $this->updateWithTransaction($request, $parentKey, $relatedKey);
+            $this->commitTransaction();
+            return $result;
+        } catch (\Exception $exception) {
+            $this->rollbackTransactionAndRaise($exception);
+        }
+    }
+
+    /**
+     * Update a relation resource.
+     *
+     * @param Request $request
+     * @param int|string $parentKey
+     * @param int|string|null $relatedKey
+     * @return Resource
+     */
+    protected function updateWithTransaction(Request $request, $parentKey, $relatedKey = null)
     {
         $parentQuery = $this->buildUpdateParentFetchQuery($request, $parentKey);
         $parentEntity = $this->runUpdateParentFetchQuery($request, $parentQuery, $parentKey);
@@ -735,6 +775,27 @@ trait HandlesRelationStandardOperations
      */
     public function destroy(Request $request, $parentKey, $relatedKey = null)
     {
+        try {
+            $this->beginTransaction();
+            $result = $this->destroyWithTransaction($request, $parentKey, $relatedKey);
+            $this->commitTransaction();
+            return $result;
+        } catch (\Exception $exception) {
+            $this->rollbackTransactionAndRaise($exception);
+        }
+    }
+
+    /**
+     * Delete a relation resource.
+     *
+     * @param Request $request
+     * @param int|string $parentKey
+     * @param int|string|null $relatedKey
+     * @return Resource
+     * @throws Exception
+     */
+    protected function destroyWithTransaction(Request $request, $parentKey, $relatedKey = null)
+    {
         $parentQuery = $this->buildDestroyParentFetchQuery($request, $parentKey);
         $parentEntity = $this->runDestroyParentFetchQuery($request, $parentQuery, $parentKey);
 
@@ -896,7 +957,7 @@ trait HandlesRelationStandardOperations
     }
 
     /**
-     * Restores a previously deleted relation resource.
+     * Restores a previously deleted relation resource in a transaction-save way.
      *
      * @param Request $request
      * @param int|string $parentKey
@@ -904,6 +965,26 @@ trait HandlesRelationStandardOperations
      * @return Resource
      */
     public function restore(Request $request, $parentKey, $relatedKey = null)
+    {
+        try {
+            $this->beginTransaction();
+            $result = $this->restoreWithTransaction($request, $parentKey, $relatedKey);
+            $this->commitTransaction();
+            return $result;
+        } catch (\Exception $exception) {
+            $this->rollbackTransactionAndRaise($exception);
+        }
+    }
+
+    /**
+     * Restores a previously deleted relation resource.
+     *
+     * @param Request $request
+     * @param int|string $parentKey
+     * @param int|string|null $relatedKey
+     * @return Resource
+     */
+    protected function restoreWithTransaction(Request $request, $parentKey, $relatedKey = null)
     {
         $parentQuery = $this->buildRestoreParentFetchQuery($request, $parentKey);
         $parentEntity = $this->runRestoreParentFetchQuery($request, $parentQuery, $parentKey);
