@@ -6,6 +6,11 @@ use Illuminate\Support\Facades\DB;
 
 trait HandlesTransactions
 {
+    /**
+     * Flag to enable or disable transactions
+     *
+     * @var boolean
+     */
     protected $transactionsEnabled = false;
 
     /**
