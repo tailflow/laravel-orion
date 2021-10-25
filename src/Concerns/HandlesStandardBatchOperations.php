@@ -20,7 +20,7 @@ trait HandlesStandardBatchOperations
     public function batchStore(Request $request)
     {
         try {
-            $this->beginTransaction();
+            $this->startTransaction();
             $result = $this->batchStoreWithTransaction($request);
             $this->commitTransaction();
             return $result;
@@ -113,7 +113,7 @@ trait HandlesStandardBatchOperations
     public function batchUpdate(Request $request)
     {
         try {
-            $this->beginTransaction();
+            $this->startTransaction();
             $result = $this->batchUpdateWithTransaction($request);
             $this->commitTransaction();
             return $result;
@@ -254,7 +254,7 @@ trait HandlesStandardBatchOperations
     public function batchDestroy(Request $request)
     {
         try {
-            $this->beginTransaction();
+            $this->startTransaction();
             $result = $this->batchDestroyWithTransaction($request);
             $this->commitTransaction();
             return $result;
@@ -376,7 +376,7 @@ trait HandlesStandardBatchOperations
     public function batchRestore(Request $request)
     {
         try {
-            $this->beginTransaction();
+            $this->startTransaction();
             $result = $this->batchRestoreWithTransaction($request);
             $this->commitTransaction();
             return $result;

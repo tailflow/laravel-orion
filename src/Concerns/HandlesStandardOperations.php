@@ -130,7 +130,7 @@ trait HandlesStandardOperations
     public function store(Request $request)
     {
         try {
-            $this->beginTransaction();
+            $this->startTransaction();
             $result = $this->storeWithTransaction($request);
             $this->commitTransaction();
             return $result;
@@ -357,7 +357,7 @@ trait HandlesStandardOperations
     public function update(Request $request, $key)
     {
         try {
-            $this->beginTransaction();
+            $this->startTransaction();
             $result = $this->updateWithTransaction($request, $key);
             $this->commitTransaction();
             return $result;
@@ -488,7 +488,7 @@ trait HandlesStandardOperations
     public function destroy(Request $request, $key)
     {
         try {
-            $this->beginTransaction();
+            $this->startTransaction();
             $result = $this->destroyWithTransaction($request, $key);
             $this->commitTransaction();
             return $result;
@@ -633,7 +633,7 @@ trait HandlesStandardOperations
     public function restore(Request $request, $key)
     {
         try {
-            $this->beginTransaction();
+            $this->startTransaction();
             $result = $this->restoreWithTransaction($request, $key);
             $this->commitTransaction();
             return $result;

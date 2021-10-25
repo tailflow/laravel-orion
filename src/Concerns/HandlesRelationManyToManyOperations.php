@@ -22,7 +22,7 @@ trait HandlesRelationManyToManyOperations
     public function attach(Request $request, $parentKey)
     {
         try {
-            $this->beginTransaction();
+            $this->startTransaction();
             $result = $this->attachWithTransaction($request, $parentKey);
             $this->commitTransaction();
             return $result;
@@ -243,7 +243,7 @@ trait HandlesRelationManyToManyOperations
     public function detach(Request $request, $parentKey)
     {
         try {
-            $this->beginTransaction();
+            $this->startTransaction();
             $result = $this->detachWithTransaction($request, $parentKey);
             $this->commitTransaction();
             return $result;
@@ -362,7 +362,7 @@ trait HandlesRelationManyToManyOperations
     public function sync(Request $request, $parentKey)
     {
         try {
-            $this->beginTransaction();
+            $this->startTransaction();
             $result = $this->syncWithTransaction($request, $parentKey);
             $this->commitTransaction();
             return $result;
@@ -488,7 +488,7 @@ trait HandlesRelationManyToManyOperations
     public function toggle(Request $request, $parentKey)
     {
         try {
-            $this->beginTransaction();
+            $this->startTransaction();
             $result = $this->toggleWithTransaction($request, $parentKey);
             $this->commitTransaction();
             return $result;
@@ -602,7 +602,7 @@ trait HandlesRelationManyToManyOperations
     public function updatePivot(Request $request, $parentKey, $relatedKey)
     {
         try {
-            $this->beginTransaction();
+            $this->startTransaction();
             $result = $this->updatePivotWithTransaction($request, $parentKey, $relatedKey);
             $this->commitTransaction();
             return $result;

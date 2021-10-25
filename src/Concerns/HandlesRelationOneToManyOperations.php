@@ -20,7 +20,7 @@ trait HandlesRelationOneToManyOperations
     public function associate(Request $request, $parentKey)
     {
         try {
-            $this->beginTransaction();
+            $this->startTransaction();
             $result = $this->associateWithTransaction($request, $parentKey);
             $this->commitTransaction();
             return $result;
@@ -172,7 +172,7 @@ trait HandlesRelationOneToManyOperations
     public function dissociate(Request $request, $parentKey, $relatedKey)
     {
         try {
-            $this->beginTransaction();
+            $this->startTransaction();
             $result = $this->dissociateWithTransaction($request, $parentKey, $relatedKey);
             $this->commitTransaction();
             return $result;
