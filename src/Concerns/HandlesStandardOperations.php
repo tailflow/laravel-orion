@@ -122,12 +122,30 @@ trait HandlesStandardOperations
     }
 
     /**
-     * Creates new resource.
+     * Creates new resource in a transaction-safe way.
      *
      * @param Request $request
      * @return Resource
      */
     public function store(Request $request)
+    {
+        try {
+            $this->startTransaction();
+            $result = $this->storeWithTransaction($request);
+            $this->commitTransaction();
+            return $result;
+        } catch (\Exception $exception) {
+            $this->rollbackTransactionAndRaise($exception);
+        }
+    }
+
+    /**
+     * Creates new resource.
+     *
+     * @param Request $request
+     * @return Resource
+     */
+    protected function storeWithTransaction(Request $request)
     {
         $resourceModelClass = $this->resolveResourceModelClass();
 
@@ -330,13 +348,32 @@ trait HandlesStandardOperations
     }
 
     /**
-     * Updates a resource.
+     * Update a resource in a transaction-safe way.
      *
      * @param Request $request
      * @param int|string $key
      * @return Resource
      */
     public function update(Request $request, $key)
+    {
+        try {
+            $this->startTransaction();
+            $result = $this->updateWithTransaction($request, $key);
+            $this->commitTransaction();
+            return $result;
+        } catch (\Exception $exception) {
+            $this->rollbackTransactionAndRaise($exception);
+        }
+    }
+
+    /**
+     * Updates a resource.
+     *
+     * @param Request $request
+     * @param int|string $key
+     * @return Resource
+     */
+    protected function updateWithTransaction(Request $request, $key)
     {
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
 
@@ -449,6 +486,26 @@ trait HandlesStandardOperations
      * @throws Exception
      */
     public function destroy(Request $request, $key)
+    {
+        try {
+            $this->startTransaction();
+            $result = $this->destroyWithTransaction($request, $key);
+            $this->commitTransaction();
+            return $result;
+        } catch (\Exception $exception) {
+            $this->rollbackTransactionAndRaise($exception);
+        }
+    }
+
+    /**
+     * Deletes a resource.
+     *
+     * @param Request $request
+     * @param int|string $key
+     * @return Resource
+     * @throws Exception
+     */
+    protected function destroyWithTransaction(Request $request, $key)
     {
         $softDeletes = $this->softDeletes($this->resolveResourceModelClass());
         $forceDeletes = $this->forceDeletes($request, $softDeletes);
@@ -566,7 +623,7 @@ trait HandlesStandardOperations
     }
 
     /**
-     * Restore previously deleted resource.
+     * Restore previously deleted resource in a transaction-safe way.
      *
      * @param Request $request
      * @param int|string $key
@@ -574,6 +631,26 @@ trait HandlesStandardOperations
      * @throws Exception
      */
     public function restore(Request $request, $key)
+    {
+        try {
+            $this->startTransaction();
+            $result = $this->restoreWithTransaction($request, $key);
+            $this->commitTransaction();
+            return $result;
+        } catch (\Exception $exception) {
+            $this->rollbackTransactionAndRaise($exception);
+        }
+    }
+
+    /**
+     * Restore previously deleted resource.
+     *
+     * @param Request $request
+     * @param int|string $key
+     * @return Resource
+     * @throws Exception
+     */
+    protected function restoreWithTransaction(Request $request, $key)
     {
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
 
