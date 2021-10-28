@@ -7,20 +7,13 @@ use Illuminate\Support\Facades\DB;
 trait HandlesTransactions
 {
     /**
-     * Flag to enable or disable transactions
-     *
-     * @var boolean
-     */
-    protected $transactionsEnabled = false;
-
-    /**
      * Start database transaction
      *
      * @return void
      */
     protected function startTransaction(): void
     {
-        if ($this->transactionsEnabled !== true) {
+        if ($this->transactionsAreEnabled() !== true) {
             return;
         }
 
@@ -35,7 +28,7 @@ trait HandlesTransactions
      */
     protected function commitTransaction(): void
     {
-        if ($this->transactionsEnabled !== true) {
+        if ($this->transactionsAreEnabled() !== true) {
             return;
         }
 
@@ -50,7 +43,7 @@ trait HandlesTransactions
      */
     protected function rollbackTransaction(): void
     {
-        if ($this->transactionsEnabled !== true) {
+        if ($this->transactionsAreEnabled() !== true) {
             return;
         }
 
@@ -71,5 +64,15 @@ trait HandlesTransactions
         $this->rollbackTransaction();
 
         throw $exception;
+    }
+
+    /**
+     * Return configuration value
+     *
+     * @return boolean
+     */
+    protected function transactionsAreEnabled(): bool
+    {
+        return (bool)config('orion.transactions.enabled', false);
     }
 }

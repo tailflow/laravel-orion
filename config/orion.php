@@ -28,4 +28,7 @@ return [
             ['url' => env('APP_URL').'/api', 'description' => 'Default Environment'],
         ],
     ],
+    'transactions' => [
+        'enabled' => false,
+    ],
 ];
