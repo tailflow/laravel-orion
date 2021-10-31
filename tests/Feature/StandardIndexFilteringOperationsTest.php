@@ -275,7 +275,8 @@ class StandardIndexFilteringOperationsTest extends TestCase
     public function getting_a_list_of_resources_filtered_by_field_in_json_column(): void
     {
         if (PHP_MAJOR_VERSION === 7 && PHP_MINOR_VERSION === 3) {
-            $this->markAsRisky();
+            $this->markAsRisky(); // weird pdo_mysql issue 🤷🏻‍
+
             return;
         }
 
