@@ -62,6 +62,8 @@ trait HandlesStandardBatchOperations
 
             $this->performStore($request, $entity, $resource);
 
+            $this->beforeStoreFresh($request, $entity);
+
             $entity = $entity->fresh($requestedRelations);
             $entity->wasRecentlyCreated = true;
 
@@ -152,6 +154,8 @@ trait HandlesStandardBatchOperations
                 $entity,
                 $request->input("resources.{$entity->{$this->keyName()}}")
             );
+
+            $this->beforeUpdateFresh($request, $entity);
 
             $entity = $entity->fresh($requestedRelations);
 
@@ -296,6 +300,7 @@ trait HandlesStandardBatchOperations
             if (!$forceDeletes) {
                 $this->performDestroy($entity);
                 if ($softDeletes) {
+                    $this->beforeDestroyFresh($request, $entity);
                     $entity = $entity->fresh($requestedRelations);
                 }
             } else {
@@ -413,6 +418,8 @@ trait HandlesStandardBatchOperations
             $this->beforeRestore($request, $entity);
 
             $this->performRestore($entity);
+
+            $this->beforeRestoreFresh($request, $entity);
 
             $entity = $entity->fresh($requestedRelations);
 
