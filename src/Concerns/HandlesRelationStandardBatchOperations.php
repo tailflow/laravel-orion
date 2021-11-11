@@ -41,12 +41,12 @@ trait HandlesRelationStandardBatchOperations
      */
     protected function batchStoreWithTransaction(Request $request, $parentKey)
     {
-        $resourceModelClass = $this->resolveResourceModelClass();
-
-        $this->authorize('create', $resourceModelClass);
-
         $parentQuery = $this->buildBatchStoreParentFetchQuery($request, $parentKey);
         $parentEntity = $this->runBatchStoreParentFetchQuery($request, $parentQuery, $parentKey);
+
+        $resourceModelClass = $this->resolveResourceModelClass();
+
+        $this->authorize('create', [$resourceModelClass, $parentEntity]);
 
         $beforeHookResult = $this->beforeBatchStore($request, $parentEntity);
         if ($this->hookResponds($beforeHookResult)) {
@@ -194,7 +194,7 @@ trait HandlesRelationStandardBatchOperations
 
         foreach ($entities as $entity) {
             /** @var Model $entity */
-            $this->authorize('update', $entity);
+            $this->authorize('update', [$entity, $parentEntity]);
 
             $resource = $request->input("resources.{$entity->{$this->keyName()}}");
 
@@ -393,7 +393,7 @@ trait HandlesRelationStandardBatchOperations
 
         foreach ($entities as $entity) {
             /** @var Model $entity */
-            $this->authorize($forceDeletes ? 'forceDelete' : 'delete', $entity);
+            $this->authorize($forceDeletes ? 'forceDelete' : 'delete', [$entity, $parentEntity]);
 
             $this->beforeDestroy($request, $parentEntity, $entity);
 
@@ -560,7 +560,7 @@ trait HandlesRelationStandardBatchOperations
 
         foreach ($entities as $entity) {
             /** @var Model $entity */
-            $this->authorize('restore', $entity);
+            $this->authorize('restore', [$entity, $parentEntity]);
 
             $this->beforeRestore($request, $parentEntity, $entity);
 
