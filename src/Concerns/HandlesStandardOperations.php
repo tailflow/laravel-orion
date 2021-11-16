@@ -174,6 +174,11 @@ trait HandlesStandardOperations
             $request->all()
         );
 
+        $beforeStoreFreshResult = $this->beforeStoreFresh($request, $entity);
+        if ($this->hookResponds($beforeStoreFreshResult)) {
+            return $beforeStoreFreshResult;
+        }
+
         $entity = $entity->fresh($requestedRelations);
         $entity->wasRecentlyCreated = true;
 
@@ -227,6 +232,18 @@ trait HandlesStandardOperations
     {
         $this->performFill($request, $entity, $attributes);
         $entity->save();
+    }
+
+    /**
+     * The hook is executed after creating and before refreshing the resource.
+     *
+     * @param Request $request
+     * @param Model $entity
+     * @return mixed
+     */
+    protected function beforeStoreFresh(Request $request, Model $entity)
+    {
+        return null;
     }
 
     /**
@@ -398,6 +415,11 @@ trait HandlesStandardOperations
             $request->all()
         );
 
+        $beforeUpdateFreshResult = $this->beforeUpdateFresh($request, $entity);
+        if ($this->hookResponds($beforeUpdateFreshResult)) {
+            return $beforeUpdateFreshResult;
+        }
+
         $entity = $entity->fresh($requestedRelations);
 
         $afterSaveHookResult = $this->afterSave($request, $entity);
@@ -466,6 +488,18 @@ trait HandlesStandardOperations
     }
 
     /**
+     * The hook is executed after updating and before refreshing the resource.
+     *
+     * @param Request $request
+     * @param Model $entity
+     * @return mixed
+     */
+    protected function beforeUpdateFresh(Request $request, Model $entity)
+    {
+        return null;
+    }
+
+    /**
      * The hook is executed after updating a resource.
      *
      * @param Request $request
@@ -529,6 +563,11 @@ trait HandlesStandardOperations
         if (!$forceDeletes) {
             $this->performDestroy($entity);
             if ($softDeletes) {
+                $beforeDestroyFreshResult = $this->beforeDestroyFresh($request, $entity);
+                if ($this->hookResponds($beforeDestroyFreshResult)) {
+                    return $beforeDestroyFreshResult;
+                }
+
                 $entity = $entity->fresh($requestedRelations);
             }
         } else {
@@ -611,6 +650,19 @@ trait HandlesStandardOperations
     }
 
     /**
+     * The hook is executed after deleting and before refreshing the resource.
+     * This hook is only called when not using forced deletes
+     *
+     * @param Request $request
+     * @param Model $entity
+     * @return mixed
+     */
+    protected function beforeDestroyFresh(Request $request, Model $entity)
+    {
+        return null;
+    }
+
+    /**
      * The hook is executed after deleting a resource.
      *
      * @param Request $request
@@ -665,6 +717,11 @@ trait HandlesStandardOperations
         }
 
         $this->performRestore($entity);
+
+        $beforeHookResult = $this->beforeRestoreFresh($request, $entity);
+        if ($this->hookResponds($beforeHookResult)) {
+            return $beforeHookResult;
+        }
 
         $entity = $entity->fresh($requestedRelations);
 
@@ -724,6 +781,19 @@ trait HandlesStandardOperations
     protected function performRestore(Model $entity): void
     {
         $entity->restore();
+    }
+
+    /**
+     * The hook is executed after force restoring a previously deleted resource but before
+     * refreshing the resource.
+     *
+     * @param Request $request
+     * @param Model $entity
+     * @return mixed
+     */
+    protected function beforeRestoreFresh(Request $request, Model $entity)
+    {
+        return null;
     }
 
     /**
