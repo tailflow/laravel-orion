@@ -111,12 +111,16 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
                 $relation = $this->relationsResolver->relationFromParamConstraint($filterDescriptor['field']);
                 $relationField = $this->relationsResolver->relationFieldFromParamConstraint($filterDescriptor['field']);
 
-                $query->{$or ? 'orWhereHas' : 'whereHas'}(
-                    $relation,
-                    function ($relationQuery) use ($relationField, $filterDescriptor) {
-                        $this->buildFilterQueryWhereClause($relationField, $filterDescriptor, $relationQuery);
-                    }
-                );
+                if ($relation === 'pivot') {
+                    $this->buildPivotFilterQueryWhereClause($relationField, $filterDescriptor, $query, $or);
+                } else {
+                    $query->{$or ? 'orWhereHas' : 'whereHas'}(
+                        $relation,
+                        function ($relationQuery) use ($relationField, $filterDescriptor) {
+                            $this->buildFilterQueryWhereClause($relationField, $filterDescriptor, $relationQuery);
+                        }
+                    );
+                }
             } else {
                 $this->buildFilterQueryWhereClause($this->getQualifiedFieldName($filterDescriptor['field']), $filterDescriptor, $query, $or);
             }
@@ -138,6 +142,26 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
             $query->{$or ? 'orWhere' : 'where'}($field, $filterDescriptor['operator'], $filterDescriptor['value']);
         } else {
             $query->{$or ? 'orWhereIn' : 'whereIn'}($field, $filterDescriptor['value'], 'and', $filterDescriptor['operator'] === 'not in');
+        }
+
+        return $query;
+    }
+
+    /**
+     * Builds filter's pivot query where clause based on the given filterable.
+     *
+     * @param string $field
+     * @param array $filterDescriptor
+     * @param Builder|Relation $query
+     * @param bool $or
+     * @return Builder|Relation
+     */
+    protected function buildPivotFilterQueryWhereClause(string $field, array $filterDescriptor, $query, bool $or = false)
+    {
+        if (!is_array($filterDescriptor['value'])) {
+            $query->{$or ? 'orWherePivot' : 'wherePivot'}($field, $filterDescriptor['operator'], $filterDescriptor['value']);
+        } else {
+            $query->{$or ? 'orWherePivotIn' : 'wherePivotIn'}($field, $filterDescriptor['value'], 'and', $filterDescriptor['operator'] === 'not in');
         }
 
         return $query;
@@ -217,6 +241,11 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
             if (strpos($sortableField, '.') !== false) {
                 $relation = $this->relationsResolver->relationFromParamConstraint($sortableField);
                 $relationField = $this->relationsResolver->relationFieldFromParamConstraint($sortableField);
+
+                if ($relation === 'pivot') {
+                    $query->orderByPivot($relationField, $direction);
+                    continue;
+                }
 
                 /**
                  * @var Relation $relationInstance
