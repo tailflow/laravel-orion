@@ -52,7 +52,7 @@ trait HandlesRelationOneToManyOperations
         }
 
         $this->authorize('view', $parentEntity);
-        $this->authorize('update', $entity);
+        $this->authorize('update', [$entity, $parentEntity]);
 
         $this->performAssociate($request, $parentEntity, $entity);
 
@@ -204,7 +204,7 @@ trait HandlesRelationOneToManyOperations
             return $beforeHookResult;
         }
 
-        $this->authorize('update', $entity);
+        $this->authorize('update', [$entity, $parentEntity]);
 
         $this->performDissociate($request, $parentEntity, $entity);
 

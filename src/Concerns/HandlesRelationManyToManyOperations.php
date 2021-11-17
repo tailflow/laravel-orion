@@ -632,7 +632,7 @@ trait HandlesRelationManyToManyOperations
         $query = $this->buildShowFetchQuery($request, $parentEntity, []);
         $entity = $this->runShowFetchQuery($request, $query, $parentEntity, $relatedKey);
 
-        $this->authorize('update', $entity);
+        $this->authorize('update', [$entity, $parentEntity]);
 
         $updateResult = $this->performUpdatePivot($request, $parentEntity, $relatedKey, $request->get('pivot', []));
 
