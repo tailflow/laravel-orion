@@ -122,7 +122,12 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
                     );
                 }
             } else {
-                $this->buildFilterQueryWhereClause($this->getQualifiedFieldName($filterDescriptor['field']), $filterDescriptor, $query, $or);
+                $this->buildFilterQueryWhereClause(
+                    $this->getQualifiedFieldName($filterDescriptor['field']),
+                    $filterDescriptor,
+                    $query,
+                    $or
+                );
             }
         }
     }
@@ -138,8 +143,16 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
      */
     protected function buildFilterQueryWhereClause(string $field, array $filterDescriptor, $query, bool $or = false)
     {
-        if (!is_array($filterDescriptor['value'])) {
-            $query->{$or ? 'orWhere' : 'where'}($field, $filterDescriptor['operator'], $filterDescriptor['value']);
+        if ($filterDescriptor['value'] !== null &&
+            in_array($filterDescriptor['field'], (new $this->resourceModelClass)->getDates(), true)
+        ) {
+            $constraint = 'whereDate';
+        } else {
+            $constraint = 'where';
+        }
+
+        if (!is_array($filterDescriptor['value']) || $constraint === 'whereDate') {
+            $query->{$or ? 'or' . ucfirst($constraint) : $constraint}($field, $filterDescriptor['operator'], $filterDescriptor['value']);
         } else {
             $query->{$or ? 'orWhereIn' : 'whereIn'}($field, $filterDescriptor['value'], 'and', $filterDescriptor['operator'] === 'not in');
         }
@@ -156,8 +169,12 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
      * @param bool $or
      * @return Builder|Relation
      */
-    protected function buildPivotFilterQueryWhereClause(string $field, array $filterDescriptor, $query, bool $or = false)
-    {
+    protected function buildPivotFilterQueryWhereClause(
+        string $field,
+        array $filterDescriptor,
+        $query,
+        bool $or = false
+    ) {
         if (!is_array($filterDescriptor['value'])) {
             $query->{$or ? 'orWherePivot' : 'wherePivot'}($field, $filterDescriptor['operator'], $filterDescriptor['value']);
         } else {
@@ -212,11 +229,19 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
                                 /**
                                  * @var Builder $relationQuery
                                  */
-                                return $relationQuery->where($relationField, 'like', '%'.$requestedSearchString.'%');
+                                return $relationQuery->where(
+                                    $relationField,
+                                    'like',
+                                    '%' . $requestedSearchString . '%'
+                                );
                             }
                         );
                     } else {
-                        $whereQuery->orWhere($this->getQualifiedFieldName($searchable), 'like', '%'.$requestedSearchString.'%');
+                        $whereQuery->orWhere(
+                            $this->getQualifiedFieldName($searchable),
+                            'like',
+                            '%' . $requestedSearchString . '%'
+                        );
                     }
                 }
             }
@@ -257,7 +282,9 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
                 }
 
                 $relationTable = $this->relationsResolver->relationTableFromRelationInstance($relationInstance);
-                $relationForeignKey = $this->relationsResolver->relationForeignKeyFromRelationInstance($relationInstance);
+                $relationForeignKey = $this->relationsResolver->relationForeignKeyFromRelationInstance(
+                    $relationInstance
+                );
                 $relationLocalKey = $this->relationsResolver->relationLocalKeyFromRelationInstance($relationInstance);
 
                 $query->leftJoin($relationTable, $relationForeignKey, '=', $relationLocalKey)

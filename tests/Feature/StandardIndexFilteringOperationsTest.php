@@ -418,4 +418,27 @@ class StandardIndexFilteringOperationsTest extends TestCase
             $this->makePaginator([$matchingPost], 'posts/search')
         );
     }
+
+    /** @test */
+    public function getting_a_list_of_resources_filtered_by_model_date_field(): void
+    {
+        $matchingPost = factory(Post::class)->create(['publish_at' => Carbon::parse('2019-01-05 13:30:00')])->fresh();
+        factory(Post::class)->create(['publish_at' => Carbon::now()])->fresh();
+
+        Gate::policy(Post::class, GreenPolicy::class);
+
+        $response = $this->post(
+            '/api/posts/search',
+            [
+                'filters' => [
+                    ['field' => 'publish_at', 'operator' => '=', 'value' => '2019-01-05'],
+                ],
+            ]
+        );
+
+        $this->assertResourcesPaginated(
+            $response,
+            $this->makePaginator([$matchingPost], 'posts/search')
+        );
+    }
 }
