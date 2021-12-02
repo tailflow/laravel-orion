@@ -5,6 +5,7 @@ namespace Orion\Concerns;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Gate;
@@ -176,24 +177,36 @@ trait HandlesRelationManyToManyOperations
     {
         $model = $this->getModel();
         $resources = $this->standardizePivotResourcesArray($resources);
-        $resourceModel = (new $model)->{$this->getRelation()}()->getModel();
+        /** @var BelongsToMany */
+        $relation = (new $model)->{$this->getRelation()}();
+        $resourceModel = $relation->getModel();
         $resourceKeyName = $this->keyName();
+        /**
+         * @var Collection $resourceModels
+         */
         $resourceModels = $resourceModel->whereIn($resourceKeyName, array_keys($resources))->get();
-
         $resources = array_filter(
             $resources,
             function ($resourceKey) use ($resourceModels, $resourceKeyName) {
-                /**
-                 * @var Collection $resourceModels
-                 */
                 $resourceModel = $resourceModels->where($resourceKeyName, $resourceKey)->first();
 
                 return $resourceModel && (!$this->authorizationRequired() || Gate::forUser(
-                            $this->resolveUser()
-                        )->allows('view', $resourceModel));
+                    $this->resolveUser()
+                )->allows('view', $resourceModel));
             },
             ARRAY_FILTER_USE_KEY
         );
+
+        $resources = $resourceModels->whereIn(
+            $resourceKeyName,
+            array_keys($resources)
+        )->mapWithKeys(
+            function ($item) use ($relation, $resources, $resourceKeyName) {
+                return [
+                    $item->{$relation->getRelatedKeyName()} => $resources[$item->{$resourceKeyName}]
+                ];
+            }
+        )->all();
 
         return $resources;
     }
