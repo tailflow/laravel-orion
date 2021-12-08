@@ -29,13 +29,73 @@ class BelongsToManyRelationStandardIndexFilteringOperationsTest extends TestCase
 
         $response = $this->post("/api/users/{$user->id}/roles/search", [
             'filters' => [
-                ['field' => 'pivot.custom_name', 'operator' => '=', 'value' => 'test-name']
-            ]
+                ['field' => 'pivot.custom_name', 'operator' => '=', 'value' => 'test-name'],
+            ],
         ]);
 
         $this->assertResourcesPaginated(
             $response,
             $this->makePaginator([$user->roles()->first()->toArray()], "users/{$user->id}/roles/search")
+        );
+    }
+
+    /** @test */
+    public function getting_a_list_of_relation_resources_filtered_by_null_pivot_field_value_using_equality_operator(): void
+    {
+        /** @var User $user */
+        $user = factory(User::class)->create();
+
+        $roleWithCustomName = factory(Role::class)->create();
+        $roleWithoutCustomName = factory(Role::class)->create();
+
+        $user->roles()->attach($roleWithoutCustomName);
+        $user->roles()->attach($roleWithCustomName, ['custom_name' => 'test-name']);
+
+        Gate::policy(User::class, GreenPolicy::class);
+        Gate::policy(Role::class, GreenPolicy::class);
+
+        $response = $this->post("/api/users/{$user->id}/roles/search", [
+            'filters' => [
+                ['field' => 'pivot.custom_name', 'operator' => '=', 'value' => null],
+            ],
+        ]);
+
+        $this->assertResourcesPaginated(
+            $response,
+            $this->makePaginator(
+                [$user->roles()->where('roles.id', $roleWithoutCustomName->id)->first()->toArray()],
+                "users/{$user->id}/roles/search"
+            )
+        );
+    }
+
+    /** @test */
+    public function getting_a_list_of_relation_resources_filtered_by_null_pivot_field_value_using_in_operator(): void
+    {
+        /** @var User $user */
+        $user = factory(User::class)->create();
+
+        $roleWithCustomName = factory(Role::class)->create();
+        $roleWithoutCustomName = factory(Role::class)->create();
+
+        $user->roles()->attach($roleWithoutCustomName);
+        $user->roles()->attach($roleWithCustomName, ['custom_name' => 'test-name']);
+
+        Gate::policy(User::class, GreenPolicy::class);
+        Gate::policy(Role::class, GreenPolicy::class);
+
+        $response = $this->post("/api/users/{$user->id}/roles/search", [
+            'filters' => [
+                ['field' => 'pivot.custom_name', 'operator' => 'in', 'value' => [null]],
+            ],
+        ]);
+
+        $this->assertResourcesPaginated(
+            $response,
+            $this->makePaginator(
+                [$user->roles()->where('roles.id', $roleWithoutCustomName->id)->first()->toArray()],
+                "users/{$user->id}/roles/search"
+            )
         );
     }
 }

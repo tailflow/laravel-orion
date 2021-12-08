@@ -143,6 +143,32 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
      */
     protected function buildFilterQueryWhereClause(string $field, array $filterDescriptor, $query, bool $or = false)
     {
+        if (is_array($filterDescriptor['value']) && in_array(null, $filterDescriptor['value'], true)) {
+            $query = $query->{$or ? 'orWhereNull' : 'whereNull'}($field);
+
+            $filterDescriptor['value'] = collect($filterDescriptor['value'])->filter()->values()->toArray();
+
+            if (!count($filterDescriptor['value'])) {
+                return $query;
+            }
+        }
+
+        return $this->buildFilterNestedQueryWhereClause($field, $filterDescriptor, $query, $or);
+    }
+
+    /**
+     * @param string $field
+     * @param array $filterDescriptor
+     * @param Builder|Relation $query
+     * @param bool $or
+     * @return Builder|Relation
+     */
+    protected function buildFilterNestedQueryWhereClause(
+        string $field,
+        array $filterDescriptor,
+        $query,
+        bool $or = false
+    ) {
         if ($filterDescriptor['value'] !== null &&
             in_array($filterDescriptor['field'], (new $this->resourceModelClass)->getDates(), true)
         ) {
@@ -152,9 +178,18 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
         }
 
         if (!is_array($filterDescriptor['value']) || $constraint === 'whereDate') {
-            $query->{$or ? 'or' . ucfirst($constraint) : $constraint}($field, $filterDescriptor['operator'], $filterDescriptor['value']);
+            $query->{$or ? 'or' . ucfirst($constraint) : $constraint}(
+                $field,
+                $filterDescriptor['operator'],
+                $filterDescriptor['value']
+            );
         } else {
-            $query->{$or ? 'orWhereIn' : 'whereIn'}($field, $filterDescriptor['value'], 'and', $filterDescriptor['operator'] === 'not in');
+            $query->{$or ? 'orWhereIn' : 'whereIn'}(
+                $field,
+                $filterDescriptor['value'],
+                'and',
+                $filterDescriptor['operator'] === 'not in'
+            );
         }
 
         return $query;
@@ -175,10 +210,45 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
         $query,
         bool $or = false
     ) {
+        if (is_array($filterDescriptor['value']) && in_array(null, $filterDescriptor['value'], true)) {
+            $query = $query->{$or ? 'orWherePivotNull' : 'wherePivotNull'}($field);
+
+            $filterDescriptor['value'] = collect($filterDescriptor['value'])->filter()->values()->toArray();
+
+            if (!count($filterDescriptor['value'])) {
+                return $query;
+            }
+        }
+
+        return $this->buildPivotFilterNestedQueryWhereClause($field, $filterDescriptor, $query);
+    }
+
+    /**
+     * @param string $field
+     * @param array $filterDescriptor
+     * @param Builder|Relation $query
+     * @param bool $or
+     * @return Builder
+     */
+    protected function buildPivotFilterNestedQueryWhereClause(
+        string $field,
+        array $filterDescriptor,
+        $query,
+        bool $or = false
+    ) {
         if (!is_array($filterDescriptor['value'])) {
-            $query->{$or ? 'orWherePivot' : 'wherePivot'}($field, $filterDescriptor['operator'], $filterDescriptor['value']);
+            $query->{$or ? 'orWherePivot' : 'wherePivot'}(
+                $field,
+                $filterDescriptor['operator'],
+                $filterDescriptor['value']
+            );
         } else {
-            $query->{$or ? 'orWherePivotIn' : 'wherePivotIn'}($field, $filterDescriptor['value'], 'and', $filterDescriptor['operator'] === 'not in');
+            $query->{$or ? 'orWherePivotIn' : 'wherePivotIn'}(
+                $field,
+                $filterDescriptor['value'],
+                'and',
+                $filterDescriptor['operator'] === 'not in'
+            );
         }
 
         return $query;

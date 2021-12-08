@@ -372,6 +372,52 @@ class StandardIndexFilteringOperationsTest extends TestCase
     }
 
     /** @test */
+    public function getting_a_list_of_resources_filtered_by_null_field_value_using_equality_operator(): void
+    {
+        $matchingTeam = factory(Team::class)->create(['description' => null])->fresh();
+        factory(Team::class)->create(['description' => 'not match'])->fresh();
+
+        Gate::policy(Team::class, GreenPolicy::class);
+
+        $response = $this->post(
+            '/api/teams/search',
+            [
+                'filters' => [
+                    ['field' => 'description', 'operator' => '=', 'value' => null],
+                ],
+            ]
+        );
+
+        $this->assertResourcesPaginated(
+            $response,
+            $this->makePaginator([$matchingTeam], 'teams/search')
+        );
+    }
+
+    /** @test */
+    public function getting_a_list_of_resources_filtered_by_null_field_value_using_in_operator(): void
+    {
+        $matchingTeam = factory(Team::class)->create(['description' => null])->fresh();
+        factory(Team::class)->create(['description' => 'not match'])->fresh();
+
+        Gate::policy(Team::class, GreenPolicy::class);
+
+        $response = $this->post(
+            '/api/teams/search',
+            [
+                'filters' => [
+                    ['field' => 'description', 'operator' => 'in', 'value' => [null]],
+                ],
+            ]
+        );
+
+        $this->assertResourcesPaginated(
+            $response,
+            $this->makePaginator([$matchingTeam], 'teams/search')
+        );
+    }
+
+    /** @test */
     public function getting_a_list_of_resources_filtered_by_relation_field_with_wildcard_whitelisting(): void
     {
         $matchingTeamCompany = factory(Company::class)->create(['name' => 'match'])->fresh();
