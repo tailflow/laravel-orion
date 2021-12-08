@@ -103,6 +103,60 @@ class Request extends FormRequest
     }
 
     /**
+     * Get custom attributes for validator errors that apply to the request.
+     *
+     * @return array
+     */
+    public function messages()
+    {
+        if (!$this->route()) {
+            return [];
+        }
+
+        if ($this->route()->getActionMethod() === 'store') {
+            return array_merge($this->commonMessages(), $this->storeMessages());
+        }
+
+        if ($this->route()->getActionMethod() === 'batchStore') {
+            return array_merge($this->commonMessages(), $this->storeMessages(), $this->batchStoreMessages());
+        }
+
+        if ($this->route()->getActionMethod() === 'update') {
+            return array_merge($this->commonMessages(), $this->updateMessages());
+        }
+
+        if ($this->route()->getActionMethod() === 'batchUpdate') {
+            return array_merge($this->commonMessages(), $this->updateMessages(), $this->batchUpdateMessages());
+        }
+
+        if ($this->route()->getActionMethod() === 'associate') {
+            return $this->associateMessages();
+        }
+
+        if ($this->route()->getActionMethod() === 'attach') {
+            return $this->attachMessages();
+        }
+
+        if ($this->route()->getActionMethod() === 'detach') {
+            return $this->detachMessages();
+        }
+
+        if ($this->route()->getActionMethod() === 'sync') {
+            return $this->syncMessages();
+        }
+
+        if ($this->route()->getActionMethod() === 'toggle') {
+            return $this->toggleMessages();
+        }
+
+        if ($this->route()->getActionMethod() === 'updatePivot') {
+            return $this->updatePivotMessages();
+        }
+
+        return [];
+    }
+
+    /**
      * Default rules for the request.
      *
      * @return array
@@ -223,6 +277,116 @@ class Request extends FormRequest
      * @return array
      */
     public function updatePivotRules(): array
+    {
+        return [];
+    }
+
+    /**
+     * Default messages for the request.
+     *
+     * @return array
+     */
+    public function commonMessages(): array
+    {
+        return [];
+    }
+
+    /**
+     * Messages for the "store" (POST) endpoint.
+     *
+     * @return array
+     */
+    function storeMessages(): array
+    {
+        return [];
+    }
+
+    /**
+     * Messages for the "batchstore" (POST) endpoint.
+     *
+     * @return array
+     */
+    function batchStoreMessages(): array
+    {
+        return [];
+    }
+
+    /**
+     * Messages for the "update" (POST) endpoint.
+     *
+     * @return array
+     */
+    function updateMessages(): array
+    {
+        return [];
+    }
+
+    /**
+     * Messages for the "batchUpdate" (POST) endpoint.
+     *
+     * @return array
+     */
+    function batchUpdateMessages(): array
+    {
+        return [];
+    }
+
+    /**
+     * Messages for the "associate" endpoint.
+     *
+     * @return array
+     */
+    public function associateMessages(): array
+    {
+        return [];
+    }
+
+    /**
+     * Messages for the "attach" endpoint.
+     *
+     * @return array
+     */
+    public function attachMessages(): array
+    {
+        return [];
+    }
+
+    /**
+     * Messages for the "detach" endpoint.
+     *
+     * @return array
+     */
+    public function detachMessages(): array
+    {
+        return [];
+    }
+
+    /**
+     * Messages for the "sync" endpoint.
+     *
+     * @return array
+     */
+    public function syncMessages(): array
+    {
+        return [];
+    }
+
+    /**
+     * Messages for the "toggle" endpoint.
+     *
+     * @return array
+     */
+    public function toggleMessages(): array
+    {
+        return [];
+    }
+
+    /**
+     * Messages for the "pivot" endpoint.
+     *
+     * @return array
+     */
+    public function updatePivotMessages(): array
     {
         return [];
     }

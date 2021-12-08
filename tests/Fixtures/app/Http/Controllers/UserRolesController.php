@@ -17,6 +17,16 @@ class UserRolesController extends RelationController
 
     protected $pivotFillable = ['custom_name', 'references'];
 
+    public function filterableBy(): array
+    {
+        return ['pivot.custom_name'];
+    }
+
+    public function sortableBy(): array
+    {
+        return ['pivot.custom_name'];
+    }
+
     public function includes(): array
     {
         return ['users'];

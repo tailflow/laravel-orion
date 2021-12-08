@@ -107,14 +107,23 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
                 $relation = $this->relationsResolver->relationFromParamConstraint($filterDescriptor['field']);
                 $relationField = $this->relationsResolver->relationFieldFromParamConstraint($filterDescriptor['field']);
 
-                $query->{$or ? 'orWhereHas' : 'whereHas'}(
-                    $relation,
-                    function ($relationQuery) use ($relationField, $filterDescriptor) {
-                        $this->buildFilterQueryWhereClause($relationField, $filterDescriptor, $relationQuery);
-                    }
-                );
+                if ($relation === 'pivot') {
+                    $this->buildPivotFilterQueryWhereClause($relationField, $filterDescriptor, $query, $or);
+                } else {
+                    $query->{$or ? 'orWhereHas' : 'whereHas'}(
+                        $relation,
+                        function ($relationQuery) use ($relationField, $filterDescriptor) {
+                            $this->buildFilterQueryWhereClause($relationField, $filterDescriptor, $relationQuery);
+                        }
+                    );
+                }
             } else {
-                $this->buildFilterQueryWhereClause($this->getQualifiedFieldName($filterDescriptor['field']), $filterDescriptor, $query, $or);
+                $this->buildFilterQueryWhereClause(
+                    $this->getQualifiedFieldName($filterDescriptor['field']),
+                    $filterDescriptor,
+                    $query,
+                    $or
+                );
             }
         }
     }
@@ -130,10 +139,112 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
      */
     protected function buildFilterQueryWhereClause(string $field, array $filterDescriptor, $query, bool $or = false)
     {
-        if (!is_array($filterDescriptor['value'])) {
-            $query->{$or ? 'orWhere' : 'where'}($field, $filterDescriptor['operator'], $filterDescriptor['value']);
+        if (is_array($filterDescriptor['value']) && in_array(null, $filterDescriptor['value'], true)) {
+            $query = $query->{$or ? 'orWhereNull' : 'whereNull'}($field);
+
+            $filterDescriptor['value'] = collect($filterDescriptor['value'])->filter()->values()->toArray();
+
+            if (!count($filterDescriptor['value'])) {
+                return $query;
+            }
+        }
+
+        return $this->buildFilterNestedQueryWhereClause($field, $filterDescriptor, $query, $or);
+    }
+
+    /**
+     * @param string $field
+     * @param array $filterDescriptor
+     * @param Builder|Relation $query
+     * @param bool $or
+     * @return Builder|Relation
+     */
+    protected function buildFilterNestedQueryWhereClause(
+        string $field,
+        array $filterDescriptor,
+        $query,
+        bool $or = false
+    ) {
+        if ($filterDescriptor['value'] !== null &&
+            in_array($filterDescriptor['field'], (new $this->resourceModelClass)->getDates(), true)
+        ) {
+            $constraint = 'whereDate';
         } else {
-            $query->{$or ? 'orWhereIn' : 'whereIn'}($field, $filterDescriptor['value'], 'and', $filterDescriptor['operator'] === 'not in');
+            $constraint = 'where';
+        }
+
+        if (!is_array($filterDescriptor['value']) || $constraint === 'whereDate') {
+            $query->{$or ? 'or' . ucfirst($constraint) : $constraint}(
+                $field,
+                $filterDescriptor['operator'],
+                $filterDescriptor['value']
+            );
+        } else {
+            $query->{$or ? 'orWhereIn' : 'whereIn'}(
+                $field,
+                $filterDescriptor['value'],
+                'and',
+                $filterDescriptor['operator'] === 'not in'
+            );
+        }
+
+        return $query;
+    }
+
+    /**
+     * Builds filter's pivot query where clause based on the given filterable.
+     *
+     * @param string $field
+     * @param array $filterDescriptor
+     * @param Builder|Relation $query
+     * @param bool $or
+     * @return Builder|Relation
+     */
+    protected function buildPivotFilterQueryWhereClause(
+        string $field,
+        array $filterDescriptor,
+        $query,
+        bool $or = false
+    ) {
+        if (is_array($filterDescriptor['value']) && in_array(null, $filterDescriptor['value'], true)) {
+            $query = $query->{$or ? 'orWherePivotNull' : 'wherePivotNull'}($field);
+
+            $filterDescriptor['value'] = collect($filterDescriptor['value'])->filter()->values()->toArray();
+
+            if (!count($filterDescriptor['value'])) {
+                return $query;
+            }
+        }
+
+        return $this->buildPivotFilterNestedQueryWhereClause($field, $filterDescriptor, $query);
+    }
+
+    /**
+     * @param string $field
+     * @param array $filterDescriptor
+     * @param Builder|Relation $query
+     * @param bool $or
+     * @return Builder
+     */
+    protected function buildPivotFilterNestedQueryWhereClause(
+        string $field,
+        array $filterDescriptor,
+        $query,
+        bool $or = false
+    ) {
+        if (!is_array($filterDescriptor['value'])) {
+            $query->{$or ? 'orWherePivot' : 'wherePivot'}(
+                $field,
+                $filterDescriptor['operator'],
+                $filterDescriptor['value']
+            );
+        } else {
+            $query->{$or ? 'orWherePivotIn' : 'wherePivotIn'}(
+                $field,
+                $filterDescriptor['value'],
+                'and',
+                $filterDescriptor['operator'] === 'not in'
+            );
         }
 
         return $query;
@@ -184,11 +295,19 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
                                 /**
                                  * @var Builder $relationQuery
                                  */
-                                return $relationQuery->where($relationField, 'like', '%'.$requestedSearchString.'%');
+                                return $relationQuery->where(
+                                    $relationField,
+                                    'like',
+                                    '%' . $requestedSearchString . '%'
+                                );
                             }
                         );
                     } else {
-                        $whereQuery->orWhere($this->getQualifiedFieldName($searchable), 'like', '%'.$requestedSearchString.'%');
+                        $whereQuery->orWhere(
+                            $this->getQualifiedFieldName($searchable),
+                            'like',
+                            '%' . $requestedSearchString . '%'
+                        );
                     }
                 }
             }
@@ -214,6 +333,11 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
                 $relation = $this->relationsResolver->relationFromParamConstraint($sortableField);
                 $relationField = $this->relationsResolver->relationFieldFromParamConstraint($sortableField);
 
+                if ($relation === 'pivot') {
+                    $query->orderByPivot($relationField, $direction);
+                    continue;
+                }
+
                 /**
                  * @var Relation $relationInstance
                  */
@@ -224,7 +348,9 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
                 }
 
                 $relationTable = $this->relationsResolver->relationTableFromRelationInstance($relationInstance);
-                $relationForeignKey = $this->relationsResolver->relationForeignKeyFromRelationInstance($relationInstance);
+                $relationForeignKey = $this->relationsResolver->relationForeignKeyFromRelationInstance(
+                    $relationInstance
+                );
                 $relationLocalKey = $this->relationsResolver->relationLocalKeyFromRelationInstance($relationInstance);
 
                 $query->leftJoin($relationTable, $relationForeignKey, '=', $relationLocalKey)
