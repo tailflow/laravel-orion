@@ -36,7 +36,10 @@ use Orion\Http\Rules\WhitelistedField;
 use ReflectionClass;
 use Safe\Exceptions\StringsException;
 
-
+/**
+ * Trait HandlesEloquentOperations
+ * @package Orion\Concerns
+ */
 trait HandlesEloquentOperations
 {
     use HandlesAssociation;
@@ -57,7 +60,7 @@ trait HandlesEloquentOperations
         $instance = new $this->model;
         $query = $instance::query();
 
-        $fillable = $instance->getFillable();
+        $sortables = $instance->sortables ?? [];
         $filters = $instance->filters ?? [];
         Validator::make(
             $input,
@@ -76,7 +79,7 @@ trait HandlesEloquentOperations
                 'search.value' => ['string', 'nullable'],
 
                 'sort'             => ['sometimes', 'array'],
-                'sort.*.field'     => ['required_with:sort', 'regex:/^[\w.\_\-\>]+$/', new WhitelistedField($fillable)],
+                'sort.*.field'     => ['required_with:sort', 'regex:/^[\w.\_\-\>]+$/', new WhitelistedField($sortables)],
                 'sort.*.direction' => ['sometimes', 'in:asc,desc'],
             ]
         )->validate();

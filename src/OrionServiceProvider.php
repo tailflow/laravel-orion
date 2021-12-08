@@ -19,6 +19,10 @@ use Orion\Http\Middleware\EnforceExpectsJson;
 use Orion\Jobs\JobDispatcher;
 use Orion\Specs\ResourcesCacheStore;
 
+/**
+ * Class OrionServiceProvider
+ * @package Orion
+ */
 class OrionServiceProvider extends ServiceProvider
 {
     /**
