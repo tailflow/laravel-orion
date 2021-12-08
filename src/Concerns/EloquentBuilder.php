@@ -3,7 +3,10 @@
 
 namespace Orion\Concerns;
 
-
+/**
+ * Trait EloquentBuilder
+ * @package Orion\Concerns
+ */
 trait EloquentBuilder
 {
 
