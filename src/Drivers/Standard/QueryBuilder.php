@@ -98,11 +98,14 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
      *
      * @param Builder|Relation $query
      * @param Request $request
+     * @param array $filterDescriptors
      */
-    public function applyFiltersToQuery($query, Request $request): void
+    public function applyFiltersToQuery($query, Request $request, array $filterDescriptors = []): void
     {
-        $this->paramsValidator->validateFilters($request);
-        $filterDescriptors = $request->get('filters', []);
+        if (!$filterDescriptors) {
+            $this->paramsValidator->validateFilters($request);
+            $filterDescriptors = $request->get('filters', []);
+        }
 
         foreach ($filterDescriptors as $filterDescriptor) {
             $or = Arr::get($filterDescriptor, 'type', 'and') === 'or';
