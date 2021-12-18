@@ -53,16 +53,24 @@ jobs:
             - v1-dependencies-
 
       # install dependencies
-      - run: composer update --with "illuminate/contracts=<< parameters.laravel-version>>" --prefer-dist --no-progress --no-suggest
+      - run:
+          name: "Install dependencies"
+          command: composer update --with "illuminate/contracts=<< parameters.laravel-version>>" --prefer-dist --no-progress --no-suggest
 
       # install laravel/legacy-factories and PHPUnit 9 only for Laravel 8.0
       - when:
           condition:
             equal: ["^8.0", <<parameters.laravel-version>>]
           steps:
-            - run: composer require "laravel/legacy-factories" --prefer-dist --no-progress --no-suggest
-            - run: composer update --with "phpunit/phpunit=^9.0" --prefer-dist --no-progress --no-suggest
-            - run: vendor/bin/phpunit -c phpunit.xml.dist --migrate-configuration
+            - run:
+                name: "Install laravel/legacy-factories"
+                command: composer require "laravel/legacy-factories" --prefer-dist --no-progress --no-suggest
+            - run:
+                name: "Install PHPUnit 9"
+                command: composer update --with "phpunit/phpunit=^9.0" --prefer-dist --no-progress --no-suggest
+            - run:
+                name: "Upgrade PHPUnit config"
+                command: vendor/bin/phpunit -c phpunit.xml.dist --migrate-configuration
 
       # save composer cache
       - save_cache:
@@ -76,6 +84,7 @@ jobs:
             equal: ["sqlite", <<parameters.database>>]
           steps:
             - run:
+                name: "Run test suite"
                 command: vendor/bin/phpunit --debug --verbose
                 environment:
                   DB_CONNECTION: sqlite
@@ -87,6 +96,7 @@ jobs:
             equal: ["mysql", <<parameters.database>>]
           steps:
             - run:
+                name: "Run test suite"
                 command: vendor/bin/phpunit --debug --verbose
                 environment:
                   DB_CONNECTION: mysql
@@ -100,6 +110,7 @@ jobs:
             equal: ["pgsql", <<parameters.database>>]
           steps:
             - run:
+                name: "Run test suite"
                 command: vendor/bin/phpunit --debug --verbose
                 environment:
                   DB_CONNECTION: pgsql
