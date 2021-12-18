@@ -288,6 +288,13 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
         $query->where(
             function ($whereQuery) use ($searchables, $requestedSearchDescriptor) {
                 $requestedSearchString = $requestedSearchDescriptor['value'];
+
+                $caseSensitive = (bool) Arr::get(
+                    $requestedSearchDescriptor,
+                    'case_sensitive',
+                    config('orion.search.case_sensitive')
+                );
+
                 /**
                  * @var Builder $whereQuery
                  */
@@ -298,10 +305,17 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
 
                         $whereQuery->orWhereHas(
                             $relation,
-                            function ($relationQuery) use ($relationField, $requestedSearchString) {
+                            function ($relationQuery) use ($relationField, $requestedSearchString, $caseSensitive) {
                                 /**
                                  * @var Builder $relationQuery
                                  */
+                                if (!$caseSensitive) {
+                                    return $relationQuery->whereRaw(
+                                        "lower({$relationField}) like lower(?)",
+                                        ['%' . $requestedSearchString . '%']
+                                    );
+                                }
+
                                 return $relationQuery->where(
                                     $relationField,
                                     'like',
@@ -310,11 +324,20 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
                             }
                         );
                     } else {
-                        $whereQuery->orWhere(
-                            $this->getQualifiedFieldName($searchable),
-                            'like',
-                            '%' . $requestedSearchString . '%'
-                        );
+                        $qualifiedFieldName = $this->getQualifiedFieldName($searchable);
+
+                        if (!$caseSensitive) {
+                            $whereQuery->orWhereRaw(
+                                "lower({$qualifiedFieldName}) like lower(?)",
+                                ['%' . $requestedSearchString . '%']
+                            );
+                        } else {
+                            $whereQuery->orWhere(
+                                $qualifiedFieldName,
+                                'like',
+                                '%' . $requestedSearchString . '%'
+                            );
+                        }
                     }
                 }
             }
