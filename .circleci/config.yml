@@ -79,7 +79,7 @@ jobs:
       # Run test suite with PostgreSQL
       - when:
           condition:
-            equal: ["sqlite", <<parameters.database>>]
+            equal: ["pgsql", <<parameters.database>>]
           steps:
             - run:
                 command: vendor/bin/phpunit --debug --verbose
