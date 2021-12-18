@@ -2,9 +2,17 @@ version: 2.1
 
 executors:
   sqlite:
+    parameters:
+      php-version:
+        type: string
+        default: << parameters.php-version >>
     docker:
       - image: cimg/php:<< parameters.php-version >>
   mysql:
+    parameters:
+      php-version:
+        type: string
+        default: << parameters.php-version >>
     docker:
       - image: cimg/php:<< parameters.php-version >>
       - image: mysql:5.7
@@ -12,6 +20,10 @@ executors:
           MYSQL_ALLOW_EMPTY_PASSWORD: yes
           MYSQL_DATABASE: orion
   pgsql:
+    parameters:
+      php-version:
+        type: string
+        default: << parameters.php-version >>
     docker:
       - image: cimg/php:<< parameters.php-version >>
       - image: postgres:10.8
@@ -28,8 +40,10 @@ jobs:
       laravel-version:
         type: string
       database:
-        type: executor
-    executor: << parameters.database >>
+        type: string
+    executor:
+      name: << parameters.database >>
+      php-version: << parameters.php-version >>
     steps:
       - checkout
 
