@@ -1,5 +1,25 @@
 version: 2.1
 
+executors:
+  mysql:
+    parameters:
+      php-version:
+        type: string
+    docker:
+      - image: cimg/php:<< parameters.php-version >>
+      - image: mysql:5.7
+        environment:
+          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+          MYSQL_DATABASE: orion
+  pgsql:
+    docker:
+      - image: cimg/php:<< parameters.php-version >>
+      - image: postgres:10.8
+        environment:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: orion
+
 jobs:
   test:
     parameters:
@@ -8,21 +28,10 @@ jobs:
       laravel-version:
         type: string
       database:
-        type: string
-    docker:
-      - image: cimg/php:<< parameters.php-version >>
-
-      - image: mysql:5.7
-        environment:
-          MYSQL_ALLOW_EMPTY_PASSWORD: yes
-          MYSQL_DATABASE: orion
-
-      - image: postgres:10.8
-        environment:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: orion
-    parallelism: 9
+        type: executor
+    executor:
+      name: << parameters.database >>
+      php-version: << parameters.php-version >>
     steps:
       - checkout
 
