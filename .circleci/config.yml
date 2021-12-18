@@ -5,14 +5,12 @@ executors:
     parameters:
       php-version:
         type: string
-        default: << parameters.php-version >>
     docker:
       - image: cimg/php:<< parameters.php-version >>
   mysql:
     parameters:
       php-version:
         type: string
-        default: << parameters.php-version >>
     docker:
       - image: cimg/php:<< parameters.php-version >>
       - image: mysql:5.7
@@ -23,7 +21,6 @@ executors:
     parameters:
       php-version:
         type: string
-        default: << parameters.php-version >>
     docker:
       - image: cimg/php:<< parameters.php-version >>
       - image: postgres:10.8
