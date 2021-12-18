@@ -1,0 +1,101 @@
+version: 2.1
+
+jobs:
+  test:
+    parameters:
+      php-version:
+        type: string
+      laravel-version:
+        type: string
+      database:
+        type: string
+    docker:
+      - image: circleci/php:<< parameters.php-version >>
+
+      - image: mysql:5.7
+        environment:
+          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+          MYSQL_DATABASE: orion
+
+      - image: postgres:10.8
+        environment:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: orion
+
+    steps:
+      - checkout
+
+      # restore composer cache
+      - restore_cache:
+          keys:
+            # "composer.lock" can be used if it is committed to the repo
+            - v1-dependencies-{{ checksum "composer.json" }}
+            # fallback to using the latest cache if no exact match is found
+            - v1-dependencies-
+
+      # install dependencies
+      - run: composer update --with "illuminate/contracts=<< parameters.laravel-version>>" --prefer-dist --no-progress --no-suggest
+
+      # install laravel/legacy-factories and PHPUnit 9 only for Laravel 8.0
+      - when:
+          condition:
+            equal: ["^8.0", <<parameters.laravel-version>>]
+          steps:
+            - run: composer require "laravel/legacy-factories" --prefer-dist --no-progress --no-suggest
+            - run: composer update --with "phpunit/phpunit=^9.0" --prefer-dist --no-progress --no-suggest
+            - run: vendor/bin/phpunit -c phpunit.xml.dist --migrate-configuration
+
+      # save composer cache
+      - save_cache:
+          key: v1-dependencies-{{ checksum "composer.json" }}
+          paths:
+            - ./vendor
+
+      # Run test suite with Sqlite
+      - when:
+          condition:
+            equal: ["sqlite", <<parameters.database>>]
+          steps:
+            - run:
+                command: vendor/bin/phpunit --debug
+                environment:
+                  DB_CONNECTION: sqlite
+                  DB_DATABASE: ":memory:"
+
+      # Run test suite with MySQL
+      - when:
+          condition:
+            equal: ["mysql", <<parameters.database>>]
+          steps:
+            - run:
+                command: vendor/bin/phpunit --debug
+                environment:
+                  DB_CONNECTION: mysql
+                  DB_PORT: 3306
+                  DB_DATABASE: orion
+                  DB_USERNAME: root
+
+      # Run test suite with PostgreSQL
+      - when:
+          condition:
+            equal: ["sqlite", <<parameters.database>>]
+          steps:
+            - run:
+                command: vendor/bin/phpunit --debug
+                environment:
+                  DB_CONNECTION: pgsql
+                  DB_PORT: 5432
+                  DB_DATABASE: orion
+                  DB_USERNAME: postgres
+                  DB_PASSWORD: postgres
+
+workflows:
+  tests:
+    jobs:
+      - test:
+          matrix:
+            parameters:
+              php-version: ["7.3", "7.4", "8.0"]
+              laravel-version: [ "5.7.*", "5.8.*", "^6.0", "^7.0", "^8.0" ]
+              database: ["sqlite", "mysql", "pgsql"]
