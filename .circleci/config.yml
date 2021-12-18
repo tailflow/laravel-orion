@@ -22,7 +22,7 @@ jobs:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: orion
-
+    parallelism: 9
     steps:
       - checkout
 
