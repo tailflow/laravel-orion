@@ -123,6 +123,7 @@ workflows:
   tests:
     jobs:
       - test:
+          name: Tests on PHP << matrix.php-version >> with Laravel << matrix.laravel-version >> and << matrix.database >>
           matrix:
             parameters:
               php-version: ["7.3", "7.4", "8.0"]
