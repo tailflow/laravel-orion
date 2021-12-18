@@ -1,6 +1,12 @@
 version: 2.1
 
 executors:
+  sqlite:
+    parameters:
+      php-version:
+        type: string
+    docker:
+      - image: cimg/php:<< parameters.php-version >>
   mysql:
     parameters:
       php-version:
@@ -12,6 +18,9 @@ executors:
           MYSQL_ALLOW_EMPTY_PASSWORD: yes
           MYSQL_DATABASE: orion
   pgsql:
+    parameters:
+      php-version:
+        type: string
     docker:
       - image: cimg/php:<< parameters.php-version >>
       - image: postgres:10.8
