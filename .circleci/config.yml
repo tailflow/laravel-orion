@@ -10,7 +10,7 @@ jobs:
       database:
         type: string
     docker:
-      - image: circleci/php:<< parameters.php-version >>
+      - image: cimg/php:<< parameters.php-version >>
 
       - image: mysql:5.7
         environment:
