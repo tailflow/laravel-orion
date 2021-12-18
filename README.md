@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-<a href="https://packagist.org/packages/tailflow/laravel-orion"><img src="https://img.shields.io/packagist/v/tailflow/laravel-orion.svg" alt="Latest Version on Packagist"></a>
+<a href="https://packagist.org/packages/tailflow/laravel-orion"><img src="https://img.shields.io/cirrus/github/tailflow/laravel-orion?script=test&task=analyze.svg" alt="Latest Version on Packagist"></a>
 <a href="https://github.com/tailflow/laravel-orion/actions"><img src="https://img.shields.io/github/workflow/status/tailflow/laravel-orion/default" alt="Build Status"></a>
 </p>
 

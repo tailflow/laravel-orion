@@ -58,7 +58,7 @@ jobs:
             equal: ["sqlite", <<parameters.database>>]
           steps:
             - run:
-                command: vendor/bin/phpunit --debug
+                command: vendor/bin/phpunit --debug --verbose
                 environment:
                   DB_CONNECTION: sqlite
                   DB_DATABASE: ":memory:"
@@ -69,7 +69,7 @@ jobs:
             equal: ["mysql", <<parameters.database>>]
           steps:
             - run:
-                command: vendor/bin/phpunit --debug
+                command: vendor/bin/phpunit --debug --verbose
                 environment:
                   DB_CONNECTION: mysql
                   DB_PORT: 3306
@@ -82,7 +82,7 @@ jobs:
             equal: ["sqlite", <<parameters.database>>]
           steps:
             - run:
-                command: vendor/bin/phpunit --debug
+                command: vendor/bin/phpunit --debug --verbose
                 environment:
                   DB_CONNECTION: pgsql
                   DB_PORT: 5432
