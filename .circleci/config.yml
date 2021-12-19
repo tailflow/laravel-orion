@@ -47,11 +47,13 @@ jobs:
       # install extensions
       - when:
           condition:
-            equal: ["7.3", <<parameters.php-version>>]
+            and:
+              - equal: ["7.3", <<parameters.php-version>>]
+              - equal: ["sqlite", <<parameters.database>>]
           steps:
             - run:
-                name: "Install Sqlite extensions"
-                command: sudo apt-get update && sudo apt install -y php7.3-sqlite3
+                name: "Install Sqlite extension"
+                command: sudo apt-get update && sudo apt-get install -y php7.3-sqlite3 && sudo rm -rf /var/lib/apt/lists/*
 
       # restore composer cache
       - restore_cache:
