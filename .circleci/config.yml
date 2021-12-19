@@ -51,7 +51,7 @@ jobs:
           steps:
             - run:
                 name: "Install Sqlite extensions"
-                command: sudo apt install php7.3-sqlite3
+                command: sudo apt-get update && sudo apt install -y php7.3-sqlite3
 
       # restore composer cache
       - restore_cache:
