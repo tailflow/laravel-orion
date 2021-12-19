@@ -45,7 +45,13 @@ jobs:
       - checkout
 
       # install extensions
-      - run: sudo apt-get update && sudo apt-get install -y libsqlite3-dev
+      - when:
+          condition:
+            equal: ["7.3", <<parameters.php-version>>]
+          steps:
+            - run:
+                name: "Install Sqlite extensions"
+                command: sudo apt install php7.3-sqlite3
 
       # restore composer cache
       - restore_cache:
