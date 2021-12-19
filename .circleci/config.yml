@@ -44,6 +44,9 @@ jobs:
     steps:
       - checkout
 
+      # install extensions
+      - run: sudo apt-get update && sudo apt-get install -y libsqlite3-dev
+
       # restore composer cache
       - restore_cache:
           keys:
