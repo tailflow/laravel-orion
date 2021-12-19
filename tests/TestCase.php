@@ -2,9 +2,13 @@
 
 namespace Orion\Tests;
 
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\Console\Kernel;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\RefreshDatabaseState;
+use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 abstract class TestCase extends \Orchestra\Testbench\TestCase
 {
@@ -15,6 +19,15 @@ abstract class TestCase extends \Orchestra\Testbench\TestCase
         parent::setUp();
 
         $this->withFactories(__DIR__ . '/Fixtures/database/factories');
+
+        $this->withoutExceptionHandling(
+            [
+                AuthorizationException::class,
+                NotFoundHttpException::class,
+                ModelNotFoundException::class,
+                ValidationException::class,
+            ]
+        );
     }
 
     /**

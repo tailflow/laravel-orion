@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Arr;
 use Orion\Http\Requests\Request;
+use RuntimeException;
 
 class QueryBuilder implements \Orion\Contracts\QueryBuilder
 {
@@ -214,6 +215,10 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
         bool $or = false
     ) {
         if (is_array($filterDescriptor['value']) && in_array(null, $filterDescriptor['value'], true)) {
+            if ((float) app()->version() <= 7.0) {
+                throw new RuntimeException("Filtering by nullable pivot fields is only supported for Laravel version > 8.0");
+            }
+
             $query = $query->{$or ? 'orWherePivotNull' : 'wherePivotNull'}($field);
 
             $filterDescriptor['value'] = collect($filterDescriptor['value'])->filter()->values()->toArray();
