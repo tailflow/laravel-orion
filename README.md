@@ -17,7 +17,9 @@ Documentation for Laravel Orion can be found on the [website](https://tailflow.g
 
 ## Supported By
 
+<a href="https://geecko.com">
 <img src="https://res.cloudinary.com/dudxt4lp6/image/upload/v1639908579/Laravel%20Orion/logo_geecko_hcuz34.svg" width="300">
+</a>
 
 ## License
 
