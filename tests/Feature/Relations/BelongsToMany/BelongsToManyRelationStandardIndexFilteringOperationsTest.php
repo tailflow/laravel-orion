@@ -65,7 +65,7 @@ class BelongsToManyRelationStandardIndexFilteringOperationsTest extends TestCase
             );
         }
 
-        $response = $this->post("/api/users/{$user->id}/roles/search", [
+        $response = $this->withoutExceptionHandling()->post("/api/users/{$user->id}/roles/search", [
             'filters' => [
                 ['field' => 'pivot.custom_name', 'operator' => '=', 'value' => null],
             ],
@@ -103,7 +103,7 @@ class BelongsToManyRelationStandardIndexFilteringOperationsTest extends TestCase
             );
         }
 
-        $response = $this->post("/api/users/{$user->id}/roles/search", [
+        $response = $this->withoutExceptionHandling()->post("/api/users/{$user->id}/roles/search", [
             'filters' => [
                 ['field' => 'pivot.custom_name', 'operator' => 'in', 'value' => [null]],
             ],
