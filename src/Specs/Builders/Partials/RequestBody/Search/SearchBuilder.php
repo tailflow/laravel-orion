@@ -22,6 +22,10 @@ class SearchBuilder extends SearchPartialBuilder
                     'description' => 'A search for the given value will be performed on the following fields: ' . collect(
                             $this->controller->searchableBy()
                         )->join(', ')
+                ],
+                'case_sensitive' => [
+                    'type' => 'boolean',
+                    'description' => '(default: true) Set it to false to perform search in case-insensitive way'
                 ]
             ]
         ];

@@ -40,8 +40,13 @@ class BelongsToManyRelationStandardIndexFilteringOperationsTest extends TestCase
     }
 
     /** @test */
-    public function getting_a_list_of_relation_resources_filtered_by_null_pivot_field_value_using_equality_operator(): void
+    public function getting_a_list_of_relation_resources_filtered_by_null_pivot_field_value_using_equality_operator(
+    ): void
     {
+        if ((float) app()->version() <= 7.0) {
+            $this->markTestSkipped('Unsupported framework version');
+        }
+
         /** @var User $user */
         $user = factory(User::class)->create();
 
@@ -54,19 +59,27 @@ class BelongsToManyRelationStandardIndexFilteringOperationsTest extends TestCase
         Gate::policy(User::class, GreenPolicy::class);
         Gate::policy(Role::class, GreenPolicy::class);
 
-        $response = $this->post("/api/users/{$user->id}/roles/search", [
+        if ((float) app()->version() <= 7.0) {
+            $this->expectExceptionMessage(
+                "Filtering by nullable pivot fields is only supported for Laravel version > 8.0"
+            );
+        }
+
+        $response = $this->withoutExceptionHandling()->post("/api/users/{$user->id}/roles/search", [
             'filters' => [
                 ['field' => 'pivot.custom_name', 'operator' => '=', 'value' => null],
             ],
         ]);
 
-        $this->assertResourcesPaginated(
-            $response,
-            $this->makePaginator(
-                [$user->roles()->where('roles.id', $roleWithoutCustomName->id)->first()->toArray()],
-                "users/{$user->id}/roles/search"
-            )
-        );
+        if ((float) app()->version() > 7.0) {
+            $this->assertResourcesPaginated(
+                $response,
+                $this->makePaginator(
+                    [$user->roles()->where('roles.id', $roleWithoutCustomName->id)->first()->toArray()],
+                    "users/{$user->id}/roles/search"
+                )
+            );
+        }
     }
 
     /** @test */
@@ -84,18 +97,26 @@ class BelongsToManyRelationStandardIndexFilteringOperationsTest extends TestCase
         Gate::policy(User::class, GreenPolicy::class);
         Gate::policy(Role::class, GreenPolicy::class);
 
-        $response = $this->post("/api/users/{$user->id}/roles/search", [
+        if ((float) app()->version() <= 7.0) {
+            $this->expectExceptionMessage(
+                "Filtering by nullable pivot fields is only supported for Laravel version > 8.0"
+            );
+        }
+
+        $response = $this->withoutExceptionHandling()->post("/api/users/{$user->id}/roles/search", [
             'filters' => [
                 ['field' => 'pivot.custom_name', 'operator' => 'in', 'value' => [null]],
             ],
         ]);
 
-        $this->assertResourcesPaginated(
-            $response,
-            $this->makePaginator(
-                [$user->roles()->where('roles.id', $roleWithoutCustomName->id)->first()->toArray()],
-                "users/{$user->id}/roles/search"
-            )
-        );
+        if ((float) app()->version() > 7.0) {
+            $this->assertResourcesPaginated(
+                $response,
+                $this->makePaginator(
+                    [$user->roles()->where('roles.id', $roleWithoutCustomName->id)->first()->toArray()],
+                    "users/{$user->id}/roles/search"
+                )
+            );
+        }
     }
 }
