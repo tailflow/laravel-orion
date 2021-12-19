@@ -15,6 +15,10 @@ Laravel Orion allows you to build a fully featured REST API based on your Eloque
 
 Documentation for Laravel Orion can be found on the [website](https://tailflow.github.io/laravel-orion-docs/).
 
+## Supported By
+
+<img src="https://res.cloudinary.com/dudxt4lp6/image/upload/v1639908579/Laravel%20Orion/logo_geecko_hcuz34.svg" width="300">
+
 ## License
 
 The Laravel Orion is open-source software licensed under the [MIT license](https://opensource.org/licenses/MIT).
