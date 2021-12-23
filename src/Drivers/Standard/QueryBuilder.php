@@ -2,6 +2,7 @@
 
 namespace Orion\Drivers\Standard;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
@@ -177,7 +178,7 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
         $treatAsDateField = $filterDescriptor['value'] !== null &&
             in_array($filterDescriptor['field'], (new $this->resourceModelClass)->getDates(), true);
 
-        if ($treatAsDateField) {
+        if ($treatAsDateField && Carbon::parse($filterDescriptor['value'])->toTimeString() === '00:00:00') {
             $constraint = 'whereDate';
         } else {
             $constraint = 'where';
@@ -253,7 +254,7 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
 
         $treatAsDateField = $filterDescriptor['value'] !== null && in_array($field, $pivot->getDates(), true);
 
-        if ($treatAsDateField) {
+        if ($treatAsDateField && Carbon::parse($filterDescriptor['value'])->toTimeString() === '00:00:00') {
             $query->addNestedWhereQuery(
                 $query->newPivotStatement()->whereDate(
                     $query->qualifyPivotColumn($field),
