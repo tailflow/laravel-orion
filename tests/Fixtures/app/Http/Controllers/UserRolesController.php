@@ -19,7 +19,7 @@ class UserRolesController extends RelationController
 
     public function filterableBy(): array
     {
-        return ['pivot.custom_name'];
+        return ['pivot.custom_name', 'pivot.created_at'];
     }
 
     public function sortableBy(): array

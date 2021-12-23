@@ -3,6 +3,7 @@
 namespace Orion\Drivers\Standard;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -173,9 +174,10 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
         $query,
         bool $or = false
     ) {
-        if ($filterDescriptor['value'] !== null &&
-            in_array($filterDescriptor['field'], (new $this->resourceModelClass)->getDates(), true)
-        ) {
+        $treatAsDateField = $filterDescriptor['value'] !== null &&
+            in_array($filterDescriptor['field'], (new $this->resourceModelClass)->getDates(), true);
+
+        if ($treatAsDateField) {
             $constraint = 'whereDate';
         } else {
             $constraint = 'where';
@@ -216,7 +218,9 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
     ) {
         if (is_array($filterDescriptor['value']) && in_array(null, $filterDescriptor['value'], true)) {
             if ((float) app()->version() <= 7.0) {
-                throw new RuntimeException("Filtering by nullable pivot fields is only supported for Laravel version > 8.0");
+                throw new RuntimeException(
+                    "Filtering by nullable pivot fields is only supported for Laravel version > 8.0"
+                );
             }
 
             $query = $query->{$or ? 'orWherePivotNull' : 'wherePivotNull'}($field);
@@ -234,7 +238,7 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
     /**
      * @param string $field
      * @param array $filterDescriptor
-     * @param Builder|Relation $query
+     * @param Builder|BelongsToMany $query
      * @param bool $or
      * @return Builder
      */
@@ -244,7 +248,20 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
         $query,
         bool $or = false
     ) {
-        if (!is_array($filterDescriptor['value'])) {
+        $pivotClass = $query->getPivotClass();
+        $pivot = new $pivotClass;
+
+        $treatAsDateField = $filterDescriptor['value'] !== null && in_array($field, $pivot->getDates(), true);
+
+        if ($treatAsDateField) {
+            $query->addNestedWhereQuery(
+                $query->newPivotStatement()->whereDate(
+                    $query->qualifyPivotColumn($field),
+                    $filterDescriptor['operator'],
+                    $filterDescriptor['value']
+                )
+            );
+        } elseif (!is_array($filterDescriptor['value'])) {
             $query->{$or ? 'orWherePivot' : 'wherePivot'}(
                 $field,
                 $filterDescriptor['operator'],

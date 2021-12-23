@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Orion\Tests\Feature\Relations\BelongsToMany;
 
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Gate;
 use Orion\Tests\Feature\TestCase;
 use Orion\Tests\Fixtures\App\Models\Role;
@@ -36,6 +37,41 @@ class BelongsToManyRelationStandardIndexFilteringOperationsTest extends TestCase
         $this->assertResourcesPaginated(
             $response,
             $this->makePaginator([$user->roles()->first()->toArray()], "users/{$user->id}/roles/search")
+        );
+    }
+
+    /** @test */
+    public function getting_a_list_of_relation_resources_filtered_by_pivot_date_field(): void
+    {
+        /** @var User $user */
+        $user = factory(User::class)->create();
+
+        $roleA = factory(Role::class)->create();
+        $roleB = factory(Role::class)->create();
+        $roleC = factory(Role::class)->create();
+
+        Carbon::setTestNow('2019-01-05 13:00:00');
+        $user->roles()->attach($roleA);
+        Carbon::setTestNow('2019-01-06 13:00:00');
+        $user->roles()->attach($roleB);
+        Carbon::setTestNow('2019-01-08 13:00:00');
+        $user->roles()->attach($roleC);
+
+        Carbon::setTestNow('2021-12-21 15:00:00');
+
+        Gate::policy(User::class, GreenPolicy::class);
+        Gate::policy(Role::class, GreenPolicy::class);
+
+        $response = $this->post("/api/users/{$user->id}/roles/search", [
+            'filters' => [
+                ['field' => 'pivot.created_at', 'operator' => '>=', 'value' => '2019-01-05'],
+                ['field' => 'pivot.created_at', 'operator' => '<=', 'value' => '2019-01-06'],
+            ],
+        ]);
+
+        $this->assertResourcesPaginated(
+            $response,
+            $this->makePaginator($user->roles()->where('roles.id', '!=', $roleC->id)->get()->toArray(), "users/{$user->id}/roles/search")
         );
     }
 

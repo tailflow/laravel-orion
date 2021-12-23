@@ -25,6 +25,9 @@ class Role extends Model
      */
     public function users()
     {
-        return $this->belongsToMany(User::class)->withPivot('meta', 'references', 'custom_name');
+        return $this->belongsToMany(User::class)
+            ->withPivot('meta', 'references', 'custom_name')
+            ->withTimestamps()
+            ->using(UserRole::class);
     }
 }
