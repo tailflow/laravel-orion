@@ -62,7 +62,7 @@ class BelongsToManyRelationStandardIndexFilteringOperationsTest extends TestCase
         Gate::policy(User::class, GreenPolicy::class);
         Gate::policy(Role::class, GreenPolicy::class);
 
-        $response = $this->post("/api/users/{$user->id}/roles/search", [
+        $response = $this->withoutExceptionHandling()->post("/api/users/{$user->id}/roles/search", [
             'filters' => [
                 ['field' => 'pivot.created_at', 'operator' => '>=', 'value' => '2019-01-05'],
                 ['field' => 'pivot.created_at', 'operator' => '<=', 'value' => '2019-01-06'],
