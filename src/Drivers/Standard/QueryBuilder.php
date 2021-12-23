@@ -257,7 +257,7 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
         if ($treatAsDateField && Carbon::parse($filterDescriptor['value'])->toTimeString() === '00:00:00') {
             $query->addNestedWhereQuery(
                 $query->newPivotStatement()->whereDate(
-                    $query->qualifyPivotColumn($field),
+                    $query->getTable().".{$field}",
                     $filterDescriptor['operator'],
                     $filterDescriptor['value']
                 )
