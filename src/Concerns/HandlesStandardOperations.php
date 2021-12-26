@@ -122,12 +122,30 @@ trait HandlesStandardOperations
     }
 
     /**
-     * Creates new resource.
+     * Creates new resource in a transaction-safe way.
      *
      * @param Request $request
      * @return Resource
      */
     public function store(Request $request)
+    {
+        try {
+            $this->startTransaction();
+            $result = $this->storeWithTransaction($request);
+            $this->commitTransaction();
+            return $result;
+        } catch (\Exception $exception) {
+            $this->rollbackTransactionAndRaise($exception);
+        }
+    }
+
+    /**
+     * Creates new resource.
+     *
+     * @param Request $request
+     * @return Resource
+     */
+    protected function storeWithTransaction(Request $request)
     {
         $resourceModelClass = $this->resolveResourceModelClass();
 
@@ -155,6 +173,11 @@ trait HandlesStandardOperations
             $entity,
             $request->all()
         );
+
+        $beforeStoreFreshResult = $this->beforeStoreFresh($request, $entity);
+        if ($this->hookResponds($beforeStoreFreshResult)) {
+            return $beforeStoreFreshResult;
+        }
 
         $entity = $entity->fresh($requestedRelations);
         $entity->wasRecentlyCreated = true;
@@ -209,6 +232,18 @@ trait HandlesStandardOperations
     {
         $this->performFill($request, $entity, $attributes);
         $entity->save();
+    }
+
+    /**
+     * The hook is executed after creating and before refreshing the resource.
+     *
+     * @param Request $request
+     * @param Model $entity
+     * @return mixed
+     */
+    protected function beforeStoreFresh(Request $request, Model $entity)
+    {
+        return null;
     }
 
     /**
@@ -330,13 +365,32 @@ trait HandlesStandardOperations
     }
 
     /**
-     * Updates a resource.
+     * Update a resource in a transaction-safe way.
      *
      * @param Request $request
      * @param int|string $key
      * @return Resource
      */
     public function update(Request $request, $key)
+    {
+        try {
+            $this->startTransaction();
+            $result = $this->updateWithTransaction($request, $key);
+            $this->commitTransaction();
+            return $result;
+        } catch (\Exception $exception) {
+            $this->rollbackTransactionAndRaise($exception);
+        }
+    }
+
+    /**
+     * Updates a resource.
+     *
+     * @param Request $request
+     * @param int|string $key
+     * @return Resource
+     */
+    protected function updateWithTransaction(Request $request, $key)
     {
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
 
@@ -360,6 +414,11 @@ trait HandlesStandardOperations
             $entity,
             $request->all()
         );
+
+        $beforeUpdateFreshResult = $this->beforeUpdateFresh($request, $entity);
+        if ($this->hookResponds($beforeUpdateFreshResult)) {
+            return $beforeUpdateFreshResult;
+        }
 
         $entity = $entity->fresh($requestedRelations);
 
@@ -429,6 +488,18 @@ trait HandlesStandardOperations
     }
 
     /**
+     * The hook is executed after updating and before refreshing the resource.
+     *
+     * @param Request $request
+     * @param Model $entity
+     * @return mixed
+     */
+    protected function beforeUpdateFresh(Request $request, Model $entity)
+    {
+        return null;
+    }
+
+    /**
      * The hook is executed after updating a resource.
      *
      * @param Request $request
@@ -449,6 +520,26 @@ trait HandlesStandardOperations
      * @throws Exception
      */
     public function destroy(Request $request, $key)
+    {
+        try {
+            $this->startTransaction();
+            $result = $this->destroyWithTransaction($request, $key);
+            $this->commitTransaction();
+            return $result;
+        } catch (\Exception $exception) {
+            $this->rollbackTransactionAndRaise($exception);
+        }
+    }
+
+    /**
+     * Deletes a resource.
+     *
+     * @param Request $request
+     * @param int|string $key
+     * @return Resource
+     * @throws Exception
+     */
+    protected function destroyWithTransaction(Request $request, $key)
     {
         $softDeletes = $this->softDeletes($this->resolveResourceModelClass());
         $forceDeletes = $this->forceDeletes($request, $softDeletes);
@@ -472,6 +563,11 @@ trait HandlesStandardOperations
         if (!$forceDeletes) {
             $this->performDestroy($entity);
             if ($softDeletes) {
+                $beforeDestroyFreshResult = $this->beforeDestroyFresh($request, $entity);
+                if ($this->hookResponds($beforeDestroyFreshResult)) {
+                    return $beforeDestroyFreshResult;
+                }
+
                 $entity = $entity->fresh($requestedRelations);
             }
         } else {
@@ -554,6 +650,19 @@ trait HandlesStandardOperations
     }
 
     /**
+     * The hook is executed after deleting and before refreshing the resource.
+     * This hook is only called when not using forced deletes
+     *
+     * @param Request $request
+     * @param Model $entity
+     * @return mixed
+     */
+    protected function beforeDestroyFresh(Request $request, Model $entity)
+    {
+        return null;
+    }
+
+    /**
      * The hook is executed after deleting a resource.
      *
      * @param Request $request
@@ -566,7 +675,7 @@ trait HandlesStandardOperations
     }
 
     /**
-     * Restore previously deleted resource.
+     * Restore previously deleted resource in a transaction-safe way.
      *
      * @param Request $request
      * @param int|string $key
@@ -574,6 +683,26 @@ trait HandlesStandardOperations
      * @throws Exception
      */
     public function restore(Request $request, $key)
+    {
+        try {
+            $this->startTransaction();
+            $result = $this->restoreWithTransaction($request, $key);
+            $this->commitTransaction();
+            return $result;
+        } catch (\Exception $exception) {
+            $this->rollbackTransactionAndRaise($exception);
+        }
+    }
+
+    /**
+     * Restore previously deleted resource.
+     *
+     * @param Request $request
+     * @param int|string $key
+     * @return Resource
+     * @throws Exception
+     */
+    protected function restoreWithTransaction(Request $request, $key)
     {
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
 
@@ -588,6 +717,11 @@ trait HandlesStandardOperations
         }
 
         $this->performRestore($entity);
+
+        $beforeHookResult = $this->beforeRestoreFresh($request, $entity);
+        if ($this->hookResponds($beforeHookResult)) {
+            return $beforeHookResult;
+        }
 
         $entity = $entity->fresh($requestedRelations);
 
@@ -647,6 +781,19 @@ trait HandlesStandardOperations
     protected function performRestore(Model $entity): void
     {
         $entity->restore();
+    }
+
+    /**
+     * The hook is executed after force restoring a previously deleted resource but before
+     * refreshing the resource.
+     *
+     * @param Request $request
+     * @param Model $entity
+     * @return mixed
+     */
+    protected function beforeRestoreFresh(Request $request, Model $entity)
+    {
+        return null;
     }
 
     /**

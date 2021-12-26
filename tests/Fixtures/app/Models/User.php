@@ -34,11 +34,15 @@ class User extends Authenticatable
 
     public function roles()
     {
-        return $this->belongsToMany(Role::class)->withPivot('meta', 'references', 'custom_name');
+        return $this->belongsToMany(Role::class)
+            ->withPivot('meta', 'references', 'custom_name')
+            ->withTimestamps()
+            ->using(UserRole::class);
     }
 
     public function notifications()
     {
+//        $this->roles()->whereDate()
         return $this->belongsToMany(Notification::class)->withPivot('meta');
     }
 }

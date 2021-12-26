@@ -10,7 +10,7 @@ use Orion\Tests\Fixtures\App\Policies\GreenPolicy;
 class StandardIndexSearchingOperationsTest extends TestCase
 {
     /** @test */
-    public function searching_for_resources_by_model_field(): void
+    public function case_sensitive_search_for_resources_by_model_field(): void
     {
         $matchingPost = factory(Post::class)->create(['title' => 'match'])->fresh();
         factory(Post::class)->create(['title' => 'different'])->fresh();
@@ -19,6 +19,24 @@ class StandardIndexSearchingOperationsTest extends TestCase
 
         $response = $this->post('/api/posts/search', [
             'search' => ['value' => 'match']
+        ]);
+
+        $this->assertResourcesPaginated(
+            $response,
+            $this->makePaginator([$matchingPost], 'posts/search')
+        );
+    }
+
+    /** @test */
+    public function case_insensitive_search_for_resources_by_model_field(): void
+    {
+        $matchingPost = factory(Post::class)->create(['title' => 'mAtCh'])->fresh();
+        factory(Post::class)->create(['title' => 'different'])->fresh();
+
+        Gate::policy(Post::class, GreenPolicy::class);
+
+        $response = $this->post('/api/posts/search', [
+            'search' => ['value' => 'match', 'case_sensitive' => false]
         ]);
 
         $this->assertResourcesPaginated(
@@ -40,6 +58,27 @@ class StandardIndexSearchingOperationsTest extends TestCase
 
         $response = $this->post('/api/posts/search', [
             'search' => ['value' => 'match']
+        ]);
+
+        $this->assertResourcesPaginated(
+            $response,
+            $this->makePaginator([$matchingPost], 'posts/search')
+        );
+    }
+
+    /** @test */
+    public function case_insensitive_search_for_resources_by_relation_field(): void
+    {
+        $matchingPostUser = factory(User::class)->create(['name' => 'mAtCh']);
+        $matchingPost = factory(Post::class)->create(['user_id' => $matchingPostUser->id])->fresh();
+
+        $nonMatchingPostUser = factory(User::class)->make(['name' => 'not match']);
+        factory(Post::class)->create(['user_id' => $nonMatchingPostUser->id])->fresh();
+
+        Gate::policy(Post::class, GreenPolicy::class);
+
+        $response = $this->post('/api/posts/search', [
+            'search' => ['value' => 'match', 'case_sensitive' => false]
         ]);
 
         $this->assertResourcesPaginated(

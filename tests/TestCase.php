@@ -14,7 +14,7 @@ abstract class TestCase extends \Orchestra\Testbench\TestCase
     {
         parent::setUp();
 
-        $this->withFactories(__DIR__.'/Fixtures/database/factories');
+        $this->withFactories(__DIR__ . '/Fixtures/database/factories');
     }
 
     /**
@@ -24,7 +24,7 @@ abstract class TestCase extends \Orchestra\Testbench\TestCase
      */
     protected function refreshInMemoryDatabase()
     {
-        $this->artisan('migrate', ['--path' => __DIR__.'/Fixtures/database/migrations', '--realpath' => true]);
+        $this->artisan('migrate', ['--path' => __DIR__ . '/Fixtures/database/migrations', '--realpath' => true]);
 
         $this->app[Kernel::class]->setArtisan(null);
     }
@@ -37,7 +37,7 @@ abstract class TestCase extends \Orchestra\Testbench\TestCase
     protected function refreshTestDatabase()
     {
         if (!RefreshDatabaseState::$migrated) {
-            $this->artisan('migrate', ['--path' => __DIR__.'/Fixtures/database/migrations', '--realpath' => true]);
+            $this->artisan('migrate', ['--path' => __DIR__ . '/Fixtures/database/migrations', '--realpath' => true]);
 
             $this->app[Kernel::class]->setArtisan(null);
 
@@ -50,7 +50,15 @@ abstract class TestCase extends \Orchestra\Testbench\TestCase
     protected function getPackageProviders($app)
     {
         return [
-            'Orion\Tests\Fixtures\App\Providers\OrionServiceProvider'
+            'Orion\Tests\Fixtures\App\Providers\OrionServiceProvider',
         ];
+    }
+
+    protected function getEnvironmentSetUp($app)
+    {
+        $app['config']->set('auth.guards.api', [
+            'driver' => 'token',
+            'provider' => 'users',
+        ]);
     }
 }
