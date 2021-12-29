@@ -3,6 +3,8 @@
 namespace Orion\Concerns;
 
 use Exception;
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Contracts\Pagination\Paginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -20,6 +22,8 @@ trait HandlesStandardOperations
      *
      * @param Request $request
      * @return CollectionResource
+     * @throws AuthorizationException
+     * @throws BindingResolutionException
      */
     public function index(Request $request)
     {
@@ -92,6 +96,7 @@ trait HandlesStandardOperations
      * @param Builder $query
      * @param int $paginationLimit
      * @return Paginator|Collection
+     * @throws BindingResolutionException
      */
     protected function runIndexFetchQuery(Request $request, Builder $query, int $paginationLimit)
     {
@@ -99,7 +104,7 @@ trait HandlesStandardOperations
     }
 
     /**
-     * The hooks is executed after fetching the list of resources.
+     * The hook is executed after fetching the list of resources.
      *
      * @param Request $request
      * @param Paginator|Collection $entities
@@ -115,6 +120,8 @@ trait HandlesStandardOperations
      *
      * @param Request $request
      * @return CollectionResource
+     * @throws AuthorizationException
+     * @throws BindingResolutionException
      */
     public function search(Request $request)
     {
@@ -134,7 +141,7 @@ trait HandlesStandardOperations
             $result = $this->storeWithTransaction($request);
             $this->commitTransaction();
             return $result;
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             $this->rollbackTransactionAndRaise($exception);
         }
     }
@@ -144,6 +151,8 @@ trait HandlesStandardOperations
      *
      * @param Request $request
      * @return Resource
+     * @throws AuthorizationException
+     * @throws BindingResolutionException
      */
     protected function storeWithTransaction(Request $request)
     {
@@ -276,6 +285,8 @@ trait HandlesStandardOperations
      * @param Request $request
      * @param int|string $key
      * @return Resource
+     * @throws AuthorizationException
+     * @throws BindingResolutionException
      */
     public function show(Request $request, $key)
     {
@@ -378,7 +389,7 @@ trait HandlesStandardOperations
             $result = $this->updateWithTransaction($request, $key);
             $this->commitTransaction();
             return $result;
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             $this->rollbackTransactionAndRaise($exception);
         }
     }
@@ -389,6 +400,8 @@ trait HandlesStandardOperations
      * @param Request $request
      * @param int|string $key
      * @return Resource
+     * @throws AuthorizationException
+     * @throws BindingResolutionException
      */
     protected function updateWithTransaction(Request $request, $key)
     {
@@ -526,7 +539,7 @@ trait HandlesStandardOperations
             $result = $this->destroyWithTransaction($request, $key);
             $this->commitTransaction();
             return $result;
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             $this->rollbackTransactionAndRaise($exception);
         }
     }
@@ -689,7 +702,7 @@ trait HandlesStandardOperations
             $result = $this->restoreWithTransaction($request, $key);
             $this->commitTransaction();
             return $result;
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             $this->rollbackTransactionAndRaise($exception);
         }
     }

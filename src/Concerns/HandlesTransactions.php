@@ -2,6 +2,7 @@
 
 namespace Orion\Concerns;
 
+use Exception;
 use Illuminate\Support\Facades\DB;
 
 trait HandlesTransactions
@@ -54,12 +55,12 @@ trait HandlesTransactions
      * Rollback changes made to database and finish
      * database transaction and finally raise an exception
      *
-     * @param \Exception $exception
+     * @param Exception $exception
      * @return void
      *
      * @throws Exception
      */
-    protected function rollbackTransactionAndRaise(\Exception $exception): void
+    protected function rollbackTransactionAndRaise(Exception $exception): void
     {
         $this->rollbackTransaction();
 

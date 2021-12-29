@@ -286,7 +286,7 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
      * @param string $field
      * @return string
      */
-    protected function getQualifiedFieldName(string $field): string
+    public function getQualifiedFieldName(string $field): string
     {
         $table = (new $this->resourceModelClass)->getTable();
         return "{$table}.{$field}";

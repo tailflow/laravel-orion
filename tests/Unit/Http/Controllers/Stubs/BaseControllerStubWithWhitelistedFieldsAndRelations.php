@@ -2,6 +2,7 @@
 
 namespace Orion\Tests\Unit\Http\Controllers\Stubs;
 
+use Orion\Contracts\QueryBuilder;
 use Orion\Http\Controllers\BaseController;
 use Orion\Tests\Fixtures\App\Http\Requests\PostRequest;
 use Orion\Tests\Fixtures\App\Models\Post;
@@ -52,5 +53,10 @@ class BaseControllerStubWithWhitelistedFieldsAndRelations extends BaseController
 
     protected function bindComponents(): void
     {
+    }
+
+    public function getPrimaryQueryBuilder(): QueryBuilder
+    {
+        return $this->getQueryBuilder();
     }
 }

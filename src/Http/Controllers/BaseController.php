@@ -94,7 +94,7 @@ abstract class BaseController extends \Illuminate\Routing\Controller
     public function __construct()
     {
         if (!$this->model) {
-            throw new BindingException('Model is not defined for '.static::class);
+            throw new BindingException('Model is not defined for ' . static::class);
         }
 
         $this->componentsResolver = App::makeWith(
@@ -153,6 +153,13 @@ abstract class BaseController extends \Illuminate\Routing\Controller
     abstract public function resolveResourceModelClass(): string;
 
     /**
+     * Retrieves the query builder used to query the end-resource.
+     *
+     * @return QueryBuilder
+     */
+    abstract public function getPrimaryQueryBuilder(): QueryBuilder;
+
+    /**
      * The list of available query scopes.
      *
      * @return array
@@ -168,6 +175,17 @@ abstract class BaseController extends \Illuminate\Routing\Controller
      * @return array
      */
     public function filterableBy(): array
+    {
+        return [];
+    }
+
+    /**
+     * The attributes from filterableBy method that have "scoped"
+     * filter options included in the response.
+     *
+     * @return array
+     */
+    public function scopedFilters(): array
     {
         return [];
     }
@@ -505,6 +523,18 @@ abstract class BaseController extends \Illuminate\Routing\Controller
     {
         $resourceModelClass = $this->resolveResourceModelClass();
         return (new $resourceModelClass)->qualifyColumn($this->keyName());
+    }
+
+    protected function resolveQualifiedFieldName(string $field): string
+    {
+        $resourceModelClass = $this->resolveResourceModelClass();
+        return (new $resourceModelClass)->qualifyColumn($field);
+    }
+
+    protected function resolveQualifiedRelationFieldName(string $relation, string $field): string
+    {
+        $resourceModelClass = $this->resolveResourceModelClass();
+        return (new $resourceModelClass)::{$relation}()->qualifyColumn($field);
     }
 
     /**
