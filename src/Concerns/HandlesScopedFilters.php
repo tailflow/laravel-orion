@@ -29,6 +29,12 @@ trait HandlesScopedFilters
         $scopedFilters = [];
         $appliedFilters = [];
 
+        $request->request->set('filters', []);
+
+        if ($request->json()) {
+            $request->json()->set('filters', []);
+        }
+
         foreach ($filters as $filterDescriptor) {
             $qualifiedField = $this->qualifyScopedFilterField($filterDescriptor['field']);
 
