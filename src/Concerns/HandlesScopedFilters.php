@@ -78,7 +78,7 @@ trait HandlesScopedFilters
         $relationField = $this->relationsResolver->relationFieldFromParamConstraint($field);
 
         if ($relation === 'pivot') {
-            return $this->resolveQualifiedPivotFieldName($relation, $relationField);
+            return $this->resolveQualifiedPivotFieldName($relationField);
         }
 
         return $this->resolveQualifiedRelationFieldName($relation, $relationField);
@@ -91,13 +91,13 @@ trait HandlesScopedFilters
                 return !$requestedFilters->contains('field', $field);
             })->map(
                 function (string $field) {
-                    return ['field' => $field];
+                    return array_merge(['field' => $field], $this->scopedFilters()[$field]);
                 }
             )->values();
 
         return $requestedFilters->merge($filters)->filter(
             function (array $filterDescriptor) {
-                return array_key_exists($filterDescriptor['field'], $this->filterableBy());
+                return in_array($filterDescriptor['field'], $this->filterableBy(), true);
             }
         );
     }

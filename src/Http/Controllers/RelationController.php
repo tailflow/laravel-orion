@@ -201,14 +201,13 @@ abstract class RelationController extends BaseController
     /**
      * A qualified name of a pivot field.
      *
-     * @param string $relation
      * @param string $field
      * @return string
      */
-    protected function resolveQualifiedPivotFieldName(string $relation, string $field): string
+    protected function resolveQualifiedPivotFieldName(string $field): string
     {
-        $resourceModelClass = $this->resolveResourceModelClass();
+        $modelClass = $this->getModel();
 
-        return (new $resourceModelClass)->{$relation}()->qualifyPivotColumn($field);
+        return (new $modelClass)->{$this->getRelation()}()->qualifyPivotColumn($field);
     }
 }
