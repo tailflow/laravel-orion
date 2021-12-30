@@ -21,7 +21,7 @@ class BaseControllerStubWithoutComponents extends BaseController
         return $this->getModel();
     }
 
-    public function getPrimaryQueryBuilder(): QueryBuilder
+    public function getResourceQueryBuilder(): QueryBuilder
     {
         return $this->getQueryBuilder();
     }

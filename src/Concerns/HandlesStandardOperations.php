@@ -62,6 +62,13 @@ trait HandlesStandardOperations
      */
     protected function buildIndexFetchQuery(Request $request, array $requestedRelations): Builder
     {
+        $filters = collect($request->get('filters', []))
+            ->map(function(array $filterDescriptor) use ($request) {
+                return $this->beforeFilterApplied($request, $filterDescriptor);
+            })->toArray();
+
+        $request->merge(['filters' => $filters]);
+
         return $this->buildFetchQuery($request, $requestedRelations);
     }
 
@@ -833,5 +840,15 @@ trait HandlesStandardOperations
         $entity->fill(
             Arr::except($attributes, array_keys($entity->getDirty()))
         );
+    }
+
+    /**
+     * @param Request $request
+     * @param array $filterDescriptor
+     * @return array
+     */
+    protected function beforeFilterApplied(Request $request, array $filterDescriptor): array
+    {
+        return $filterDescriptor;
     }
 }

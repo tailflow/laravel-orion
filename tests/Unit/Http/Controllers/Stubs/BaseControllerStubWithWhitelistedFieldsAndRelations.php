@@ -55,7 +55,7 @@ class BaseControllerStubWithWhitelistedFieldsAndRelations extends BaseController
     {
     }
 
-    public function getPrimaryQueryBuilder(): QueryBuilder
+    public function getResourceQueryBuilder(): QueryBuilder
     {
         return $this->getQueryBuilder();
     }

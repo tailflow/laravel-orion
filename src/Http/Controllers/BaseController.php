@@ -2,6 +2,9 @@
 
 namespace Orion\Http\Controllers;
 
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Auth\Access\Response;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
@@ -157,7 +160,7 @@ abstract class BaseController extends \Illuminate\Routing\Controller
      *
      * @return QueryBuilder
      */
-    abstract public function getPrimaryQueryBuilder(): QueryBuilder;
+    abstract public function getResourceQueryBuilder(): QueryBuilder;
 
     /**
      * The list of available query scopes.
@@ -309,9 +312,9 @@ abstract class BaseController extends \Illuminate\Routing\Controller
      *
      * @param string $ability
      * @param array $arguments
-     * @return \Illuminate\Auth\Access\Response
-     * @throws \Illuminate\Auth\Access\AuthorizationException
-     * @throws \Illuminate\Contracts\Container\BindingResolutionException
+     * @return Response
+     * @throws AuthorizationException
+     * @throws BindingResolutionException
      */
     public function authorize(string $ability, $arguments = [])
     {
@@ -327,7 +330,7 @@ abstract class BaseController extends \Illuminate\Routing\Controller
     /**
      * Retrieves currently authenticated user based on the guard.
      *
-     * @return \Illuminate\Contracts\Auth\Authenticatable|null
+     * @return Authenticatable|null
      */
     public function resolveUser()
     {

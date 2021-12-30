@@ -15,7 +15,7 @@ class BaseControllerStubWithoutModel extends BaseController
         // TODO: Implement resolveResourceModelClass() method.
     }
 
-    public function getPrimaryQueryBuilder(): QueryBuilder
+    public function getResourceQueryBuilder(): QueryBuilder
     {
         // TODO: Implement getPrimaryQueryBuilder() method.
     }

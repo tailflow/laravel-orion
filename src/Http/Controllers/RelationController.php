@@ -82,7 +82,7 @@ abstract class RelationController extends BaseController
      *
      * @return QueryBuilder
      */
-    public function getPrimaryQueryBuilder(): QueryBuilder
+    public function getResourceQueryBuilder(): QueryBuilder
     {
         return $this->getRelationQueryBuilder();
     }

@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Orion\Concerns;
 
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Orion\Http\Controllers\RelationController;
@@ -17,23 +15,19 @@ use Orion\Http\Requests\Request;
 trait HandlesScopedFilters
 {
     /**
-     * @param Builder|Relation $query
+     * @param $query
      * @param Request $request
-     * @param array $requestedFilters
+     * @param array $mappingCallbacks
      * @return array
      */
-    public function resolveScopedFilters($query, Request $request, array $requestedFilters): array
+    public function resolveScopedFilters($query, Request $request, array $mappingCallbacks): array
     {
+        $requestedFilters = $request->get('filters', []);
+
         $filters = $this->getScopedFilterDescriptors(collect($requestedFilters));
 
         $scopedFilters = [];
         $appliedFilters = [];
-
-        $request->request->set('filters', []);
-
-        if ($request->json()) {
-            $request->json()->set('filters', []);
-        }
 
         foreach ($filters as $filterDescriptor) {
             $qualifiedField = $this->qualifyScopedFilterField($filterDescriptor['field']);
@@ -46,11 +40,11 @@ trait HandlesScopedFilters
                         ->reorder()
                         ->getModels()
                 )->map(
-                    (function ($model) use ($filterDescriptor) {
+                    (function ($model) use ($filterDescriptor, $mappingCallbacks) {
                         $value = Arr::first($model->getAttributes());
 
-                        if ($mapCallback = Arr::get($filterDescriptor, 'mapCallback')) {
-                            $value = $mapCallback($value, $filterDescriptor);
+                        if ($mappingCallback = Arr::get($mappingCallbacks, $filterDescriptor['field'])) {
+                            $value = $mappingCallback($value, $filterDescriptor);
                         }
 
                         return ['value' => $value];
@@ -61,7 +55,7 @@ trait HandlesScopedFilters
             if (Arr::has($filterDescriptor, 'value')) {
                 $appliedFilters[] = $filterDescriptor;
 
-                $this->getPrimaryQueryBuilder()->applyFiltersToQuery($query, $request, $appliedFilters);
+                $this->getResourceQueryBuilder()->applyFiltersToQuery($query, $request, $appliedFilters);
             }
         }
 
@@ -86,12 +80,12 @@ trait HandlesScopedFilters
 
     protected function getScopedFilterDescriptors(Collection $requestedFilters): Collection
     {
-        $filters = collect(array_keys($this->scopedFilters()))
+        $filters = collect($this->scopedFilters())
             ->filter(function (string $field) use ($requestedFilters) {
                 return !$requestedFilters->contains('field', $field);
             })->map(
                 function (string $field) {
-                    return array_merge(['field' => $field], $this->scopedFilters()[$field]);
+                    return ['field' => $field];
                 }
             )->values();
 
