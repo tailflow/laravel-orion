@@ -807,7 +807,7 @@ trait HandlesRelationStandardOperations
         $parentEntity = $this->runDestroyParentFetchQuery($request, $parentQuery, $parentKey);
 
         $softDeletes = $this->softDeletes($this->resolveResourceModelClass());
-        $forceDeletes = $softDeletes && $request->get('force');
+        $forceDeletes = $this->forceDeletes($request, $softDeletes);
 
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
 
