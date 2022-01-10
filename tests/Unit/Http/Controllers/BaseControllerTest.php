@@ -10,7 +10,7 @@ use Orion\Drivers\Standard\Paginator;
 use Orion\Drivers\Standard\ParamsValidator;
 use Orion\Drivers\Standard\QueryBuilder;
 use Orion\Drivers\Standard\RelationsResolver;
-use Orion\Drivers\Standard\SearchBuilder;
+use Orion\Drivers\Standard\SearchEngine;
 use Orion\Exceptions\BindingException;
 use Orion\Tests\Fixtures\App\Http\Requests\PostRequest;
 use Orion\Tests\Fixtures\App\Http\Resources\SampleCollectionResource;
@@ -42,7 +42,7 @@ class BaseControllerTest extends TestCase
         $fakeParamsValidator = new ParamsValidator();
         $fakeRelationsResolver = new RelationsResolver([], []);
         $fakePaginator = new Paginator(15);
-        $fakeSearchBuilder = new SearchBuilder([]);
+        $fakeSearchBuilder = new SearchEngine([]);
         $fakeQueryBuilder = new QueryBuilder(Post::class, $fakeParamsValidator, $fakeRelationsResolver, $fakeSearchBuilder);
 
         App::shouldReceive('makeWith')->with(
@@ -77,7 +77,7 @@ class BaseControllerTest extends TestCase
         )->once()->andReturn($fakePaginator);
 
         App::shouldReceive('makeWith')->with(
-            \Orion\Contracts\SearchBuilder::class,
+            \Orion\Contracts\SearchEngine::class,
             [
                 'searchableBy' => ['test_searchable_field'],
             ]
@@ -99,7 +99,7 @@ class BaseControllerTest extends TestCase
         $this->assertEquals($fakeParamsValidator, $stub->getParamsValidator());
         $this->assertEquals($fakeRelationsResolver, $stub->getRelationsResolver());
         $this->assertEquals($fakePaginator, $stub->getPaginator());
-        $this->assertEquals($fakeSearchBuilder, $stub->getSearchBuilder());
+        $this->assertEquals($fakeSearchBuilder, $stub->getSearchEngine());
         $this->assertEquals($fakeQueryBuilder, $stub->getQueryBuilder());
     }
 

@@ -10,7 +10,6 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Arr;
 use Orion\Http\Requests\Request;
-use RuntimeException;
 
 class QueryBuilder implements \Orion\Contracts\QueryBuilder
 {
@@ -30,9 +29,9 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
     private $relationsResolver;
 
     /**
-     * @var \Orion\Contracts\SearchBuilder $searchBuilder
+     * @var \Orion\Contracts\SearchEngine $searchEngine
      */
-    private $searchBuilder;
+    private $searchEngine;
 
     /**
      * @var bool $intermediateMode
@@ -46,13 +45,13 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
         string $resourceModelClass,
         \Orion\Contracts\ParamsValidator $paramsValidator,
         \Orion\Contracts\RelationsResolver $relationsResolver,
-        \Orion\Contracts\SearchBuilder $searchBuilder,
+        \Orion\Contracts\SearchEngine $searchEngine,
         bool $intermediateMode = false
     ) {
         $this->resourceModelClass = $resourceModelClass;
         $this->paramsValidator = $paramsValidator;
         $this->relationsResolver = $relationsResolver;
-        $this->searchBuilder = $searchBuilder;
+        $this->searchEngine = $searchEngine;
         $this->intermediateMode = $intermediateMode;
     }
 
@@ -92,7 +91,7 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
         $scopeDescriptors = $request->get('scopes', []);
 
         foreach ($scopeDescriptors as $scopeDescriptor) {
-            $query->{$scopeDescriptor['name']}(...Arr::get($scopeDescriptor, 'parameters', []));
+            $query = $this->searchEngine->applyScopeConstraint($query, $scopeDescriptor, $request);
         }
     }
 
@@ -102,8 +101,9 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
      * @param Builder|Relation $query
      * @param Request $request
      * @param array $filterDescriptors
+     * @return Builder|Relation
      */
-    public function applyFiltersToQuery($query, Request $request, array $filterDescriptors = []): void
+    public function applyFiltersToQuery($query, Request $request, array $filterDescriptors = [])
     {
         if (!$filterDescriptors) {
             $this->paramsValidator->validateFilters($request);
@@ -118,24 +118,88 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
                 $relationField = $this->relationsResolver->relationFieldFromParamConstraint($filterDescriptor['field']);
 
                 if ($relation === 'pivot') {
-                    $this->buildPivotFilterQueryWhereClause($relationField, $filterDescriptor, $query, $or);
+                    $query = $this->buildPivotFilterQueryWhereClause($relationField, $filterDescriptor, $query, $request, $or);
                 } else {
-                    $query->{$or ? 'orWhereHas' : 'whereHas'}(
-                        $relation,
-                        function ($relationQuery) use ($relationField, $filterDescriptor) {
-                            $this->buildFilterQueryWhereClause($relationField, $filterDescriptor, $relationQuery);
-                        }
-                    );
+                    $query = $this->buildRelationFilterQueryWhereClause($relation, $relationField, $filterDescriptor, $query, $request);
                 }
             } else {
-                $this->buildFilterQueryWhereClause(
-                    $this->getQualifiedFieldName($filterDescriptor['field']),
-                    $filterDescriptor,
+                $query = $this->searchEngine->applyFieldConstraint(
                     $query,
-                    $or
+                    $filterDescriptor['field'],
+                    $filterDescriptor,
+                    $or,
+                    $request
                 );
             }
         }
+
+        return $query;
+    }
+
+    /**
+     * Builds filter's query where clause based on the given filterable.
+     *
+     * @param string $relation
+     * @param string $field
+     * @param array $filterDescriptor
+     * @param Builder|Relation $query
+     * @param Request $request
+     * @param bool $or
+     * @return Builder|Relation
+     */
+    protected function buildRelationFilterQueryWhereClause(string $relation, string $field, array $filterDescriptor, $query, Request $request, bool $or = false)
+    {
+        if (is_array($filterDescriptor['value']) && in_array(null, $filterDescriptor['value'], true)) {
+            $query = $this->searchEngine->applyRelationFieldNullConstraint(
+                $query, $relation,$field, $filterDescriptor, $or, $request
+            );
+
+            $filterDescriptor['value'] = collect($filterDescriptor['value'])->filter()->values()->toArray();
+
+            if (!count($filterDescriptor['value'])) {
+                return $query;
+            }
+        }
+
+        return $this->buildRelationFilterNestedQueryWhereClause($relation,$field, $filterDescriptor, $query, $request,$or);
+    }
+
+    /**
+     * @param string $relation
+     * @param string $field
+     * @param array $filterDescriptor
+     * @param Builder|Relation $query
+     * @param Request $request
+     * @param bool $or
+     * @return Builder|Relation
+     */
+    protected function buildRelationFilterNestedQueryWhereClause(
+        string $relation,
+        string $field,
+        array $filterDescriptor,
+        $query,
+        Request $request,
+        bool $or = false
+    ) {
+        $treatAsDateField = $filterDescriptor['value'] !== null &&
+            in_array($filterDescriptor['field'], (new $this->resourceModelClass)->getDates(), true)
+            && Carbon::parse($filterDescriptor['value'])->toTimeString() === '00:00:00';
+
+        if ($treatAsDateField) {
+            return $this->searchEngine->applyRelationFieldDateConstraint(
+                $query, $relation,$field, $filterDescriptor, $or, $request
+            );
+        }
+
+        if (is_array($filterDescriptor['value'])) {
+            return $this->searchEngine->applyRelationFieldInConstraint(
+                $query, $relation,$field, $filterDescriptor, $or, $request
+            );
+        }
+
+        return $this->searchEngine->applyRelationFieldConstraint(
+            $query, $relation, $field, $filterDescriptor, $or, $request
+        );
     }
 
     /**
@@ -144,13 +208,16 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
      * @param string $field
      * @param array $filterDescriptor
      * @param Builder|Relation $query
+     * @param Request $request
      * @param bool $or
      * @return Builder|Relation
      */
-    protected function buildFilterQueryWhereClause(string $field, array $filterDescriptor, $query, bool $or = false)
+    protected function buildFilterQueryWhereClause(string $field, array $filterDescriptor, $query, Request $request, bool $or = false)
     {
         if (is_array($filterDescriptor['value']) && in_array(null, $filterDescriptor['value'], true)) {
-            $query = $query->{$or ? 'orWhereNull' : 'whereNull'}($field);
+            $query = $this->searchEngine->applyFieldNullConstraint(
+                $query, $field, $filterDescriptor, $or, $request
+            );
 
             $filterDescriptor['value'] = collect($filterDescriptor['value'])->filter()->values()->toArray();
 
@@ -159,13 +226,14 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
             }
         }
 
-        return $this->buildFilterNestedQueryWhereClause($field, $filterDescriptor, $query, $or);
+        return $this->buildFilterNestedQueryWhereClause($field, $filterDescriptor, $query, $request,$or);
     }
 
     /**
      * @param string $field
      * @param array $filterDescriptor
      * @param Builder|Relation $query
+     * @param Request $request
      * @param bool $or
      * @return Builder|Relation
      */
@@ -173,33 +241,28 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
         string $field,
         array $filterDescriptor,
         $query,
+        Request $request,
         bool $or = false
     ) {
         $treatAsDateField = $filterDescriptor['value'] !== null &&
-            in_array($filterDescriptor['field'], (new $this->resourceModelClass)->getDates(), true);
+            in_array($filterDescriptor['field'], (new $this->resourceModelClass)->getDates(), true)
+            && Carbon::parse($filterDescriptor['value'])->toTimeString() === '00:00:00';
 
-        if ($treatAsDateField && Carbon::parse($filterDescriptor['value'])->toTimeString() === '00:00:00') {
-            $constraint = 'whereDate';
-        } else {
-            $constraint = 'where';
+        if ($treatAsDateField) {
+           return $this->searchEngine->applyFieldDateConstraint(
+               $query, $field, $filterDescriptor, $or, $request
+           );
         }
 
-        if (!is_array($filterDescriptor['value']) || $constraint === 'whereDate') {
-            $query->{$or ? 'or' . ucfirst($constraint) : $constraint}(
-                $field,
-                $filterDescriptor['operator'],
-                $filterDescriptor['value']
-            );
-        } else {
-            $query->{$or ? 'orWhereIn' : 'whereIn'}(
-                $field,
-                $filterDescriptor['value'],
-                'and',
-                $filterDescriptor['operator'] === 'not in'
+        if (is_array($filterDescriptor['value'])) {
+            return $this->searchEngine->applyFieldInConstraint(
+                $query, $field, $filterDescriptor, $or, $request
             );
         }
 
-        return $query;
+        return $this->searchEngine->applyFieldConstraint(
+            $query, $field, $filterDescriptor, $or, $request
+        );
     }
 
     /**
@@ -207,24 +270,22 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
      *
      * @param string $field
      * @param array $filterDescriptor
-     * @param Builder|Relation $query
+     * @param BelongsToMany $query
+     * @param Request $request
      * @param bool $or
-     * @return Builder|Relation
+     * @return BelongsToMany
      */
     protected function buildPivotFilterQueryWhereClause(
         string $field,
         array $filterDescriptor,
         $query,
+        Request $request,
         bool $or = false
     ) {
         if (is_array($filterDescriptor['value']) && in_array(null, $filterDescriptor['value'], true)) {
-            if ((float) app()->version() <= 7.0) {
-                throw new RuntimeException(
-                    "Filtering by nullable pivot fields is only supported for Laravel version > 8.0"
-                );
-            }
-
-            $query = $query->{$or ? 'orWherePivotNull' : 'wherePivotNull'}($field);
+            $query = $this->searchEngine->applyPivotFieldNullConstraint(
+                $query, $field, $filterDescriptor, $or, $request
+            );
 
             $filterDescriptor['value'] = collect($filterDescriptor['value'])->filter()->values()->toArray();
 
@@ -233,20 +294,22 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
             }
         }
 
-        return $this->buildPivotFilterNestedQueryWhereClause($field, $filterDescriptor, $query);
+        return $this->buildPivotFilterNestedQueryWhereClause($field, $filterDescriptor, $query, $request);
     }
 
     /**
      * @param string $field
      * @param array $filterDescriptor
-     * @param Builder|BelongsToMany $query
+     * @param BelongsToMany $query
+     * @param Request $request
      * @param bool $or
-     * @return Builder
+     * @return BelongsToMany
      */
     protected function buildPivotFilterNestedQueryWhereClause(
         string $field,
         array $filterDescriptor,
         $query,
+        Request $request,
         bool $or = false
     ) {
         $pivotClass = $query->getPivotClass();
@@ -255,41 +318,20 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
         $treatAsDateField = $filterDescriptor['value'] !== null && in_array($field, $pivot->getDates(), true);
 
         if ($treatAsDateField && Carbon::parse($filterDescriptor['value'])->toTimeString() === '00:00:00') {
-            $query->addNestedWhereQuery(
-                $query->newPivotStatement()->whereDate(
-                    $query->getTable().".{$field}",
-                    $filterDescriptor['operator'],
-                    $filterDescriptor['value']
-                )
-            );
-        } elseif (!is_array($filterDescriptor['value'])) {
-            $query->{$or ? 'orWherePivot' : 'wherePivot'}(
-                $field,
-                $filterDescriptor['operator'],
-                $filterDescriptor['value']
-            );
-        } else {
-            $query->{$or ? 'orWherePivotIn' : 'wherePivotIn'}(
-                $field,
-                $filterDescriptor['value'],
-                'and',
-                $filterDescriptor['operator'] === 'not in'
+            return $this->searchEngine->applyPivotFieldDateConstraint(
+                $query, $field, $filterDescriptor, $or, $request
             );
         }
 
-        return $query;
-    }
+        if (is_array($filterDescriptor['value'])) {
+            return $this->searchEngine->applyPivotFieldInConstraint(
+                $query, $field, $filterDescriptor, $or, $request
+            );
+        }
 
-    /**
-     * Builds a complete field name with table.
-     *
-     * @param string $field
-     * @return string
-     */
-    public function getQualifiedFieldName(string $field): string
-    {
-        $table = (new $this->resourceModelClass)->getTable();
-        return "{$table}.{$field}";
+        return $this->searchEngine->applyPivotFieldConstraint(
+            $query, $field, $filterDescriptor, $or, $request
+        );
     }
 
     /**
@@ -297,21 +339,20 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
      *
      * @param Builder|Relation $query
      * @param Request $request
+     * @return Builder|Relation
      */
-    public function applySearchingToQuery($query, Request $request): void
+    public function applySearchingToQuery($query, Request $request)
     {
         if (!$requestedSearchDescriptor = $request->get('search')) {
-            return;
+            return $query;
         }
 
         $this->paramsValidator->validateSearch($request);
 
-        $searchables = $this->searchBuilder->searchableBy();
+        $searchables = $this->searchEngine->searchableBy();
 
         $query->where(
-            function ($whereQuery) use ($searchables, $requestedSearchDescriptor) {
-                $requestedSearchString = $requestedSearchDescriptor['value'];
-
+            function ($whereQuery) use ($searchables, $requestedSearchDescriptor, $request) {
                 $caseSensitive = (bool) Arr::get(
                     $requestedSearchDescriptor,
                     'case_sensitive',
@@ -326,45 +367,19 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
                         $relation = $this->relationsResolver->relationFromParamConstraint($searchable);
                         $relationField = $this->relationsResolver->relationFieldFromParamConstraint($searchable);
 
-                        $whereQuery->orWhereHas(
-                            $relation,
-                            function ($relationQuery) use ($relationField, $requestedSearchString, $caseSensitive) {
-                                /**
-                                 * @var Builder $relationQuery
-                                 */
-                                if (!$caseSensitive) {
-                                    return $relationQuery->whereRaw(
-                                        "lower({$relationField}) like lower(?)",
-                                        ['%' . $requestedSearchString . '%']
-                                    );
-                                }
-
-                                return $relationQuery->where(
-                                    $relationField,
-                                    'like',
-                                    '%' . $requestedSearchString . '%'
-                                );
-                            }
+                        $whereQuery = $this->searchEngine->applyRelationFieldSearchConstraint(
+                            $whereQuery, $relation, $relationField, $caseSensitive, $requestedSearchDescriptor, $request
                         );
                     } else {
-                        $qualifiedFieldName = $this->getQualifiedFieldName($searchable);
-
-                        if (!$caseSensitive) {
-                            $whereQuery->orWhereRaw(
-                                "lower({$qualifiedFieldName}) like lower(?)",
-                                ['%' . $requestedSearchString . '%']
-                            );
-                        } else {
-                            $whereQuery->orWhere(
-                                $qualifiedFieldName,
-                                'like',
-                                '%' . $requestedSearchString . '%'
-                            );
-                        }
+                        $whereQuery = $this->searchEngine->applyFieldSearchConstraint(
+                            $whereQuery, $searchable, $caseSensitive, $requestedSearchDescriptor, $request
+                        );
                     }
                 }
             }
         );
+
+        return $query;
     }
 
     /**
@@ -372,8 +387,9 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
      *
      * @param Builder|Relation $query
      * @param Request $request
+     * @return Builder|Relation
      */
-    public function applySortingToQuery($query, Request $request): void
+    public function applySortingToQuery($query, Request $request)
     {
         $this->paramsValidator->validateSort($request);
         $sortableDescriptors = $request->get('sort', []);
@@ -387,7 +403,9 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
                 $relationField = $this->relationsResolver->relationFieldFromParamConstraint($sortableField);
 
                 if ($relation === 'pivot') {
-                    $query->orderByPivot($relationField, $direction);
+                    $query = $this->searchEngine->applyPivotFieldSorting(
+                        $query, $relationField,$direction, $sortable, $request
+                    );
                     continue;
                 }
 
@@ -400,19 +418,17 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
                     continue;
                 }
 
-                $relationTable = $this->relationsResolver->relationTableFromRelationInstance($relationInstance);
-                $relationForeignKey = $this->relationsResolver->relationForeignKeyFromRelationInstance(
-                    $relationInstance
+                $query = $this->searchEngine->applyRelationFieldSorting(
+                    $query, $relation, $relationField, $direction, $sortable, $request
                 );
-                $relationLocalKey = $this->relationsResolver->relationLocalKeyFromRelationInstance($relationInstance);
-
-                $query->leftJoin($relationTable, $relationForeignKey, '=', $relationLocalKey)
-                    ->orderBy("$relationTable.$relationField", $direction)
-                    ->select($this->getQualifiedFieldName('*'));
             } else {
-                $query->orderBy($this->getQualifiedFieldName($sortableField), $direction);
+                $query = $this->searchEngine->applyFieldSorting(
+                    $query, $direction, $sortable, $request
+                );
             }
         }
+
+        return $query;
     }
 
     /**
@@ -420,20 +436,26 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
      *
      * @param Builder|Relation|SoftDeletes $query
      * @param Request $request
-     * @return bool
+     * @return Builder|Relation|SoftDeletes
      */
-    public function applySoftDeletesToQuery($query, Request $request): bool
+    public function applySoftDeletesToQuery($query, Request $request)
     {
         if (!$query->getMacro('withTrashed')) {
-            return false;
+            return $query;
         }
 
         if (filter_var($request->query('with_trashed', false), FILTER_VALIDATE_BOOLEAN)) {
-            $query->withTrashed();
-        } elseif (filter_var($request->query('only_trashed', false), FILTER_VALIDATE_BOOLEAN)) {
-            $query->onlyTrashed();
+            return $this->searchEngine->applySoftDeletesWithTrashedConstraint(
+                $query, $request
+            );
         }
 
-        return true;
+        if (filter_var($request->query('only_trashed', false), FILTER_VALIDATE_BOOLEAN)) {
+            return $this->searchEngine->applySoftDeletesOnlyTrashedConstraint(
+                $query, $request
+            );
+        }
+
+        return $query;
     }
 }

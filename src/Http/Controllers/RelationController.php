@@ -60,7 +60,7 @@ abstract class RelationController extends BaseController
                 'resourceModelClass' => $this->resolveResourceModelClass(),
                 'paramsValidator' => $this->paramsValidator,
                 'relationsResolver' => $this->relationsResolver,
-                'searchBuilder' => $this->searchBuilder,
+                'searchEngine' => $this->searchEngine,
             ]
         );
     }

@@ -9,7 +9,7 @@ use Orion\Contracts\Paginator;
 use Orion\Contracts\ParamsValidator;
 use Orion\Contracts\QueryBuilder;
 use Orion\Contracts\RelationsResolver;
-use Orion\Contracts\SearchBuilder;
+use Orion\Contracts\SearchEngine;
 use Orion\Http\Middleware\EnforceExpectsJson;
 use Orion\Specs\ResourcesCacheStore;
 
@@ -27,7 +27,7 @@ class OrionServiceProvider extends ServiceProvider
         $this->app->bind(RelationsResolver::class, Drivers\Standard\RelationsResolver::class);
         $this->app->bind(ParamsValidator::class, Drivers\Standard\ParamsValidator::class);
         $this->app->bind(Paginator::class, Drivers\Standard\Paginator::class);
-        $this->app->bind(SearchBuilder::class, Drivers\Standard\SearchBuilder::class);
+        $this->app->bind(SearchEngine::class, Drivers\Standard\SearchEngines\DatabaseSearchEngine::class);
         $this->app->bind(ComponentsResolver::class, Drivers\Standard\ComponentsResolver::class);
 
         $this->app->singleton(ResourcesCacheStore::class);

@@ -23,7 +23,7 @@ use Orion\Contracts\Paginator;
 use Orion\Contracts\ParamsValidator;
 use Orion\Contracts\QueryBuilder;
 use Orion\Contracts\RelationsResolver;
-use Orion\Contracts\SearchBuilder;
+use Orion\Contracts\SearchEngine;
 use Orion\Exceptions\BindingException;
 use Orion\Http\Requests\Request;
 
@@ -80,9 +80,9 @@ abstract class BaseController extends \Illuminate\Routing\Controller
     protected $paginator;
 
     /**
-     * @var SearchBuilder $searchBuilder
+     * @var SearchEngine $searchEngine
      */
-    protected $searchBuilder;
+    protected $searchEngine;
 
     /**
      * @var QueryBuilder $queryBuilder
@@ -127,10 +127,12 @@ abstract class BaseController extends \Illuminate\Routing\Controller
                 'defaultLimit' => $this->limit(),
             ]
         );
-        $this->searchBuilder = App::makeWith(
-            SearchBuilder::class,
+        $this->searchEngine = App::makeWith(
+            SearchEngine::class,
             [
                 'searchableBy' => $this->searchableBy(),
+                'resourceModelClass' => $this->resolveResourceModelClass(),
+                'relationsResolver' => $this->relationsResolver,
             ]
         );
         $this->queryBuilder = App::makeWith(
@@ -139,7 +141,7 @@ abstract class BaseController extends \Illuminate\Routing\Controller
                 'resourceModelClass' => $this->getModel(),
                 'paramsValidator' => $this->paramsValidator,
                 'relationsResolver' => $this->relationsResolver,
-                'searchBuilder' => $this->searchBuilder,
+                'searchEngine' => $this->searchEngine,
                 'intermediateMode' => $this instanceof RelationController,
             ]
         );
@@ -452,20 +454,20 @@ abstract class BaseController extends \Illuminate\Routing\Controller
     }
 
     /**
-     * @return SearchBuilder
+     * @return SearchEngine
      */
-    public function getSearchBuilder(): SearchBuilder
+    public function getSearchEngine(): SearchEngine
     {
-        return $this->searchBuilder;
+        return $this->searchEngine;
     }
 
     /**
-     * @param SearchBuilder $searchBuilder
+     * @param SearchEngine $searchEngine
      * @return $this
      */
-    public function setSearchBuilder(SearchBuilder $searchBuilder): self
+    public function setSearchEngine(SearchEngine $searchEngine): self
     {
-        $this->searchBuilder = $searchBuilder;
+        $this->searchEngine = $searchEngine;
 
         return $this;
     }

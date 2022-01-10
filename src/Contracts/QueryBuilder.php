@@ -14,10 +14,10 @@ interface QueryBuilder
      * @param string $resourceModelClass
      * @param ParamsValidator $paramsValidator
      * @param RelationsResolver $relationsResolver
-     * @param SearchBuilder $searchBuilder
+     * @param SearchEngine $searchEngine
      * @param bool $intermediateMode
      */
-    public function __construct(string $resourceModelClass, ParamsValidator $paramsValidator, RelationsResolver $relationsResolver, SearchBuilder $searchBuilder, bool $intermediateMode = false);
+    public function __construct(string $resourceModelClass, ParamsValidator $paramsValidator, RelationsResolver $relationsResolver, SearchEngine $searchEngine, bool $intermediateMode = false);
 
     /**
      * @param Builder|Relation $query
@@ -30,31 +30,30 @@ interface QueryBuilder
      * @param Builder|Relation $query
      * @param Request $request
      */
-    public function applyScopesToQuery($query, Request $request): void;
+    public function applyScopesToQuery($query, Request $request);
 
     /**
      * @param Builder|Relation $query
      * @param Request $request
      * @param array $filterDescriptors
      */
-    public function applyFiltersToQuery($query, Request $request, array $filterDescriptors = []): void;
+    public function applyFiltersToQuery($query, Request $request, array $filterDescriptors = []);
 
     /**
      * @param Builder|Relation $query
      * @param Request $request
      */
-    public function applySearchingToQuery($query, Request $request): void;
+    public function applySearchingToQuery($query, Request $request);
 
     /**
      * @param Builder|Relation $query
      * @param Request $request
      */
-    public function applySortingToQuery($query, Request $request): void;
+    public function applySortingToQuery($query, Request $request);
 
     /**
      * @param Builder|Relation $query
      * @param Request $request
-     * @return bool
      */
-    public function applySoftDeletesToQuery($query, Request $request): bool;
+    public function applySoftDeletesToQuery($query, Request $request);
 }

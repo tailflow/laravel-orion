@@ -7,7 +7,7 @@ use Mockery;
 use Orion\Drivers\Standard\ParamsValidator;
 use Orion\Drivers\Standard\QueryBuilder;
 use Orion\Drivers\Standard\RelationsResolver;
-use Orion\Drivers\Standard\SearchBuilder;
+use Orion\Drivers\Standard\SearchEngines\DatabaseSearchEngine;
 use Orion\Http\Requests\Request;
 use Orion\Tests\Fixtures\App\Models\Post;
 use Orion\Tests\Fixtures\App\Models\Team;
@@ -111,7 +111,14 @@ class QueryBuilderTest extends TestCase
             Post::class,
             new ParamsValidator(['published', 'publishedAt']),
             new RelationsResolver([], []),
-            new SearchBuilder([])
+            app()->makeWith(
+                DatabaseSearchEngine::class,
+                [
+                    'searchableBy' => [],
+                    'resourceModelClass' => Post::class,
+                    'relationsResolver' => new RelationsResolver([], []),
+                ]
+            )
         );
         $queryBuilder->applyScopesToQuery($query, $request);
 
@@ -141,7 +148,14 @@ class QueryBuilderTest extends TestCase
             Post::class,
             new ParamsValidator([], ['title', 'tracking_id']),
             new RelationsResolver([], []),
-            new SearchBuilder([])
+            app()->makeWith(
+                DatabaseSearchEngine::class,
+                [
+                    'searchableBy' => [],
+                    'resourceModelClass' => Post::class,
+                    'relationsResolver' => new RelationsResolver([], []),
+                ]
+            )
         );
         $queryBuilder->applyFiltersToQuery($query, $request);
 
@@ -186,7 +200,14 @@ class QueryBuilderTest extends TestCase
             Post::class,
             new ParamsValidator([], ['title', 'tracking_id']),
             new RelationsResolver([], []),
-            new SearchBuilder([])
+            app()->makeWith(
+                DatabaseSearchEngine::class,
+                [
+                    'searchableBy' => [],
+                    'resourceModelClass' => Post::class,
+                    'relationsResolver' => new RelationsResolver([], []),
+                ]
+            )
         );
         $queryBuilder->applyFiltersToQuery($query, $request);
 
@@ -223,7 +244,14 @@ class QueryBuilderTest extends TestCase
             Post::class,
             new ParamsValidator([], ['user.name']),
             new RelationsResolver([], []),
-            new SearchBuilder([])
+            app()->makeWith(
+                DatabaseSearchEngine::class,
+                [
+                    'searchableBy' => [],
+                    'resourceModelClass' => Post::class,
+                    'relationsResolver' => new RelationsResolver([], []),
+                ]
+            )
         );
         $queryBuilder->applyFiltersToQuery($query, $request);
 
@@ -260,7 +288,14 @@ class QueryBuilderTest extends TestCase
             Post::class,
             new ParamsValidator([], ['user.name']),
             new RelationsResolver([], []),
-            new SearchBuilder([])
+            app()->makeWith(
+                DatabaseSearchEngine::class,
+                [
+                    'searchableBy' => [],
+                    'resourceModelClass' => Post::class,
+                    'relationsResolver' => new RelationsResolver([], []),
+                ]
+            )
         );
         $queryBuilder->applyFiltersToQuery($query, $request);
 
@@ -291,7 +326,14 @@ class QueryBuilderTest extends TestCase
             Post::class,
             new ParamsValidator([], ['title']),
             new RelationsResolver([], []),
-            new SearchBuilder([])
+            app()->makeWith(
+                DatabaseSearchEngine::class,
+                [
+                    'searchableBy' => [],
+                    'resourceModelClass' => Post::class,
+                    'relationsResolver' => new RelationsResolver([], []),
+                ]
+            )
         );
         $queryBuilder->applyFiltersToQuery($query, $request);
 
@@ -324,7 +366,7 @@ class QueryBuilderTest extends TestCase
             Post::class,
             new ParamsValidator([], []),
             new RelationsResolver([], []),
-            new SearchBuilder(['title', 'body'])
+            new DatabaseSearchEngine(['title', 'body'])
         );
         $queryBuilder->applySearchingToQuery($query, $request);
 
@@ -369,7 +411,9 @@ class QueryBuilderTest extends TestCase
         $postCUser = factory(User::class)->create(['name' => 'name with example in the middle']);
         $postC = factory(Post::class)->create(['user_id' => $postCUser->id]);
 
-        $postDUser = factory(User::class)->create(['name' => 'not matching name', 'email' => 'but-matching-email@example.com']);
+        $postDUser = factory(User::class)->create(
+            ['name' => 'not matching name', 'email' => 'but-matching-email@example.com']
+        );
         $postD = factory(Post::class)->create(['user_id' => $postDUser->id]);
 
         $postEUser = factory(User::class)->create(['name' => 'not matching name', 'email' => 'test@domain.com']);
@@ -381,7 +425,14 @@ class QueryBuilderTest extends TestCase
             Post::class,
             new ParamsValidator([], []),
             new RelationsResolver([], []),
-            new SearchBuilder(['user.name', 'user.email'])
+            app()->makeWith(
+                DatabaseSearchEngine::class,
+                [
+                    'searchableBy' => ['user.name', 'user.email'],
+                    'resourceModelClass' => Post::class,
+                    'relationsResolver' => new RelationsResolver([], []),
+                ]
+            )
         );
         $queryBuilder->applySearchingToQuery($query, $request);
 
@@ -413,7 +464,14 @@ class QueryBuilderTest extends TestCase
             Post::class,
             new ParamsValidator([], []),
             new RelationsResolver([], []),
-            new SearchBuilder(['title', 'body'])
+            app()->makeWith(
+                DatabaseSearchEngine::class,
+                [
+                    'searchableBy' => ['title', 'body'],
+                    'resourceModelClass' => Post::class,
+                    'relationsResolver' => new RelationsResolver([], []),
+                ]
+            )
         );
         $queryBuilder->applySearchingToQuery($query, $request);
 
@@ -443,7 +501,14 @@ class QueryBuilderTest extends TestCase
             Post::class,
             new ParamsValidator([], [], ['title']),
             new RelationsResolver([], []),
-            new SearchBuilder([])
+            app()->makeWith(
+                DatabaseSearchEngine::class,
+                [
+                    'searchableBy' => [],
+                    'resourceModelClass' => Post::class,
+                    'relationsResolver' => new RelationsResolver([], []),
+                ]
+            )
         );
         $queryBuilder->applySortingToQuery($query, $request);
 
@@ -486,7 +551,14 @@ class QueryBuilderTest extends TestCase
             Post::class,
             new ParamsValidator([], [], ['title']),
             new RelationsResolver([], []),
-            new SearchBuilder([])
+            app()->makeWith(
+                DatabaseSearchEngine::class,
+                [
+                    'searchableBy' => [],
+                    'resourceModelClass' => Post::class,
+                    'relationsResolver' => new RelationsResolver([], []),
+                ]
+            )
         );
         $queryBuilder->applySortingToQuery($query, $request);
 
@@ -521,7 +593,14 @@ class QueryBuilderTest extends TestCase
             Post::class,
             new ParamsValidator([], [], ['user.name']),
             new RelationsResolver([], []),
-            new SearchBuilder([])
+            app()->makeWith(
+                DatabaseSearchEngine::class,
+                [
+                    'searchableBy' => [],
+                    'resourceModelClass' => Post::class,
+                    'relationsResolver' => new RelationsResolver([], []),
+                ]
+            )
         );
         $queryBuilder->applySortingToQuery($query, $request);
 
@@ -556,7 +635,14 @@ class QueryBuilderTest extends TestCase
             Post::class,
             new ParamsValidator([], [], ['user.name']),
             new RelationsResolver([], []),
-            new SearchBuilder([])
+            app()->makeWith(
+                DatabaseSearchEngine::class,
+                [
+                    'searchableBy' => [],
+                    'resourceModelClass' => Post::class,
+                    'relationsResolver' => new RelationsResolver([], []),
+                ]
+            )
         );
         $queryBuilder->applySortingToQuery($query, $request);
 
@@ -585,7 +671,7 @@ class QueryBuilderTest extends TestCase
             Team::class,
             new ParamsValidator([], []),
             new RelationsResolver([], []),
-            new SearchBuilder([])
+            new DatabaseSearchEngine([])
         );
 
         $this->assertFalse($queryBuilder->applySoftDeletesToQuery($queryMock, $request));
@@ -611,7 +697,7 @@ class QueryBuilderTest extends TestCase
             Post::class,
             new ParamsValidator([], []),
             new RelationsResolver([], []),
-            new SearchBuilder([])
+            new DatabaseSearchEngine([])
         );
         $this->assertTrue($queryBuilder->applySoftDeletesToQuery($query, $request));
 
@@ -642,7 +728,7 @@ class QueryBuilderTest extends TestCase
             Post::class,
             new ParamsValidator([], []),
             new RelationsResolver([], []),
-            new SearchBuilder([])
+            new DatabaseSearchEngine([])
         );
         $this->assertTrue($queryBuilder->applySoftDeletesToQuery($query, $request));
 
