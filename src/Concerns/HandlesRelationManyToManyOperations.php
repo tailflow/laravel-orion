@@ -5,7 +5,6 @@ namespace Orion\Concerns;
 use Exception;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Arr;
@@ -179,29 +178,24 @@ trait HandlesRelationManyToManyOperations
     {
         $resources = $this->standardizePivotResourcesArray($resources);
 
+        $model = $this->getModel();
+        $relationInstance = (new $model)->{$this->getRelation()}();
+
         $resourceModelClass = $this->resolveResourceModelClass();
         $resourceModel = new $resourceModelClass();
         $resourceKeyName = $this->keyName();
         $resourceModels = $resourceModel->whereIn($resourceKeyName, array_keys($resources))->get();
 
-        return array_filter(
-            $resources,
-            function ($resourceKey) use ($resourceModels, $resourceKeyName) {
-                /**
-                 * @var Collection $resourceModels
-                 */
-                $resourceModel = $resourceModels->where($resourceKeyName, $resourceKey)->first();
-
-                return $resourceModel &&
-                    (
-                        !$this->authorizationRequired() || Gate::forUser($this->resolveUser())->allows(
-                            'view',
-                            $resourceModel
-                        )
-                    );
-            },
-            ARRAY_FILTER_USE_KEY
-        );
+        return $resourceModels->filter(function($resourceModel) {
+                return !$this->authorizationRequired() ||
+                    Gate::forUser($this->resolveUser())->allows('view', $resourceModel);
+            })
+            ->mapWithKeys(function ($resourceModel) use ($relationInstance, $resources, $resourceKeyName) {
+                return [
+                    $resourceModel->{$relationInstance->getRelatedKeyName()} => $resources[$resourceModel->{$resourceKeyName}],
+                ];
+            }
+        )->all();
     }
 
     /**
