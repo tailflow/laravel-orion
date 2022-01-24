@@ -36,7 +36,7 @@ class FiltersBuilder extends SearchPartialBuilder
                     ]
                 ],
                 'required' => [
-                    'field', 'operator', 'value'
+                    'field', 'value'
                 ]
             ]
         ];

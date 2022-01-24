@@ -187,7 +187,7 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
         if (!is_array($filterDescriptor['value']) || $constraint === 'whereDate') {
             $query->{$or ? 'or' . ucfirst($constraint) : $constraint}(
                 $field,
-                $filterDescriptor['operator'],
+                $filterDescriptor['operator'] ?? '=',
                 $filterDescriptor['value']
             );
         } else {
@@ -258,14 +258,14 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
             $query->addNestedWhereQuery(
                 $query->newPivotStatement()->whereDate(
                     $query->getTable().".{$field}",
-                    $filterDescriptor['operator'],
+                    $filterDescriptor['operator'] ?? '=',
                     $filterDescriptor['value']
                 )
             );
         } elseif (!is_array($filterDescriptor['value'])) {
             $query->{$or ? 'orWherePivot' : 'wherePivot'}(
                 $field,
-                $filterDescriptor['operator'],
+                $filterDescriptor['operator'] ?? '=',
                 $filterDescriptor['value']
             );
         } else {
