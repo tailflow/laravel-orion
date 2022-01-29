@@ -1,0 +1,170 @@
+version: 2.1
+
+executors:
+  sqlite:
+    parameters:
+      php-version:
+        type: string
+    docker:
+      - image: cimg/php:<< parameters.php-version >>
+  mysql:
+    parameters:
+      php-version:
+        type: string
+    docker:
+      - image: cimg/php:<< parameters.php-version >>
+      - image: mysql:5.7
+        environment:
+          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+          MYSQL_DATABASE: orion
+  pgsql:
+    parameters:
+      php-version:
+        type: string
+    docker:
+      - image: cimg/php:<< parameters.php-version >>
+      - image: postgres:10.8
+        environment:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: orion
+
+jobs:
+  test:
+    parameters:
+      php-version:
+        type: string
+      laravel-version:
+        type: string
+      database:
+        type: string
+    executor:
+      name: << parameters.database >>
+      php-version: << parameters.php-version >>
+    steps:
+      - checkout
+
+      # install extensions
+      - when:
+          condition:
+            and:
+              - equal: ["7.3", <<parameters.php-version>>]
+              - equal: ["sqlite", <<parameters.database>>]
+          steps:
+            - run:
+                name: "Install Sqlite extension"
+                command: sudo apt-get update && sudo apt-get install -y php7.3-sqlite3 && sudo rm -rf /var/lib/apt/lists/*
+
+      # restore composer cache
+      - restore_cache:
+          keys:
+            # "composer.lock" can be used if it is committed to the repo
+            - v1-dependencies-{{ checksum "composer.json" }}
+            # fallback to using the latest cache if no exact match is found
+            - v1-dependencies-
+
+      # install dependencies
+      - run:
+          name: "Install dependencies"
+          command: composer update --with "illuminate/contracts=<< parameters.laravel-version>>" --prefer-dist --no-progress --no-suggest
+
+      # install laravel/legacy-factories and PHPUnit 9 only for Laravel 8.0
+      - when:
+          condition:
+            equal: ["^8.0", <<parameters.laravel-version>>]
+          steps:
+            - run:
+                name: "Install laravel/legacy-factories"
+                command: composer require "laravel/legacy-factories" --prefer-dist --no-progress --no-suggest
+            - run:
+                name: "Install PHPUnit 9"
+                command: composer update --with "phpunit/phpunit=^9.0" --prefer-dist --no-progress --no-suggest
+            - run:
+                name: "Upgrade PHPUnit config"
+                command: vendor/bin/phpunit -c phpunit.xml.dist --migrate-configuration
+
+      # save composer cache
+      - save_cache:
+          key: v1-dependencies-{{ checksum "composer.json" }}
+          paths:
+            - ./vendor
+
+      # Run test suite with Sqlite
+      - when:
+          condition:
+            equal: ["sqlite", <<parameters.database>>]
+          steps:
+            - run:
+                name: "Run test suite"
+                command: vendor/bin/phpunit --debug --verbose
+                environment:
+                  DB_CONNECTION: sqlite
+                  DB_DATABASE: ":memory:"
+
+      # Run test suite with MySQL
+      - when:
+          condition:
+            equal: ["mysql", <<parameters.database>>]
+          steps:
+            - run:
+                name: "Run test suite"
+                command: vendor/bin/phpunit --debug --verbose
+                environment:
+                  DB_CONNECTION: mysql
+                  DB_PORT: 3306
+                  DB_DATABASE: orion
+                  DB_USERNAME: root
+
+      # Run test suite with PostgreSQL
+      - when:
+          condition:
+            equal: ["pgsql", <<parameters.database>>]
+          steps:
+            - run:
+                name: "Run test suite"
+                command: vendor/bin/phpunit --debug --verbose
+                environment:
+                  DB_CONNECTION: pgsql
+                  DB_PORT: 5432
+                  DB_DATABASE: orion
+                  DB_USERNAME: postgres
+                  DB_PASSWORD: postgres
+
+workflows:
+  tests:
+    jobs:
+      - test:
+          name: Tests on PHP << matrix.php-version >> with Laravel << matrix.laravel-version >> and << matrix.database >>
+          matrix:
+            parameters:
+              php-version: ["7.3", "7.4", "8.0"]
+              laravel-version: [ "5.7.*", "5.8.*", "^6.0", "^7.0", "^8.0" ]
+              database: ["sqlite", "mysql", "pgsql"]
+            exclude:
+             - php-version: "7.4"
+               laravel-version: "5.7.*"
+               database: "sqlite"
+             - php-version: "7.4"
+               laravel-version: "5.7.*"
+               database: "mysql"
+             - php-version: "7.4"
+               laravel-version: "5.7.*"
+               database: "pgsql"
+             - php-version: "8.0"
+               laravel-version: "5.7.*"
+               database: "sqlite"
+             - php-version: "8.0"
+               laravel-version: "5.7.*"
+               database: "mysql"
+             - php-version: "8.0"
+               laravel-version: "5.7.*"
+               database: "pgsql"
+             - php-version: "8.0"
+               laravel-version: "5.8.*"
+               database: "sqlite"
+             - php-version: "8.0"
+               laravel-version: "5.8.*"
+               database: "mysql"
+             - php-version: "8.0"
+               laravel-version: "5.8.*"
+               database: "pgsql"

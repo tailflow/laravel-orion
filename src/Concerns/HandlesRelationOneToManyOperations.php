@@ -11,13 +11,32 @@ use Orion\Http\Resources\Resource;
 trait HandlesRelationOneToManyOperations
 {
     /**
-     * Associates resource with another resource.
+     * Associates resource with another resource in a transaction-safe way.
      *
      * @param Request $request
      * @param int|string $parentKey
      * @return Resource
      */
     public function associate(Request $request, $parentKey)
+    {
+        try {
+            $this->startTransaction();
+            $result = $this->associateWithTransaction($request, $parentKey);
+            $this->commitTransaction();
+            return $result;
+        } catch (\Exception $exception) {
+            $this->rollbackTransactionAndRaise($exception);
+        }
+    }
+
+    /**
+     * Associates resource with another resource.
+     *
+     * @param Request $request
+     * @param int|string $parentKey
+     * @return Resource
+     */
+    protected function associateWithTransaction(Request $request, $parentKey)
     {
         $parentQuery = $this->buildAssociateParentFetchQuery($request, $parentKey);
         $parentEntity = $this->runAssociateParentFetchQuery($request, $parentQuery, $parentKey);
@@ -33,7 +52,7 @@ trait HandlesRelationOneToManyOperations
         }
 
         $this->authorize('view', $parentEntity);
-        $this->authorize('update', $entity);
+        $this->authorize('update', [$entity, $parentEntity]);
 
         $this->performAssociate($request, $parentEntity, $entity);
 
@@ -143,7 +162,7 @@ trait HandlesRelationOneToManyOperations
     }
 
     /**
-     * Disassociates resource from another resource.
+     * Disassociates resource from another resource in a transaction-safe way.
      *
      * @param Request $request
      * @param int|string $parentKey
@@ -151,6 +170,26 @@ trait HandlesRelationOneToManyOperations
      * @return Resource
      */
     public function dissociate(Request $request, $parentKey, $relatedKey)
+    {
+        try {
+            $this->startTransaction();
+            $result = $this->dissociateWithTransaction($request, $parentKey, $relatedKey);
+            $this->commitTransaction();
+            return $result;
+        } catch (\Exception $exception) {
+            $this->rollbackTransactionAndRaise($exception);
+        }
+    }
+
+    /**
+     * Disassociates resource from another resource.
+     *
+     * @param Request $request
+     * @param int|string $parentKey
+     * @param int|string $relatedKey
+     * @return Resource
+     */
+    protected function dissociateWithTransaction(Request $request, $parentKey, $relatedKey)
     {
         $parentQuery = $this->buildDissociateParentFetchQuery($request, $parentKey);
         $parentEntity = $this->runDissociateParentFetchQuery($request, $parentQuery, $parentKey);
@@ -165,7 +204,7 @@ trait HandlesRelationOneToManyOperations
             return $beforeHookResult;
         }
 
-        $this->authorize('update', $entity);
+        $this->authorize('update', [$entity, $parentEntity]);
 
         $this->performDissociate($request, $parentEntity, $entity);
 

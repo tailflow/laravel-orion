@@ -53,7 +53,7 @@ class ParamsValidator implements \Orion\Contracts\ParamsValidator
                 'filters' => ['sometimes', 'array'],
                 'filters.*.type' => ['sometimes', 'in:and,or'],
                 'filters.*.field' => ['required_with:filters', 'regex:/^[\w.\_\-\>]+$/', new WhitelistedField($this->filterableBy)],
-                'filters.*.operator' => ['required_with:filters', 'in:<,<=,>,>=,=,!=,like,not like,ilike,not ilike,in,not in'],
+                'filters.*.operator' => ['sometimes', 'in:<,<=,>,>=,=,!=,like,not like,ilike,not ilike,in,not in'],
                 'filters.*.value' => ['present', 'nullable'],
             ]
         )->validate();
@@ -78,6 +78,7 @@ class ParamsValidator implements \Orion\Contracts\ParamsValidator
             [
                 'search' => ['sometimes', 'array'],
                 'search.value' => ['string', 'nullable'],
+                'search.case_sensitive' => ['bool']
             ]
         )->validate();
     }

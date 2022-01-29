@@ -13,6 +13,29 @@ use Orion\Tests\Fixtures\App\Policies\GreenPolicy;
 class StandardIndexFilteringOperationsTest extends TestCase
 {
     /** @test */
+    public function getting_a_list_of_resources_filtered_by_model_field_using_default_operator(): void
+    {
+        $matchingPost = factory(Post::class)->create(['title' => 'match'])->fresh();
+        factory(Post::class)->create(['title' => 'not match'])->fresh();
+
+        Gate::policy(Post::class, GreenPolicy::class);
+
+        $response = $this->post(
+            '/api/posts/search',
+            [
+                'filters' => [
+                    ['field' => 'title', 'value' => 'match'],
+                ],
+            ]
+        );
+
+        $this->assertResourcesPaginated(
+            $response,
+            $this->makePaginator([$matchingPost], 'posts/search')
+        );
+    }
+
+    /** @test */
     public function getting_a_list_of_resources_filtered_by_model_field_using_equal_operator(): void
     {
         $matchingPost = factory(Post::class)->create(['title' => 'match'])->fresh();
@@ -274,6 +297,12 @@ class StandardIndexFilteringOperationsTest extends TestCase
     /** @test */
     public function getting_a_list_of_resources_filtered_by_field_in_json_column(): void
     {
+        if (PHP_MAJOR_VERSION === 7 && PHP_MINOR_VERSION === 3) {
+            $this->markAsRisky(); // weird pdo_mysql issue 🤷🏻‍
+
+            return;
+        }
+
         $matchingPost = factory(Post::class)->create(['meta' => ['nested_field' => 'match']])->fresh();
         $anotherMatchingPost = factory(Post::class)->create(['meta' => ['nested_field' => 'another match']])->fresh();
         factory(Post::class)->create(['meta' => ['nested_field' => 'different']])->fresh();
@@ -366,6 +395,52 @@ class StandardIndexFilteringOperationsTest extends TestCase
     }
 
     /** @test */
+    public function getting_a_list_of_resources_filtered_by_null_field_value_using_equality_operator(): void
+    {
+        $matchingTeam = factory(Team::class)->create(['description' => null])->fresh();
+        factory(Team::class)->create(['description' => 'not match'])->fresh();
+
+        Gate::policy(Team::class, GreenPolicy::class);
+
+        $response = $this->post(
+            '/api/teams/search',
+            [
+                'filters' => [
+                    ['field' => 'description', 'operator' => '=', 'value' => null],
+                ],
+            ]
+        );
+
+        $this->assertResourcesPaginated(
+            $response,
+            $this->makePaginator([$matchingTeam], 'teams/search')
+        );
+    }
+
+    /** @test */
+    public function getting_a_list_of_resources_filtered_by_null_field_value_using_in_operator(): void
+    {
+        $matchingTeam = factory(Team::class)->create(['description' => null])->fresh();
+        factory(Team::class)->create(['description' => 'not match'])->fresh();
+
+        Gate::policy(Team::class, GreenPolicy::class);
+
+        $response = $this->post(
+            '/api/teams/search',
+            [
+                'filters' => [
+                    ['field' => 'description', 'operator' => 'in', 'value' => [null]],
+                ],
+            ]
+        );
+
+        $this->assertResourcesPaginated(
+            $response,
+            $this->makePaginator([$matchingTeam], 'teams/search')
+        );
+    }
+
+    /** @test */
     public function getting_a_list_of_resources_filtered_by_relation_field_with_wildcard_whitelisting(): void
     {
         $matchingTeamCompany = factory(Company::class)->create(['name' => 'match'])->fresh();
@@ -403,6 +478,52 @@ class StandardIndexFilteringOperationsTest extends TestCase
             [
                 'filters' => [
                     ['field' => 'publish_at', 'operator' => '=', 'value' => null],
+                ],
+            ]
+        );
+
+        $this->assertResourcesPaginated(
+            $response,
+            $this->makePaginator([$matchingPost], 'posts/search')
+        );
+    }
+
+    /** @test */
+    public function getting_a_list_of_resources_filtered_by_model_date_field(): void
+    {
+        $matchingPost = factory(Post::class)->create(['publish_at' => Carbon::parse('2019-01-05 13:30:00')])->fresh();
+        factory(Post::class)->create(['publish_at' => Carbon::now()])->fresh();
+
+        Gate::policy(Post::class, GreenPolicy::class);
+
+        $response = $this->post(
+            '/api/posts/search',
+            [
+                'filters' => [
+                    ['field' => 'publish_at', 'operator' => '=', 'value' => '2019-01-05'],
+                ],
+            ]
+        );
+
+        $this->assertResourcesPaginated(
+            $response,
+            $this->makePaginator([$matchingPost], 'posts/search')
+        );
+    }
+
+    /** @test */
+    public function getting_a_list_of_resources_filtered_by_model_datetime_field(): void
+    {
+        $matchingPost = factory(Post::class)->create(['publish_at' => Carbon::parse('2019-01-05 13:30:00')])->fresh();
+        factory(Post::class)->create(['publish_at' => Carbon::now()])->fresh();
+
+        Gate::policy(Post::class, GreenPolicy::class);
+
+        $response = $this->post(
+            '/api/posts/search',
+            [
+                'filters' => [
+                    ['field' => 'publish_at', 'operator' => '<=', 'value' => '2019-01-05 14:30:00'],
                 ],
             ]
         );

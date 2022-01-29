@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -31,12 +32,12 @@ trait HandlesRelationStandardOperations
      */
     public function index(Request $request, $parentKey)
     {
-        $this->authorize('viewAny', $this->resolveResourceModelClass());
-
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
 
         $parentQuery = $this->buildIndexParentFetchQuery($request, $parentKey);
         $parentEntity = $this->runIndexParentFetchQuery($request, $parentQuery, $parentKey);
+
+        $this->authorize('viewAny', [$this->resolveResourceModelClass(), $parentEntity]);
 
         $beforeHookResult = $this->beforeIndex($request, $parentEntity);
         if ($this->hookResponds($beforeHookResult)) {
@@ -150,6 +151,13 @@ trait HandlesRelationStandardOperations
      */
     protected function buildIndexFetchQuery(Request $request, Model $parentEntity, array $requestedRelations): Relation
     {
+        $filters = collect($request->get('filters', []))
+            ->map(function (array $filterDescriptor) use ($request, $parentEntity) {
+                return $this->beforeFilterApplied($request, $parentEntity, $filterDescriptor);
+            })->toArray();
+
+        $request->merge(['filters' => $filters]);
+
         return $this->buildRelationFetchQuery($request, $parentEntity, $requestedRelations);
     }
 
@@ -231,12 +239,31 @@ trait HandlesRelationStandardOperations
      */
     public function store(Request $request, $parentKey)
     {
-        $resourceModelClass = $this->resolveResourceModelClass();
+        try {
+            $this->startTransaction();
+            $result = $this->storeWithTransaction($request, $parentKey);
+            $this->commitTransaction();
+            return $result;
+        } catch (\Exception $exception) {
+            $this->rollbackTransactionAndRaise($exception);
+        }
+    }
 
-        $this->authorize('create', $resourceModelClass);
-
+    /**
+     * Create new relation resource.
+     *
+     * @param Request $request
+     * @param int|string $parentKey
+     * @return Resource
+     */
+    protected function storeWithTransaction(Request $request, $parentKey)
+    {
         $parentQuery = $this->buildStoreParentFetchQuery($request, $parentKey);
         $parentEntity = $this->runStoreParentFetchQuery($request, $parentQuery, $parentKey);
+
+        $resourceModelClass = $this->resolveResourceModelClass();
+
+        $this->authorize('create', [$resourceModelClass, $parentEntity]);
 
         /** @var Model $entity */
         $entity = new $resourceModelClass;
@@ -414,7 +441,7 @@ trait HandlesRelationStandardOperations
         $query = $this->buildShowFetchQuery($request, $parentEntity, $requestedRelations);
         $entity = $this->runShowFetchQuery($request, $query, $parentEntity, $relatedKey);
 
-        $this->authorize('view', $entity);
+        $this->authorize('view', [$entity, $parentEntity]);
 
         $entity = $this->cleanupEntity($entity);
 
@@ -556,7 +583,7 @@ trait HandlesRelationStandardOperations
     }
 
     /**
-     * Update a relation resource.
+     * Update a relation resource in a transaction-safe way.
      *
      * @param Request $request
      * @param int|string $parentKey
@@ -564,6 +591,26 @@ trait HandlesRelationStandardOperations
      * @return Resource
      */
     public function update(Request $request, $parentKey, $relatedKey = null)
+    {
+        try {
+            $this->startTransaction();
+            $result = $this->updateWithTransaction($request, $parentKey, $relatedKey);
+            $this->commitTransaction();
+            return $result;
+        } catch (\Exception $exception) {
+            $this->rollbackTransactionAndRaise($exception);
+        }
+    }
+
+    /**
+     * Update a relation resource.
+     *
+     * @param Request $request
+     * @param int|string $parentKey
+     * @param int|string|null $relatedKey
+     * @return Resource
+     */
+    protected function updateWithTransaction(Request $request, $parentKey, $relatedKey = null)
     {
         $parentQuery = $this->buildUpdateParentFetchQuery($request, $parentKey);
         $parentEntity = $this->runUpdateParentFetchQuery($request, $parentQuery, $parentKey);
@@ -573,7 +620,7 @@ trait HandlesRelationStandardOperations
         $query = $this->buildUpdateFetchQuery($request, $parentEntity, $requestedRelations);
         $entity = $this->runUpdateFetchQuery($request, $query, $parentEntity, $relatedKey);
 
-        $this->authorize('update', $entity);
+        $this->authorize('update', [$entity, $parentEntity]);
 
         $beforeHookResult = $this->beforeUpdate($request, $parentEntity, $entity);
         if ($this->hookResponds($beforeHookResult)) {
@@ -735,11 +782,32 @@ trait HandlesRelationStandardOperations
      */
     public function destroy(Request $request, $parentKey, $relatedKey = null)
     {
+        try {
+            $this->startTransaction();
+            $result = $this->destroyWithTransaction($request, $parentKey, $relatedKey);
+            $this->commitTransaction();
+            return $result;
+        } catch (\Exception $exception) {
+            $this->rollbackTransactionAndRaise($exception);
+        }
+    }
+
+    /**
+     * Delete a relation resource.
+     *
+     * @param Request $request
+     * @param int|string $parentKey
+     * @param int|string|null $relatedKey
+     * @return Resource
+     * @throws Exception
+     */
+    protected function destroyWithTransaction(Request $request, $parentKey, $relatedKey = null)
+    {
         $parentQuery = $this->buildDestroyParentFetchQuery($request, $parentKey);
         $parentEntity = $this->runDestroyParentFetchQuery($request, $parentQuery, $parentKey);
 
         $softDeletes = $this->softDeletes($this->resolveResourceModelClass());
-        $forceDeletes = $softDeletes && $request->get('force');
+        $forceDeletes = $this->forceDeletes($request, $softDeletes);
 
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
 
@@ -750,7 +818,7 @@ trait HandlesRelationStandardOperations
             abort(404);
         }
 
-        $this->authorize($forceDeletes ? 'forceDelete' : 'delete', $entity);
+        $this->authorize($forceDeletes ? 'forceDelete' : 'delete', [$entity, $parentEntity]);
 
         $beforeHookResult = $this->beforeDestroy($request, $parentEntity, $entity);
         if ($this->hookResponds($beforeHookResult)) {
@@ -896,7 +964,7 @@ trait HandlesRelationStandardOperations
     }
 
     /**
-     * Restores a previously deleted relation resource.
+     * Restores a previously deleted relation resource in a transaction-save way.
      *
      * @param Request $request
      * @param int|string $parentKey
@@ -904,6 +972,26 @@ trait HandlesRelationStandardOperations
      * @return Resource
      */
     public function restore(Request $request, $parentKey, $relatedKey = null)
+    {
+        try {
+            $this->startTransaction();
+            $result = $this->restoreWithTransaction($request, $parentKey, $relatedKey);
+            $this->commitTransaction();
+            return $result;
+        } catch (\Exception $exception) {
+            $this->rollbackTransactionAndRaise($exception);
+        }
+    }
+
+    /**
+     * Restores a previously deleted relation resource.
+     *
+     * @param Request $request
+     * @param int|string $parentKey
+     * @param int|string|null $relatedKey
+     * @return Resource
+     */
+    protected function restoreWithTransaction(Request $request, $parentKey, $relatedKey = null)
     {
         $parentQuery = $this->buildRestoreParentFetchQuery($request, $parentKey);
         $parentEntity = $this->runRestoreParentFetchQuery($request, $parentQuery, $parentKey);
@@ -913,7 +1001,7 @@ trait HandlesRelationStandardOperations
         $query = $this->buildRestoreFetchQuery($request, $parentEntity, $requestedRelations);
         $entity = $this->runRestoreFetchQuery($request, $query, $parentEntity, $relatedKey);
 
-        $this->authorize('restore', $entity);
+        $this->authorize('restore', [$entity, $parentEntity]);
 
         $beforeHookResult = $this->beforeRestore($request, $parentEntity, $entity);
         if ($this->hookResponds($beforeHookResult)) {
@@ -1054,5 +1142,16 @@ trait HandlesRelationStandardOperations
         $entity->fill(
             Arr::except($attributes, array_keys($entity->getDirty()))
         );
+    }
+
+    /**
+     * @param Request $request
+     * @param Model $parentEntity
+     * @param array $filterDescriptor
+     * @return array
+     */
+    protected function beforeFilterApplied(Request $request, Model $parentEntity, array $filterDescriptor): array
+    {
+        return $filterDescriptor;
     }
 }

@@ -49,7 +49,7 @@ abstract class RelationController extends BaseController
     public function __construct()
     {
         if (!$this->relation) {
-            throw new BindingException('Relation is not defined for '.static::class);
+            throw new BindingException('Relation is not defined for ' . static::class);
         }
 
         parent::__construct();
@@ -75,6 +75,16 @@ abstract class RelationController extends BaseController
         $model = $this->getModel();
 
         return get_class((new $model)->{$this->getRelation()}()->getRelated());
+    }
+
+    /**
+     * Retrieves the query builder used to query the end-resource.
+     *
+     * @return QueryBuilder
+     */
+    public function getResourceQueryBuilder(): QueryBuilder
+    {
+        return $this->getRelationQueryBuilder();
     }
 
     /**
@@ -186,5 +196,18 @@ abstract class RelationController extends BaseController
         $modelClass = $this->getModel();
 
         return (new $modelClass)->getKeyName();
+    }
+
+    /**
+     * A qualified name of a pivot field.
+     *
+     * @param string $field
+     * @return string
+     */
+    protected function resolveQualifiedPivotFieldName(string $field): string
+    {
+        $modelClass = $this->getModel();
+
+        return (new $modelClass)->{$this->getRelation()}()->qualifyPivotColumn($field);
     }
 }

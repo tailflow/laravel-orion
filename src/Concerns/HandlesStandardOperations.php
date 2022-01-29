@@ -29,6 +29,8 @@ trait HandlesStandardOperations
      *
      * @param Request $request
      * @return CollectionResource
+     * @throws AuthorizationException
+     * @throws BindingResolutionException
      */
     public function index(Request $request)
     {
@@ -67,6 +69,13 @@ trait HandlesStandardOperations
      */
     protected function buildIndexFetchQuery(Request $request, array $requestedRelations): Builder
     {
+        $filters = collect($request->get('filters', []))
+            ->map(function(array $filterDescriptor) use ($request) {
+                return $this->beforeFilterApplied($request, $filterDescriptor);
+            })->toArray();
+
+        $request->merge(['filters' => $filters]);
+
         return $this->buildFetchQuery($request, $requestedRelations);
     }
 
@@ -101,6 +110,7 @@ trait HandlesStandardOperations
      * @param Builder $query
      * @param int $paginationLimit
      * @return Paginator|Collection
+     * @throws BindingResolutionException
      */
     protected function runIndexFetchQuery(Request $request, Builder $query, int $paginationLimit)
     {
@@ -108,7 +118,7 @@ trait HandlesStandardOperations
     }
 
     /**
-     * The hooks is executed after fetching the list of resources.
+     * The hook is executed after fetching the list of resources.
      *
      * @param Request $request
      * @param Paginator|Collection $entities
@@ -124,6 +134,8 @@ trait HandlesStandardOperations
      *
      * @param Request $request
      * @return CollectionResource
+     * @throws AuthorizationException
+     * @throws BindingResolutionException
      */
     public function search(Request $request)
     {
@@ -166,6 +178,7 @@ trait HandlesStandardOperations
             ->registerBeforeHook([$this, 'beforeStore'])
             ->registerBeforeHook([$this, 'beforeSave'])
             ->registerPerformCallback([$this, 'performStore'])
+            ->registerBeforeHook([$this, 'beforeStoreFresh'])
             ->registerAfterHook([$this, 'afterSave'])
             ->registerAfterHook([$this, 'afterStore'])
             ->registerGuard(RelationsGuard::class, $relationsGuardOptions)
@@ -209,6 +222,17 @@ trait HandlesStandardOperations
     }
 
     /**
+     * The hook is executed after creating and before refreshing the resource.
+     *
+     * @param StoreOperationPayload $payload
+     * @return mixed
+     */
+    protected function beforeStoreFresh(StoreOperationPayload $payload)
+    {
+        return null;
+    }
+
+    /**
      * The hook is executed after creating or updating a resource.
      *
      * @param MutatingOperationPayload $payload
@@ -236,6 +260,8 @@ trait HandlesStandardOperations
      * @param Request $request
      * @param int|string $key
      * @return Resource
+     * @throws AuthorizationException
+     * @throws BindingResolutionException
      */
     public function show(Request $request, $key)
     {
@@ -325,7 +351,7 @@ trait HandlesStandardOperations
     }
 
     /**
-     * Updates a resource.
+     * Update a resource in a transaction-safe way.
      *
      * @param Request $request
      * @param int|string $key
@@ -362,6 +388,7 @@ trait HandlesStandardOperations
             ->registerBeforeHook([$this, 'beforeUpdate'])
             ->registerBeforeHook([$this, 'beforeSave'])
             ->registerPerformCallback([$this, 'performUpdate'])
+            ->registerBeforeHook([$this, 'beforeUpdateFresh'])
             ->registerAfterHook([$this, 'afterSave'])
             ->registerAfterHook([$this, 'afterUpdate'])
             ->registerGuard(RelationsGuard::class, $relationsGuardOptions)
@@ -419,6 +446,17 @@ trait HandlesStandardOperations
     }
 
     /**
+     * The hook is executed after updating and before refreshing the resource.
+     *
+     * @param UpdateOperationPayload $payload
+     * @return mixed
+     */
+    protected function beforeUpdateFresh(UpdateOperationPayload $payload)
+    {
+        return null;
+    }
+
+    /**
      * The hook is executed after updating a resource.
      *
      * @param UpdateOperationPayload $payload
@@ -461,6 +499,11 @@ trait HandlesStandardOperations
         if (!$forceDeletes) {
             $this->performDestroy($entity);
             if ($softDeletes) {
+                $beforeDestroyFreshResult = $this->beforeDestroyFresh($request, $entity);
+                if ($this->hookResponds($beforeDestroyFreshResult)) {
+                    return $beforeDestroyFreshResult;
+                }
+
                 $entity = $entity->fresh($requestedRelations);
             }
         } else {
@@ -543,6 +586,19 @@ trait HandlesStandardOperations
     }
 
     /**
+     * The hook is executed after deleting and before refreshing the resource.
+     * This hook is only called when not using forced deletes
+     *
+     * @param Request $request
+     * @param Model $entity
+     * @return mixed
+     */
+    protected function beforeDestroyFresh(Request $request, Model $entity)
+    {
+        return null;
+    }
+
+    /**
      * The hook is executed after deleting a resource.
      *
      * @param Request $request
@@ -577,6 +633,11 @@ trait HandlesStandardOperations
         }
 
         $this->performRestore($entity);
+
+        $beforeHookResult = $this->beforeRestoreFresh($request, $entity);
+        if ($this->hookResponds($beforeHookResult)) {
+            return $beforeHookResult;
+        }
 
         $entity = $entity->fresh($requestedRelations);
 
@@ -639,6 +700,19 @@ trait HandlesStandardOperations
     }
 
     /**
+     * The hook is executed after force restoring a previously deleted resource but before
+     * refreshing the resource.
+     *
+     * @param Request $request
+     * @param Model $entity
+     * @return mixed
+     */
+    protected function beforeRestoreFresh(Request $request, Model $entity)
+    {
+        return null;
+    }
+
+    /**
      * The hook is executed after force restoring a previously deleted resource.
      *
      * @param Request $request
@@ -662,5 +736,15 @@ trait HandlesStandardOperations
         $entity->fill(
             Arr::except($attributes, array_keys($entity->getDirty()))
         );
+    }
+
+    /**
+     * @param Request $request
+     * @param array $filterDescriptor
+     * @return array
+     */
+    protected function beforeFilterApplied(Request $request, array $filterDescriptor): array
+    {
+        return $filterDescriptor;
     }
 }

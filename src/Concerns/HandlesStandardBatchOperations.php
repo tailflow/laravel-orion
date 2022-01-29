@@ -12,12 +12,30 @@ use Orion\Http\Resources\CollectionResource;
 trait HandlesStandardBatchOperations
 {
     /**
-     * Creates a batch of new resources.
+     * Creates a batch of new resources in a transaction-safe way.
      *
      * @param Request $request
      * @return CollectionResource
      */
     public function batchStore(Request $request)
+    {
+        try {
+            $this->startTransaction();
+            $result = $this->batchStoreWithTransaction($request);
+            $this->commitTransaction();
+            return $result;
+        } catch (\Exception $exception) {
+            $this->rollbackTransactionAndRaise($exception);
+        }
+    }
+
+    /**
+     * Creates a batch of new resources.
+     *
+     * @param Request $request
+     * @return CollectionResource
+     */
+    protected function batchStoreWithTransaction(Request $request)
     {
         $beforeHookResult = $this->beforeBatchStore($request);
         if ($this->hookResponds($beforeHookResult)) {
@@ -43,6 +61,8 @@ trait HandlesStandardBatchOperations
             $this->beforeSave($request, $entity);
 
             $this->performStore($request, $entity, $resource);
+
+            $this->beforeStoreFresh($request, $entity);
 
             $entity = $entity->fresh($requestedRelations);
             $entity->wasRecentlyCreated = true;
@@ -87,12 +107,30 @@ trait HandlesStandardBatchOperations
     }
 
     /**
-     * Update a batch of resources.
+     * Update a batch of resources in a transaction-safe way.
      *
      * @param Request $request
      * @return CollectionResource
      */
     public function batchUpdate(Request $request)
+    {
+        try {
+            $this->startTransaction();
+            $result = $this->batchUpdateWithTransaction($request);
+            $this->commitTransaction();
+            return $result;
+        } catch (\Exception $exception) {
+            $this->rollbackTransactionAndRaise($exception);
+        }
+    }
+
+    /**
+     * Update a batch of resources.
+     *
+     * @param Request $request
+     * @return CollectionResource
+     */
+    protected function batchUpdateWithTransaction(Request $request)
     {
         $beforeHookResult = $this->beforeBatchUpdate($request);
         if ($this->hookResponds($beforeHookResult)) {
@@ -116,6 +154,8 @@ trait HandlesStandardBatchOperations
                 $entity,
                 $request->input("resources.{$entity->{$this->keyName()}}")
             );
+
+            $this->beforeUpdateFresh($request, $entity);
 
             $entity = $entity->fresh($requestedRelations);
 
@@ -209,13 +249,32 @@ trait HandlesStandardBatchOperations
     }
 
     /**
-     * Deletes a batch of resources.
+     * Deletes a batch of resources in a transaction-safe way.
      *
      * @param Request $request
      * @return CollectionResource
      * @throws Exception
      */
     public function batchDestroy(Request $request)
+    {
+        try {
+            $this->startTransaction();
+            $result = $this->batchDestroyWithTransaction($request);
+            $this->commitTransaction();
+            return $result;
+        } catch (\Exception $exception) {
+            $this->rollbackTransactionAndRaise($exception);
+        }
+    }
+
+    /**
+     * Deletes a batch of resources.
+     *
+     * @param Request $request
+     * @return CollectionResource
+     * @throws Exception
+     */
+    protected function batchDestroyWithTransaction(Request $request)
     {
         $beforeHookResult = $this->beforeBatchDestroy($request);
         if ($this->hookResponds($beforeHookResult)) {
@@ -241,6 +300,7 @@ trait HandlesStandardBatchOperations
             if (!$forceDeletes) {
                 $this->performDestroy($entity);
                 if ($softDeletes) {
+                    $this->beforeDestroyFresh($request, $entity);
                     $entity = $entity->fresh($requestedRelations);
                 }
             } else {
@@ -312,13 +372,32 @@ trait HandlesStandardBatchOperations
     }
 
     /**
-     * Restores a batch of resources.
+     * Restores a batch of resources in a transaction-safe way.
      *
      * @param Request $request
      * @return CollectionResource
      * @throws Exception
      */
     public function batchRestore(Request $request)
+    {
+        try {
+            $this->startTransaction();
+            $result = $this->batchRestoreWithTransaction($request);
+            $this->commitTransaction();
+            return $result;
+        } catch (\Exception $exception) {
+            $this->rollbackTransactionAndRaise($exception);
+        }
+    }
+
+    /**
+     * Restores a batch of resources.
+     *
+     * @param Request $request
+     * @return CollectionResource
+     * @throws Exception
+     */
+    protected function batchRestoreWithTransaction(Request $request)
     {
         $beforeHookResult = $this->beforeBatchRestore($request);
         if ($this->hookResponds($beforeHookResult)) {
@@ -339,6 +418,8 @@ trait HandlesStandardBatchOperations
             $this->beforeRestore($request, $entity);
 
             $this->performRestore($entity);
+
+            $this->beforeRestoreFresh($request, $entity);
 
             $entity = $entity->fresh($requestedRelations);
 

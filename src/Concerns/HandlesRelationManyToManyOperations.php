@@ -2,8 +2,9 @@
 
 namespace Orion\Concerns;
 
+use Exception;
+use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Arr;
@@ -13,13 +14,32 @@ use Orion\Http\Requests\Request;
 trait HandlesRelationManyToManyOperations
 {
     /**
-     * Attach resource to the relation.
+     * Attach resource to the relation in a transaction-safe way.
      *
      * @param Request $request
      * @param int|string $parentKey
      * @return JsonResponse
      */
     public function attach(Request $request, $parentKey)
+    {
+        try {
+            $this->startTransaction();
+            $result = $this->attachWithTransaction($request, $parentKey);
+            $this->commitTransaction();
+            return $result;
+        } catch (Exception $exception) {
+            $this->rollbackTransactionAndRaise($exception);
+        }
+    }
+
+    /**
+     * Attach resource to the relation.
+     *
+     * @param Request $request
+     * @param int|string $parentKey
+     * @return JsonResponse
+     */
+    protected function attachWithTransaction(Request $request, $parentKey)
     {
         $parentQuery = $this->buildAttachParentFetchQuery($request, $parentKey);
         $parentEntity = $this->runAttachParentFetchQuery($request, $parentQuery, $parentKey);
@@ -152,31 +172,30 @@ trait HandlesRelationManyToManyOperations
      *
      * @param array $resources
      * @return array
+     * @throws BindingResolutionException
      */
     protected function preparePivotResources(array $resources): array
     {
-        $model = $this->getModel();
         $resources = $this->standardizePivotResourcesArray($resources);
-        $resourceModel = (new $model)->{$this->getRelation()}()->getModel();
+
+        $model = $this->getModel();
+        $relationInstance = (new $model)->{$this->getRelation()}();
+
+        $resourceModelClass = $this->resolveResourceModelClass();
+        $resourceModel = new $resourceModelClass();
         $resourceKeyName = $this->keyName();
         $resourceModels = $resourceModel->whereIn($resourceKeyName, array_keys($resources))->get();
 
-        $resources = array_filter(
-            $resources,
-            function ($resourceKey) use ($resourceModels, $resourceKeyName) {
-                /**
-                 * @var Collection $resourceModels
-                 */
-                $resourceModel = $resourceModels->where($resourceKeyName, $resourceKey)->first();
-
-                return $resourceModel && (!$this->authorizationRequired() || Gate::forUser(
-                            $this->resolveUser()
-                        )->allows('view', $resourceModel));
-            },
-            ARRAY_FILTER_USE_KEY
-        );
-
-        return $resources;
+        return $resourceModels->filter(function($resourceModel) {
+                return !$this->authorizationRequired() ||
+                    Gate::forUser($this->resolveUser())->allows('view', $resourceModel);
+            })
+            ->mapWithKeys(function ($resourceModel) use ($relationInstance, $resources, $resourceKeyName) {
+                return [
+                    $resourceModel->{$relationInstance->getRelatedKeyName()} => $resources[$resourceModel->{$resourceKeyName}],
+                ];
+            }
+        )->all();
     }
 
     /**
@@ -215,13 +234,32 @@ trait HandlesRelationManyToManyOperations
     }
 
     /**
-     * Detach resource to the relation.
+     * Detach resource to the relation in a transaction-safe way.
      *
      * @param Request $request
      * @param int|string $parentKey
      * @return JsonResponse
      */
     public function detach(Request $request, $parentKey)
+    {
+        try {
+            $this->startTransaction();
+            $result = $this->detachWithTransaction($request, $parentKey);
+            $this->commitTransaction();
+            return $result;
+        } catch (Exception $exception) {
+            $this->rollbackTransactionAndRaise($exception);
+        }
+    }
+
+    /**
+     * Detach resource to the relation.
+     *
+     * @param Request $request
+     * @param int|string $parentKey
+     * @return JsonResponse
+     */
+    protected function detachWithTransaction(Request $request, $parentKey)
     {
         $parentQuery = $this->buildDetachParentFetchQuery($request, $parentKey);
         $parentEntity = $this->runDetachParentFetchQuery($request, $parentQuery, $parentKey);
@@ -315,13 +353,32 @@ trait HandlesRelationManyToManyOperations
     }
 
     /**
-     * Sync relation resources.
+     * Sync relation resources in a transaction-safe way.
      *
      * @param Request $request
      * @param int|string $parentKey
      * @return JsonResponse
      */
     public function sync(Request $request, $parentKey)
+    {
+        try {
+            $this->startTransaction();
+            $result = $this->syncWithTransaction($request, $parentKey);
+            $this->commitTransaction();
+            return $result;
+        } catch (Exception $exception) {
+            $this->rollbackTransactionAndRaise($exception);
+        }
+    }
+
+    /**
+     * Sync relation resources.
+     *
+     * @param Request $request
+     * @param int|string $parentKey
+     * @return JsonResponse
+     */
+    protected function syncWithTransaction(Request $request, $parentKey)
     {
         $parentQuery = $this->buildSyncParentFetchQuery($request, $parentKey);
         $parentEntity = $this->runSyncParentFetchQuery($request, $parentQuery, $parentKey);
@@ -422,13 +479,32 @@ trait HandlesRelationManyToManyOperations
     }
 
     /**
-     * Toggle relation resources.
+     * Toggle relation resources in a transaction-safe way.
      *
      * @param Request $request
      * @param int|string $parentKey
      * @return JsonResponse
      */
     public function toggle(Request $request, $parentKey)
+    {
+        try {
+            $this->startTransaction();
+            $result = $this->toggleWithTransaction($request, $parentKey);
+            $this->commitTransaction();
+            return $result;
+        } catch (Exception $exception) {
+            $this->rollbackTransactionAndRaise($exception);
+        }
+    }
+
+    /**
+     * Toggle relation resources.
+     *
+     * @param Request $request
+     * @param int|string $parentKey
+     * @return JsonResponse
+     */
+    protected function toggleWithTransaction(Request $request, $parentKey)
     {
         $parentQuery = $this->buildToggleParentFetchQuery($request, $parentKey);
         $parentEntity = $this->runToggleParentFetchQuery($request, $parentQuery, $parentKey);
@@ -516,7 +592,7 @@ trait HandlesRelationManyToManyOperations
     }
 
     /**
-     * Update relation resource pivot.
+     * Update relation resource pivot in a transaction-safe wqy.
      *
      * @param Request $request
      * @param int|string $parentKey
@@ -524,6 +600,26 @@ trait HandlesRelationManyToManyOperations
      * @return JsonResponse
      */
     public function updatePivot(Request $request, $parentKey, $relatedKey)
+    {
+        try {
+            $this->startTransaction();
+            $result = $this->updatePivotWithTransaction($request, $parentKey, $relatedKey);
+            $this->commitTransaction();
+            return $result;
+        } catch (Exception $exception) {
+            $this->rollbackTransactionAndRaise($exception);
+        }
+    }
+
+    /**
+     * Update relation resource pivot.
+     *
+     * @param Request $request
+     * @param int|string $parentKey
+     * @param int|string $relatedKey
+     * @return JsonResponse
+     */
+    protected function updatePivotWithTransaction(Request $request, $parentKey, $relatedKey)
     {
         $parentQuery = $this->buildUpdatePivotParentFetchQuery($request, $parentKey);
         $parentEntity = $this->runUpdatePivotParentFetchQuery($request, $parentQuery, $parentKey);
@@ -536,7 +632,7 @@ trait HandlesRelationManyToManyOperations
         $query = $this->buildShowFetchQuery($request, $parentEntity, []);
         $entity = $this->runShowFetchQuery($request, $query, $parentEntity, $relatedKey);
 
-        $this->authorize('update', $entity);
+        $this->authorize('update', [$entity, $parentEntity]);
 
         $updateResult = $this->performUpdatePivot($request, $parentEntity, $relatedKey, $request->get('pivot', []));
 
