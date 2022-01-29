@@ -137,8 +137,8 @@ workflows:
           name: Tests on PHP << matrix.php-version >> with Laravel << matrix.laravel-version >> and << matrix.database >>
           matrix:
             parameters:
-              php-version: ["7.3", "7.4", "8.0"]
-              laravel-version: [ "5.7.*", "5.8.*", "^6.0", "^7.0", "^8.0" ]
+              php-version: ["7.4", "8.0"]
+              laravel-version: ["^6.0", "^7.0", "^8.0" ]
               database: ["sqlite", "mysql", "pgsql"]
             exclude:
              - php-version: "7.4"
