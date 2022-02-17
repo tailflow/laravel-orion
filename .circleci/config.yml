@@ -71,7 +71,9 @@ jobs:
       # install laravel/legacy-factories and PHPUnit 9 only for Laravel 8.0
       - when:
           condition:
-            equal: ["^8.0", <<parameters.laravel-version>>]
+            or:
+              - equal: ["^8.0", <<parameters.laravel-version>>]
+              - equal: ["^9.0", <<parameters.laravel-version>>]
           steps:
             - run:
                 name: "Install laravel/legacy-factories"
