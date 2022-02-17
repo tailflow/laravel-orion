@@ -138,7 +138,7 @@ workflows:
           matrix:
             parameters:
               php-version: ["7.3", "7.4", "8.0"]
-              laravel-version: [ "5.7.*", "5.8.*", "^6.0", "^7.0", "^8.0" ]
+              laravel-version: [ "5.7.*", "5.8.*", "^6.0", "^7.0", "^8.0", "^9.0" ]
               database: ["sqlite", "mysql", "pgsql"]
             exclude:
              - php-version: "7.4"
@@ -167,4 +167,22 @@ workflows:
                database: "mysql"
              - php-version: "8.0"
                laravel-version: "5.8.*"
+               database: "pgsql"
+             - php-version: "7.3"
+               laravel-version: "^9.0"
+               database: "sqlite"
+             - php-version: "7.3"
+               laravel-version: "^9.0"
+               database: "mysql"
+             - php-version: "7.3"
+               laravel-version: "^9.0"
+               database: "pgsql"
+             - php-version: "7.4"
+               laravel-version: "^9.0"
+               database: "sqlite"
+             - php-version: "7.4"
+               laravel-version: "^9.0"
+               database: "mysql"
+             - php-version: "7.4"
+               laravel-version: "^9.0"
                database: "pgsql"
