@@ -62,7 +62,7 @@ abstract class TestCase extends \Orchestra\Testbench\TestCase
         ]);
     }
 
-    protected function getAnnotations(): array
+    public function getAnnotations(): array
     {
         return []; // orchestra/testbench 5 bug
     }
