@@ -61,4 +61,9 @@ abstract class TestCase extends \Orchestra\Testbench\TestCase
             'provider' => 'users',
         ]);
     }
+
+    protected function getAnnotations(): array
+    {
+        return []; // orchestra/testbench 5 bug
+    }
 }
