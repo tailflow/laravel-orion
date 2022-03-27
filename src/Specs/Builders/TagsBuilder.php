@@ -21,11 +21,12 @@ class TagsBuilder
     public function build(): array
     {
         $resources = $this->resourcesCacheStore->getResources();
-        $tags = collect([]);
+        $tags = collect(config('orion.specs.tags'));
 
         foreach ($resources as $resource) {
             $tags[] = [
-                'name' => $resource->tag
+                'name'        => $resource->tag,
+                'description' => "API documentation for {$resource->tag}",
             ];
         }
 
