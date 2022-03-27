@@ -3,7 +3,7 @@
 
 namespace Orion\Concerns;
 
-use App\Models\EngagePermission;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Contracts\Pagination\Paginator;
@@ -17,9 +17,7 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Pluralizer;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -29,13 +27,12 @@ use Orion\Exceptions\DestroyResourceException;
 use Orion\Exceptions\IndexResourceException;
 use Orion\Exceptions\SearchResourceException;
 use Orion\Exceptions\UpdateResourceException;
-use Orion\Facades\OrionBuilder;
-use Orion\Facades\QueryBuilder;
 use Orion\Facades\Tracer;
 use Orion\Http\Requests\Request;
 use Orion\Http\Rules\WhitelistedField;
 use ReflectionClass;
 use Safe\Exceptions\StringsException;
+use RuntimeException;
 
 /**
  * Trait HandlesEloquentOperations
@@ -105,14 +102,14 @@ trait HandlesEloquentOperations
             $query->addNestedWhereQuery(
                 $query->newPivotStatement()->whereDate(
                     $query->getTable().".{$field}",
-                    $filterDescriptor['operator'],
+                    $filterDescriptor['operator'] ?? '=',
                     $filterDescriptor['value']
                 )
             );
         } elseif (!is_array($filterDescriptor['value'])) {
             $query->{$or ? 'orWherePivot' : 'wherePivot'}(
                 $field,
-                $filterDescriptor['operator'],
+                $filterDescriptor['operator'] ?? '=',
                 $filterDescriptor['value']
             );
         } else {
@@ -152,7 +149,7 @@ trait HandlesEloquentOperations
         if (!is_array($filterDescriptor['value']) || $constraint === 'whereDate') {
             $query->{$or ? 'or' . ucfirst($constraint) : $constraint}(
                 $field,
-                $filterDescriptor['operator'],
+                $filterDescriptor['operator'] ?? '=',
                 $filterDescriptor['value']
             );
         } else {
@@ -230,11 +227,12 @@ trait HandlesEloquentOperations
                 'filters'            => ['sometimes', 'array'],
                 'filters.*.type'     => ['sometimes', 'in:and,or'],
                 'filters.*.field'    => ['required_with:filters', 'regex:/^[\w.\_\-\>]+$/', new WhitelistedField($filters)],
-                'filters.*.operator' => ['required_with:filters', 'in:<,<=,>,>=,=,!=,like,not like,ilike,not ilike,in,not in'],
+                'filters.*.operator' => ['sometimes', 'in:<,<=,>,>=,=,!=,like,not like,ilike,not ilike,in,not in'],
                 'filters.*.value'    => ['present', 'nullable'],
 
-                'search'       => ['sometimes', 'array'],
-                'search.value' => ['string', 'nullable'],
+                'search'                => ['sometimes', 'array'],
+                'search.value'          => ['string', 'nullable'],
+                'search.case_sensitive' => ['sometimes', 'bool'],
 
                 'sort'             => ['sometimes', 'array'],
                 'sort.*.field'     => ['required_with:sort', 'regex:/^[\w.\_\-\>]+$/', new WhitelistedField($sortables)],
@@ -876,64 +874,67 @@ trait HandlesEloquentOperations
      */
     public function delete(array $input): Model
     {
-        $result = null;
-        $id = $input['id'];
+        try{
+            $result = null;
+            $this->startTransaction();
+            $id = $input['id'];
+            $softDeletes = method_exists(new $this->model, 'trashed');
+            $forceDeletes = $softDeletes && filter_var($input['force'] ?? false, FILTER_VALIDATE_BOOLEAN);
 
-        $softDeletes = method_exists(new $this->model, 'trashed');
-        $forceDeletes = $softDeletes && filter_var($input['force'] ?? false, FILTER_VALIDATE_BOOLEAN);
+            $query = $this->model::query()->when(
+                $softDeletes,
+                function ($query) {
+                    $query->withTrashed();
+                }
+            );
+            /**
+             * @var Model $entity
+             */
+            $entity = $query->findOrFail($id);
 
-        $query = $this->model::query()->when(
-            $softDeletes,
-            function ($query) {
-                $query->withTrashed();
+            $isResourceTrashed = !$forceDeletes && $softDeletes && $entity->trashed();
+            if ($isResourceTrashed) {
+                abort(404);
             }
-        );
-        /**
-         * @var Model $entity
-         */
-        $entity = $query->findOrFail($id);
 
-        $isResourceTrashed = !$forceDeletes && $softDeletes && $entity->trashed();
-        if ($isResourceTrashed) {
-            abort(404);
-        }
-
-        if ($forceDeletes) {
-            $entity->forceDelete();
-        } else {
-            $entity->delete();
-            if ($softDeletes) {
-                $entity = $entity->fresh();
+            if ($forceDeletes) {
+                $entity->forceDelete();
+            } else {
+                $entity->delete();
+                if ($softDeletes) {
+                    $entity = $entity->fresh();
+                }
             }
+
+            $guard = $input['guard'] ?? false;
+            if (!in_array($guard, [true, false])) {
+                throw new DestroyResourceException(
+                    'DESTROY_GUARD_VALIDATION_FAILED',
+                    $guard
+                );
+            }
+            if ($guard) {
+                $relationResolver = App::makeWith(
+                    RelationsResolver::class,
+                    [
+                        'includableRelations'     => $input['requestedRelations'],
+                        'alwaysIncludedRelations' => $input['alwaysIncludes'] ?? [],
+                    ]
+                );
+
+                $relationResolver->guardRelations(
+                    $entity,
+                    $input['requestedRelations']
+                );
+            }
+            $result = $entity;
+            $this->trace($id, 'DELETED');
+            $this->commitTransaction();
+            return $result;
+
+        } catch (Exception $exception) {
+            $this->rollbackTransactionAndRaise($exception);
         }
-
-        $guard = $input['guard'] ?? false;
-        if (!in_array($guard, [true, false])) {
-            throw new DestroyResourceException(
-                'DESTROY_GUARD_VALIDATION_FAILED',
-                $guard
-            );
-        }
-        if ($guard) {
-            $relationResolver = App::makeWith(
-                RelationsResolver::class,
-                [
-                    'includableRelations'     => $input['requestedRelations'],
-                    'alwaysIncludedRelations' => $input['alwaysIncludes'] ?? [],
-                ]
-            );
-
-            $relationResolver->guardRelations(
-                $entity,
-                $input['requestedRelations']
-            );
-        }
-
-        $result = $entity;
-
-        $this->trace($id, 'DELETED');
-
-        return $result;
     }
 
     /**
