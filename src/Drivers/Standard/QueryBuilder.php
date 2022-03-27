@@ -2,12 +2,15 @@
 
 namespace Orion\Drivers\Standard;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Arr;
 use Orion\Http\Requests\Request;
+use RuntimeException;
 
 class QueryBuilder implements \Orion\Contracts\QueryBuilder
 {
@@ -94,11 +97,14 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
      *
      * @param Builder|Relation $query
      * @param Request $request
+     * @param array $filterDescriptors
      */
-    public function applyFiltersToQuery($query, Request $request): void
+    public function applyFiltersToQuery($query, Request $request, array $filterDescriptors = []): void
     {
-        $this->paramsValidator->validateFilters($request);
-        $filterDescriptors = $request->get('filters', []);
+        if (!$filterDescriptors) {
+            $this->paramsValidator->validateFilters($request);
+            $filterDescriptors = $request->get('filters', []);
+        }
 
         foreach ($filterDescriptors as $filterDescriptor) {
             $or = Arr::get($filterDescriptor, 'type', 'and') === 'or';
@@ -165,9 +171,10 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
         $query,
         bool $or = false
     ) {
-        if ($filterDescriptor['value'] !== null &&
-            in_array($filterDescriptor['field'], (new $this->resourceModelClass)->getDates(), true)
-        ) {
+        $treatAsDateField = $filterDescriptor['value'] !== null &&
+            in_array($filterDescriptor['field'], (new $this->resourceModelClass)->getDates(), true);
+
+        if ($treatAsDateField && Carbon::parse($filterDescriptor['value'])->toTimeString() === '00:00:00') {
             $constraint = 'whereDate';
         } else {
             $constraint = 'where';
@@ -176,7 +183,7 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
         if (!is_array($filterDescriptor['value']) || $constraint === 'whereDate') {
             $query->{$or ? 'or' . ucfirst($constraint) : $constraint}(
                 $field,
-                $filterDescriptor['operator'],
+                $filterDescriptor['operator'] ?? '=',
                 $filterDescriptor['value']
             );
         } else {
@@ -207,6 +214,12 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
         bool $or = false
     ) {
         if (is_array($filterDescriptor['value']) && in_array(null, $filterDescriptor['value'], true)) {
+            if ((float) app()->version() <= 7.0) {
+                throw new RuntimeException(
+                    "Filtering by nullable pivot fields is only supported for Laravel version > 8.0"
+                );
+            }
+
             $query = $query->{$or ? 'orWherePivotNull' : 'wherePivotNull'}($field);
 
             $filterDescriptor['value'] = collect($filterDescriptor['value'])->filter()->values()->toArray();
@@ -222,7 +235,7 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
     /**
      * @param string $field
      * @param array $filterDescriptor
-     * @param Builder|Relation $query
+     * @param Builder|BelongsToMany $query
      * @param bool $or
      * @return Builder
      */
@@ -232,10 +245,23 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
         $query,
         bool $or = false
     ) {
-        if (!is_array($filterDescriptor['value'])) {
+        $pivotClass = $query->getPivotClass();
+        $pivot = new $pivotClass;
+
+        $treatAsDateField = $filterDescriptor['value'] !== null && in_array($field, $pivot->getDates(), true);
+
+        if ($treatAsDateField && Carbon::parse($filterDescriptor['value'])->toTimeString() === '00:00:00') {
+            $query->addNestedWhereQuery(
+                $query->newPivotStatement()->whereDate(
+                    $query->getTable().".{$field}",
+                    $filterDescriptor['operator'] ?? '=',
+                    $filterDescriptor['value']
+                )
+            );
+        } elseif (!is_array($filterDescriptor['value'])) {
             $query->{$or ? 'orWherePivot' : 'wherePivot'}(
                 $field,
-                $filterDescriptor['operator'],
+                $filterDescriptor['operator'] ?? '=',
                 $filterDescriptor['value']
             );
         } else {
@@ -256,7 +282,7 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
      * @param string $field
      * @return string
      */
-    protected function getQualifiedFieldName(string $field): string
+    public function getQualifiedFieldName(string $field): string
     {
         $table = (new $this->resourceModelClass)->getTable();
         return "{$table}.{$field}";
@@ -281,6 +307,13 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
         $query->where(
             function ($whereQuery) use ($searchables, $requestedSearchDescriptor) {
                 $requestedSearchString = $requestedSearchDescriptor['value'];
+
+                $caseSensitive = (bool) Arr::get(
+                    $requestedSearchDescriptor,
+                    'case_sensitive',
+                    config('orion.search.case_sensitive')
+                );
+
                 /**
                  * @var Builder $whereQuery
                  */
@@ -291,10 +324,17 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
 
                         $whereQuery->orWhereHas(
                             $relation,
-                            function ($relationQuery) use ($relationField, $requestedSearchString) {
+                            function ($relationQuery) use ($relationField, $requestedSearchString, $caseSensitive) {
                                 /**
                                  * @var Builder $relationQuery
                                  */
+                                if (!$caseSensitive) {
+                                    return $relationQuery->whereRaw(
+                                        "lower({$relationField}) like lower(?)",
+                                        ['%' . $requestedSearchString . '%']
+                                    );
+                                }
+
                                 return $relationQuery->where(
                                     $relationField,
                                     'like',
@@ -303,11 +343,20 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
                             }
                         );
                     } else {
-                        $whereQuery->orWhere(
-                            $this->getQualifiedFieldName($searchable),
-                            'like',
-                            '%' . $requestedSearchString . '%'
-                        );
+                        $qualifiedFieldName = $this->getQualifiedFieldName($searchable);
+
+                        if (!$caseSensitive) {
+                            $whereQuery->orWhereRaw(
+                                "lower({$qualifiedFieldName}) like lower(?)",
+                                ['%' . $requestedSearchString . '%']
+                            );
+                        } else {
+                            $whereQuery->orWhere(
+                                $qualifiedFieldName,
+                                'like',
+                                '%' . $requestedSearchString . '%'
+                            );
+                        }
                     }
                 }
             }

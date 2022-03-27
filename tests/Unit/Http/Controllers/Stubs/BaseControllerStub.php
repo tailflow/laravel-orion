@@ -2,6 +2,7 @@
 
 namespace Orion\Tests\Unit\Http\Controllers\Stubs;
 
+use Orion\Contracts\QueryBuilder;
 use Orion\Http\Controllers\BaseController;
 use Orion\Tests\Fixtures\App\Http\Requests\PostRequest;
 use Orion\Tests\Fixtures\App\Http\Resources\SampleCollectionResource;
@@ -36,5 +37,10 @@ class BaseControllerStub extends BaseController
     public function resolveResourceModelClass(): string
     {
         return $this->getModel();
+    }
+
+    public function getResourceQueryBuilder(): QueryBuilder
+    {
+        return $this->getQueryBuilder();
     }
 }

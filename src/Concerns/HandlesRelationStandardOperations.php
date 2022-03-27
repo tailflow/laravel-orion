@@ -3,23 +3,23 @@
 namespace Orion\Concerns;
 
 use Exception;
+use Illuminate\Contracts\Pagination\Paginator;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasOneThrough;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
+use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Arr;
 use InvalidArgumentException;
 use Orion\Http\Requests\Request;
-use Orion\Http\Resources\Resource;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Collection;
 use Orion\Http\Resources\CollectionResource;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Contracts\Pagination\Paginator;
-use Illuminate\Database\Eloquent\Relations\HasOne;
-use Illuminate\Database\Eloquent\Relations\MorphOne;
-use Illuminate\Database\Eloquent\Relations\Relation;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\MorphToMany;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasOneThrough;
+use Orion\Http\Resources\Resource;
 
 trait HandlesRelationStandardOperations
 {
@@ -151,6 +151,13 @@ trait HandlesRelationStandardOperations
      */
     protected function buildIndexFetchQuery(Request $request, Model $parentEntity, array $requestedRelations): Relation
     {
+        $filters = collect($request->get('filters', []))
+            ->map(function (array $filterDescriptor) use ($request, $parentEntity) {
+                return $this->beforeFilterApplied($request, $parentEntity, $filterDescriptor);
+            })->toArray();
+
+        $request->merge(['filters' => $filters]);
+
         return $this->buildRelationFetchQuery($request, $parentEntity, $requestedRelations);
     }
 
@@ -800,7 +807,7 @@ trait HandlesRelationStandardOperations
         $parentEntity = $this->runDestroyParentFetchQuery($request, $parentQuery, $parentKey);
 
         $softDeletes = $this->softDeletes($this->resolveResourceModelClass());
-        $forceDeletes = $softDeletes && $request->get('force');
+        $forceDeletes = $this->forceDeletes($request, $softDeletes);
 
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
 
@@ -1135,5 +1142,16 @@ trait HandlesRelationStandardOperations
         $entity->fill(
             Arr::except($attributes, array_keys($entity->getDirty()))
         );
+    }
+
+    /**
+     * @param Request $request
+     * @param Model $parentEntity
+     * @param array $filterDescriptor
+     * @return array
+     */
+    protected function beforeFilterApplied(Request $request, Model $parentEntity, array $filterDescriptor): array
+    {
+        return $filterDescriptor;
     }
 }

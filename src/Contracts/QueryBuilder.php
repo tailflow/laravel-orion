@@ -35,8 +35,9 @@ interface QueryBuilder
     /**
      * @param Builder|Relation $query
      * @param Request $request
+     * @param array $filterDescriptors
      */
-    public function applyFiltersToQuery($query, Request $request): void;
+    public function applyFiltersToQuery($query, Request $request, array $filterDescriptors = []): void;
 
     /**
      * @param Builder|Relation $query

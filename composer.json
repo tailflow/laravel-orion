@@ -26,14 +26,14 @@
         "illuminate/http": ">=5.7",
         "illuminate/pagination": ">=5.7",
         "illuminate/support": ">=5.7",
-        "symfony/yaml": "^5.3",
-        "thecodingmachine/safe8": "^0.1",
+        "symfony/yaml": "^5.3|^6.0",
+        "thecodingmachine/safe": "^2.1.2",
         "lstrojny/functional-php": "^1.17.0"
     },
     "require-dev": {
         "mockery/mockery": "^1.0",
         "phpunit/phpunit": "^6.0|^7.0|^8.0|^9.0",
-        "orchestra/testbench": "^3.7|^4.0|^5.0|^6.0"
+        "orchestra/testbench": "^3.7|^4.0|^5.0|^6.0|^7.0"
     },
     "autoload": {
         "psr-4": {

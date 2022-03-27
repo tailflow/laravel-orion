@@ -50,8 +50,12 @@ return [
         'servers' => [
             ['url' => env('APP_URL').'/api', 'description' => 'Default Environment'],
         ],
+        'tags' => []
     ],
     'transactions' => [
         'enabled' => false,
     ],
+    'search' => [
+        'case_sensitive' => true, // TODO: set to "false" by default in 3.0 release
+    ]
 ];

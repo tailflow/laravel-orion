@@ -2,6 +2,9 @@
 
 namespace Orion\Http\Controllers;
 
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Auth\Access\Response;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
@@ -94,7 +97,7 @@ abstract class BaseController extends \Illuminate\Routing\Controller
     public function __construct()
     {
         if (!$this->model) {
-            throw new BindingException('Model is not defined for '.static::class);
+            throw new BindingException('Model is not defined for ' . static::class);
         }
 
         $this->componentsResolver = App::makeWith(
@@ -153,6 +156,13 @@ abstract class BaseController extends \Illuminate\Routing\Controller
     abstract public function resolveResourceModelClass(): string;
 
     /**
+     * Retrieves the query builder used to query the end-resource.
+     *
+     * @return QueryBuilder
+     */
+    abstract public function getResourceQueryBuilder(): QueryBuilder;
+
+    /**
      * The list of available query scopes.
      *
      * @return array
@@ -168,6 +178,17 @@ abstract class BaseController extends \Illuminate\Routing\Controller
      * @return array
      */
     public function filterableBy(): array
+    {
+        return [];
+    }
+
+    /**
+     * The attributes from filterableBy method that have "scoped"
+     * filter options included in the response.
+     *
+     * @return array
+     */
+    public function scopedFilters(): array
     {
         return [];
     }
@@ -291,9 +312,9 @@ abstract class BaseController extends \Illuminate\Routing\Controller
      *
      * @param string $ability
      * @param array $arguments
-     * @return \Illuminate\Auth\Access\Response
-     * @throws \Illuminate\Auth\Access\AuthorizationException
-     * @throws \Illuminate\Contracts\Container\BindingResolutionException
+     * @return Response
+     * @throws AuthorizationException
+     * @throws BindingResolutionException
      */
     public function authorize(string $ability, $arguments = [])
     {
@@ -309,7 +330,7 @@ abstract class BaseController extends \Illuminate\Routing\Controller
     /**
      * Retrieves currently authenticated user based on the guard.
      *
-     * @return \Illuminate\Contracts\Auth\Authenticatable|null
+     * @return Authenticatable|null
      */
     public function resolveUser()
     {
@@ -505,6 +526,18 @@ abstract class BaseController extends \Illuminate\Routing\Controller
     {
         $resourceModelClass = $this->resolveResourceModelClass();
         return (new $resourceModelClass)->qualifyColumn($this->keyName());
+    }
+
+    protected function resolveQualifiedFieldName(string $field): string
+    {
+        $resourceModelClass = $this->resolveResourceModelClass();
+        return (new $resourceModelClass)->qualifyColumn($field);
+    }
+
+    protected function resolveQualifiedRelationFieldName(string $relation, string $field): string
+    {
+        $resourceModelClass = $this->resolveResourceModelClass();
+        return (new $resourceModelClass)::{$relation}()->qualifyColumn($field);
     }
 
     /**

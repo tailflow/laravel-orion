@@ -2,8 +2,9 @@
 
 namespace Orion\Concerns;
 
+use Exception;
+use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Arr;
@@ -26,7 +27,7 @@ trait HandlesRelationManyToManyOperations
             $result = $this->attachWithTransaction($request, $parentKey);
             $this->commitTransaction();
             return $result;
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             $this->rollbackTransactionAndRaise($exception);
         }
     }
@@ -171,31 +172,30 @@ trait HandlesRelationManyToManyOperations
      *
      * @param array $resources
      * @return array
+     * @throws BindingResolutionException
      */
     protected function preparePivotResources(array $resources): array
     {
-        $model = $this->getModel();
         $resources = $this->standardizePivotResourcesArray($resources);
-        $resourceModel = (new $model)->{$this->getRelation()}()->getModel();
+
+        $model = $this->getModel();
+        $relationInstance = (new $model)->{$this->getRelation()}();
+
+        $resourceModelClass = $this->resolveResourceModelClass();
+        $resourceModel = new $resourceModelClass();
         $resourceKeyName = $this->keyName();
         $resourceModels = $resourceModel->whereIn($resourceKeyName, array_keys($resources))->get();
 
-        $resources = array_filter(
-            $resources,
-            function ($resourceKey) use ($resourceModels, $resourceKeyName) {
-                /**
-                 * @var Collection $resourceModels
-                 */
-                $resourceModel = $resourceModels->where($resourceKeyName, $resourceKey)->first();
-
-                return $resourceModel && (!$this->authorizationRequired() || Gate::forUser(
-                            $this->resolveUser()
-                        )->allows('view', $resourceModel));
-            },
-            ARRAY_FILTER_USE_KEY
-        );
-
-        return $resources;
+        return $resourceModels->filter(function($resourceModel) {
+                return !$this->authorizationRequired() ||
+                    Gate::forUser($this->resolveUser())->allows('view', $resourceModel);
+            })
+            ->mapWithKeys(function ($resourceModel) use ($relationInstance, $resources, $resourceKeyName) {
+                return [
+                    $resourceModel->{$relationInstance->getRelatedKeyName()} => $resources[$resourceModel->{$resourceKeyName}],
+                ];
+            }
+        )->all();
     }
 
     /**
@@ -247,7 +247,7 @@ trait HandlesRelationManyToManyOperations
             $result = $this->detachWithTransaction($request, $parentKey);
             $this->commitTransaction();
             return $result;
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             $this->rollbackTransactionAndRaise($exception);
         }
     }
@@ -366,7 +366,7 @@ trait HandlesRelationManyToManyOperations
             $result = $this->syncWithTransaction($request, $parentKey);
             $this->commitTransaction();
             return $result;
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             $this->rollbackTransactionAndRaise($exception);
         }
     }
@@ -492,7 +492,7 @@ trait HandlesRelationManyToManyOperations
             $result = $this->toggleWithTransaction($request, $parentKey);
             $this->commitTransaction();
             return $result;
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             $this->rollbackTransactionAndRaise($exception);
         }
     }
@@ -606,7 +606,7 @@ trait HandlesRelationManyToManyOperations
             $result = $this->updatePivotWithTransaction($request, $parentKey, $relatedKey);
             $this->commitTransaction();
             return $result;
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             $this->rollbackTransactionAndRaise($exception);
         }
     }
