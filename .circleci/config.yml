@@ -71,7 +71,9 @@ jobs:
       # install laravel/legacy-factories and PHPUnit 9 only for Laravel 8.0
       - when:
           condition:
-            equal: ["^8.0", <<parameters.laravel-version>>]
+            or:
+              - equal: ["^8.0", <<parameters.laravel-version>>]
+              - equal: ["^9.0", <<parameters.laravel-version>>]
           steps:
             - run:
                 name: "Install laravel/legacy-factories"
@@ -138,7 +140,7 @@ workflows:
           matrix:
             parameters:
               php-version: ["7.3", "7.4", "8.0"]
-              laravel-version: [ "5.7.*", "5.8.*", "^6.0", "^7.0", "^8.0" ]
+              laravel-version: [ "5.7.*", "5.8.*", "^6.0", "^7.0", "^8.0", "^9.0" ]
               database: ["sqlite", "mysql", "pgsql"]
             exclude:
              - php-version: "7.4"
@@ -167,4 +169,22 @@ workflows:
                database: "mysql"
              - php-version: "8.0"
                laravel-version: "5.8.*"
+               database: "pgsql"
+             - php-version: "7.3"
+               laravel-version: "^9.0"
+               database: "sqlite"
+             - php-version: "7.3"
+               laravel-version: "^9.0"
+               database: "mysql"
+             - php-version: "7.3"
+               laravel-version: "^9.0"
+               database: "pgsql"
+             - php-version: "7.4"
+               laravel-version: "^9.0"
+               database: "sqlite"
+             - php-version: "7.4"
+               laravel-version: "^9.0"
+               database: "mysql"
+             - php-version: "7.4"
+               laravel-version: "^9.0"
                database: "pgsql"

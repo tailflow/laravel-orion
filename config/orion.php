@@ -50,6 +50,7 @@ return [
         'servers' => [
             ['url' => env('APP_URL').'/api', 'description' => 'Default Environment'],
         ],
+        'tags' => []
     ],
     'transactions' => [
         'enabled' => false,

@@ -78,6 +78,16 @@ abstract class RelationController extends BaseController
     }
 
     /**
+     * Retrieves the query builder used to query the end-resource.
+     *
+     * @return QueryBuilder
+     */
+    public function getResourceQueryBuilder(): QueryBuilder
+    {
+        return $this->getRelationQueryBuilder();
+    }
+
+    /**
      * @return string
      */
     public function getRelation(): string
@@ -186,5 +196,18 @@ abstract class RelationController extends BaseController
         $modelClass = $this->getModel();
 
         return (new $modelClass)->getKeyName();
+    }
+
+    /**
+     * A qualified name of a pivot field.
+     *
+     * @param string $field
+     * @return string
+     */
+    protected function resolveQualifiedPivotFieldName(string $field): string
+    {
+        $modelClass = $this->getModel();
+
+        return (new $modelClass)->{$this->getRelation()}()->qualifyPivotColumn($field);
     }
 }

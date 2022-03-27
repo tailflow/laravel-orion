@@ -13,6 +13,29 @@ use Orion\Tests\Fixtures\App\Policies\GreenPolicy;
 class StandardIndexFilteringOperationsTest extends TestCase
 {
     /** @test */
+    public function getting_a_list_of_resources_filtered_by_model_field_using_default_operator(): void
+    {
+        $matchingPost = factory(Post::class)->create(['title' => 'match'])->fresh();
+        factory(Post::class)->create(['title' => 'not match'])->fresh();
+
+        Gate::policy(Post::class, GreenPolicy::class);
+
+        $response = $this->post(
+            '/api/posts/search',
+            [
+                'filters' => [
+                    ['field' => 'title', 'value' => 'match'],
+                ],
+            ]
+        );
+
+        $this->assertResourcesPaginated(
+            $response,
+            $this->makePaginator([$matchingPost], 'posts/search')
+        );
+    }
+
+    /** @test */
     public function getting_a_list_of_resources_filtered_by_model_field_using_equal_operator(): void
     {
         $matchingPost = factory(Post::class)->create(['title' => 'match'])->fresh();
