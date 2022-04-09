@@ -96,6 +96,8 @@ trait HandlesRelationStandardBatchOperations
             return $afterHookResult;
         }
 
+        $entities = $this->getAppendsResolver()->appendToCollection($entities, $request);
+
         $this->relationsResolver->guardRelationsForCollection($entities, $requestedRelations);
 
         return $this->collectionResponse($entities);
@@ -228,6 +230,8 @@ trait HandlesRelationStandardBatchOperations
         if ($this->hookResponds($afterHookResult)) {
             return $afterHookResult;
         }
+
+        $entities = $this->getAppendsResolver()->appendToCollection($entities, $request);
 
         $this->relationsResolver->guardRelationsForCollection($entities, $requestedRelations);
 
@@ -423,6 +427,8 @@ trait HandlesRelationStandardBatchOperations
             return $afterHookResult;
         }
 
+        $entities = $this->getAppendsResolver()->appendToCollection($entities, $request);
+
         $this->relationsResolver->guardRelationsForCollection($entities, $requestedRelations);
 
         return $this->collectionResponse($entities);
@@ -584,6 +590,8 @@ trait HandlesRelationStandardBatchOperations
         if ($this->hookResponds($afterHookResult)) {
             return $afterHookResult;
         }
+
+        $entities = $this->getAppendsResolver()->appendToCollection($entities, $request);
 
         $this->relationsResolver->guardRelationsForCollection($entities, $requestedRelations);
 

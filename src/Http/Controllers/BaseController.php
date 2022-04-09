@@ -18,6 +18,7 @@ use Orion\Concerns\HandlesTransactions;
 use Orion\Concerns\InteractsWithBatchResources;
 use Orion\Concerns\InteractsWithHooks;
 use Orion\Concerns\InteractsWithSoftDeletes;
+use Orion\Contracts\AppendsResolver;
 use Orion\Contracts\ComponentsResolver;
 use Orion\Contracts\Paginator;
 use Orion\Contracts\ParamsValidator;
@@ -75,6 +76,11 @@ abstract class BaseController extends \Illuminate\Routing\Controller
     protected $relationsResolver;
 
     /**
+     * @var AppendsResolver $appendsResolver
+     */
+    protected $appendsResolver;
+
+    /**
      * @var Paginator $paginator
      */
     protected $paginator;
@@ -119,6 +125,13 @@ abstract class BaseController extends \Illuminate\Routing\Controller
             [
                 'includableRelations' => $this->includes(),
                 'alwaysIncludedRelations' => $this->alwaysIncludes(),
+            ]
+        );
+        $this->appendsResolver = App::makeWith(
+            AppendsResolver::class,
+            [
+                'appends' => $this->appends(),
+                'alwaysAppends' => $this->alwaysAppends(),
             ]
         );
         $this->paginator = App::makeWith(
@@ -219,6 +232,26 @@ abstract class BaseController extends \Illuminate\Routing\Controller
      * @return array
      */
     public function alwaysIncludes(): array
+    {
+        return [];
+    }
+
+    /**
+     * The attributes that are appended to a resource.
+     *
+     * @return array
+     */
+    public function appends(): array
+    {
+        return [];
+    }
+
+    /**
+     * The attributes that are always appended to a resource.
+     *
+     * @return array
+     */
+    public function alwaysAppends(): array
     {
         return [];
     }
@@ -428,6 +461,25 @@ abstract class BaseController extends \Illuminate\Routing\Controller
     public function setRelationsResolver(RelationsResolver $relationsResolver): self
     {
         $this->relationsResolver = $relationsResolver;
+
+        return $this;
+    }
+
+    /**
+     * @return AppendsResolver
+     */
+    public function getAppendsResolver(): AppendsResolver
+    {
+        return $this->appendsResolver;
+    }
+
+    /**
+     * @param AppendsResolver $appendsResolver
+     * @return $this
+     */
+    public function setAppendsResolver(AppendsResolver $appendsResolver): self
+    {
+        $this->appendsResolver = $appendsResolver;
 
         return $this;
     }

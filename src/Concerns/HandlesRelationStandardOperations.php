@@ -71,6 +71,8 @@ trait HandlesRelationStandardOperations
             return $afterHookResult;
         }
 
+        $entities = $this->getAppendsResolver()->appendToCollection($entities, $request);
+
         $this->relationsResolver->guardRelationsForCollection(
             $entities instanceof Paginator ? $entities->getCollection() : $entities,
             $requestedRelations
@@ -310,7 +312,8 @@ trait HandlesRelationStandardOperations
             return $afterHookResult;
         }
 
-        $entity = $this->relationsResolver->guardRelations($entity, $requestedRelations);
+        $entity = $this->getAppendsResolver()->appendToEntity($entity, $request);
+        $entity = $this->getRelationsResolver()->guardRelations($entity, $requestedRelations);
 
         return $this->entityResponse($entity);
     }
@@ -454,7 +457,8 @@ trait HandlesRelationStandardOperations
             return $afterHookResult;
         }
 
-        $entity = $this->relationsResolver->guardRelations($entity, $requestedRelations);
+        $entity = $this->getAppendsResolver()->appendToEntity($entity, $request);
+        $entity = $this->getRelationsResolver()->guardRelations($entity, $requestedRelations);
 
         return $this->entityResponse($entity);
     }
@@ -661,7 +665,8 @@ trait HandlesRelationStandardOperations
             return $afterHookResult;
         }
 
-        $entity = $this->relationsResolver->guardRelations($entity, $requestedRelations);
+        $entity = $this->getAppendsResolver()->appendToEntity($entity, $request);
+        $entity = $this->getRelationsResolver()->guardRelations($entity, $requestedRelations);
 
         return $this->entityResponse($entity);
     }
@@ -848,7 +853,8 @@ trait HandlesRelationStandardOperations
             return $afterHookResult;
         }
 
-        $entity = $this->relationsResolver->guardRelations($entity, $requestedRelations);
+        $entity = $this->getAppendsResolver()->appendToEntity($entity, $request);
+        $entity = $this->getRelationsResolver()->guardRelations($entity, $requestedRelations);
 
         return $this->entityResponse($entity);
     }
@@ -1026,7 +1032,8 @@ trait HandlesRelationStandardOperations
             return $afterHookResult;
         }
 
-        $entity = $this->relationsResolver->guardRelations($entity, $requestedRelations);
+        $entity = $this->getAppendsResolver()->appendToEntity($entity, $request);
+        $entity = $this->getRelationsResolver()->guardRelations($entity, $requestedRelations);
 
         return $this->entityResponse($entity);
     }
