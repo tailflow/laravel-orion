@@ -37,7 +37,6 @@ class Post extends Model
      */
     protected $dates = [
         'publish_at',
-        'deleted_at' //workaround for Laravel 5.7 - SoftDeletes trait adds deleted_at column to dates automatically since Laravel 5.8
     ];
 
     /**
