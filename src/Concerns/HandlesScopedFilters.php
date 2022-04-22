@@ -10,6 +10,9 @@ use Orion\Http\Controllers\RelationController;
 use Orion\Http\Requests\Request;
 
 /**
+ * Trait HandlesScopedFilters
+ * @package Orion\Concerns
+ *
  * @mixin RelationController
  */
 trait HandlesScopedFilters
@@ -62,6 +65,11 @@ trait HandlesScopedFilters
         return $scopedFilters;
     }
 
+    /**
+     * @param string $field
+     *
+     * @return string
+     */
     protected function qualifyScopedFilterField(string $field): string
     {
         if (!str_contains($field, '.')) {
@@ -78,6 +86,11 @@ trait HandlesScopedFilters
         return $this->resolveQualifiedRelationFieldName($relation, $relationField);
     }
 
+    /**
+     * @param Collection $requestedFilters
+     *
+     * @return Collection
+     */
     protected function getScopedFilterDescriptors(Collection $requestedFilters): Collection
     {
         $filters = collect($this->scopedFilters())

@@ -6,6 +6,10 @@ namespace Orion\Concerns;
 
 use Safe\Exceptions\ArrayException;
 
+/**
+ * Trait HandlesParameters
+ * @package Orion\Concerns
+ */
 trait HandlesParameters
 {
 
@@ -32,6 +36,12 @@ trait HandlesParameters
         return $val;
     }
 
+    /**
+     * @param string $param
+     *
+     * @return void
+     * @throws ArrayException
+     */
     function scrub(string $param){
         if ($this->params != null && $this->array_key_exists($param, $this->params)){
             unset($this->params[$param]);
@@ -39,6 +49,10 @@ trait HandlesParameters
     }
 
     /**
+     * @param string $param
+     * @param array  $parameters
+     *
+     * @return bool
      * @throws ArrayException
      */
     private function array_key_exists(string $param, array $parameters): bool

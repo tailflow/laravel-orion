@@ -43,6 +43,9 @@ trait HandlesEloquentOperations
 {
     use HandlesAssociation, HandlesTransactions;
 
+    /**
+     * @var string $MODEL_PATH
+     */
     private string $MODEL_PATH = 'App\\Models\\';
 
 
@@ -749,6 +752,8 @@ trait HandlesEloquentOperations
      * @param array $request
      *
      * @return Model
+     * @throws CreateResourceException
+     * @throws StringsException
      */
     public function seed(array $request): Model
     {
@@ -758,14 +763,26 @@ trait HandlesEloquentOperations
     }
 
     /**
-     * Update the eloquent resource by id.
-     *
-     *
      * @param array $request
      *
      * @return Model
+     * @throws CreateResourceException
      * @throws StringsException
-     * @throws UpdateResourceException
+     */
+    public function touch(array $request): Model
+    {
+        $result = $this->createModel($request);
+        return $result;
+    }
+
+    /**
+     * Update the eloquent resource by id.
+     *
+     *
+     * @param array $input
+     *
+     * @return Model
+     * @throws Exception
      */
     public function update(array $input): Model
     {

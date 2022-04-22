@@ -10,6 +10,9 @@ namespace Orion\Concerns;
 trait EloquentBuilder
 {
 
+    /**
+     * @return \Orion\Jobs\JobDispatcher|__anonymous@222
+     */
     public function builder()
     {
         if (!$this->instance) {

@@ -8,6 +8,10 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 use Orion\Http\Requests\Request;
 use Orion\Http\Resources\Resource;
 
+/**
+ * Trait HandlesRelationOneToManyOperations
+ * @package Orion\Concerns
+ */
 trait HandlesRelationOneToManyOperations
 {
     /**

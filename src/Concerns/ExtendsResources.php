@@ -5,6 +5,10 @@ namespace Orion\Concerns;
 
 use Illuminate\Http\Request;
 
+/**
+ * Trait ExtendsResources
+ * @package Orion\Concerns
+ */
 trait ExtendsResources
 {
     /**

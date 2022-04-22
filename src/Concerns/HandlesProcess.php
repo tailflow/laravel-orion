@@ -16,6 +16,9 @@ trait HandlesProcess
 {
 
     /**
+     * @param Model $input
+     * @param       $type
+     *
      * @return mixed
      * @throws \ReflectionException
      */
@@ -44,6 +47,7 @@ trait HandlesProcess
     }
 
     /**
+     * @param  $type
      * @return mixed
      * @throws \ReflectionException
      */

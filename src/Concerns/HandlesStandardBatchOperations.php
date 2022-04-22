@@ -9,6 +9,10 @@ use Illuminate\Support\Collection;
 use Orion\Http\Requests\Request;
 use Orion\Http\Resources\CollectionResource;
 
+/**
+ * Trait HandlesStandardBatchOperations
+ * @package Orion\Concerns
+ */
 trait HandlesStandardBatchOperations
 {
     /**

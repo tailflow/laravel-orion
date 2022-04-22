@@ -9,8 +9,14 @@ use Illuminate\Http\Resources\Json\ResourceCollection;
 use Illuminate\Support\Collection;
 use Orion\Http\Resources\Resource;
 
+/**
+ * Trait BuildsResponses
+ */
 trait BuildsResponses
 {
+    /**
+     * @var array $meta
+     */
     protected $meta = [];
 
     /**
@@ -45,6 +51,12 @@ trait BuildsResponses
         return $this->addMetaToResource($collectionResource);
     }
 
+    /**
+     * @param string $key
+     * @param        $value
+     *
+     * @return $this
+     */
     public function withMeta(string $key, $value): self
     {
         $this->meta[$key] = $value;

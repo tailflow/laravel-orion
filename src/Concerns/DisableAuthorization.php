@@ -2,6 +2,9 @@
 
 namespace Orion\Concerns;
 
+/**
+ * Trait DisableAuthorization
+ */
 trait DisableAuthorization
 {
     /**

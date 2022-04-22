@@ -15,6 +15,10 @@ use Orion\Http\Requests\Request;
 use Orion\Http\Resources\CollectionResource;
 use Orion\Http\Resources\Resource;
 
+/**
+ * Trait HandlesStandardOperations
+ * @package Orion\Concerns
+ */
 trait HandlesStandardOperations
 {
     /**

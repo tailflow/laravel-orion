@@ -3,6 +3,7 @@
 namespace Orion;
 
 
+use Exception;
 use Illuminate\Support\ServiceProvider;
 use Orion\Commands\BuildSpecsCommand;
 use Orion\Concerns\EloquentBuilder;
@@ -45,13 +46,28 @@ class OrionServiceProvider extends ServiceProvider
         $this->app->singleton('Tracer',function ($app){
             return new class  {
 
+                public function __construct()
+                {
+                    $tracerConfig = config('orion.tracer');
+                    $tracerObj  = new $tracerConfig;
+                    $tracer = function ($data) use ($tracerObj) {
+                        return $tracerObj->trace($data);
+                    };
+
+                    $this->register($tracer);
+                }
+
                 private $tracerFun;
                 public function register($tracer) {
                     $this->tracerFun = $tracer;
                 }
 
-                public function trace($args){
-                    call_user_func($this->tracerFun, $args);
+                public function trace($args) {
+                    try {
+                        call_user_func($this->tracerFun, $args);
+                    }catch (Exception $exception){
+                        throw new Exception('Unable to associate Tracer.', previous: $exception);
+                    }
                 }
             };
         });

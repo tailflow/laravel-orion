@@ -57,5 +57,6 @@ return [
     ],
     'search' => [
         'case_sensitive' => true, // TODO: set to "false" by default in 3.0 release
-    ]
+    ],
+    'tracer' => 'App\\Loggers\\LogTrace',
 ];

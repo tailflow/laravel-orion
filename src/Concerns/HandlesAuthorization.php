@@ -5,6 +5,10 @@ namespace Orion\Concerns;
 use Illuminate\Auth\Access\Response;
 use Illuminate\Contracts\Container\BindingResolutionException;
 
+/**
+ * Trait EloquentBuilder
+ * @package Orion\Concerns
+ */
 trait HandlesAuthorization
 {
     /**

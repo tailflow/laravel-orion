@@ -4,10 +4,11 @@
 namespace Orion\Facades;
 
 use Illuminate\Support\Facades\Facade;
+use Orion\Concerns\HandlesEloquentOperations;
 
 /**
  *
- * @method static build($manager = '')
+ * @method static HandlesEloquentOperations build($manager = '')
  *
  */
 class OrionBuilder extends Facade

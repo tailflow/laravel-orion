@@ -11,6 +11,10 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Gate;
 use Orion\Http\Requests\Request;
 
+/**
+ * Trait HandlesRelationManyToManyOperations
+ * @package Orion\Concerns
+ */
 trait HandlesRelationManyToManyOperations
 {
     /**

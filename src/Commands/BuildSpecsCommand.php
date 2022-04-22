@@ -17,10 +17,19 @@ use Orion\Specs\Parsers\YamlParser;
 use Storage;
 use Throwable;
 
+/**
+ * Class BuildSpecsCommand
+ */
 class BuildSpecsCommand extends Command
 {
+    /**
+     * @var string $signature
+     */
     protected $signature = 'orion:specs {--path=} {--format=json}';
 
+    /**
+     * @var string $description
+     */
     protected $description = 'Generates API specifications in the given format';
 
     /**
