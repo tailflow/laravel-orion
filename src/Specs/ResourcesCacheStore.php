@@ -9,7 +9,7 @@ use Orion\ValueObjects\RegisteredResource;
 class ResourcesCacheStore
 {
     /** @var RegisteredResource[] */
-    protected $resources;
+    protected array $resources = [];
 
     public function addResource(RegisteredResource $resource): self
     {
