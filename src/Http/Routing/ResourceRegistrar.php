@@ -26,7 +26,19 @@ class ResourceRegistrar extends \Illuminate\Routing\ResourceRegistrar
      *
      * @var array
      */
-    protected $resourceDefaults = ['search', 'batchStore', 'batchUpdate', 'batchDestroy', 'batchRestore', 'index', 'store', 'show', 'update', 'destroy', 'restore'];
+    protected $resourceDefaults = [
+        'search',
+        'batchStore',
+        'batchUpdate',
+        'batchDestroy',
+        'batchRestore',
+        'index',
+        'store',
+        'show',
+        'update',
+        'destroy',
+        'restore',
+    ];
 
     /**
      * Add the search method for a resourceful route.

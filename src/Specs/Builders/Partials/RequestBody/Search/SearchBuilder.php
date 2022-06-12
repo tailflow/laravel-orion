@@ -19,15 +19,15 @@ class SearchBuilder extends SearchPartialBuilder
             'properties' => [
                 'value' => [
                     'type' => 'string',
-                    'description' => 'A search for the given value will be performed on the following fields: ' . collect(
+                    'description' => 'A search for the given value will be performed on the following fields: '.collect(
                             $this->controller->searchableBy()
-                        )->join(', ')
+                        )->join(', '),
                 ],
                 'case_sensitive' => [
                     'type' => 'boolean',
-                    'description' => '(default: true) Set it to false to perform search in case-insensitive way'
-                ]
-            ]
+                    'description' => '(default: true) Set it to false to perform search in case-insensitive way',
+                ],
+            ],
         ];
     }
 }

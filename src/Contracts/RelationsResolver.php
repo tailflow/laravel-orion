@@ -23,7 +23,17 @@ interface RelationsResolver
 
     public function relationLocalKeyFromRelationInstance(Relation $relationInstance): string;
 
-    public function guardRelationsForCollection(Collection $entities, array $requestedRelations, ?string $parentRelation = null, bool $normalized = false): Collection;
+    public function guardRelationsForCollection(
+        Collection $entities,
+        array $requestedRelations,
+        ?string $parentRelation = null,
+        bool $normalized = false
+    ): Collection;
 
-    public function guardRelations(Model $entity, array $requestedRelations, ?string $parentRelation = null, bool $normalized = false);
+    public function guardRelations(
+        Model $entity,
+        array $requestedRelations,
+        ?string $parentRelation = null,
+        bool $normalized = false
+    );
 }

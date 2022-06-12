@@ -29,7 +29,7 @@ class ModelResourceComponentBuilder extends ModelComponentBuilder
                 ['$ref' => "#/components/schemas/{$resourceComponentBaseName}"],
                 [
                     'type' => 'object',
-                    'properties' => $this->getPropertiesFromSchema($resourceModel)
+                    'properties' => $this->getPropertiesFromSchema($resourceModel),
                 ],
             ],
         ];

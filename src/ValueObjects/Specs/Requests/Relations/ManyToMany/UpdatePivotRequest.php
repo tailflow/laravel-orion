@@ -20,12 +20,12 @@ class UpdatePivotRequest extends Request
                             'properties' => [
                                 'pivot' => [
                                     'type' => 'object',
-                                    'description' => 'Pivot fields'
-                                ]
+                                    'description' => 'Pivot fields',
+                                ],
                             ],
                         ],
                     ],
-                ]
+                ],
             ]
         );
     }

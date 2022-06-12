@@ -29,7 +29,7 @@ class Paginator implements \Orion\Contracts\Paginator
      */
     public function resolvePaginationLimit(Request $request): int
     {
-        $limit = (int)$request->get('limit', $this->defaultLimit);
+        $limit = (int) $request->get('limit', $this->defaultLimit);
         return $limit > 0 ? $limit : $this->defaultLimit;
     }
 }

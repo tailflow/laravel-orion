@@ -74,6 +74,6 @@ trait HandlesTransactions
      */
     protected function transactionsAreEnabled(): bool
     {
-        return (bool)config('orion.transactions.enabled', false);
+        return (bool) config('orion.transactions.enabled', false);
     }
 }

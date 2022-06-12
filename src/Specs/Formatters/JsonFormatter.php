@@ -16,6 +16,6 @@ class JsonFormatter implements Formatter
      */
     public function format(array $specs): string
     {
-        return json_encode($specs, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+        return json_encode($specs, JSON_THROW_ON_ERROR|JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES);
     }
 }

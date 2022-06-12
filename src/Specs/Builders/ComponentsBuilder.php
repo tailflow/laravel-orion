@@ -37,7 +37,7 @@ class ComponentsBuilder
     ];
 
     protected const ROOT_COMPONENT_BUILDERS = [
-        SecurityComponentBuilder::class
+        SecurityComponentBuilder::class,
     ];
 
     /**

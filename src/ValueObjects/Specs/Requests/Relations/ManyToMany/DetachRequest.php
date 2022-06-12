@@ -22,10 +22,10 @@ class DetachRequest extends Request
                                     'type' => 'array',
                                     'items' => [
                                         'type' => 'object',
-                                        'description' => 'A key-value pairs, where keys are relation resource IDs and values are objects representing pivot fields'
-                                    ]
-                                ]
-                            ]
+                                        'description' => 'A key-value pairs, where keys are relation resource IDs and values are objects representing pivot fields',
+                                    ],
+                                ],
+                            ],
                         ],
                     ],
                 ],

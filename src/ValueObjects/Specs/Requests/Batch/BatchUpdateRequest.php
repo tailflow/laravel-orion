@@ -32,9 +32,9 @@ class BatchUpdateRequest extends Request
                                     'type' => 'array',
                                     'items' => [
                                         '$ref' => "#/components/schemas/{$this->resourceComponentBaseName}",
-                                    ]
-                                ]
-                            ]
+                                    ],
+                                ],
+                            ],
                         ],
                     ],
                 ],

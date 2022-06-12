@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Orion\Contracts;
 
+use Illuminate\Contracts\Pagination\Paginator;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Orion\Http\Requests\Request;
-use Illuminate\Contracts\Pagination\Paginator;
 
 interface AppendsResolver
 {

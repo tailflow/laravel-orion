@@ -25,13 +25,13 @@ class SortBuilder extends SearchPartialBuilder
                     ],
                     'direction' => [
                         'type' => 'string',
-                        'enum' => ['asc', 'desc']
-                    ]
+                        'enum' => ['asc', 'desc'],
+                    ],
                 ],
                 'required' => [
-                    'field'
-                ]
-            ]
+                    'field',
+                ],
+            ],
         ];
     }
 }

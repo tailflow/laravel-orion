@@ -49,7 +49,7 @@ abstract class RelationController extends BaseController
     public function __construct()
     {
         if (!$this->relation) {
-            throw new BindingException('Relation is not defined for ' . static::class);
+            throw new BindingException('Relation is not defined for '.static::class);
         }
 
         parent::__construct();

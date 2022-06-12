@@ -3,6 +3,7 @@
 namespace Orion\Testing;
 
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Foundation\Testing\TestResponse;
 
 trait InteractsWithAuthorization
 {
@@ -64,7 +65,7 @@ trait InteractsWithAuthorization
 
     /**
      *
-     * @param \Illuminate\Testing\TestResponse|\Illuminate\Foundation\Testing\TestResponse $response
+     * @param \Illuminate\Testing\TestResponse|TestResponse $response
      */
     protected function assertUnauthorizedResponse($response): void
     {

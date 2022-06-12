@@ -9,7 +9,7 @@ class SecurityBuilder
     public function build(): array
     {
         $schemes = [
-           ['BearerAuth' => []]
+            ['BearerAuth' => []],
         ];
 
         if (class_exists('Laravel\\Passport\\PassportServiceProvider')) {

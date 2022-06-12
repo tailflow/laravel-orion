@@ -9,5 +9,13 @@ class BelongsToRelationResourceRegistrar extends RelationResourceRegistrar
      *
      * @var array
      */
-    protected $resourceDefaults = ['batchUpdate', 'batchDestroy', 'batchRestore', 'show', 'update', 'destroy', 'restore'];
+    protected $resourceDefaults = [
+        'batchUpdate',
+        'batchDestroy',
+        'batchRestore',
+        'show',
+        'update',
+        'destroy',
+        'restore',
+    ];
 }

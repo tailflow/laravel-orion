@@ -246,7 +246,7 @@ trait HandlesRelationStandardOperations
             $result = $this->storeWithTransaction($request, $parentKey);
             $this->commitTransaction();
             return $result;
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             $this->rollbackTransactionAndRaise($exception);
         }
     }
@@ -601,7 +601,7 @@ trait HandlesRelationStandardOperations
             $result = $this->updateWithTransaction($request, $parentKey, $relatedKey);
             $this->commitTransaction();
             return $result;
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             $this->rollbackTransactionAndRaise($exception);
         }
     }
@@ -792,7 +792,7 @@ trait HandlesRelationStandardOperations
             $result = $this->destroyWithTransaction($request, $parentKey, $relatedKey);
             $this->commitTransaction();
             return $result;
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             $this->rollbackTransactionAndRaise($exception);
         }
     }
@@ -984,7 +984,7 @@ trait HandlesRelationStandardOperations
             $result = $this->restoreWithTransaction($request, $parentKey, $relatedKey);
             $this->commitTransaction();
             return $result;
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             $this->rollbackTransactionAndRaise($exception);
         }
     }

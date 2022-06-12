@@ -65,7 +65,7 @@ trait HandlesStandardOperations
     protected function buildIndexFetchQuery(Request $request, array $requestedRelations): Builder
     {
         $filters = collect($request->get('filters', []))
-            ->map(function(array $filterDescriptor) use ($request) {
+            ->map(function (array $filterDescriptor) use ($request) {
                 return $this->beforeFilterApplied($request, $filterDescriptor);
             })->toArray();
 

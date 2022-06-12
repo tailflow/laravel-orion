@@ -185,7 +185,7 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
         }
 
         if (!is_array($filterDescriptor['value']) || $constraint === 'whereDate') {
-            $query->{$or ? 'or' . ucfirst($constraint) : $constraint}(
+            $query->{$or ? 'or'.ucfirst($constraint) : $constraint}(
                 $field,
                 $filterDescriptor['operator'] ?? '=',
                 $filterDescriptor['value']
@@ -335,14 +335,14 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
                                 if (!$caseSensitive) {
                                     return $relationQuery->whereRaw(
                                         "lower({$relationField}) like lower(?)",
-                                        ['%' . $requestedSearchString . '%']
+                                        ['%'.$requestedSearchString.'%']
                                     );
                                 }
 
                                 return $relationQuery->where(
                                     $relationField,
                                     'like',
-                                    '%' . $requestedSearchString . '%'
+                                    '%'.$requestedSearchString.'%'
                                 );
                             }
                         );
@@ -352,13 +352,13 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
                         if (!$caseSensitive) {
                             $whereQuery->orWhereRaw(
                                 "lower({$qualifiedFieldName}) like lower(?)",
-                                ['%' . $requestedSearchString . '%']
+                                ['%'.$requestedSearchString.'%']
                             );
                         } else {
                             $whereQuery->orWhere(
                                 $qualifiedFieldName,
                                 'like',
-                                '%' . $requestedSearchString . '%'
+                                '%'.$requestedSearchString.'%'
                             );
                         }
                     }

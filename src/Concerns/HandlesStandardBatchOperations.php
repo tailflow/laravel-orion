@@ -24,7 +24,7 @@ trait HandlesStandardBatchOperations
             $result = $this->batchStoreWithTransaction($request);
             $this->commitTransaction();
             return $result;
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             $this->rollbackTransactionAndRaise($exception);
         }
     }
@@ -121,7 +121,7 @@ trait HandlesStandardBatchOperations
             $result = $this->batchUpdateWithTransaction($request);
             $this->commitTransaction();
             return $result;
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             $this->rollbackTransactionAndRaise($exception);
         }
     }
@@ -266,7 +266,7 @@ trait HandlesStandardBatchOperations
             $result = $this->batchDestroyWithTransaction($request);
             $this->commitTransaction();
             return $result;
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             $this->rollbackTransactionAndRaise($exception);
         }
     }
@@ -345,8 +345,11 @@ trait HandlesStandardBatchOperations
      * @param bool $softDeletes
      * @return Builder
      */
-    protected function buildBatchDestroyFetchQuery(Request $request, array $requestedRelations, bool $softDeletes): Builder
-    {
+    protected function buildBatchDestroyFetchQuery(
+        Request $request,
+        array $requestedRelations,
+        bool $softDeletes
+    ): Builder {
         return $this->buildBatchFetchQuery($request, $requestedRelations)
             ->when($softDeletes, function ($query) {
                 $query->withTrashed();
@@ -391,7 +394,7 @@ trait HandlesStandardBatchOperations
             $result = $this->batchRestoreWithTransaction($request);
             $this->commitTransaction();
             return $result;
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             $this->rollbackTransactionAndRaise($exception);
         }
     }

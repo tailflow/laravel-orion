@@ -186,16 +186,17 @@ trait HandlesRelationManyToManyOperations
         $resourceKeyName = $this->keyName();
         $resourceModels = $resourceModel->whereIn($resourceKeyName, array_keys($resources))->get();
 
-        return $resourceModels->filter(function($resourceModel) {
-                return !$this->authorizationRequired() ||
-                    Gate::forUser($this->resolveUser())->allows('view', $resourceModel);
-            })
+        return $resourceModels->filter(function ($resourceModel) {
+            return !$this->authorizationRequired() ||
+                Gate::forUser($this->resolveUser())->allows('view', $resourceModel);
+        })
             ->mapWithKeys(function ($resourceModel) use ($relationInstance, $resources, $resourceKeyName) {
                 return [
-                    $resourceModel->{$relationInstance->getRelatedKeyName()} => $resources[$resourceModel->{$resourceKeyName}],
+                    $resourceModel->{$relationInstance->getRelatedKeyName(
+                    )} => $resources[$resourceModel->{$resourceKeyName}],
                 ];
             }
-        )->all();
+            )->all();
     }
 
     /**
@@ -700,7 +701,7 @@ trait HandlesRelationManyToManyOperations
 
         $parentEntity->{$this->getRelation()}()->updateExistingPivot($relatedKey, $pivot);
 
-        return [is_numeric($relatedKey) ? (int)$relatedKey : $relatedKey];
+        return [is_numeric($relatedKey) ? (int) $relatedKey : $relatedKey];
     }
 
     /**

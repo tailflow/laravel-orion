@@ -54,6 +54,6 @@ class RegisteredResource
             return $controller;
         }
 
-        return Str::finish(config('orion.namespaces.controllers'), '\\') . $controller;
+        return Str::finish(config('orion.namespaces.controllers'), '\\').$controller;
     }
 }

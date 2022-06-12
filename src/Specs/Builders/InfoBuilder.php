@@ -9,7 +9,7 @@ class InfoBuilder
     public function build(): array
     {
         $info = [
-            'title' => config('orion.specs.info.title')
+            'title' => config('orion.specs.info.title'),
         ];
 
         $optionalFields = [

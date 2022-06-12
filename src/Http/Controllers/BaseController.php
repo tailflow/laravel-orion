@@ -103,7 +103,7 @@ abstract class BaseController extends \Illuminate\Routing\Controller
     public function __construct()
     {
         if (!$this->model) {
-            throw new BindingException('Model is not defined for ' . static::class);
+            throw new BindingException('Model is not defined for '.static::class);
         }
 
         $this->componentsResolver = App::makeWith(

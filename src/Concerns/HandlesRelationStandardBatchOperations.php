@@ -27,7 +27,7 @@ trait HandlesRelationStandardBatchOperations
             $result = $this->batchStoreWithTransaction($request, $parentKey);
             $this->commitTransaction();
             return $result;
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             $this->rollbackTransactionAndRaise($exception);
         }
     }
@@ -167,7 +167,7 @@ trait HandlesRelationStandardBatchOperations
             $result = $this->batchUpdateWithTransaction($request, $parentKey);
             $this->commitTransaction();
             return $result;
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             $this->rollbackTransactionAndRaise($exception);
         }
     }
@@ -365,7 +365,7 @@ trait HandlesRelationStandardBatchOperations
             $result = $this->batchDestroyWithTransaction($request, $parentKey);
             $this->commitTransaction();
             return $result;
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             $this->rollbackTransactionAndRaise($exception);
         }
     }
@@ -536,7 +536,7 @@ trait HandlesRelationStandardBatchOperations
             $result = $this->batchRestoreWithTransaction($request, $parentKey);
             $this->commitTransaction();
             return $result;
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             $this->rollbackTransactionAndRaise($exception);
         }
     }

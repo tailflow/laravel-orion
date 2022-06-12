@@ -118,7 +118,7 @@ class PathsBuilder
         string $operation,
         Route $route
     ): OperationBuilder {
-        $operationClassName = "Orion\\Specs\\Builders\\Operations\\" . ucfirst($operation) . 'OperationBuilder';
+        $operationClassName = "Orion\\Specs\\Builders\\Operations\\".ucfirst($operation).'OperationBuilder';
 
         return $this->operationBuilderFactory->make($operationClassName, $resource, $operation, $route);
     }
@@ -135,7 +135,7 @@ class PathsBuilder
         string $operation,
         Route $route
     ): OperationBuilder {
-        $operationClassName = "Orion\\Specs\\Builders\\Operations\\Batch\\" . ucfirst($operation) . 'OperationBuilder';
+        $operationClassName = "Orion\\Specs\\Builders\\Operations\\Batch\\".ucfirst($operation).'OperationBuilder';
 
         return $this->operationBuilderFactory->make($operationClassName, $resource, $operation, $route);
     }
@@ -152,9 +152,9 @@ class PathsBuilder
         string $operation,
         Route $route
     ): RelationOperationBuilder {
-        $operationClassName = "Orion\\Specs\\Builders\\Operations\\Relations\\OneToMany\\" . ucfirst(
+        $operationClassName = "Orion\\Specs\\Builders\\Operations\\Relations\\OneToMany\\".ucfirst(
                 $operation
-            ) . 'OperationBuilder';
+            ).'OperationBuilder';
 
         return $this->relationOperationBuilderFactory->make($operationClassName, $resource, $operation, $route);
     }
@@ -171,9 +171,9 @@ class PathsBuilder
         string $operation,
         Route $route
     ): RelationOperationBuilder {
-        $operationClassName = "Orion\\Specs\\Builders\\Operations\\Relations\\ManyToMany\\" . ucfirst(
+        $operationClassName = "Orion\\Specs\\Builders\\Operations\\Relations\\ManyToMany\\".ucfirst(
                 $operation
-            ) . 'OperationBuilder';
+            ).'OperationBuilder';
 
         return $this->relationOperationBuilderFactory->make($operationClassName, $resource, $operation, $route);
     }

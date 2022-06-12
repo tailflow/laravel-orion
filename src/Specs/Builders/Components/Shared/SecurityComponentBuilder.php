@@ -16,8 +16,8 @@ class SecurityComponentBuilder extends SharedComponentBuilder
         $component->schemes = [
             'BearerAuth' => [
                 'type' => 'http',
-                'scheme' => 'bearer'
-            ]
+                'scheme' => 'bearer',
+            ],
         ];
 
         if (class_exists('Laravel\\Passport\\PassportServiceProvider')) {
@@ -26,9 +26,9 @@ class SecurityComponentBuilder extends SharedComponentBuilder
                 'flows' => [
                     'authorizationCode' => [
                         'authorizationUrl' => route('passport.authorizations.authorize'),
-                        'tokenUrl' => route('passport.token')
-                    ]
-                ]
+                        'tokenUrl' => route('passport.token'),
+                    ],
+                ],
             ];
         }
 

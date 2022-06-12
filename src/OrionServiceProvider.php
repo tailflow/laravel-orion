@@ -47,12 +47,12 @@ class OrionServiceProvider extends ServiceProvider
 
         $this->publishes(
             [
-                __DIR__ . '/../config/orion.php' => config_path('orion.php'),
+                __DIR__.'/../config/orion.php' => config_path('orion.php'),
             ],
             'orion-config'
         );
 
-        $this->mergeConfigFrom(__DIR__ . '/../config/orion.php', 'orion');
+        $this->mergeConfigFrom(__DIR__.'/../config/orion.php', 'orion');
 
         if ($this->app->runningInConsole()) {
             $this->commands(

@@ -19,8 +19,12 @@ class RelationOperationBuilderFactory
      * @return RelationOperationBuilder
      * @throws BindingResolutionException
      */
-    public function make(string $operationBuilderClass, RegisteredResource $resource, string $operation, Route $route): RelationOperationBuilder
-    {
+    public function make(
+        string $operationBuilderClass,
+        RegisteredResource $resource,
+        string $operation,
+        Route $route
+    ): RelationOperationBuilder {
         return app()->makeWith(
             $operationBuilderClass,
             [
