@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Orion\Specs\Builders;
 
+use Illuminate\Contracts\Container\BindingResolutionException;
+
 class Builder
 {
     /** @var InfoBuilder */
@@ -35,6 +37,10 @@ class Builder
         $this->tagsBuilder = $tagsBuilder;
     }
 
+    /**
+     * @return array
+     * @throws BindingResolutionException
+     */
     public function build(): array
     {
         return [

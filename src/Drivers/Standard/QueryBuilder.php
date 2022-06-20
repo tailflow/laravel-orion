@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Arr;
+use JsonException;
 use Orion\Http\Requests\Request;
 use RuntimeException;
 
@@ -62,6 +63,7 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
      * @param Builder|Relation $query
      * @param Request $request
      * @return Builder|Relation
+     * @throws JsonException
      */
     public function buildQuery($query, Request $request)
     {
@@ -102,6 +104,7 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
      * @param Builder|Relation $query
      * @param Request $request
      * @param array $filterDescriptors
+     * @throws JsonException
      */
     public function applyFiltersToQuery($query, Request $request, array $filterDescriptors = []): void
     {
@@ -146,6 +149,7 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
      * @param Builder|Relation $query
      * @param bool $or
      * @return Builder|Relation
+     * @throws JsonException
      */
     protected function buildFilterQueryWhereClause(string $field, array $filterDescriptor, $query, bool $or = false)
     {
@@ -168,6 +172,7 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
      * @param Builder|Relation $query
      * @param bool $or
      * @return Builder|Relation
+     * @throws JsonException
      */
     protected function buildFilterNestedQueryWhereClause(
         string $field,
@@ -180,16 +185,36 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
 
         if ($treatAsDateField && Carbon::parse($filterDescriptor['value'])->toTimeString() === '00:00:00') {
             $constraint = 'whereDate';
+        } elseif (in_array(Arr::get($filterDescriptor, 'operator'), ['all in', 'any in'])) {
+            $constraint = 'whereJsonContains';
         } else {
             $constraint = 'where';
         }
 
-        if (!is_array($filterDescriptor['value']) || $constraint === 'whereDate') {
-            $query->{$or ? 'or' . ucfirst($constraint) : $constraint}(
+        if ($constraint !== 'whereJsonContains' && (!is_array(
+                    $filterDescriptor['value']
+                ) || $constraint === 'whereDate')) {
+            $query->{$or ? 'or'.ucfirst($constraint) : $constraint}(
                 $field,
                 $filterDescriptor['operator'] ?? '=',
                 $filterDescriptor['value']
             );
+        } elseif ($constraint === 'whereJsonContains') {
+            if (!is_array($filterDescriptor['value'])) {
+                $query->{$or ? 'orWhereJsonContains' : 'whereJsonContains'}(
+                    $field,
+                    $filterDescriptor['value']
+                );
+            } else {
+                $query->{$or ? 'orWhere' : 'where'}(function ($nestedQuery) use ($filterDescriptor, $field) {
+                    foreach ($filterDescriptor['value'] as $value) {
+                        $nestedQuery->{$filterDescriptor['operator'] === 'any in' ? 'orWhereJsonContains' : 'whereJsonContains'}(
+                            $field,
+                            $value
+                        );
+                    }
+                });
+            }
         } else {
             $query->{$or ? 'orWhereIn' : 'whereIn'}(
                 $field,
@@ -335,14 +360,14 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
                                 if (!$caseSensitive) {
                                     return $relationQuery->whereRaw(
                                         "lower({$relationField}) like lower(?)",
-                                        ['%' . $requestedSearchString . '%']
+                                        ['%'.$requestedSearchString.'%']
                                     );
                                 }
 
                                 return $relationQuery->where(
                                     $relationField,
                                     'like',
-                                    '%' . $requestedSearchString . '%'
+                                    '%'.$requestedSearchString.'%'
                                 );
                             }
                         );
@@ -352,13 +377,13 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
                         if (!$caseSensitive) {
                             $whereQuery->orWhereRaw(
                                 "lower({$qualifiedFieldName}) like lower(?)",
-                                ['%' . $requestedSearchString . '%']
+                                ['%'.$requestedSearchString.'%']
                             );
                         } else {
                             $whereQuery->orWhere(
                                 $qualifiedFieldName,
                                 'like',
-                                '%' . $requestedSearchString . '%'
+                                '%'.$requestedSearchString.'%'
                             );
                         }
                     }

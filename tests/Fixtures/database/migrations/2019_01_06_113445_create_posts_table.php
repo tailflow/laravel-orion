@@ -20,6 +20,7 @@ class CreatePostsTable extends Migration
             $table->text('body');
             $table->string('tracking_id')->nullable();
             $table->jsonb('meta')->nullable();
+            $table->jsonb('options')->nullable();
             $table->unsignedInteger('position')->default(0);
 
             $table->unsignedBigInteger('user_id')->nullable();

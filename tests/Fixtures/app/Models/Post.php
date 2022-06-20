@@ -27,7 +27,8 @@ class Post extends Model
      * @var array
      */
     protected $casts = [
-        'meta' => 'array'
+        'meta' => 'array',
+        'options' => 'array',
     ];
 
     /**
