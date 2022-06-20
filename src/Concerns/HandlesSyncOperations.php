@@ -104,13 +104,29 @@ trait HandlesSyncOperations
         $modelResponse = null;
         try {
             $input = $request->all();
-            $input['id'] = $entity->id;
+            $pathParams = explode("/", $request->getPathInfo());
+            $input['id'] = end($pathParams);
             $modelResponse = OrionBuilder::build('job')->destroy($input,$this->model);
         } catch (Exception $exception){
             throw $exception;
         }
 
         return response($modelResponse, 200);
+    }
+
+    /**
+     * @param Request $request
+     * @param         $key
+     *
+     * @return Application|ResponseFactory|Response|void
+     * @throws Exception
+     */
+    protected function destroyWithTransaction(Request $request, $key)
+    {
+        $result = $this->beforeDestroy($request, new $this->model);
+        if ($this->hookResponds($result)) {
+            return $result;
+        }
     }
 
     /**
