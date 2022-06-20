@@ -42,8 +42,11 @@ class SeedResourceJob extends Job implements ShouldQueue
         if ($isNone) {
             $result = $chain;
         } else {
-            $responseModel = OrionBuilder::build('query')->setModel($this->model)->seed($this->params);
-            $result = $responseModel;
+            $result = OrionBuilder::build('query')->setModel($this->model)->seed($this->params);
+            $chain = $this->postProcess($result, 'seed');
+            if ($chain) {
+                $result = $result->fresh();
+            }
         }
         return $result;
     }

@@ -43,8 +43,11 @@ class DeleteResourceJob extends Job implements ShouldQueue
         if ($isNone) {
             $result = $chain;
         } else {
-            $responseModel = OrionBuilder::build('query')->setModel($this->model)->delete($this->params);
-            $result = $responseModel;
+            $result = OrionBuilder::build('query')->setModel($this->model)->delete($this->params);
+            $chain = $this->postProcess($result, 'delete');
+            if ($chain) {
+                $result = $result->fresh();
+            }
         }
 
 

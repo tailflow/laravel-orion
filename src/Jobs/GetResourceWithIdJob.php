@@ -43,8 +43,11 @@ class GetResourceWithIdJob extends Job implements ShouldQueue
         if ($isNone) {
             $result = $chain;
         } else {
-            $responseModel = OrionBuilder::build('query')->setModel($this->model)->getById($this->params);
-            $result = $responseModel;
+            $result = OrionBuilder::build('query')->setModel($this->model)->getById($this->params);
+            $chain = $this->postProcess($result, 'getById');
+            if ($chain) {
+                $result = $result->fresh();
+            }
         }
 
         return $result;

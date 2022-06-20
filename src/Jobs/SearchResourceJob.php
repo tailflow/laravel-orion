@@ -51,8 +51,11 @@ class SearchResourceJob extends Job implements ShouldQueue
             if ($isNone) {
                 $result = $chain;
             } else {
-                $collection = OrionBuilder::build('query')->setModel($this->model)->search($this->params);
-                $result = $collection;
+                $result = OrionBuilder::build('query')->setModel($this->model)->search($this->params);
+                $chain = $this->postProcess($result, 'search');
+                if ($chain) {
+                    $result = $result->fresh();
+                }
             }
 
         } catch (Exception $exception) {

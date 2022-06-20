@@ -47,6 +47,10 @@ class GetResourceAvailabilityJob extends Job implements ShouldQueue
             }else {
                 $output = OrionBuilder::build('query')->setModel($this->model)->getAvailability();
                 $result = ['output' => $output];
+                $chain = $this->postProcess($result, 'availability');
+                if ($chain) {
+                    $result = $result->fresh();
+                }
             }
 
         } catch (Exception $e) {

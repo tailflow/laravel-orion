@@ -52,8 +52,11 @@ class GetAllResourceJob extends Job implements ShouldQueue
                 $result = $chain;
             } else {
                 /** @var LengthAwarePaginator $collection */
-                $collection = OrionBuilder::build('query')->setModel($this->model)->list($this->params);
-                $result = $collection;
+                $result = OrionBuilder::build('query')->setModel($this->model)->list($this->params);
+                $chain = $this->postProcess($result, 'get');
+                if ($chain) {
+                    $result = $result->fresh();
+                }
             }
 
         } catch (Exception $exception) {
