@@ -16,13 +16,13 @@ trait HandlesProcess
 {
 
     /**
-     * @param Model $input
+     * @param mixed $input
      * @param       $type
      *
      * @return mixed
      * @throws \ReflectionException
      */
-    private function postProcess(Model $input, $type)
+    private function postProcess(mixed $input, $type)
     {
         $result = null;
         $className = $this->associate($this->model, 0, 2);
