@@ -52,8 +52,15 @@ class ParamsValidator implements \Orion\Contracts\ParamsValidator
             [
                 'filters' => ['sometimes', 'array'],
                 'filters.*.type' => ['sometimes', 'in:and,or'],
-                'filters.*.field' => ['required_with:filters', 'regex:/^[\w.\_\-\>]+$/', new WhitelistedField($this->filterableBy)],
-                'filters.*.operator' => ['sometimes', 'in:<,<=,>,>=,=,!=,like,not like,ilike,not ilike,in,not in,all in,any in'],
+                'filters.*.field' => [
+                    'required_with:filters',
+                    'regex:/^[\w.\_\-\>]+$/',
+                    new WhitelistedField($this->filterableBy),
+                ],
+                'filters.*.operator' => [
+                    'sometimes',
+                    'in:<,<=,>,>=,=,!=,like,not like,ilike,not ilike,in,not in,all in,any in',
+                ],
                 'filters.*.value' => ['present', 'nullable'],
             ]
         )->validate();
@@ -65,7 +72,11 @@ class ParamsValidator implements \Orion\Contracts\ParamsValidator
             $request->all(),
             [
                 'sort' => ['sometimes', 'array'],
-                'sort.*.field' => ['required_with:sort', 'regex:/^[\w.\_\-\>]+$/', new WhitelistedField($this->sortableBy)],
+                'sort.*.field' => [
+                    'required_with:sort',
+                    'regex:/^[\w.\_\-\>]+$/',
+                    new WhitelistedField($this->sortableBy),
+                ],
                 'sort.*.direction' => ['sometimes', 'in:asc,desc'],
             ]
         )->validate();
@@ -78,7 +89,7 @@ class ParamsValidator implements \Orion\Contracts\ParamsValidator
             [
                 'search' => ['sometimes', 'array'],
                 'search.value' => ['string', 'nullable'],
-                'search.case_sensitive' => ['bool']
+                'search.case_sensitive' => ['bool'],
             ]
         )->validate();
     }

@@ -29,7 +29,7 @@ class FiltersBuilder extends SearchPartialBuilder
                     ],
                     'operator' => [
                         'type' => 'string',
-                        'enum' => ['<','<=','>','>=','=','!=','like','not like','ilike','not ilike','in','not in'],
+                        'enum' => ['<','<=','>','>=','=','!=','like','not like','ilike','not ilike','in','not in', 'all in', 'any in'],
                     ],
                     'value' => [
                         'type' => 'string',
