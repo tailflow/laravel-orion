@@ -172,4 +172,29 @@ class StandardIndexSortingOperationsTest extends TestCase
             $this->makePaginator([$postA, $postB, $postC], 'posts/search')
         );
     }
+
+    /** @test */
+    public function getting_a_list_of_resources_asc_sorted_by_multiple_relation_fields(): void
+    {
+        $postC = factory(Post::class)->create(['user_id' => factory(User::class)->create(['name' => 'C'])->id])->fresh();
+        $postB = factory(Post::class)->create(['user_id' => factory(User::class)->create(['name' => 'B'])->id])->fresh();
+        $postA = factory(Post::class)->create(['user_id' => factory(User::class)->create(['name' => 'A'])->id])->fresh();
+
+        Gate::policy(Post::class, GreenPolicy::class);
+
+        $response = $this->post(
+            '/api/posts/search',
+            [
+                'sort' => [
+                    ['field' => 'user.name', 'direction' => 'asc'],
+                    ['field' => 'user.email', 'direction' => 'asc'],
+                ],
+            ]
+        );
+
+        $this->assertResourcesPaginated(
+            $response,
+            $this->makePaginator([$postA, $postB, $postC], 'posts/search')
+        );
+    }
 }

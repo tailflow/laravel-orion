@@ -395,7 +395,7 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
     /**
      * Apply sorting to the given query builder based on the "sort" query parameter.
      *
-     * @param Builder|Relation $query
+     * @param Builder $query
      * @param Request $request
      */
     public function applySortingToQuery($query, Request $request): void
@@ -431,8 +431,14 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
                 );
                 $relationLocalKey = $this->relationsResolver->relationLocalKeyFromRelationInstance($relationInstance);
 
-                $query->leftJoin($relationTable, $relationForeignKey, '=', $relationLocalKey)
-                    ->orderBy("$relationTable.$relationField", $direction)
+                $requiresJoin = collect($query->toBase()->joins ?? [])
+                    ->where('table', $relationTable)->isEmpty();
+
+                if ($requiresJoin) {
+                    $query->leftJoin($relationTable, $relationForeignKey, '=', $relationLocalKey);
+                }
+
+                $query->orderBy("$relationTable.$relationField", $direction)
                     ->select($this->getQualifiedFieldName('*'));
             } else {
                 $query->orderBy($this->getQualifiedFieldName($sortableField), $direction);
