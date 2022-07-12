@@ -50,19 +50,35 @@ class ParamsValidator implements \Orion\Contracts\ParamsValidator
         Validator::make(
             $request->all(),
             [
-                'filters' => ['sometimes', 'array'],
-                'filters.*.type' => ['sometimes', 'in:and,or'],
-                'filters.*.field' => [
-                    'regex:/^[\w.\_\-\>]+$/',
-                    new WhitelistedField($this->filterableBy),
-                ],
-                'filters.*.operator' => [
-                    'sometimes',
-                    'in:<,<=,>,>=,=,!=,like,not like,ilike,not ilike,in,not in,all in,any in',
-                ],
-                'filters.*.value' => ['present', 'nullable'],
+                'filters' => ['sometimes', 'array']
             ]
         )->validate();
+
+        $this->validateNestedFilter($request->all()['filters']);
+    }
+
+    protected function validateNestedFilter($nested) {
+        foreach ($nested as $filter) {
+            Validator::make(
+                $filter,
+                [
+                    'type' => ['sometimes', 'in:and,or'],
+                    'field' => [
+                        'required_without:nested',
+                        'regex:/^[\w.\_\-\>]+$/',
+                        new WhitelistedField($this->filterableBy),
+                    ],
+                    'operator' => [
+                        'sometimes',
+                        'in:<,<=,>,>=,=,!=,like,not like,ilike,not ilike,in,not in,all in,any in',
+                    ],
+                    'value' => ['required_without:nested', 'nullable'],
+                    'nested' => ['sometimes', 'array'],
+                ]
+            )->validate();
+
+            $this->validateNestedFilter($filter['nested'] ?? []);
+        }
     }
 
     public function validateSort(Request $request): void

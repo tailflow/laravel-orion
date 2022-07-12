@@ -116,7 +116,7 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
         foreach ($filterDescriptors as $filterDescriptor) {
             $or = Arr::get($filterDescriptor, 'type', 'and') === 'or';
 
-            if (is_array($childrenDescriptors = Arr::get($filterDescriptor, 'value'))) {
+            if (is_array($childrenDescriptors = Arr::get($filterDescriptor, 'nested'))) {
                 $query->{$or ? 'orWhere' : 'where'}(fn ($query) => $this->applyFiltersToQuery($query, $request, $childrenDescriptors));
             } elseif (strpos($filterDescriptor['field'], '.') !== false) {
                 $relation = $this->relationsResolver->relationFromParamConstraint($filterDescriptor['field']);
