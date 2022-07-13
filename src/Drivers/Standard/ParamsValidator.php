@@ -72,7 +72,7 @@ class ParamsValidator implements \Orion\Contracts\ParamsValidator
                 'in:<,<=,>,>=,=,!=,like,not like,ilike,not ilike,in,not in,all in,any in',
             ],
             $prefix.'.*.value' => ['nullable'],
-            $prefix.'.*.nested' => ['sometimes', 'array', "prohibits:{$prefix}.*.operator,{$prefix}.*.value"],
+            $prefix.'.*.nested' => ['sometimes', 'array', "prohibits:{$prefix}.*.operator,{$prefix}.*.value,{$prefix}.*.field"],
         ]);
 
         if ($max_depth >= $current_depth) {
