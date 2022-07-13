@@ -36,18 +36,15 @@ class FiltersBuilder extends SearchPartialBuilder
             'type' => 'array',
             'items' => [
                 'type' => 'object',
-                'properties' => [
-                    ...$filters,
+                'properties' => array_merge($filters, [
                     'nested' => [
                         'type' => 'array',
                         'items' => [
                             'type' => 'object',
-                            'properties' => [
-                                ...$filters,
-                            ]
+                            'properties' => $filters
                         ]
                     ]
-                ]
+                ])
             ]
         ];
     }
