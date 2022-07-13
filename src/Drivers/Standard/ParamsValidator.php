@@ -68,10 +68,11 @@ class ParamsValidator implements \Orion\Contracts\ParamsValidator
                 new WhitelistedField($this->filterableBy),
             ],
             $prefix.'.*.operator' => [
+                "prohibited_if:{$prefix}.*.nested",
                 'sometimes',
                 'in:<,<=,>,>=,=,!=,like,not like,ilike,not ilike,in,not in,all in,any in',
             ],
-            $prefix.'.*.value' => ["required_without:{$prefix}.*.nested", 'nullable'],
+            $prefix.'.*.value' => ["prohibited_if:{$prefix}.*.nested", 'nullable'],
             $prefix.'.*.nested' => ['sometimes', 'array'],
         ]);
 
