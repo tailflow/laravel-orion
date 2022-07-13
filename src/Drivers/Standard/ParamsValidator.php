@@ -47,38 +47,53 @@ class ParamsValidator implements \Orion\Contracts\ParamsValidator
 
     public function validateFilters(Request $request): void
     {
+        $max_depth = ceil(($this->getArrayDepth($request->all()['filters'])) / 2) - 1;
+
+        abort_if($max_depth > config('orion.max_nested_depth'), 422, __('Max nested depth :depth is exceeded', ['depth' => config('orion.max_nested_depth')]));
+
         Validator::make(
             $request->all(),
-            [
-                'filters' => ['sometimes', 'array']
-            ]
+            array_merge([
+                'filters' => ['sometimes', 'array'],
+            ], $this->getNestedRules('filters', $max_depth))
         )->validate();
-
-        $this->validateNestedFilter($request->all()['filters']);
     }
 
-    protected function validateNestedFilter($nested) {
-        foreach ($nested as $filter) {
-            Validator::make(
-                $filter,
-                [
-                    'type' => ['sometimes', 'in:and,or'],
-                    'field' => [
-                        'required_without:nested',
-                        'regex:/^[\w.\_\-\>]+$/',
-                        new WhitelistedField($this->filterableBy),
-                    ],
-                    'operator' => [
-                        'sometimes',
-                        'in:<,<=,>,>=,=,!=,like,not like,ilike,not ilike,in,not in,all in,any in',
-                    ],
-                    'value' => ['required_without:nested', 'nullable'],
-                    'nested' => ['sometimes', 'array'],
-                ]
-            )->validate();
+    protected function getNestedRules($prefix, $max_depth, $rules = [], $current_depth = 1) {
+        $rules = array_merge($rules, [
+            $prefix.'.*.type' => ['sometimes', 'in:and,or'],
+            $prefix.'.*.field' => [
+                "required_without:{$prefix}.*.nested",
+                'regex:/^[\w.\_\-\>]+$/',
+                new WhitelistedField($this->filterableBy),
+            ],
+            $prefix.'.*.operator' => [
+                'sometimes',
+                'in:<,<=,>,>=,=,!=,like,not like,ilike,not ilike,in,not in,all in,any in',
+            ],
+            $prefix.'.*.value' => ["required_without:{$prefix}.*.nested", 'nullable'],
+            $prefix.'.*.nested' => ['sometimes', 'array'],
+        ]);
 
-            $this->validateNestedFilter($filter['nested'] ?? []);
+        if ($max_depth >= $current_depth) {
+            $rules = array_merge($rules, $this->getNestedRules("{$prefix}.*.nested", $max_depth, $rules, ++$current_depth));
         }
+
+        return $rules;
+    }
+
+    protected function getArrayDepth($array) {
+        $max_depth = 0;
+
+        foreach ($array as $value) {
+            if (is_array($value)) {
+                $depth = $this->getArrayDepth($value) + 1;
+
+                $max_depth = max($depth, $max_depth);
+            }
+        }
+
+        return $max_depth;
     }
 
     public function validateSort(Request $request): void

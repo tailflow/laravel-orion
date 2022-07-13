@@ -34,5 +34,6 @@ return [
     ],
     'search' => [
         'case_sensitive' => true, // TODO: set to "false" by default in 3.0 release
-    ]
+    ],
+    'max_nested_depth' => 1
 ];
