@@ -537,12 +537,12 @@ class StandardIndexFilteringOperationsTest extends TestCase
     /** @test */
     public function getting_a_list_of_resources_filtered_by_jsonb_array_field_inclusive(): void
     {
-        if (config('database.default') === 'sqlite'){
+        if (config('database.default') === 'sqlite') {
             $this->markTestSkipped('Not supported with SQLite');
         }
 
         $matchingPost = factory(Post::class)
-            ->create(['options' =>  ['a', 'b', 'c']])->fresh();
+            ->create(['options' => ['a', 'b', 'c']])->fresh();
         factory(Post::class)->create(['publish_at' => Carbon::now()])->fresh();
 
         Gate::policy(Post::class, GreenPolicy::class);
@@ -565,7 +565,7 @@ class StandardIndexFilteringOperationsTest extends TestCase
     /** @test */
     public function getting_a_list_of_resources_filtered_by_nested_jsonb_array_field_inclusive(): void
     {
-        if (config('database.default') === 'sqlite'){
+        if (config('database.default') === 'sqlite') {
             $this->markTestSkipped('Not supported with SQLite');
         }
 
@@ -593,12 +593,12 @@ class StandardIndexFilteringOperationsTest extends TestCase
     /** @test */
     public function getting_a_list_of_resources_filtered_by_jsonb_array_field_exclusive(): void
     {
-        if (config('database.default') === 'sqlite'){
+        if (config('database.default') === 'sqlite') {
             $this->markTestSkipped('Not supported with SQLite');
         }
 
         $matchingPost = factory(Post::class)
-            ->create(['options' =>  ['a', 'd']])->fresh();
+            ->create(['options' => ['a', 'd']])->fresh();
         factory(Post::class)->create(['publish_at' => Carbon::now()])->fresh();
 
         Gate::policy(Post::class, GreenPolicy::class);
@@ -621,7 +621,7 @@ class StandardIndexFilteringOperationsTest extends TestCase
     /** @test */
     public function getting_a_list_of_resources_filtered_by_nested_jsonb_array_field_exclusive(): void
     {
-        if (config('database.default') === 'sqlite'){
+        if (config('database.default') === 'sqlite') {
             $this->markTestSkipped('Not supported with SQLite');
         }
 

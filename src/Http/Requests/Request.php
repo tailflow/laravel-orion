@@ -3,6 +3,7 @@
 namespace Orion\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class Request extends FormRequest
 {
@@ -208,7 +209,9 @@ class Request extends FormRequest
      */
     public function updateRules(): array
     {
-        return [];
+        return [
+            Rule::exists()
+        ];
     }
 
     /**

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Orion\Specs\Builders;
 
+use Orion\Specs\Fields\Field;
 use Orion\Specs\ResourcesCacheStore;
 
 class TagsBuilder
@@ -25,8 +26,7 @@ class TagsBuilder
 
         foreach ($resources as $resource) {
             $tags[] = [
-                'name'        => $resource->tag,
-                'description' => "API documentation for {$resource->tag}",
+                'name' => $resource->tag,
             ];
         }
 
