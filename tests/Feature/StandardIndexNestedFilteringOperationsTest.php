@@ -111,6 +111,6 @@ class StandardIndexNestedFilteringOperationsTest extends TestCase
         );
 
         $response->assertStatus(422);
-        $response->assertJsonStructure(['message', 'errors' => ['field']]);
+        $response->assertJsonStructure(['message', 'errors' => ['filters.0.nested.0.field']]);
     }
 }

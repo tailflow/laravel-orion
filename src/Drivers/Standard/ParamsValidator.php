@@ -49,7 +49,7 @@ class ParamsValidator implements \Orion\Contracts\ParamsValidator
     {
         $max_depth = ceil(($this->getArrayDepth($request->all()['filters'])) / 2) - 1;
 
-        abort_if($max_depth > config('orion.max_nested_depth'), 422, __('Max nested depth :depth is exceeded', ['depth' => config('orion.max_nested_depth')]));
+        abort_if($max_depth > config('orion.search.max_nested_depth'), 422, __('Max nested depth :depth is exceeded', ['depth' => config('orion.search.max_nested_depth')]));
 
         Validator::make(
             $request->all(),
