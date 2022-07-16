@@ -45,6 +45,8 @@ class OrionServiceProvider extends ServiceProvider
     {
         app()->make(Kernel::class)->pushMiddleware(EnforceExpectsJson::class);
 
+        $this->mergeConfigFrom(__DIR__ . '/../../../../config/orion.php', 'orion');
+
         $this->loadRoutesFrom(__DIR__.'/../../routes/api.php');
     }
 }
