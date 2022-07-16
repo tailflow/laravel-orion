@@ -47,20 +47,32 @@ class ParamsValidator implements \Orion\Contracts\ParamsValidator
 
     public function validateFilters(Request $request): void
     {
-        $max_depth = floor($this->getArrayDepth($request->all()['filters']) / 2);
-        $config_max_nested_depth = config('orion.search.max_nested_depth', 1);
+        $maxDepth = floor($this->getArrayDepth($request->all()['filters']) / 2);
+        $configMaxNestedDepth = config('orion.search.max_nested_depth', 1);
 
-        abort_if($max_depth > $config_max_nested_depth, 422, __('Max nested depth :depth is exceeded', ['depth' => $config_max_nested_depth]));
+        abort_if(
+            $maxDepth > $configMaxNestedDepth,
+            422,
+            __('Max nested depth :depth is exceeded', ['depth' => $configMaxNestedDepth])
+        );
 
         Validator::make(
             $request->all(),
             array_merge([
                 'filters' => ['sometimes', 'array'],
-            ], $this->getNestedRules('filters', $max_depth))
+            ], $this->getNestedRules('filters', $maxDepth))
         )->validate();
     }
 
-    protected function getNestedRules($prefix, $max_depth, $rules = [], $current_depth = 1) {
+    /**
+     * @param string $prefix
+     * @param int $maxDepth
+     * @param array $rules
+     * @param int $currentDepth
+     * @return array
+     */
+    protected function getNestedRules(string $prefix, int $maxDepth, array $rules = [], int $currentDepth = 1): array
+    {
         $rules = array_merge($rules, [
             $prefix.'.*.type' => ['sometimes', 'in:and,or'],
             $prefix.'.*.field' => [
@@ -73,28 +85,32 @@ class ParamsValidator implements \Orion\Contracts\ParamsValidator
                 'in:<,<=,>,>=,=,!=,like,not like,ilike,not ilike,in,not in,all in,any in',
             ],
             $prefix.'.*.value' => ['nullable'],
-            $prefix.'.*.nested' => ['sometimes', 'array', "prohibits:{$prefix}.*.operator,{$prefix}.*.value,{$prefix}.*.field"],
+            $prefix.'.*.nested' => ['sometimes', 'array',],
         ]);
 
-        if ($max_depth >= $current_depth) {
-            $rules = array_merge($rules, $this->getNestedRules("{$prefix}.*.nested", $max_depth, $rules, ++$current_depth));
+        if ($maxDepth >= $currentDepth) {
+            $rules = array_merge(
+                $rules,
+                $this->getNestedRules("{$prefix}.*.nested", $maxDepth, $rules, ++$currentDepth)
+            );
         }
 
         return $rules;
     }
 
-    protected function getArrayDepth($array) {
-        $max_depth = 0;
+    protected function getArrayDepth($array): int
+    {
+        $maxDepth = 0;
 
         foreach ($array as $value) {
             if (is_array($value)) {
                 $depth = $this->getArrayDepth($value) + 1;
 
-                $max_depth = max($depth, $max_depth);
+                $maxDepth = max($depth, $maxDepth);
             }
         }
 
-        return $max_depth;
+        return $maxDepth;
     }
 
     public function validateSort(Request $request): void
