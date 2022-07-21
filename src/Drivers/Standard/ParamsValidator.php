@@ -47,7 +47,7 @@ class ParamsValidator implements \Orion\Contracts\ParamsValidator
 
     public function validateFilters(Request $request): void
     {
-        $maxDepth = floor($this->getArrayDepth($request->all()['filters']) / 2);
+        $maxDepth = floor($this->getArrayDepth($request->input('filters', [])) / 2);
         $configMaxNestedDepth = config('orion.search.max_nested_depth', 1);
 
         abort_if(
