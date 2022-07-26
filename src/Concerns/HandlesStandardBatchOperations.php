@@ -46,7 +46,9 @@ trait HandlesStandardBatchOperations
 
         $this->authorize('create', $resourceModelClass);
 
-        $resources = $request->get('resources', []);
+        $resources = config('orion.use_validated')
+            ? $request->validated('resources', [])
+            : $request->get('resources', []);
         $entities = collect([]);
 
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
@@ -152,7 +154,9 @@ trait HandlesStandardBatchOperations
             $this->performUpdate(
                 $request,
                 $entity,
-                $request->input("resources.{$entity->{$this->keyName()}}")
+                config('orion.use_validated')
+                    ? $request->validated("resources.{$entity->{$this->keyName()}}")
+                    : $request->input("resources.{$entity->{$this->keyName()}}")
             );
 
             $this->beforeUpdateFresh($request, $entity);
