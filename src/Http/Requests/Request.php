@@ -158,6 +158,90 @@ class Request extends FormRequest
     }
 
     /**
+     * Definition of request fields, their types, and states.
+     *
+     * @return array
+     */
+    public function getSchema(): array
+    {
+        if (!$this->route()) {
+            return [];
+        }
+
+        // TODO: add wrapper schema
+
+        if ($this->route()->getActionMethod() === 'index') {
+            return $this->commonSchema();
+        }
+
+        if ($this->route()->getActionMethod() === 'search') {
+            return $this->commonSchema();
+        }
+
+        if ($this->route()->getActionMethod() === 'store') {
+            return array_merge($this->commonSchema(), $this->storeSchema());
+        }
+
+        if ($this->route()->getActionMethod() === 'batchStore') {
+            return $this->batchStoreSchema();
+        }
+
+        if ($this->route()->getActionMethod() === 'show') {
+            return $this->commonSchema();
+        }
+
+        if ($this->route()->getActionMethod() === 'update') {
+            return array_merge($this->commonSchema(), $this->updateSchema());
+        }
+
+        if ($this->route()->getActionMethod() === 'batchUpdate') {
+            return $this->batchUpdateSchema();
+        }
+
+        if ($this->route()->getActionMethod() === 'destroy') {
+            return array_merge($this->commonSchema(), $this->destroySchema());
+        }
+
+        if ($this->route()->getActionMethod() === 'batchDestroy') {
+            return $this->batchDestroySchema();
+        }
+
+        if ($this->route()->getActionMethod() === 'restore') {
+            return array_merge($this->commonSchema(), $this->restoreSchema());
+        }
+
+        if ($this->route()->getActionMethod() === 'batchRestore') {
+            return $this->batchRestoreSchema();
+        }
+
+        if ($this->route()->getActionMethod() === 'associate') {
+            return $this->associateSchema();
+        }
+
+        if ($this->route()->getActionMethod() === 'attach') {
+            return $this->attachSchema();
+        }
+
+        if ($this->route()->getActionMethod() === 'detach') {
+            return $this->detachSchema();
+        }
+
+        if ($this->route()->getActionMethod() === 'sync') {
+            return $this->syncSchema();
+        }
+
+        if ($this->route()->getActionMethod() === 'toggle') {
+            return $this->toggleSchema();
+        }
+
+        if ($this->route()->getActionMethod() === 'updatePivot') {
+            return $this->updatePivotSchema();
+        }
+
+        return [];
+    }
+
+    /**
      * Default rules for the request.
      *
      * @return array
@@ -209,9 +293,7 @@ class Request extends FormRequest
      */
     public function updateRules(): array
     {
-        return [
-            Rule::exists()
-        ];
+        return [];
     }
 
     /**
@@ -299,17 +381,17 @@ class Request extends FormRequest
      *
      * @return array
      */
-    function storeMessages(): array
+    public function storeMessages(): array
     {
         return [];
     }
 
     /**
-     * Messages for the "batchstore" (POST) endpoint.
+     * Messages for the "batchStore" (POST) endpoint.
      *
      * @return array
      */
-    function batchStoreMessages(): array
+    public function batchStoreMessages(): array
     {
         return [];
     }
@@ -319,7 +401,7 @@ class Request extends FormRequest
      *
      * @return array
      */
-    function updateMessages(): array
+    public function updateMessages(): array
     {
         return [];
     }
@@ -329,7 +411,7 @@ class Request extends FormRequest
      *
      * @return array
      */
-    function batchUpdateMessages(): array
+    public function batchUpdateMessages(): array
     {
         return [];
     }
@@ -390,6 +472,156 @@ class Request extends FormRequest
      * @return array
      */
     public function updatePivotMessages(): array
+    {
+        return [];
+    }
+
+    /**
+     * Default schema for the request.
+     *
+     * @return array
+     */
+    public function commonSchema(): array
+    {
+        return [];
+    }
+
+    /**
+     * Schema for the "store" (POST) endpoint.
+     *
+     * @return array
+     */
+    public function storeSchema(): array
+    {
+        return [];
+    }
+
+    /**
+     * Schema for the "batchStore" (POST) endpoint.
+     *
+     * @return array
+     */
+    public function batchStoreSchema(): array
+    {
+        return [];
+    }
+
+    /**
+     * Schema for the "update" (POST) endpoint.
+     *
+     * @return array
+     */
+    public function updateSchema(): array
+    {
+        return [];
+    }
+
+    /**
+     * Schema for the "batchUpdate" (POST) endpoint.
+     *
+     * @return array
+     */
+    public function batchUpdateSchema(): array
+    {
+        return [];
+    }
+
+    /**
+     * Schema for the "destroy" (DELETE) endpoint.
+     *
+     * @return array
+     */
+    public function destroySchema(): array
+    {
+        return [];
+    }
+
+    /**
+     * Schema for the "batchDestroy" (DELETE) endpoint.
+     *
+     * @return array
+     */
+    public function batchDestroySchema(): array
+    {
+        return [];
+    }
+
+    /**
+     * Schema for the "restore" (POST) endpoint.
+     *
+     * @return array
+     */
+    public function restoreSchema(): array
+    {
+        return [];
+    }
+
+    /**
+     * Schema for the "batchRestore" (POST) endpoint.
+     *
+     * @return array
+     */
+    public function batchRestoreSchema(): array
+    {
+        return [];
+    }
+
+    /**
+     * Schema for the "associate" endpoint.
+     *
+     * @return array
+     */
+    public function associateSchema(): array
+    {
+        return [];
+    }
+
+    /**
+     * Schema for the "attach" endpoint.
+     *
+     * @return array
+     */
+    public function attachSchema(): array
+    {
+        return [];
+    }
+
+    /**
+     * Schema for the "detach" endpoint.
+     *
+     * @return array
+     */
+    public function detachSchema(): array
+    {
+        return [];
+    }
+
+    /**
+     * Schema for the "sync" endpoint.
+     *
+     * @return array
+     */
+    public function syncSchema(): array
+    {
+        return [];
+    }
+
+    /**
+     * Schema for the "toggle" endpoint.
+     *
+     * @return array
+     */
+    public function toggleSchema(): array
+    {
+        return [];
+    }
+
+    /**
+     * Schema for the "pivot" endpoint.
+     *
+     * @return array
+     */
+    public function updatePivotSchema(): array
     {
         return [];
     }

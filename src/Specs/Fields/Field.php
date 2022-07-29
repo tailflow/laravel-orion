@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Orion\Specs\Fields;
 
 class Field
@@ -10,6 +8,8 @@ class Field
     protected $required = true;
     /** @var string|null $description */
     protected $description;
+    /** @var array $rules */
+    protected $rules;
 
     public function optional(): self
     {
@@ -43,5 +43,24 @@ class Field
     public function getDescription(): ?string
     {
         return $this->description;
+    }
+
+    /**
+     * @param array $rules
+     * @return Field
+     */
+    public function rules(array $rules): Field
+    {
+        $this->rules = $rules;
+
+        return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function getRules(): array
+    {
+        return $this->rules;
     }
 }
