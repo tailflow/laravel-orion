@@ -4,17 +4,13 @@ declare(strict_types=1);
 
 namespace Orion\Specs\Managers;
 
-use App\OpenApi\ValueObjects\Specs\Schema\Properties\ArraySchemaProperty;
-use Carbon\Carbon;
 use DateTimeInterface;
-use Doctrine\DBAL\Exception;
-use Doctrine\DBAL\Schema\Column;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 use Illuminate\Support\Collection;
 use Orion\Http\Resources\Resource;
 use Orion\ValueObjects\Specs\Schema\Properties\AnySchemaProperty;
+use Orion\ValueObjects\Specs\Schema\Properties\ArraySchemaProperty;
 use Orion\ValueObjects\Specs\Schema\Properties\BooleanSchemaProperty;
 use Orion\ValueObjects\Specs\Schema\Properties\DateTimeSchemaProperty;
 use Orion\ValueObjects\Specs\Schema\Properties\IntegerSchemaProperty;
@@ -23,17 +19,14 @@ use Orion\ValueObjects\Specs\Schema\Properties\StringSchemaProperty;
 
 class ResourceManager
 {
-    /**
-     * @throws Exception
-     */
     public function getResourceProperties(Resource $resourceResource): array
     {
         return $resourceResource->toArray(optional());
     }
 
     /**
-     * @param Column $column
-     * @param Model $resourceModel
+     * @param string $property
+     * @param $value
      * @return string
      */
     public function resolveResourcePropertyClass(string $property, $value): string
