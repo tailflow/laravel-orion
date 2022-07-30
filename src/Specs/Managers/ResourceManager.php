@@ -21,7 +21,7 @@ class ResourceManager
 {
     public function getResourceProperties(Resource $resourceResource): array
     {
-        return $resourceResource->toArray(optional());
+        return $resourceResource->resolve();
     }
 
     /**

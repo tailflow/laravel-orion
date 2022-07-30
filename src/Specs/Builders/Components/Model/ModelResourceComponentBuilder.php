@@ -46,6 +46,9 @@ class ModelResourceComponentBuilder extends ModelComponentBuilder
         $properties = $this->resourceManager->getResourceProperties($resourceResource);
 
         return collect($properties)
+            ->filter(function ($value, $property) {
+                return is_string($property);
+            })
             ->map(function ($value, $property) {
                 $propertyClass = $this->resourceManager->resolveResourcePropertyClass($property, $value);
 
