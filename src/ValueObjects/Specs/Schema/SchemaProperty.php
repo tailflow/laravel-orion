@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Orion\ValueObjects\Specs\Schema;
 
 use Illuminate\Contracts\Support\Arrayable;
-use stdClass;
 
 class SchemaProperty implements Arrayable
 {
@@ -16,7 +15,7 @@ class SchemaProperty implements Arrayable
     /** @var bool */
     public $nullable = false;
 
-    public function toArray(): array | stdClass
+    public function toArray(): array | object
     {
         $descriptor = [
             'type' => $this->type,
