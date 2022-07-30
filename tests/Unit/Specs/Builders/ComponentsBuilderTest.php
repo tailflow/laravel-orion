@@ -30,7 +30,7 @@ class ComponentsBuilderTest extends TestCase
     }
 
     /** @test */
-    public function test(): void
+    public function test_build(): void
     {
         $components = $this->componentsBuilder->build();
         $this->assertArrayHasKey('schema', $components);
