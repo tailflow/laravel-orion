@@ -6,6 +6,7 @@ use Orion\Tests\Fixtures\App\Models\Product;
 $factory->define(Product::class, function (Faker $faker) {
     return [
         'title' => $faker->words(5, true),
-        'value' => $faker->numberBetween(0, 200)
+        'description' => $faker->sentences(),
+        'total_revenue' => $faker->numberBetween(0, 200)
     ];
 });

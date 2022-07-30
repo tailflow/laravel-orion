@@ -10,6 +10,7 @@ class ModelResourceComponent extends Component
     {
         return [
             'title' => $this->title,
+            'type' => $this->type,
             'properties' => $this->properties,
         ];
     }

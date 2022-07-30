@@ -27,7 +27,11 @@ trait ExtendsResources
     }
 
     /**
-     * Override mergeWhen to force merge when mergeAll is enabled
+     * Merges transformed resource with the given data.
+     *
+     * @param Request $request
+     * @param array $mergeData
+     * @return array
      */
     public function toArrayWithMerge(Request $request, array $mergeData): array
     {
