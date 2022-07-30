@@ -22,11 +22,11 @@ class ProductResource extends Resource
             // Test added properties
             'short_description' => substr($this->description, 90), // Computed property
             'company' => $this->whenLoaded('company', $this->company), // Added relation
-            $this->mergeWhen(true, ['merged' => 0]), // Merged
+            $this->mergeWhen(true, ['merge_true' => 0]), // Merged
+            $this->mergeWhen(false, ['merge_false' => 0]), // MissingValue
 
             // Test removed properties
             // 'total_revenue' => $this->updated_at, // Ommited schema property
-            $this->mergeWhen(false, ['not_merged' => 0]), // MissingValue
         ];
     }
 }

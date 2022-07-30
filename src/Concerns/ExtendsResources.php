@@ -4,15 +4,30 @@
 namespace Orion\Concerns;
 
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\MergeValue;
 
 trait ExtendsResources
 {
+    public static $mergeAll = false;
+
     /**
-     * Merges transformed resource with the given data.
-     *
-     * @param Request $request
-     * @param array $mergeData
-     * @return array
+     * Override when to force merge when mergeAll is enabled
+     */
+    protected function when($condition, $value, $default = null)
+    {
+        return static::$mergeAll ? value($value) : parent::when($condition, $value, $default);
+    }
+
+    /**
+     * Override mergeWhen to force merge when mergeAll is enabled
+     */
+    protected function mergeWhen($condition, $value)
+    {
+        return static::$mergeAll ? new MergeValue(value($value)) : parent::mergeWhen($condition, $value);
+    }
+
+    /**
+     * Override mergeWhen to force merge when mergeAll is enabled
      */
     public function toArrayWithMerge(Request $request, array $mergeData): array
     {

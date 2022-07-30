@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Orion\Tests\Unit\Specs\Builders;
 
+use Orion\Http\Resources\Resource;
 use Orion\Specs\Builders\ComponentsBuilder;
 use Orion\Tests\Unit\TestCase;
 use Orion\Specs\ResourcesCacheStore;
@@ -32,12 +33,13 @@ class ComponentsBuilderTest extends TestCase
     /** @test */
     public function test_build(): void
     {
+        Resource::$mergeAll = true;
+
         $components = $this->componentsBuilder->build();
         $this->assertArrayHasKey('schemas', $components);
 
         $schemas = $components['schemas'];
         $this->assertArrayHasKey('Product', $schemas);
-
 
         $resource = $schemas['ProductResource']['properties'];
 
@@ -48,10 +50,10 @@ class ComponentsBuilderTest extends TestCase
         // Added properties
         $this->assertArrayHasKey('short_description', $resource);
         $this->assertArrayHasKey('company', $resource);
-        // $this->assertArrayHasKey('merged', $resource);
+        $this->assertArrayHasKey('merge_true', $resource);
+        $this->assertArrayHasKey('merge_false', $resource);
 
         // Removed properties
         $this->assertArrayNotHasKey('total_revenue', $resource);
-        $this->assertArrayNotHasKey('not_merged', $resource);
     }
 }

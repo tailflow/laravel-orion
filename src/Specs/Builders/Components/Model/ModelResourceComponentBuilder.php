@@ -7,6 +7,7 @@ namespace Orion\Specs\Builders\Components\Model;
 use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\Schema\Column;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Resources\MergeValue;
 use Orion\Http\Resources\Resource;
 use Orion\Specs\Builders\Components\ModelComponentBuilder;
 use Orion\ValueObjects\Specs\ModelResourceComponent;
@@ -46,6 +47,9 @@ class ModelResourceComponentBuilder extends ModelComponentBuilder
         $properties = $this->resourceManager->getResourceProperties($resourceResource);
 
         return collect($properties)
+            ->mapWithKeys(function ($value, $property) {
+                return is_a($value, MergeValue::class) ? $value->data : [$property => $value];
+            })
             ->filter(function ($value, $property) {
                 return is_string($property);
             })
