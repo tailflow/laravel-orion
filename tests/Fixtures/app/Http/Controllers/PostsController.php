@@ -4,7 +4,6 @@ namespace Orion\Tests\Fixtures\App\Http\Controllers;
 
 use Orion\Http\Controllers\Controller;
 use Orion\Http\Requests\Request;
-use Orion\Tests\Fixtures\App\Http\Resources\PostResource;
 use Orion\Tests\Fixtures\App\Models\Post;
 
 class PostsController extends Controller
@@ -13,11 +12,6 @@ class PostsController extends Controller
      * @var string|null $model
      */
     protected $model = Post::class;
-
-    /**
-     * @var string|null $resource
-     */
-    protected $resource = PostResource::class;
 
     /**
      * @param Request $request
