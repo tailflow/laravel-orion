@@ -38,19 +38,20 @@ class ComponentsBuilderTest extends TestCase
         $schemas = $components['schemas'];
         $this->assertArrayHasKey('Product', $schemas);
 
-        $product = $schemas['Product'];
+
+        $resource = $schemas['ProductResource']['properties'];
 
         // Schema properties
-        $this->assertArrayHasKey('title', $product);
-        $this->assertArrayHasKey('description', $product);
+        $this->assertArrayHasKey('title', $resource);
+        $this->assertArrayHasKey('description', $resource);
 
         // Added properties
-        $this->assertArrayHasKey('short_description', $product);
-        $this->assertArrayHasKey('company', $product);
-        // $this->assertArrayHasKey('merged', $product);
+        $this->assertArrayHasKey('short_description', $resource);
+        $this->assertArrayHasKey('company', $resource);
+        // $this->assertArrayHasKey('merged', $resource);
 
         // Removed properties
-        $this->assertArrayNotHasKey('total_revenue', $product);
-        $this->assertArrayNotHasKey('not_merged', $product);
+        $this->assertArrayNotHasKey('total_revenue', $resource);
+        $this->assertArrayNotHasKey('not_merged', $resource);
     }
 }
