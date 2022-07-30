@@ -15,6 +15,7 @@ use Orion\ValueObjects\Specs\Schema\Properties\BooleanSchemaProperty;
 use Orion\ValueObjects\Specs\Schema\Properties\DateTimeSchemaProperty;
 use Orion\ValueObjects\Specs\Schema\Properties\IntegerSchemaProperty;
 use Orion\ValueObjects\Specs\Schema\Properties\NumberSchemaProperty;
+use Orion\ValueObjects\Specs\Schema\Properties\ObjectSchemaProperty;
 use Orion\ValueObjects\Specs\Schema\Properties\StringSchemaProperty;
 
 class ResourceManager
