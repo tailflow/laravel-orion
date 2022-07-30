@@ -4,7 +4,7 @@ namespace Orion\Tests\Fixtures\App\Http\Resources;
 
 use Orion\Http\Resources\Resource;
 
-class SampleResource extends Resource
+class PostResource extends Resource
 {
     public function toArray($request)
     {
