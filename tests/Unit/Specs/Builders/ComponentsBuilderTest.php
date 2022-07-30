@@ -33,7 +33,7 @@ class ComponentsBuilderTest extends TestCase
     /** @test */
     public function test_build(): void
     {
-        if ((float) app()->version() <= 7.0) {
+        if ((float) app()->version() <= 8.0) {
             $this->markTestSkipped('Unsupported framework version');
         }
 
