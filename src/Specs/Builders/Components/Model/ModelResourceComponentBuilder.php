@@ -7,6 +7,7 @@ namespace Orion\Specs\Builders\Components\Model;
 use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\Schema\Column;
 use Illuminate\Database\Eloquent\Model;
+use Orion\Http\Resources\Resource;
 use Orion\Specs\Builders\Components\ModelComponentBuilder;
 use Orion\ValueObjects\Specs\ModelResourceComponent;
 
@@ -14,27 +15,45 @@ class ModelResourceComponentBuilder extends ModelComponentBuilder
 {
     /**
      * @param Model $resourceModel
+     * @param Resource $resourceResource
      * @return ModelResourceComponent
      * @throws Exception
      */
-    public function build(Model $resourceModel): ModelResourceComponent
+    public function build(Model $resourceModel, Resource $resourceResource): ModelResourceComponent
     {
-        $resourceComponentBaseName = class_basename($resourceModel);
-
         $component = new ModelResourceComponent();
-        $component->title = "{$resourceComponentBaseName}Resource";
+        $component->title = class_basename($resourceResource);
         $component->type = 'object';
-        $component->properties = [
-            'allOf' => [
-                ['$ref' => "#/components/schemas/{$resourceComponentBaseName}"],
-                [
-                    'type' => 'object',
-                    'properties' => $this->getPropertiesFromSchema($resourceModel)
-                ],
-            ],
-        ];
+
+        $resourceProperties = $this->getPropertiesFromResource($resourceResource);
+        $includedProperties = array_keys($resourceProperties);
+
+        $component->properties = array_merge(
+            $resourceProperties,
+            $this->getPropertiesFromSchema($resourceModel, $includedProperties)
+        );
 
         return $component;
+    }
+
+    /**
+     * @param Resource $resourceResource
+     * @return array
+     * @throws Exception
+     */
+    protected function getPropertiesFromResource(Resource $resourceResource): array
+    {
+        $properties = $this->resourceManager->getResourceProperties($resourceResource);
+
+        return collect($properties)
+            ->map(function ($value, $property) {
+                $propertyClass = $this->resourceManager->resolveResourcePropertyClass($property, $value);
+
+                return $this->propertyBuilder->buildFromResource($property, true, $propertyClass);
+            })
+            ->values()
+            ->keyBy('name')
+            ->toArray();
     }
 
     /**
@@ -42,22 +61,20 @@ class ModelResourceComponentBuilder extends ModelComponentBuilder
      * @return array
      * @throws Exception
      */
-    protected function getPropertiesFromSchema(Model $resourceModel): array
+    protected function getPropertiesFromSchema(Model $resourceModel, array $includedProperties): array
     {
         $columns = $this->schemaManager->getSchemaColumns($resourceModel);
 
         return collect($columns)
-            ->filter(
-                function (Column $column) use ($resourceModel) {
-                    return !$resourceModel->isFillable($column->getName());
-                }
-            )->map(
-                function (Column $column) use ($resourceModel) {
-                    $propertyClass = $this->schemaManager->resolveSchemaPropertyClass($column, $resourceModel);
+            ->filter(function (Column $column) use ($includedProperties) {
+                return in_array($column->getName(), $includedProperties, true);
+            })
+            ->map(function (Column $column) use ($resourceModel) {
+                $propertyClass = $this->schemaManager->resolveSchemaPropertyClass($column, $resourceModel);
 
-                    return $this->propertyBuilder->build($column, $propertyClass);
-                }
-            )->values()
+                return $this->propertyBuilder->build($column, $propertyClass);
+            })
+            ->values()
             ->keyBy('name')
             ->toArray();
     }

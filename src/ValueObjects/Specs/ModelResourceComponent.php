@@ -8,11 +8,9 @@ class ModelResourceComponent extends Component
 {
     public function toArray(): array
     {
-        return array_merge(
-            [
-                'title' => $this->title,
-            ],
-            $this->properties
-        );
+        return [
+            'title' => $this->title,
+            'properties' => $this->properties,
+        ];
     }
 }
