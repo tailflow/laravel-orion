@@ -13,11 +13,6 @@ class TeamsController extends Controller
      */
     protected $model = Team::class;
 
-    /**
-    * @var string|null $resource
-    */
-    protected $resource = TeamResource::class;
-
     public function filterableBy() : array
     {
         return ['*', 'company.*'];

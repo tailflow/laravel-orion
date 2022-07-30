@@ -7,7 +7,7 @@ namespace Orion\Tests\Unit\Specs\Builders;
 use Orion\Specs\Builders\ComponentsBuilder;
 use Orion\Tests\Unit\TestCase;
 use Orion\Specs\ResourcesCacheStore;
-use Orion\Tests\Fixtures\App\Http\Controllers\TeamsController;
+use Orion\Tests\Fixtures\App\Http\Controllers\ProductsController;
 use Orion\ValueObjects\RegisteredResource;
 
 class ComponentsBuilderTest extends TestCase
@@ -23,7 +23,7 @@ class ComponentsBuilderTest extends TestCase
 
         $resourcesCacheStore = new ResourcesCacheStore();
         $resourcesCacheStore->addResource(
-            new RegisteredResource(TeamsController::class, ['show'])
+            new RegisteredResource(ProductsController::class, ['show'])
         );
 
         $this->componentsBuilder = new ComponentsBuilder($resourcesCacheStore);
@@ -33,24 +33,24 @@ class ComponentsBuilderTest extends TestCase
     public function test_build(): void
     {
         $components = $this->componentsBuilder->build();
-        $this->assertArrayHasKey('schema', $components);
+        $this->assertArrayHasKey('schemas', $components);
 
-        $schema = $components['schema'];
-        $this->assertArrayHasKey('Team', $schema);
+        $schemas = $components['schemas'];
+        $this->assertArrayHasKey('Product', $schemas);
 
-        $team = $schema['Team'];
+        $product = $schemas['Product'];
 
         // Schema properties
-        $this->assertArrayHasKey('name', $team);
-        $this->assertArrayHasKey('description', $team);
+        $this->assertArrayHasKey('title', $product);
+        $this->assertArrayHasKey('description', $product);
 
         // Added properties
-        $this->assertArrayHasKey('short_description', $team);
-        $this->assertArrayHasKey('company', $team);
-        $this->assertArrayHasKey('merged', $team);
+        $this->assertArrayHasKey('short_description', $product);
+        $this->assertArrayHasKey('company', $product);
+        $this->assertArrayHasKey('merged', $product);
 
         // Removed properties
-        $this->assertArrayNotHasKey('position', $team);
-        $this->assertArrayNotHasKey('not_merged', $team);
+        $this->assertArrayNotHasKey('total_revenue', $product);
+        $this->assertArrayNotHasKey('not_merged', $product);
     }
 }
