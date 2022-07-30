@@ -10,7 +10,7 @@ class AnySchemaProperty extends SchemaProperty
 {
     public $type = 'any';
 
-    public function toArray(): array | object
+    public function toArray(): object
     {
         return (object) [];
     }
