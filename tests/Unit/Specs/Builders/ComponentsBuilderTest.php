@@ -37,8 +37,6 @@ class ComponentsBuilderTest extends TestCase
             $this->markTestSkipped('Unsupported framework version');
         }
 
-        Resource::$mergeAll = true;
-
         $components = $this->componentsBuilder->build();
         $this->assertArrayHasKey('schemas', $components);
 

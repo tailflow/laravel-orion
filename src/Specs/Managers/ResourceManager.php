@@ -22,6 +22,8 @@ class ResourceManager
 {
     public function getResourceProperties(Resource $resourceResource): array
     {
+        $resourceResource::$mergeAll = true;
+
         return $resourceResource->toArray(optional());
     }
 
