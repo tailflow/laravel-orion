@@ -58,7 +58,9 @@ class PathsBuilder
         $paths = collect([]);
 
         foreach ($resources as $resource) {
-            foreach ($resource->operations as $operationName) {
+            $operations = $this->resolveOperations($resource);
+
+            foreach ($operations as $operationName) {
                 $route = $this->resolveRoute($resource->controller, $operationName);
 
                 if (in_array($operationName, ['index', 'search', 'store', 'show', 'update', 'destroy', 'restore'])) {
@@ -78,7 +80,11 @@ class PathsBuilder
                         $route
                     );
                 } else {
-                    continue;
+                    $operationBuilder = $this->resolveCustomOperationBuilder(
+                        $resource,
+                        $operationName,
+                        $route
+                    );
                 }
 
                 $operation = $operationBuilder->build();
@@ -108,6 +114,26 @@ class PathsBuilder
 
     /**
      * @param RegisteredResource $resource
+     * @return array
+     */
+    protected function resolveOperations(RegisteredResource $resource): array
+    {
+        $operations = collect($resource->operations);
+
+        $routes = $this->router->getRoutes()->getRoutes();
+
+        foreach ($routes as $route) {
+            /** @var Route $route */
+            if (get_class($route->getController()) === $resource->controller) {
+                $operations->push($route->getActionMethod());
+            }
+        }
+
+        return $operations->unique()->values()->toArray();
+    }
+
+    /**
+     * @param RegisteredResource $resource
      * @param string $operation
      * @param Route $route
      * @return OperationBuilder
@@ -118,7 +144,7 @@ class PathsBuilder
         string $operation,
         Route $route
     ): OperationBuilder {
-        $operationClassName = "Orion\\Specs\\Builders\\Operations\\" . ucfirst($operation) . 'OperationBuilder';
+        $operationClassName = "Orion\\Specs\\Builders\\Operations\\".ucfirst($operation).'OperationBuilder';
 
         return $this->operationBuilderFactory->make($operationClassName, $resource, $operation, $route);
     }
@@ -135,7 +161,7 @@ class PathsBuilder
         string $operation,
         Route $route
     ): OperationBuilder {
-        $operationClassName = "Orion\\Specs\\Builders\\Operations\\Batch\\" . ucfirst($operation) . 'OperationBuilder';
+        $operationClassName = "Orion\\Specs\\Builders\\Operations\\Batch\\".ucfirst($operation).'OperationBuilder';
 
         return $this->operationBuilderFactory->make($operationClassName, $resource, $operation, $route);
     }
@@ -152,9 +178,9 @@ class PathsBuilder
         string $operation,
         Route $route
     ): RelationOperationBuilder {
-        $operationClassName = "Orion\\Specs\\Builders\\Operations\\Relations\\OneToMany\\" . ucfirst(
+        $operationClassName = "Orion\\Specs\\Builders\\Operations\\Relations\\OneToMany\\".ucfirst(
                 $operation
-            ) . 'OperationBuilder';
+            ).'OperationBuilder';
 
         return $this->relationOperationBuilderFactory->make($operationClassName, $resource, $operation, $route);
     }
@@ -171,10 +197,27 @@ class PathsBuilder
         string $operation,
         Route $route
     ): RelationOperationBuilder {
-        $operationClassName = "Orion\\Specs\\Builders\\Operations\\Relations\\ManyToMany\\" . ucfirst(
+        $operationClassName = "Orion\\Specs\\Builders\\Operations\\Relations\\ManyToMany\\".ucfirst(
                 $operation
-            ) . 'OperationBuilder';
+            ).'OperationBuilder';
 
         return $this->relationOperationBuilderFactory->make($operationClassName, $resource, $operation, $route);
+    }
+
+    /**
+     * @param RegisteredResource $resource
+     * @param string $operation
+     * @param Route $route
+     * @return RelationOperationBuilder
+     * @throws BindingResolutionException
+     */
+    protected function resolveCustomOperationBuilder(
+        RegisteredResource $resource,
+        string $operation,
+        Route $route
+    ): OperationBuilder {
+        $operationClassName = "Orion\\Specs\\Builders\\Operations\\CustomOperationBuilder";
+
+        return $this->operationBuilderFactory->make($operationClassName, $resource, $operation, $route);
     }
 }
