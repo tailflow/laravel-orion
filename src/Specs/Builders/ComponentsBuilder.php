@@ -6,7 +6,6 @@ namespace Orion\Specs\Builders;
 
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Support\Collection;
-use Orion\Http\Resources\Resource;
 use Orion\Specs\Builders\Components\Model\BaseModelComponentBuilder;
 use Orion\Specs\Builders\Components\Model\ModelResourceComponentBuilder;
 use Orion\Specs\Builders\Components\Shared\ResourceLinksComponentBuilder;

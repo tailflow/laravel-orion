@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Orion\Tests\Unit\Specs\Builders;
 
-use Orion\Http\Resources\Resource;
 use Orion\Specs\Builders\ComponentsBuilder;
 use Orion\Tests\Unit\TestCase;
 use Orion\Specs\ResourcesCacheStore;
