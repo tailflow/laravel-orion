@@ -29,12 +29,14 @@ class BatchUpdateRequest extends Request
                             'type' => 'object',
                             'properties' => [
                                 'resources' => [
-                                    'type' => 'array',
-                                    'items' => [
-                                        '$ref' => "#/components/schemas/{$this->resourceComponentBaseName}",
-                                    ]
-                                ]
-                            ]
+                                    'type'       => 'object',
+                                    'properties' => [
+                                        '{key}' => [
+                                            '$ref' => "#/components/schemas/{$this->resourceComponentBaseName}",
+                                        ],
+                                    ],
+                                ],
+                            ],
                         ],
                     ],
                 ],
