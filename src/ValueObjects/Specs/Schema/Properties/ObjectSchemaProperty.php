@@ -9,4 +9,14 @@ use Orion\ValueObjects\Specs\Schema\SchemaProperty;
 class ObjectSchemaProperty extends SchemaProperty
 {
     public $type = 'object';
+
+    public function toArray(): array
+    {
+        $descriptor = [
+            'type' => $this->type,
+            'additionalProperties' => true,
+        ];
+
+        return $descriptor;
+    }
 }
