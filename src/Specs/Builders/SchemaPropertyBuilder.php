@@ -6,7 +6,8 @@ namespace Orion\Specs\Builders;
 
 class SchemaPropertyBuilder
 {
-    public function build(array $schema): array {
+    public function build(array $schema): array
+    {
         return [];
     }
 }

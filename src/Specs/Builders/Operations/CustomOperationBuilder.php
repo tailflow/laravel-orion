@@ -65,7 +65,6 @@ class CustomOperationBuilder extends OperationBuilder
         $parameters = $methodReflector->getParameters();
 
         foreach ($parameters as $parameter) {
-            /** @var ReflectionParameter $parameter */
             if (!$type = $parameter->getType()) {
                 continue;
             }
