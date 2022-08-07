@@ -74,12 +74,11 @@ class SchemaManager
             case Types::DATETIME_MUTABLE:
             case Types::DATETIME_IMMUTABLE:
                 return DateTimeSchemaProperty::class;
-            case Types::JSON:
-                return AnySchemaProperty::class;
             case Types::ARRAY:
             case Types::SIMPLE_ARRAY:
                 return ArraySchemaProperty::class;
             case Types::OBJECT:
+            case Types::JSON:
                 return ObjectSchemaProperty::class;
             case Types::BINARY:
             case Types::BLOB:

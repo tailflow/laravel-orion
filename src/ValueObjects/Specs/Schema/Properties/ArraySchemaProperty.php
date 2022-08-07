@@ -20,7 +20,7 @@ class ArraySchemaProperty extends SchemaProperty
             $descriptor['nullable'] = true;
         }
 
-        if ($this->type == 'array') {
+        if ($this->type === 'array') {
             $descriptor['items'] = (object) [];
         }
 
