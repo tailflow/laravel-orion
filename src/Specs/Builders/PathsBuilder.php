@@ -84,7 +84,7 @@ class PathsBuilder
                 $operation = $operationBuilder->build();
 
                 if (!$path = $paths->where('path', $route->uri())->first()) {
-                    $path = new Path($route->uri());
+                    $path = app()->make(Path::class, ['path' => $route->uri()]);
 
                     $paths->put(Str::start($path->path, '/'), $path);
                 }
@@ -153,8 +153,8 @@ class PathsBuilder
         Route $route
     ): RelationOperationBuilder {
         $operationClassName = "Orion\\Specs\\Builders\\Operations\\Relations\\OneToMany\\" . ucfirst(
-                $operation
-            ) . 'OperationBuilder';
+            $operation
+        ) . 'OperationBuilder';
 
         return $this->relationOperationBuilderFactory->make($operationClassName, $resource, $operation, $route);
     }
@@ -172,8 +172,8 @@ class PathsBuilder
         Route $route
     ): RelationOperationBuilder {
         $operationClassName = "Orion\\Specs\\Builders\\Operations\\Relations\\ManyToMany\\" . ucfirst(
-                $operation
-            ) . 'OperationBuilder';
+            $operation
+        ) . 'OperationBuilder';
 
         return $this->relationOperationBuilderFactory->make($operationClassName, $resource, $operation, $route);
     }
