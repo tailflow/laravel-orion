@@ -96,7 +96,7 @@ class PathsBuilder
                 $operation = $operationBuilder->build();
 
                 if (!$path = $paths->where('path', $route->uri())->first()) {
-                    $path = new Path($route->uri());
+                    $path = app()->make(Path::class, ['path' => $route->uri()]);
 
                     $paths->put(Str::start($path->path, '/'), $path);
                 }
