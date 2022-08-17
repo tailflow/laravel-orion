@@ -24,21 +24,4 @@ class PropertyBuilder
 
         return $property;
     }
-
-    /**
-    * @param string $name
-    * @param bool $nullable
-    * @param string|SchemaProperty $concretePropertyClass
-    *
-    * @return SchemaProperty
-    */
-    public function buildFromResource(string $name, bool $nullable, string $concretePropertyClass): SchemaProperty
-    {
-        /** @var SchemaProperty $property */
-        $property = new $concretePropertyClass();
-        $property->name = $name;
-        $property->nullable = $nullable;
-
-        return $property;
-    }
 }

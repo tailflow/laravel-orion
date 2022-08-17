@@ -100,13 +100,10 @@ class ComponentsBuilder
             $resourceModelClass = app()->make($resource->controller)->resolveResourceModelClass();
             $resourceModel = app()->make($resourceModelClass);
 
-            $resourceResourceClass = app()->make($resource->controller)->getResource();
-            $resourceResource = app()->make($resourceResourceClass, ['resource' => optional()]);
-
             foreach (static::SCHEMA_MODEL_COMPONENT_BUILDERS as $modelComponentBuilderClass) {
                 $modelComponentBuilder = app()->make($modelComponentBuilderClass);
 
-                $modelComponent = $modelComponentBuilder->build($resourceModel, $resourceResource);
+                $modelComponent = $modelComponentBuilder->build($resourceModel);
 
                 $schemas[$modelComponent->title] = $modelComponent->toArray();
             }
