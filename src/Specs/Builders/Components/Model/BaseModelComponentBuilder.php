@@ -8,7 +8,6 @@ use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\Schema\Column;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Orion\Http\Resources\Resource;
 use Orion\Specs\Builders\Components\ModelComponentBuilder;
 use Orion\ValueObjects\Specs\Component;
 
@@ -21,7 +20,7 @@ class BaseModelComponentBuilder extends ModelComponentBuilder
      * @return Component
      * @throws Exception
      */
-    public function build(Model $resourceModel, Resource $resourceResource): Component
+    public function build(Model $resourceModel): Component
     {
         $component = new Component();
         $component->title = class_basename($resourceModel);
@@ -48,18 +47,21 @@ class BaseModelComponentBuilder extends ModelComponentBuilder
         $columns = $this->schemaManager->getSchemaColumns($resourceModel);
 
         return collect($columns)
-            ->filter(function (Column $column) use ($excludedColumns) {
-                return !in_array($column->getName(), $excludedColumns, true);
-            })
-            ->filter(function (Column $column) use ($resourceModel) {
-                return $resourceModel->isFillable($column->getName());
-            })
-            ->map(function (Column $column) use ($resourceModel) {
-                $propertyClass = $this->schemaManager->resolveSchemaPropertyClass($column, $resourceModel);
+            ->filter(
+                function (Column $column) use ($excludedColumns) {
+                    return !in_array($column->getName(), $excludedColumns, true);
+                }
+            )->filter(
+                function (Column $column) use ($resourceModel) {
+                    return $resourceModel->isFillable($column->getName());
+                }
+            )->map(
+                function (Column $column) use ($resourceModel) {
+                    $propertyClass = $this->schemaManager->resolveSchemaPropertyClass($column, $resourceModel);
 
-                return $this->propertyBuilder->build($column, $propertyClass);
-            })
-            ->values()
+                    return $this->propertyBuilder->build($column, $propertyClass);
+                }
+            )->values()
             ->keyBy('name')
             ->toArray();
     }

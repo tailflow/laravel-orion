@@ -26,7 +26,6 @@
         "illuminate/http": ">=5.7",
         "illuminate/pagination": ">=5.7",
         "illuminate/support": ">=5.7",
-        "laravel/legacy-factories": "^1.3",
         "symfony/yaml": "^5.3|^6.0"
     },
     "require-dev": {
