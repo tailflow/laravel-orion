@@ -67,7 +67,7 @@ trait HandlesStandardOperations
                 return $this->beforeFilterApplied($request, $filterDescriptor);
             })->toArray();
 
-        $request->merge(['filters' => $filters]);
+        $request->request->add(['filters' => $filters]);
 
         return $this->buildFetchQuery($request, $requestedRelations);
     }

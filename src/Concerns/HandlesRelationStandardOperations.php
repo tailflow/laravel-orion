@@ -156,7 +156,7 @@ trait HandlesRelationStandardOperations
                 return $this->beforeFilterApplied($request, $parentEntity, $filterDescriptor);
             })->toArray();
 
-        $request->merge(['filters' => $filters]);
+        $request->request->add(['filters' => $filters]);
 
         return $this->buildRelationFetchQuery($request, $parentEntity, $requestedRelations);
     }
