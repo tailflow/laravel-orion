@@ -51,8 +51,8 @@ trait HandlesRelationOneToManyOperations
             return $beforeHookResult;
         }
 
-        $this->authorize('view', $parentEntity);
-        $this->authorize('update', [$entity, $parentEntity]);
+        $this->authorize($this->resolveAbility('show'), $parentEntity);
+        $this->authorize($this->resolveAbility('update'), [$entity, $parentEntity]);
 
         $this->performAssociate($request, $parentEntity, $entity);
 
@@ -204,7 +204,7 @@ trait HandlesRelationOneToManyOperations
             return $beforeHookResult;
         }
 
-        $this->authorize('update', [$entity, $parentEntity]);
+        $this->authorize($this->resolveAbility('update'), [$entity, $parentEntity]);
 
         $this->performDissociate($request, $parentEntity, $entity);
 
@@ -214,7 +214,7 @@ trait HandlesRelationOneToManyOperations
                 $entity->{$this->keyName()}
             )->firstOrFail();
 
-        $afterHookResult = $this->afterDissociate($request, $parentEntity,$entity);
+        $afterHookResult = $this->afterDissociate($request, $parentEntity, $entity);
         if ($this->hookResponds($afterHookResult)) {
             return $afterHookResult;
         }

@@ -46,7 +46,7 @@ trait HandlesRelationStandardBatchOperations
 
         $resourceModelClass = $this->resolveResourceModelClass();
 
-        $this->authorize('create', [$resourceModelClass, $parentEntity]);
+        $this->authorize($this->resolveAbility('create'), [$resourceModelClass, $parentEntity]);
 
         $beforeHookResult = $this->beforeBatchStore($request, $parentEntity);
         if ($this->hookResponds($beforeHookResult)) {
@@ -196,7 +196,7 @@ trait HandlesRelationStandardBatchOperations
 
         foreach ($entities as $entity) {
             /** @var Model $entity */
-            $this->authorize('update', [$entity, $parentEntity]);
+            $this->authorize($this->resolveAbility('update'), [$entity, $parentEntity]);
 
             $resource = config('orion.use_validated')
                 ? $request->validated("resources.{$entity->{$this->keyName()}}")
@@ -397,7 +397,7 @@ trait HandlesRelationStandardBatchOperations
 
         foreach ($entities as $entity) {
             /** @var Model $entity */
-            $this->authorize($forceDeletes ? 'forceDelete' : 'delete', [$entity, $parentEntity]);
+            $this->authorize($this->resolveAbility($forceDeletes ? 'destroy' : 'delete'), [$entity, $parentEntity]);
 
             $this->beforeDestroy($request, $parentEntity, $entity);
 
@@ -564,7 +564,7 @@ trait HandlesRelationStandardBatchOperations
 
         foreach ($entities as $entity) {
             /** @var Model $entity */
-            $this->authorize('restore', [$entity, $parentEntity]);
+            $this->authorize($this->resolveAbility('restore'), [$entity, $parentEntity]);
 
             $this->beforeRestore($request, $parentEntity, $entity);
 

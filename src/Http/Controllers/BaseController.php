@@ -513,8 +513,15 @@ abstract class BaseController extends \Illuminate\Routing\Controller
             'store' => 'create',
             'edit' => 'update',
             'update' => 'update',
-            'destroy' => 'delete',
+            'destroy' => 'forceDelete',
+            'delete' => 'delete',
+            'restore' => 'restore',
         ];
+    }
+
+    protected function resolveAbility(string $method): string
+    {
+        return $this->resourceAbilityMap()[$method] ?? $method;
     }
 
     /**

@@ -49,7 +49,7 @@ trait HandlesRelationManyToManyOperations
             return $beforeHookResult;
         }
 
-        $this->authorize('update', $parentEntity);
+        $this->authorize($this->resolveAbility('update'), $parentEntity);
 
         $attachResult = $this->performAttach(
             $request,
@@ -188,16 +188,17 @@ trait HandlesRelationManyToManyOperations
         $resourceKeyName = $this->keyName();
         $resourceModels = $resourceModel->whereIn($resourceKeyName, array_keys($resources))->get();
 
-        return $resourceModels->filter(function($resourceModel) {
-                return !$this->authorizationRequired() ||
-                    Gate::forUser($this->resolveUser())->allows('view', $resourceModel);
-            })
-            ->mapWithKeys(function ($resourceModel) use ($relationInstance, $resources, $resourceKeyName) {
-                return [
-                    $resourceModel->{$relationInstance->getRelatedKeyName()} => $resources[$resourceModel->{$resourceKeyName}],
-                ];
-            }
-        )->all();
+        return $resourceModels->filter(function ($resourceModel) {
+            return !$this->authorizationRequired() ||
+                Gate::forUser($this->resolveUser())->allows('view', $resourceModel);
+        })
+            ->mapWithKeys(
+                function ($resourceModel) use ($relationInstance, $resources, $resourceKeyName) {
+                    return [
+                        $resourceModel->{$relationInstance->getRelatedKeyName()} => $resources[$resourceModel->{$resourceKeyName}],
+                    ];
+                }
+            )->all();
     }
 
     /**
@@ -271,7 +272,7 @@ trait HandlesRelationManyToManyOperations
             return $beforeHookResult;
         }
 
-        $this->authorize('update', $parentEntity);
+        $this->authorize($this->resolveAbility('update'), $parentEntity);
 
         $detachResult = $this->performDetach(
             $request,
@@ -396,7 +397,7 @@ trait HandlesRelationManyToManyOperations
             return $beforeHookResult;
         }
 
-        $this->authorize('update', $parentEntity);
+        $this->authorize($this->resolveAbility('update'), $parentEntity);
 
         $syncResult = $this->performSync(
             $request,
@@ -524,7 +525,7 @@ trait HandlesRelationManyToManyOperations
             return $beforeHookResult;
         }
 
-        $this->authorize('update', $parentEntity);
+        $this->authorize($this->resolveAbility('update'), $parentEntity);
 
         $toggleResult = $this->performToggle(
             $request,
@@ -648,7 +649,7 @@ trait HandlesRelationManyToManyOperations
         $query = $this->buildShowFetchQuery($request, $parentEntity, []);
         $entity = $this->runShowFetchQuery($request, $query, $parentEntity, $relatedKey);
 
-        $this->authorize('update', [$entity, $parentEntity]);
+        $this->authorize($this->resolveAbility('update'), [$entity, $parentEntity]);
 
         $updateResult = $this->performUpdatePivot($request, $parentEntity, $relatedKey, $request->get('pivot', []));
 
