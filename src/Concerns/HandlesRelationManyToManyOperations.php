@@ -188,17 +188,16 @@ trait HandlesRelationManyToManyOperations
         $resourceKeyName = $this->keyName();
         $resourceModels = $resourceModel->whereIn($resourceKeyName, array_keys($resources))->get();
 
-        return $resourceModels->filter(function ($resourceModel) {
-            return !$this->authorizationRequired() ||
-                Gate::forUser($this->resolveUser())->allows('view', $resourceModel);
-        })
-            ->mapWithKeys(
-                function ($resourceModel) use ($relationInstance, $resources, $resourceKeyName) {
-                    return [
-                        $resourceModel->{$relationInstance->getRelatedKeyName()} => $resources[$resourceModel->{$resourceKeyName}],
-                    ];
-                }
-            )->all();
+        return $resourceModels->filter(function($resourceModel) {
+                return !$this->authorizationRequired() ||
+                    Gate::forUser($this->resolveUser())->allows('view', $resourceModel);
+            })
+            ->mapWithKeys(function ($resourceModel) use ($relationInstance, $resources, $resourceKeyName) {
+                return [
+                    $resourceModel->{$relationInstance->getRelatedKeyName()} => $resources[$resourceModel->{$resourceKeyName}],
+                ];
+            }
+        )->all();
     }
 
     /**
