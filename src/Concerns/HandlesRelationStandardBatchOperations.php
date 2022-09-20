@@ -397,7 +397,7 @@ trait HandlesRelationStandardBatchOperations
 
         foreach ($entities as $entity) {
             /** @var Model $entity */
-            $this->authorize($this->resolveAbility($forceDeletes ? 'destroy' : 'delete'), [$entity, $parentEntity]);
+            $this->authorize($this->resolveAbility($forceDeletes ? 'forceDelete' : 'delete'), [$entity, $parentEntity]);
 
             $this->beforeDestroy($request, $parentEntity, $entity);
 

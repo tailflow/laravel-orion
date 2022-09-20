@@ -513,7 +513,7 @@ abstract class BaseController extends \Illuminate\Routing\Controller
             'store' => 'create',
             'edit' => 'update',
             'update' => 'update',
-            'destroy' => 'forceDelete',
+            'forceDelete' => 'forceDelete',
             'delete' => 'delete',
             'restore' => 'restore',
         ];

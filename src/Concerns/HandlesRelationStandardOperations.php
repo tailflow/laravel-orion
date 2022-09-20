@@ -822,7 +822,7 @@ trait HandlesRelationStandardOperations
             abort(404);
         }
 
-        $this->authorize($this->resolveAbility($forceDeletes ? 'destroy' : 'delete'), [$entity, $parentEntity]);
+        $this->authorize($this->resolveAbility($forceDeletes ? 'forceDelete' : 'delete'), [$entity, $parentEntity]);
 
         $beforeHookResult = $this->beforeDestroy($request, $parentEntity, $entity);
         if ($this->hookResponds($beforeHookResult)) {

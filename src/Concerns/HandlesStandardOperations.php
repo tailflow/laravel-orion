@@ -577,7 +577,7 @@ trait HandlesStandardOperations
             abort(404);
         }
 
-        $this->authorize($this->resolveAbility($forceDeletes ? 'destroy' : 'delete'), $entity);
+        $this->authorize($this->resolveAbility($forceDeletes ? 'forceDelete' : 'delete'), $entity);
 
         $beforeHookResult = $this->beforeDestroy($request, $entity);
         if ($this->hookResponds($beforeHookResult)) {

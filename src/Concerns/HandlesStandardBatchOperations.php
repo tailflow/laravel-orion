@@ -297,7 +297,7 @@ trait HandlesStandardBatchOperations
             /**
              * @var Model $entity
              */
-            $this->authorize($this->resolveAbility($forceDeletes ? 'destroy' : 'delete'), $entity);
+            $this->authorize($this->resolveAbility($forceDeletes ? 'forceDelete' : 'delete'), $entity);
 
             $this->beforeDestroy($request, $entity);
 
