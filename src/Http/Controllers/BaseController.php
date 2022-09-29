@@ -92,7 +92,7 @@ abstract class BaseController extends \Illuminate\Routing\Controller
     /**
      * @var boolean $applyAllQueryToIndex
      */
-    protected $applyAllQueryToIndex;
+    protected $applyAllQueryToIndex = false;
 
     /**
      * Controller constructor.
