@@ -41,6 +41,11 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
     private $intermediateMode;
 
     /**
+     * @var bool $applyQueryToIndex
+     */
+    private $applyQueryToIndex;
+
+    /**
      * @inheritDoc
      */
     public function __construct(
@@ -48,13 +53,15 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
         \Orion\Contracts\ParamsValidator $paramsValidator,
         \Orion\Contracts\RelationsResolver $relationsResolver,
         \Orion\Contracts\SearchBuilder $searchBuilder,
-        bool $intermediateMode = false
+        bool $intermediateMode = false,
+        bool $applyQueryToIndex = false
     ) {
         $this->resourceModelClass = $resourceModelClass;
         $this->paramsValidator = $paramsValidator;
         $this->relationsResolver = $relationsResolver;
         $this->searchBuilder = $searchBuilder;
         $this->intermediateMode = $intermediateMode;
+        $this->applyQueryToIndex = $applyQueryToIndex;
     }
 
     /**
@@ -70,7 +77,7 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
         $actionMethod = $request->route()->getActionMethod();
 
         if (!$this->intermediateMode && in_array($actionMethod, ['index', 'search', 'show'])) {
-            if ($actionMethod === 'search') {
+            if ($this->applyAllQueryToMethod($actionMethod)) {
                 $this->applyScopesToQuery($query, $request);
                 $this->applyFiltersToQuery($query, $request);
                 $this->applySearchingToQuery($query, $request);
@@ -80,6 +87,17 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
         }
 
         return $query;
+    }
+
+    public function applyAllQueryToMethod(string $method): bool
+    {
+        $methods = ['search'];
+
+        if ($this->applyQueryToIndex) {
+            $methods[] = 'index';
+        }
+
+        return in_array($method, $methods);
     }
 
     /**
