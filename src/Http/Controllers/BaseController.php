@@ -90,6 +90,11 @@ abstract class BaseController extends \Illuminate\Routing\Controller
     protected $queryBuilder;
 
     /**
+     * @var boolean $applyAllQueryToIndex
+     */
+    protected $applyAllQueryToIndex = false;
+
+    /**
      * Controller constructor.
      *
      * @throws BindingException
@@ -141,6 +146,7 @@ abstract class BaseController extends \Illuminate\Routing\Controller
                 'relationsResolver' => $this->relationsResolver,
                 'searchBuilder' => $this->searchBuilder,
                 'intermediateMode' => $this instanceof RelationController,
+                'applyQueryToIndex' => $this->applyAllQueryToIndex,
             ]
         );
 

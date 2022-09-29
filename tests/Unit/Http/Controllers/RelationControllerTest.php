@@ -85,6 +85,7 @@ class RelationControllerTest extends TestCase
                 'relationsResolver' => $fakeRelationsResolver,
                 'searchBuilder' => $fakeSearchBuilder,
                 'intermediateMode' => true,
+                'applyQueryToIndex' => false
             ]
         )->once()->andReturn($fakeQueryBuilder);
 
