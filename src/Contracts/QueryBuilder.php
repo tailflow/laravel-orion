@@ -16,8 +16,9 @@ interface QueryBuilder
      * @param RelationsResolver $relationsResolver
      * @param SearchBuilder $searchBuilder
      * @param bool $intermediateMode
+     * @param bool $applyQueryToIndex
      */
-    public function __construct(string $resourceModelClass, ParamsValidator $paramsValidator, RelationsResolver $relationsResolver, SearchBuilder $searchBuilder, bool $intermediateMode = false);
+    public function __construct(string $resourceModelClass, ParamsValidator $paramsValidator, RelationsResolver $relationsResolver, SearchBuilder $searchBuilder, bool $intermediateMode = false, bool $applyQueryToIndex = false);
 
     /**
      * @param Builder|Relation $query
