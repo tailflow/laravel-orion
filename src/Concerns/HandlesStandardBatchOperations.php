@@ -44,7 +44,7 @@ trait HandlesStandardBatchOperations
 
         $resourceModelClass = $this->resolveResourceModelClass();
 
-        $this->authorize('create', $resourceModelClass);
+        $this->authorize($this->resolveAbility('create'), $resourceModelClass);
 
         $resources = config('orion.use_validated')
             ? $request->validated('resources', [])
@@ -146,7 +146,7 @@ trait HandlesStandardBatchOperations
 
         foreach ($entities as $entity) {
             /** @var Model $entity */
-            $this->authorize('update', $entity);
+            $this->authorize($this->resolveAbility('update'), $entity);
 
             $this->beforeUpdate($request, $entity);
             $this->beforeSave($request, $entity);
@@ -297,7 +297,7 @@ trait HandlesStandardBatchOperations
             /**
              * @var Model $entity
              */
-            $this->authorize($forceDeletes ? 'forceDelete' : 'delete', $entity);
+            $this->authorize($this->resolveAbility($forceDeletes ? 'forceDelete' : 'delete'), $entity);
 
             $this->beforeDestroy($request, $entity);
 
@@ -417,7 +417,7 @@ trait HandlesStandardBatchOperations
             /**
              * @var Model $entity
              */
-            $this->authorize('restore', $entity);
+            $this->authorize($this->resolveAbility('restore'), $entity);
 
             $this->beforeRestore($request, $entity);
 
