@@ -15,7 +15,7 @@ jobs:
       fail-fast: false
       matrix:
         php-version: [ '7.3', '7.4', '8.0', '8.1' ]
-        laravel-version: [ '5.7.*', '5.8.*', '^6.0', '^7.0', '^8.0', '^9.0' ]
+        laravel-version: [ '^5.7.28', '5.8.*', '^6.0', '^7.0', '^8.0', '^9.0' ]
         database: [ 'sqlite', 'mysql', 'pgsql' ]
         exclude:
           - php-version: '7.3'
@@ -28,13 +28,13 @@ jobs:
             laravel-version: '^9.0'
             database: 'pgsql'
           - php-version: '7.4'
-            laravel-version: '5.7.*'
+            laravel-version: '^5.7.28'
             database: 'sqlite'
           - php-version: '7.4'
-            laravel-version: '5.7.*'
+            laravel-version: '^5.7.28'
             database: 'mysql'
           - php-version: '7.4'
-            laravel-version: '5.7.*'
+            laravel-version: '^5.7.28'
             database: 'pgsql'
           - php-version: '7.4'
             laravel-version: '^9.0'
@@ -46,13 +46,13 @@ jobs:
             laravel-version: '^9.0'
             database: 'pgsql'
           - php-version: '8.0'
-            laravel-version: '5.7.*'
+            laravel-version: '^5.7.28'
             database: 'sqlite'
           - php-version: '8.0'
-            laravel-version: '5.7.*'
+            laravel-version: '^5.7.28'
             database: 'mysql'
           - php-version: '8.0'
-            laravel-version: '5.7.*'
+            laravel-version: '^5.7.28'
             database: 'pgsql'
           - php-version: '8.0'
             laravel-version: '5.8.*'
@@ -64,13 +64,13 @@ jobs:
             laravel-version: '5.8.*'
             database: 'pgsql'
           - php-version: '8.1'
-            laravel-version: '5.7.*'
+            laravel-version: '^5.7.28'
             database: 'sqlite'
           - php-version: '8.1'
-            laravel-version: '5.7.*'
+            laravel-version: '^5.7.28'
             database: 'mysql'
           - php-version: '8.1'
-            laravel-version: '5.7.*'
+            laravel-version: '^5.7.28'
             database: 'pgsql'
           - php-version: '8.1'
             laravel-version: '5.8.*'
@@ -128,15 +128,15 @@ jobs:
 
       - name: Install dependencies
         if: steps.composer-cache.outputs.cache-hit != 'true'
-        run: composer update --with "illuminate/contracts=${{ matrix.laravel-version }}" --prefer-dist --no-progress --no-suggest
+        run: composer update --with "illuminate/contracts=${{ matrix.laravel-version }}" --prefer-dist --no-progress
 
       - name: Install laravel/legacy-factories only for Laravel >= 8.0
         if: matrix.laravel-version == '^8.0' || matrix.laravel-version == '^9.0'
-        run: composer require "laravel/legacy-factories" --prefer-dist --no-progress --no-suggest
+        run: composer require "laravel/legacy-factories" --prefer-dist --no-progress
 
       - name: Upgrade to PHPUnit 9 for PHP >= 8.0
         if: matrix.laravel-version == '^8.0' || matrix.laravel-version == '^9.0'
-        run: composer update --with "phpunit/phpunit=^9.0" --prefer-dist --no-progress --no-suggest
+        run: composer update --with "phpunit/phpunit=^9.0" --prefer-dist --no-progress
 
       - name: Upgrade PHPUnit Config for Laravel >= 8.0
         if: matrix.laravel-version == '^8.0' || matrix.laravel-version == '^9.0'
