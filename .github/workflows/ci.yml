@@ -14,8 +14,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php-version: [ '7.3' ]
-        laravel-version: [ '5.7.*' ]
+        php-version: [ '7.3', '7.4', '8.0', '8.1' ]
+        laravel-version: [ '5.7.*', '5.8.*', '^6.0', '^7.0', '^8.0', '^9.0' ]
         database: [ 'sqlite', 'mysql', 'pgsql' ]
         exclude:
           - php-version: '7.3'
@@ -130,9 +130,17 @@ jobs:
         if: steps.composer-cache.outputs.cache-hit != 'true'
         run: composer update --with "illuminate/contracts=${{ matrix.laravel-version }}" --prefer-dist --no-progress
 
-      - name: Install orchestra/testbench only for Laravel 5.7.*
-        if: matrix.laravel-version == '5.7.*'
+      - name: Install orchestra/testbench only for Laravel 5.7.* and 5.8.*
+        if: matrix.laravel-version == '5.7.*' || matrix.laravel-version == '5.8.*'
         run: composer update --with "orchestra/testbench=^3.7" --prefer-dist --no-progress
+
+      - name: Install orchestra/testbench=^4.0 only for Laravel 6.0
+        if: matrix.laravel-version == '^6.0'
+        run: composer update --with "orchestra/testbench=^4.0" --prefer-dist --no-progress
+
+      - name: Install orchestra/testbench=^5.0 only for Laravel 7.0
+        if: matrix.laravel-version == '^7.0'
+        run: composer update --with "orchestra/testbench=^5.0" --prefer-dist --no-progress
 
       - name: Install laravel/legacy-factories only for Laravel >= 8.0
         if: matrix.laravel-version == '^8.0' || matrix.laravel-version == '^9.0'
