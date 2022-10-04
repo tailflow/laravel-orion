@@ -14,8 +14,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php-version: [ '7.3', '7.4', '8.0', '8.1' ]
-        laravel-version: [ '5.7.*', '5.8.*', '^6.0', '^7.0', '^8.0', '^9.0' ]
+        php-version: [ '7.3' ]
+        laravel-version: [ '5.7.*' ]
         database: [ 'sqlite', 'mysql', 'pgsql' ]
         exclude:
           - php-version: '7.3'
@@ -132,7 +132,7 @@ jobs:
 
       - name: Install orchestra/testbench only for Laravel 5.7.*
         if: matrix.laravel-version == '5.7.*'
-        run: composer require "orchestra/testbench=^3.7" --prefer-dist --no-progress
+        run: composer update --with "orchestra/testbench=^3.7" --prefer-dist --no-progress
 
       - name: Install laravel/legacy-factories only for Laravel >= 8.0
         if: matrix.laravel-version == '^8.0' || matrix.laravel-version == '^9.0'
