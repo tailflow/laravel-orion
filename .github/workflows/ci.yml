@@ -14,8 +14,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php-version: [ '7.3', '7.4', '8.0', '8.1' ]
-        laravel-version: [ '^5.7.28', '5.8.*', '^6.0', '^7.0', '^8.0', '^9.0' ]
+        php-version: [ '7.3' ]
+        laravel-version: [ '^5.7.28', ]
         database: [ 'sqlite', 'mysql', 'pgsql' ]
         exclude:
           - php-version: '7.3'
@@ -117,14 +117,14 @@ jobs:
       - name: Validate composer.json and composer.lock
         run: composer validate
 
-      - name: Cache Composer packages
-        id: composer-cache
-        uses: actions/cache@v2
-        with:
-          path: vendor
-          key: ${{ runner.os }}-php-${{ matrix.php-version }}-laravel-${{ matrix.laravel-version }}-${{ hashFiles('**/composer.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-php-${{ matrix.php-version }}-laravel-${{ matrix.laravel-version }}-
+#      - name: Cache Composer packages
+#        id: composer-cache
+#        uses: actions/cache@v2
+#        with:
+#          path: vendor
+#          key: ${{ runner.os }}-php-${{ matrix.php-version }}-laravel-${{ matrix.laravel-version }}-${{ hashFiles('**/composer.lock') }}
+#          restore-keys: |
+#            ${{ runner.os }}-php-${{ matrix.php-version }}-laravel-${{ matrix.laravel-version }}-
 
       - name: Install dependencies
         if: steps.composer-cache.outputs.cache-hit != 'true'
