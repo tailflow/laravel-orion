@@ -152,9 +152,9 @@ class ParamsValidator implements \Orion\Contracts\ParamsValidator
         Validator::make(
             $request->all(),
             [
-                'aggregates' => ['sometimes', 'array'],
+                'aggregates' => ['sometimes', 'array:count,min,max,avg,sum,exists'],
                 'aggregates.count' => ['sometimes', 'array'],
-                'aggregates.count.*.field' => [
+                'aggregates.*.*.field' => [
                     'required',
                     'regex:/^[\w.\_\-\>]+$/',
                     new WhitelistedField($this->aggregatableBy),
