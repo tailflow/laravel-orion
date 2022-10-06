@@ -24,13 +24,19 @@ class ParamsValidator implements \Orion\Contracts\ParamsValidator
     private $sortableBy;
 
     /**
+     * @var string[]
+     */
+    private $aggregatableBy;
+
+    /**
      * @inheritDoc
      */
-    public function __construct(array $exposedScopes = [], array $filterableBy = [], array $sortableBy = [])
+    public function __construct(array $exposedScopes = [], array $filterableBy = [], array $sortableBy = [], array $aggregatableBy = [])
     {
         $this->exposedScopes = $exposedScopes;
         $this->filterableBy = $filterableBy;
         $this->sortableBy = $sortableBy;
+        $this->aggregatableBy = $aggregatableBy;
     }
 
     public function validateScopes(Request $request): void
@@ -137,6 +143,22 @@ class ParamsValidator implements \Orion\Contracts\ParamsValidator
                 'search' => ['sometimes', 'array'],
                 'search.value' => ['string', 'nullable'],
                 'search.case_sensitive' => ['bool'],
+            ]
+        )->validate();
+    }
+
+    public function validateAggregators(Request $request): void
+    {
+        Validator::make(
+            $request->all(),
+            [
+                'aggregates' => ['sometimes', 'array'],
+                'aggregates.count' => ['sometimes', 'array'],
+                'aggregates.count.*.field' => [
+                    'required',
+                    'regex:/^[\w.\_\-\>]+$/',
+                    new WhitelistedField($this->aggregatableBy),
+                ],
             ]
         )->validate();
     }

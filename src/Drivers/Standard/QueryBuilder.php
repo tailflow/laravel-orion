@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 use JsonException;
 use Orion\Http\Requests\Request;
 use RuntimeException;
@@ -75,6 +76,7 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
                 $this->applyFiltersToQuery($query, $request);
                 $this->applySearchingToQuery($query, $request);
                 $this->applySortingToQuery($query, $request);
+                $this->applyAggregatesToQuery($query, $request);
             }
             $this->applySoftDeletesToQuery($query, $request);
         }
@@ -468,5 +470,28 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
         }
 
         return true;
+    }
+
+
+    /**
+     * Apply eager loading of aggregates to the query.
+     *
+     * @param Builder|Relation|SoftDeletes $query
+     * @param Request $request
+     * @return void
+     */
+    public function applyAggregatesToQuery($query, Request $request, array $aggregateDescriptors = []): void
+    {
+        if (!$aggregateDescriptors) {
+            $this->paramsValidator->validateAggregators($request);
+            $aggregateDescriptors = $request->get('aggregates', []);
+        }
+
+        foreach ($aggregateDescriptors as $type => $aggregateDescriptor) {
+            foreach ($aggregateDescriptor as $typeDescriptor) {
+                $studlyType = Str::studly($type);
+                $query->{"with$studlyType"}($typeDescriptor['field']);
+            }
+        }
     }
 }

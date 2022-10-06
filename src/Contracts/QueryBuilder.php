@@ -57,4 +57,11 @@ interface QueryBuilder
      * @return bool
      */
     public function applySoftDeletesToQuery($query, Request $request): bool;
+
+    /**
+     * @param Builder|Relation $query
+     * @param Request $request
+     * @return bool
+     */
+    public function applyAggregatesToQuery($query, Request $request, array $aggregateDescriptors = []): void;
 }
