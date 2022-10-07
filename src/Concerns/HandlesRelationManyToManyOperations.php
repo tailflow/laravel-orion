@@ -49,12 +49,14 @@ trait HandlesRelationManyToManyOperations
             return $beforeHookResult;
         }
 
-        $this->authorize('update', $parentEntity);
+        $this->authorize($this->resolveAbility('update'), $parentEntity);
 
         $attachResult = $this->performAttach(
             $request,
             $parentEntity,
-            $request->get('resources'),
+            config('orion.use_validated')
+                ? $request->validated('resources')
+                : $request->get('resources'),
             $request->get('duplicates', false)
         );
 
@@ -270,9 +272,15 @@ trait HandlesRelationManyToManyOperations
             return $beforeHookResult;
         }
 
-        $this->authorize('update', $parentEntity);
+        $this->authorize($this->resolveAbility('update'), $parentEntity);
 
-        $detachResult = $this->performDetach($request, $parentEntity, $request->get('resources'));
+        $detachResult = $this->performDetach(
+            $request,
+            $parentEntity,
+            config('orion.use_validated')
+                ? $request->validated('resources')
+                : $request->get('resources')
+        );
 
         $afterHookResult = $this->afterDetach($request, $parentEntity, $detachResult);
         if ($this->hookResponds($afterHookResult)) {
@@ -389,12 +397,14 @@ trait HandlesRelationManyToManyOperations
             return $beforeHookResult;
         }
 
-        $this->authorize('update', $parentEntity);
+        $this->authorize($this->resolveAbility('update'), $parentEntity);
 
         $syncResult = $this->performSync(
             $request,
             $parentEntity,
-            $request->get('resources'),
+            config('orion.use_validated')
+                ? $request->validated('resources')
+                : $request->get('resources'),
             $request->get('detaching', true)
         );
 
@@ -515,9 +525,15 @@ trait HandlesRelationManyToManyOperations
             return $beforeHookResult;
         }
 
-        $this->authorize('update', $parentEntity);
+        $this->authorize($this->resolveAbility('update'), $parentEntity);
 
-        $toggleResult = $this->performToggle($request, $parentEntity, $request->get('resources'));
+        $toggleResult = $this->performToggle(
+            $request,
+            $parentEntity,
+            config('orion.use_validated')
+                ? $request->validated('resources')
+                : $request->get('resources')
+        );
 
         $afterHookResult = $this->afterToggle($request, $parentEntity, $toggleResult);
         if ($this->hookResponds($afterHookResult)) {
@@ -633,7 +649,7 @@ trait HandlesRelationManyToManyOperations
         $query = $this->buildShowFetchQuery($request, $parentEntity, []);
         $entity = $this->runShowFetchQuery($request, $query, $parentEntity, $relatedKey);
 
-        $this->authorize('update', [$entity, $parentEntity]);
+        $this->authorize($this->resolveAbility('update'), [$entity, $parentEntity]);
 
         $updateResult = $this->performUpdatePivot($request, $parentEntity, $relatedKey, $request->get('pivot', []));
 

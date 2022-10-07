@@ -57,8 +57,20 @@ class PathsBuilder
         $resources = $this->resourcesCacheStore->getResources();
         $paths = collect([]);
 
+        $operationsOrder = [
+            'store', 'index', 'search', 'show', 'update', 'destroy', 'restore',
+            'batchStore', 'batchUpdate', 'batchDestroy', 'batchRestore',
+            'associate', 'dissociate',
+            'attach', 'detach', 'sync', 'toggle', 'updatePivot',
+        ];
+
         foreach ($resources as $resource) {
-            foreach ($resource->operations as $operationName) {
+            $operations = array_merge(
+                array_intersect($operationsOrder, $resource->operations),
+                array_diff($resource->operations, $operationsOrder)
+            );
+
+            foreach ($operations as $operationName) {
                 $route = $this->resolveRoute($resource->controller, $operationName);
 
                 if (in_array($operationName, ['index', 'search', 'store', 'show', 'update', 'destroy', 'restore'])) {
@@ -84,7 +96,7 @@ class PathsBuilder
                 $operation = $operationBuilder->build();
 
                 if (!$path = $paths->where('path', $route->uri())->first()) {
-                    $path = new Path($route->uri());
+                    $path = app()->make(Path::class, ['path' => $route->uri()]);
 
                     $paths->put(Str::start($path->path, '/'), $path);
                 }
@@ -153,8 +165,8 @@ class PathsBuilder
         Route $route
     ): RelationOperationBuilder {
         $operationClassName = "Orion\\Specs\\Builders\\Operations\\Relations\\OneToMany\\".ucfirst(
-                $operation
-            ).'OperationBuilder';
+            $operation
+        ).'OperationBuilder';
 
         return $this->relationOperationBuilderFactory->make($operationClassName, $resource, $operation, $route);
     }
@@ -172,8 +184,8 @@ class PathsBuilder
         Route $route
     ): RelationOperationBuilder {
         $operationClassName = "Orion\\Specs\\Builders\\Operations\\Relations\\ManyToMany\\".ucfirst(
-                $operation
-            ).'OperationBuilder';
+            $operation
+        ).'OperationBuilder';
 
         return $this->relationOperationBuilderFactory->make($operationClassName, $resource, $operation, $route);
     }

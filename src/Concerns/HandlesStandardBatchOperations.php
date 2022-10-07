@@ -44,9 +44,11 @@ trait HandlesStandardBatchOperations
 
         $resourceModelClass = $this->resolveResourceModelClass();
 
-        $this->authorize('create', $resourceModelClass);
+        $this->authorize($this->resolveAbility('create'), $resourceModelClass);
 
-        $resources = $request->get('resources', []);
+        $resources = config('orion.use_validated')
+            ? $request->validated('resources', [])
+            : $request->get('resources', []);
         $entities = collect([]);
 
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
@@ -146,7 +148,7 @@ trait HandlesStandardBatchOperations
 
         foreach ($entities as $entity) {
             /** @var Model $entity */
-            $this->authorize('update', $entity);
+            $this->authorize($this->resolveAbility('update'), $entity);
 
             $this->beforeUpdate($request, $entity);
             $this->beforeSave($request, $entity);
@@ -154,7 +156,9 @@ trait HandlesStandardBatchOperations
             $this->performUpdate(
                 $request,
                 $entity,
-                $request->input("resources.{$entity->{$this->keyName()}}")
+                config('orion.use_validated')
+                    ? $request->validated("resources.{$entity->{$this->keyName()}}")
+                    : $request->input("resources.{$entity->{$this->keyName()}}")
             );
 
             $this->beforeUpdateFresh($request, $entity);
@@ -297,7 +301,7 @@ trait HandlesStandardBatchOperations
             /**
              * @var Model $entity
              */
-            $this->authorize($forceDeletes ? 'forceDelete' : 'delete', $entity);
+            $this->authorize($this->resolveAbility($forceDeletes ? 'forceDelete' : 'delete'), $entity);
 
             $this->beforeDestroy($request, $entity);
 
@@ -422,7 +426,7 @@ trait HandlesStandardBatchOperations
             /**
              * @var Model $entity
              */
-            $this->authorize('restore', $entity);
+            $this->authorize($this->resolveAbility('restore'), $entity);
 
             $this->beforeRestore($request, $entity);
 

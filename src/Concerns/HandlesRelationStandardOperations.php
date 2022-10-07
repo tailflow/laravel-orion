@@ -37,14 +37,14 @@ trait HandlesRelationStandardOperations
         $parentQuery = $this->buildIndexParentFetchQuery($request, $parentKey);
         $parentEntity = $this->runIndexParentFetchQuery($request, $parentQuery, $parentKey);
 
-        $this->authorize('viewAny', [$this->resolveResourceModelClass(), $parentEntity]);
+        $this->authorize($this->resolveAbility('index'), [$this->resolveResourceModelClass(), $parentEntity]);
 
         $beforeHookResult = $this->beforeIndex($request, $parentEntity);
         if ($this->hookResponds($beforeHookResult)) {
             return $beforeHookResult;
         }
 
-        $this->authorize('view', $parentEntity);
+        $this->authorize($this->resolveAbility('show'), $parentEntity);
 
         $query = $this->buildIndexFetchQuery($request, $parentEntity, $requestedRelations);
         $entities = $this->runIndexFetchQuery(
@@ -158,7 +158,7 @@ trait HandlesRelationStandardOperations
                 return $this->beforeFilterApplied($request, $parentEntity, $filterDescriptor);
             })->toArray();
 
-        $request->merge(['filters' => $filters]);
+        $request->request->add(['filters' => $filters]);
 
         return $this->buildRelationFetchQuery($request, $parentEntity, $requestedRelations);
     }
@@ -265,7 +265,7 @@ trait HandlesRelationStandardOperations
 
         $resourceModelClass = $this->resolveResourceModelClass();
 
-        $this->authorize('create', [$resourceModelClass, $parentEntity]);
+        $this->authorize($this->resolveAbility('create'), [$resourceModelClass, $parentEntity]);
 
         /** @var Model $entity */
         $entity = new $resourceModelClass;
@@ -286,7 +286,9 @@ trait HandlesRelationStandardOperations
             $request,
             $parentEntity,
             $entity,
-            $request->all(),
+            config('orion.use_validated')
+                ? $request->validated()
+                : $request->all(),
             $request->get('pivot', [])
         );
 
@@ -444,7 +446,7 @@ trait HandlesRelationStandardOperations
         $query = $this->buildShowFetchQuery($request, $parentEntity, $requestedRelations);
         $entity = $this->runShowFetchQuery($request, $query, $parentEntity, $relatedKey);
 
-        $this->authorize('view', [$entity, $parentEntity]);
+        $this->authorize($this->resolveAbility('show'), [$entity, $parentEntity]);
 
         $entity = $this->cleanupEntity($entity);
 
@@ -624,7 +626,7 @@ trait HandlesRelationStandardOperations
         $query = $this->buildUpdateFetchQuery($request, $parentEntity, $requestedRelations);
         $entity = $this->runUpdateFetchQuery($request, $query, $parentEntity, $relatedKey);
 
-        $this->authorize('update', [$entity, $parentEntity]);
+        $this->authorize($this->resolveAbility('update'), [$entity, $parentEntity]);
 
         $beforeHookResult = $this->beforeUpdate($request, $parentEntity, $entity);
         if ($this->hookResponds($beforeHookResult)) {
@@ -640,7 +642,9 @@ trait HandlesRelationStandardOperations
             $request,
             $parentEntity,
             $entity,
-            $request->all(),
+            config('orion.use_validated')
+                ? $request->validated()
+                : $request->all(),
             $request->get('pivot', [])
         );
 
@@ -823,7 +827,7 @@ trait HandlesRelationStandardOperations
             abort(404);
         }
 
-        $this->authorize($forceDeletes ? 'forceDelete' : 'delete', [$entity, $parentEntity]);
+        $this->authorize($this->resolveAbility($forceDeletes ? 'forceDelete' : 'delete'), [$entity, $parentEntity]);
 
         $beforeHookResult = $this->beforeDestroy($request, $parentEntity, $entity);
         if ($this->hookResponds($beforeHookResult)) {
@@ -1007,7 +1011,7 @@ trait HandlesRelationStandardOperations
         $query = $this->buildRestoreFetchQuery($request, $parentEntity, $requestedRelations);
         $entity = $this->runRestoreFetchQuery($request, $query, $parentEntity, $relatedKey);
 
-        $this->authorize('restore', [$entity, $parentEntity]);
+        $this->authorize($this->resolveAbility('restore'), [$entity, $parentEntity]);
 
         $beforeHookResult = $this->beforeRestore($request, $parentEntity, $entity);
         if ($this->hookResponds($beforeHookResult)) {

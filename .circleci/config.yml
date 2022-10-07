@@ -43,7 +43,6 @@ jobs:
       php-version: << parameters.php-version >>
     steps:
       - checkout
-
       # restore composer cache
       - restore_cache:
           keys:

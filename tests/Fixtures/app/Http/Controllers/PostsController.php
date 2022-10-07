@@ -25,22 +25,30 @@ class PostsController extends Controller
         }
     }
 
-    public function sortableBy() : array
+    public function sortableBy(): array
     {
-        return ['title', 'user.name', 'meta->nested_field'];
+        return ['title', 'user.name', 'user.email', 'meta->nested_field'];
     }
 
-    public function filterableBy() : array
+    public function filterableBy(): array
     {
-        return ['title', 'position', 'publish_at', 'user.name', 'meta->nested_field'];
+        return [
+            'title',
+            'position',
+            'publish_at',
+            'user.name',
+            'meta->nested_field',
+            'options',
+            'options->nested_field',
+        ];
     }
 
-    public function searchableBy() : array
+    public function searchableBy(): array
     {
         return ['title', 'user.name'];
     }
 
-    public function exposedScopes() : array
+    public function exposedScopes(): array
     {
         return ['published', 'publishedAt'];
     }
@@ -48,7 +56,7 @@ class PostsController extends Controller
     /**
      * @return array
      */
-    public function includes() : array
+    public function includes(): array
     {
         return ['user'];
     }

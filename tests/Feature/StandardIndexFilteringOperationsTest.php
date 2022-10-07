@@ -533,4 +533,116 @@ class StandardIndexFilteringOperationsTest extends TestCase
             $this->makePaginator([$matchingPost], 'posts/search')
         );
     }
+
+    /** @test */
+    public function getting_a_list_of_resources_filtered_by_jsonb_array_field_inclusive(): void
+    {
+        if (config('database.default') === 'sqlite'){
+            $this->markTestSkipped('Not supported with SQLite');
+        }
+
+        $matchingPost = factory(Post::class)
+            ->create(['options' =>  ['a', 'b', 'c']])->fresh();
+        factory(Post::class)->create(['publish_at' => Carbon::now()])->fresh();
+
+        Gate::policy(Post::class, GreenPolicy::class);
+
+        $response = $this->post(
+            '/api/posts/search',
+            [
+                'filters' => [
+                    ['field' => 'options', 'operator' => 'all in', 'value' => ['a', 'b']],
+                ],
+            ]
+        );
+
+        $this->assertResourcesPaginated(
+            $response,
+            $this->makePaginator([$matchingPost], 'posts/search')
+        );
+    }
+
+    /** @test */
+    public function getting_a_list_of_resources_filtered_by_nested_jsonb_array_field_inclusive(): void
+    {
+        if (config('database.default') === 'sqlite'){
+            $this->markTestSkipped('Not supported with SQLite');
+        }
+
+        $matchingPost = factory(Post::class)
+            ->create(['options' => ['nested_field' => ['a', 'b', 'c']]])->fresh();
+        factory(Post::class)->create(['publish_at' => Carbon::now()])->fresh();
+
+        Gate::policy(Post::class, GreenPolicy::class);
+
+        $response = $this->post(
+            '/api/posts/search',
+            [
+                'filters' => [
+                    ['field' => 'options->nested_field', 'operator' => 'all in', 'value' => ['a', 'b']],
+                ],
+            ]
+        );
+
+        $this->assertResourcesPaginated(
+            $response,
+            $this->makePaginator([$matchingPost], 'posts/search')
+        );
+    }
+
+    /** @test */
+    public function getting_a_list_of_resources_filtered_by_jsonb_array_field_exclusive(): void
+    {
+        if (config('database.default') === 'sqlite'){
+            $this->markTestSkipped('Not supported with SQLite');
+        }
+
+        $matchingPost = factory(Post::class)
+            ->create(['options' =>  ['a', 'd']])->fresh();
+        factory(Post::class)->create(['publish_at' => Carbon::now()])->fresh();
+
+        Gate::policy(Post::class, GreenPolicy::class);
+
+        $response = $this->post(
+            '/api/posts/search',
+            [
+                'filters' => [
+                    ['field' => 'options', 'operator' => 'any in', 'value' => ['a', 'b']],
+                ],
+            ]
+        );
+
+        $this->assertResourcesPaginated(
+            $response,
+            $this->makePaginator([$matchingPost], 'posts/search')
+        );
+    }
+
+    /** @test */
+    public function getting_a_list_of_resources_filtered_by_nested_jsonb_array_field_exclusive(): void
+    {
+        if (config('database.default') === 'sqlite'){
+            $this->markTestSkipped('Not supported with SQLite');
+        }
+
+        $matchingPost = factory(Post::class)
+            ->create(['options' => ['nested_field' => ['a', 'd']]])->fresh();
+        factory(Post::class)->create(['publish_at' => Carbon::now()])->fresh();
+
+        Gate::policy(Post::class, GreenPolicy::class);
+
+        $response = $this->post(
+            '/api/posts/search',
+            [
+                'filters' => [
+                    ['field' => 'options->nested_field', 'operator' => 'any in', 'value' => ['a', 'b']],
+                ],
+            ]
+        );
+
+        $this->assertResourcesPaginated(
+            $response,
+            $this->makePaginator([$matchingPost], 'posts/search')
+        );
+    }
 }
