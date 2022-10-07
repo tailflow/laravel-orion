@@ -15,19 +15,10 @@ jobs:
       fail-fast: false
       matrix:
         php-version: ['7.4', '8.0', '8.1' ]
-        laravel-version: [ '5.7.*', '5.8.*', '^6.0', '^7.0', '^8.0', '^9.0' ]
+        laravel-version: [ '^6.0', '^7.0', '^8.0', '^9.0' ]
         database: [ 'sqlite', 'mysql', 'pgsql' ]
         exclude:
           - php-version: '7.4'
-            laravel-version: '5.7.*'
-            database: 'sqlite'
-          - php-version: '7.4'
-            laravel-version: '5.7.*'
-            database: 'mysql'
-          - php-version: '7.4'
-            laravel-version: '5.7.*'
-            database: 'pgsql'
-          - php-version: '7.4'
             laravel-version: '^9.0'
             database: 'sqlite'
           - php-version: '7.4'
@@ -35,42 +26,6 @@ jobs:
             database: 'mysql'
           - php-version: '7.4'
             laravel-version: '^9.0'
-            database: 'pgsql'
-          - php-version: '8.0'
-            laravel-version: '5.7.*'
-            database: 'sqlite'
-          - php-version: '8.0'
-            laravel-version: '5.7.*'
-            database: 'mysql'
-          - php-version: '8.0'
-            laravel-version: '5.7.*'
-            database: 'pgsql'
-          - php-version: '8.0'
-            laravel-version: '5.8.*'
-            database: 'sqlite'
-          - php-version: '8.0'
-            laravel-version: '5.8.*'
-            database: 'mysql'
-          - php-version: '8.0'
-            laravel-version: '5.8.*'
-            database: 'pgsql'
-          - php-version: '8.1'
-            laravel-version: '5.7.*'
-            database: 'sqlite'
-          - php-version: '8.1'
-            laravel-version: '5.7.*'
-            database: 'mysql'
-          - php-version: '8.1'
-            laravel-version: '5.7.*'
-            database: 'pgsql'
-          - php-version: '8.1'
-            laravel-version: '5.8.*'
-            database: 'sqlite'
-          - php-version: '8.1'
-            laravel-version: '5.8.*'
-            database: 'mysql'
-          - php-version: '8.1'
-            laravel-version: '5.8.*'
             database: 'pgsql'
           - php-version: '8.1'
             laravel-version: '^6.0'
@@ -138,10 +93,6 @@ jobs:
       - name: Install dependencies
         if: steps.composer-cache.outputs.cache-hit != 'true'
         run: composer update --with "illuminate/contracts=${{ matrix.laravel-version }}" --prefer-dist --no-progress
-
-      - name: Install orchestra/testbench only for Laravel 5.7.* and 5.8.*
-        if: matrix.laravel-version == '5.7.*' || matrix.laravel-version == '5.8.*'
-        run: composer update --with "orchestra/testbench=^3.7" --prefer-dist --no-progress
 
       - name: Install orchestra/testbench=^4.0 only for Laravel 6.0
         if: matrix.laravel-version == '^6.0'
