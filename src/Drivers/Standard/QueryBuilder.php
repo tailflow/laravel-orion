@@ -42,6 +42,11 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
     private $intermediateMode;
 
     /**
+     * @var string $table
+     */
+    private $table;
+
+    /**
      * @inheritDoc
      */
     public function __construct(
@@ -317,8 +322,19 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
      */
     public function getQualifiedFieldName(string $field): string
     {
-        $table = (new $this->resourceModelClass)->getTable();
+        $table = $this->table ?? (new $this->resourceModelClass)->getTable();
         return "{$table}.{$field}";
+    }
+
+    /**
+     * Builds a complete field name with table from a relation.
+     *
+     * @param string $relation
+     * @return void
+     */
+    public function setQualifiedFieldNameFromRelation(string $relation): void
+    {
+        $this->table = (new $this->resourceModelClass)->$relation()->getModel()->getTable();
     }
 
     /**
@@ -487,11 +503,15 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
             $aggregateDescriptors = $request->get('aggregates', []);
         }
 
-        foreach ($aggregateDescriptors as $type => $aggregateDescriptor) {
-            foreach ($aggregateDescriptor as $typeDescriptor) {
-                $studlyType = Str::studly($type);
-                $query->{"with$studlyType"}($typeDescriptor['field']);
-            }
+        foreach ($aggregateDescriptors as $aggregateDescriptor) {
+            $studlyType = Str::studly($aggregateDescriptor['type']);
+            $query->{"with$studlyType"}([
+                $aggregateDescriptor['relation'] => function (Builder $query) use ($aggregateDescriptor, $request) {
+                    $this->setQualifiedFieldNameFromRelation($aggregateDescriptor['relation']);
+                    $this->applyFiltersToQuery($query, $request, $aggregateDescriptor['filters']);
+                    $this->table = null;
+                }
+            ]);
         }
     }
 }

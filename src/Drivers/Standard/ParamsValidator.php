@@ -53,14 +53,7 @@ class ParamsValidator implements \Orion\Contracts\ParamsValidator
 
     public function validateFilters(Request $request): void
     {
-        $maxDepth = floor($this->getArrayDepth($request->input('filters', [])) / 2);
-        $configMaxNestedDepth = config('orion.search.max_nested_depth', 1);
-
-        abort_if(
-            $maxDepth > $configMaxNestedDepth,
-            422,
-            __('Max nested depth :depth is exceeded', ['depth' => $configMaxNestedDepth])
-        );
+        $maxDepth = $this->getMaxDepth($request->input('filters', []));
 
         Validator::make(
             $request->all(),
@@ -68,6 +61,26 @@ class ParamsValidator implements \Orion\Contracts\ParamsValidator
                 'filters' => ['sometimes', 'array'],
             ], $this->getNestedRules('filters', $maxDepth))
         )->validate();
+    }
+
+    /**
+     * Get the max depth of an array
+     *
+     * @param array $array
+     * @return float
+     */
+    protected function getMaxDepth(array $array = []) {
+        $maxDepth = floor($this->getArrayDepth($array) / 2);
+        $configMaxNestedDepth = config('orion.search.max_nested_depth', 1);
+
+        // @TODO: Replace this with an exception
+        abort_if(
+            $maxDepth > $configMaxNestedDepth,
+            422,
+            __('Max nested depth :depth is exceeded', ['depth' => $configMaxNestedDepth])
+        );
+
+        return $maxDepth;
     }
 
     /**
@@ -104,6 +117,7 @@ class ParamsValidator implements \Orion\Contracts\ParamsValidator
         return $rules;
     }
 
+    //@TODO: move this to another place
     protected function getArrayDepth($array): int
     {
         $maxDepth = 0;
@@ -149,17 +163,33 @@ class ParamsValidator implements \Orion\Contracts\ParamsValidator
 
     public function validateAggregators(Request $request): void
     {
+        //@TODO: here the max depth needs to be determined from an array, needs to be implemented
+//        $maxDepth = $this->getMaxDepth($request->input('aggregates', []));
+        $maxDepth = 5;
+
         Validator::make(
             $request->all(),
-            [
-                'aggregates' => ['sometimes', 'array:count,min,max,avg,sum,exists'],
-                'aggregates.count' => ['sometimes', 'array'],
-                'aggregates.*.*.field' => [
-                    'required',
-                    'regex:/^[\w.\_\-\>]+$/',
-                    new WhitelistedField($this->aggregatableBy),
+            array_merge(
+                [
+                    'aggregates' => ['sometimes', 'array'],
+                    'aggregates.*.relation' => [
+                        'required',
+                        'regex:/^[\w.\_\-\>]+$/',
+                        new WhitelistedField($this->aggregatableBy),
+                    ],
+                    'aggregates.*.type' => [
+                        'required',
+                        'in:count,min,max,avg,sum,exists'
+                    ],
+                    'aggregates.*.filters' => ['sometimes', 'array'],
                 ],
-            ]
+                $this->getNestedRules('aggregates.*.filters', $maxDepth)
+            )
+            //@TODO: filters fields are not working because they are going with "filterableBy". May need to create specific function
         )->validate();
     }
+
+
+    // @TODO: once this is ready, do the same for "includes"
+    // @TODO: implement aggregates in query params to allow access to it from "show" routes for example
 }
