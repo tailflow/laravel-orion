@@ -69,7 +69,7 @@ class SearchRequest extends Request
                     'application/json' => [
                         'schema' => [
                             'type' => 'object',
-                            'properties' => $properties
+                            'properties' => $properties,
                         ],
                     ],
                 ],

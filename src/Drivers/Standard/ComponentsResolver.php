@@ -102,7 +102,9 @@ class ComponentsResolver implements \Orion\Contracts\ComponentsResolver
      */
     public function resolveCollectionResourceClass(): ?string
     {
-        $collectionResourceClassName = $this->getResourceClassesNamespace().class_basename($this->resourceModelClass).'CollectionResource';
+        $collectionResourceClassName = $this->getResourceClassesNamespace().class_basename(
+                $this->resourceModelClass
+            ).'CollectionResource';
 
         if (class_exists($collectionResourceClassName)) {
             return $collectionResourceClassName;

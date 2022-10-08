@@ -2,7 +2,9 @@
 
 namespace Orion\Exceptions;
 
-class BindingException extends \Exception
+use Exception;
+
+class BindingException extends Exception
 {
 
 }

@@ -2,21 +2,22 @@
 
 namespace Orion\Facades;
 
+use Illuminate\Routing\PendingResourceRegistration;
 use Illuminate\Support\Facades\Facade;
 
 /**
- * @method static \Illuminate\Routing\PendingResourceRegistration resource(string $name, string $controller, array $options = [])
- * @method static \Illuminate\Routing\PendingResourceRegistration hasOneResource(string $resource, string $relation, string $controller, array $options = [])
- * @method static \Illuminate\Routing\PendingResourceRegistration belongsToResource(string $resource, string $relation, string $controller, array $options = [])
- * @method static \Illuminate\Routing\PendingResourceRegistration hasManyResource(string $resource, string $relation, string $controller, array $options = [])
- * @method static \Illuminate\Routing\PendingResourceRegistration belongsToManyResource(string $resource, string $relation, string $controller, array $options = [])
- * @method static \Illuminate\Routing\PendingResourceRegistration hasOneThroughResource(string $resource, string $relation, string $controller, array $options = [])
- * @method static \Illuminate\Routing\PendingResourceRegistration hasManyThroughResource(string $resource, string $relation, string $controller, array $options = [])
- * @method static \Illuminate\Routing\PendingResourceRegistration morphOneResource(string $resource, string $relation, string $controller, array $options = [])
- * @method static \Illuminate\Routing\PendingResourceRegistration morphManyResource(string $resource, string $relation, string $controller, array $options = [])
- * @method static \Illuminate\Routing\PendingResourceRegistration morphToResource(string $resource, string $relation, string $controller, array $options = [])
- * @method static \Illuminate\Routing\PendingResourceRegistration morphToManyResource(string $resource, string $relation, string $controller, array $options = [])
- * @method static \Illuminate\Routing\PendingResourceRegistration morphByManyResource(string $resource, string $relation, string $controller, array $options = [])
+ * @method static PendingResourceRegistration resource(string $name, string $controller, array $options = [])
+ * @method static PendingResourceRegistration hasOneResource(string $resource, string $relation, string $controller, array $options = [])
+ * @method static PendingResourceRegistration belongsToResource(string $resource, string $relation, string $controller, array $options = [])
+ * @method static PendingResourceRegistration hasManyResource(string $resource, string $relation, string $controller, array $options = [])
+ * @method static PendingResourceRegistration belongsToManyResource(string $resource, string $relation, string $controller, array $options = [])
+ * @method static PendingResourceRegistration hasOneThroughResource(string $resource, string $relation, string $controller, array $options = [])
+ * @method static PendingResourceRegistration hasManyThroughResource(string $resource, string $relation, string $controller, array $options = [])
+ * @method static PendingResourceRegistration morphOneResource(string $resource, string $relation, string $controller, array $options = [])
+ * @method static PendingResourceRegistration morphManyResource(string $resource, string $relation, string $controller, array $options = [])
+ * @method static PendingResourceRegistration morphToResource(string $resource, string $relation, string $controller, array $options = [])
+ * @method static PendingResourceRegistration morphToManyResource(string $resource, string $relation, string $controller, array $options = [])
+ * @method static PendingResourceRegistration morphByManyResource(string $resource, string $relation, string $controller, array $options = [])
  *
  * @see \Orion\Orion
  */

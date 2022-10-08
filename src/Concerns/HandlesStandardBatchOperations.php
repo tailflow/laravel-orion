@@ -24,7 +24,7 @@ trait HandlesStandardBatchOperations
             $result = $this->batchStoreWithTransaction($request);
             $this->commitTransaction();
             return $result;
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             $this->rollbackTransactionAndRaise($exception);
         }
     }
@@ -44,9 +44,11 @@ trait HandlesStandardBatchOperations
 
         $resourceModelClass = $this->resolveResourceModelClass();
 
-        $this->authorize('create', $resourceModelClass);
+        $this->authorize($this->resolveAbility('create'), $resourceModelClass);
 
-        $resources = $request->get('resources', []);
+        $resources = config('orion.use_validated')
+            ? $request->validated('resources', [])
+            : $request->get('resources', []);
         $entities = collect([]);
 
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
@@ -77,6 +79,8 @@ trait HandlesStandardBatchOperations
         if ($this->hookResponds($afterHookResult)) {
             return $afterHookResult;
         }
+
+        $entities = $this->getAppendsResolver()->appendToCollection($entities, $request);
 
         $this->relationsResolver->guardRelationsForCollection($entities, $requestedRelations);
 
@@ -119,7 +123,7 @@ trait HandlesStandardBatchOperations
             $result = $this->batchUpdateWithTransaction($request);
             $this->commitTransaction();
             return $result;
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             $this->rollbackTransactionAndRaise($exception);
         }
     }
@@ -144,7 +148,7 @@ trait HandlesStandardBatchOperations
 
         foreach ($entities as $entity) {
             /** @var Model $entity */
-            $this->authorize('update', $entity);
+            $this->authorize($this->resolveAbility('update'), $entity);
 
             $this->beforeUpdate($request, $entity);
             $this->beforeSave($request, $entity);
@@ -152,7 +156,9 @@ trait HandlesStandardBatchOperations
             $this->performUpdate(
                 $request,
                 $entity,
-                $request->input("resources.{$entity->{$this->keyName()}}")
+                config('orion.use_validated')
+                    ? $request->validated("resources.{$entity->{$this->keyName()}}")
+                    : $request->input("resources.{$entity->{$this->keyName()}}")
             );
 
             $this->beforeUpdateFresh($request, $entity);
@@ -167,6 +173,8 @@ trait HandlesStandardBatchOperations
         if ($this->hookResponds($afterHookResult)) {
             return $afterHookResult;
         }
+
+        $entities = $this->getAppendsResolver()->appendToCollection($entities, $request);
 
         $this->relationsResolver->guardRelationsForCollection($entities, $requestedRelations);
 
@@ -262,7 +270,7 @@ trait HandlesStandardBatchOperations
             $result = $this->batchDestroyWithTransaction($request);
             $this->commitTransaction();
             return $result;
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             $this->rollbackTransactionAndRaise($exception);
         }
     }
@@ -293,7 +301,7 @@ trait HandlesStandardBatchOperations
             /**
              * @var Model $entity
              */
-            $this->authorize($forceDeletes ? 'forceDelete' : 'delete', $entity);
+            $this->authorize($this->resolveAbility($forceDeletes ? 'forceDelete' : 'delete'), $entity);
 
             $this->beforeDestroy($request, $entity);
 
@@ -314,6 +322,8 @@ trait HandlesStandardBatchOperations
         if ($this->hookResponds($afterHookResult)) {
             return $afterHookResult;
         }
+
+        $entities = $this->getAppendsResolver()->appendToCollection($entities, $request);
 
         $this->relationsResolver->guardRelationsForCollection($entities, $requestedRelations);
 
@@ -339,8 +349,11 @@ trait HandlesStandardBatchOperations
      * @param bool $softDeletes
      * @return Builder
      */
-    protected function buildBatchDestroyFetchQuery(Request $request, array $requestedRelations, bool $softDeletes): Builder
-    {
+    protected function buildBatchDestroyFetchQuery(
+        Request $request,
+        array $requestedRelations,
+        bool $softDeletes
+    ): Builder {
         return $this->buildBatchFetchQuery($request, $requestedRelations)
             ->when($softDeletes, function ($query) {
                 $query->withTrashed();
@@ -385,7 +398,7 @@ trait HandlesStandardBatchOperations
             $result = $this->batchRestoreWithTransaction($request);
             $this->commitTransaction();
             return $result;
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             $this->rollbackTransactionAndRaise($exception);
         }
     }
@@ -413,7 +426,7 @@ trait HandlesStandardBatchOperations
             /**
              * @var Model $entity
              */
-            $this->authorize('restore', $entity);
+            $this->authorize($this->resolveAbility('restore'), $entity);
 
             $this->beforeRestore($request, $entity);
 
@@ -430,6 +443,8 @@ trait HandlesStandardBatchOperations
         if ($this->hookResponds($afterHookResult)) {
             return $afterHookResult;
         }
+
+        $entities = $this->getAppendsResolver()->appendToCollection($entities, $request);
 
         $this->relationsResolver->guardRelationsForCollection($entities, $requestedRelations);
 

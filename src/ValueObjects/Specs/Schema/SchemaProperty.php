@@ -15,7 +15,7 @@ class SchemaProperty implements Arrayable
     /** @var bool */
     public $nullable = false;
 
-    public function toArray(): array
+    public function toArray()
     {
         $descriptor = [
             'type' => $this->type,

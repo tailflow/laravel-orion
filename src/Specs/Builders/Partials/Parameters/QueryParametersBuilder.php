@@ -27,7 +27,10 @@ class QueryParametersBuilder
         $softDeletes = $this->softDeletes($controller->resolveResourceModelClass());
 
         $includes = array_merge($controller->alwaysIncludes(), $controller->includes());
-        $hasIncludes = (bool)count($includes);
+        $hasIncludes = (bool) count($includes);
+
+        $appends = array_merge($controller->alwaysAppends(), $controller->appends());
+        $hasAppends = (bool) count($appends);
 
         switch ($route->getActionMethod()) {
             case 'destroy':
@@ -40,6 +43,10 @@ class QueryParametersBuilder
 
                 if ($hasIncludes) {
                     $parameters[] = $this->buildQueryParameter('string', 'include', $includes);
+                }
+
+                if ($hasAppends) {
+                    $parameters[] = $this->buildQueryParameter('string', 'append', $appends);
                 }
 
                 return $parameters;
@@ -59,9 +66,17 @@ class QueryParametersBuilder
 
                 return $parameters;
             default:
-                return $hasIncludes ? [
-                    $this->buildQueryParameter('string', 'include', $includes)
-                ] : [];
+                $parameters = [];
+
+                if ($hasIncludes) {
+                    $parameters[] = $this->buildQueryParameter('string', 'include', $includes);
+                }
+
+                if ($hasAppends) {
+                    $parameters[] = $this->buildQueryParameter('string', 'append', $appends);
+                }
+
+                return $parameters;
         }
     }
 
@@ -72,7 +87,7 @@ class QueryParametersBuilder
                 'type' => $type,
             ],
             'name' => $name,
-            'in' => 'query'
+            'in' => 'query',
         ];
 
         if (count($enum)) {

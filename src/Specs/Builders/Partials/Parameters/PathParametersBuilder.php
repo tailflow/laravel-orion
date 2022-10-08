@@ -52,7 +52,7 @@ class PathParametersBuilder
             ],
             'name' => $parameterName,
             'in' => 'path',
-            'required' => true
+            'required' => true,
         ];
 
         return $parameter;

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Orion\ValueObjects\Specs\Responses\Success;
 
+use Illuminate\Http\Resources\Json\JsonResource;
 use Orion\ValueObjects\Specs\Response;
 
 class EntityResponse extends Response
@@ -23,14 +24,18 @@ class EntityResponse extends Response
             [
                 'content' => [
                     'application/json' => [
-                        'schema' => [
-                            'type' => 'object',
-                            'properties' => [
-                                'data' => [
-                                    '$ref' => "#/components/schemas/{$this->resourceComponentBaseName}Resource",
+                        'schema' => JsonResource::$wrap ?
+                            [
+                                'type'       => 'object',
+                                'properties' => [
+                                    JsonResource::$wrap => [
+                                        '$ref' => "#/components/schemas/{$this->resourceComponentBaseName}Resource",
+                                    ],
                                 ],
+                            ] :
+                            [
+                                '$ref' => "#/components/schemas/{$this->resourceComponentBaseName}Resource",
                             ],
-                        ],
                     ],
                 ],
             ]

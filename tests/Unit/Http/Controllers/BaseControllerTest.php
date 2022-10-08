@@ -5,6 +5,7 @@ namespace Orion\Tests\Unit\Http\Controllers;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\App;
 use Mockery;
+use Orion\Drivers\Standard\AppendsResolver;
 use Orion\Drivers\Standard\ComponentsResolver;
 use Orion\Drivers\Standard\Paginator;
 use Orion\Drivers\Standard\ParamsValidator;
@@ -41,6 +42,7 @@ class BaseControllerTest extends TestCase
         $fakeComponentsResolver = new ComponentsResolver(Post::class);
         $fakeParamsValidator = new ParamsValidator();
         $fakeRelationsResolver = new RelationsResolver([], []);
+        $fakeAppendsResolver = new AppendsResolver([], []);
         $fakePaginator = new Paginator(15);
         $fakeSearchBuilder = new SearchBuilder([]);
         $fakeQueryBuilder = new QueryBuilder(Post::class, $fakeParamsValidator, $fakeRelationsResolver, $fakeSearchBuilder);
@@ -68,6 +70,14 @@ class BaseControllerTest extends TestCase
                 'alwaysIncludedRelations' => ['testAlwaysIncludedRelation'],
             ]
         )->once()->andReturn($fakeRelationsResolver);
+
+        App::shouldReceive('makeWith')->with(
+            \Orion\Contracts\AppendsResolver::class,
+            [
+                'appends' => ['testAppends'],
+                'alwaysAppends' => ['testAlwaysAppends'],
+            ]
+        )->once()->andReturn($fakeAppendsResolver);
 
         App::shouldReceive('makeWith')->with(
             \Orion\Contracts\Paginator::class,
@@ -98,6 +108,7 @@ class BaseControllerTest extends TestCase
         $this->assertEquals($fakeComponentsResolver, $stub->getComponentsResolver());
         $this->assertEquals($fakeParamsValidator, $stub->getParamsValidator());
         $this->assertEquals($fakeRelationsResolver, $stub->getRelationsResolver());
+        $this->assertEquals($fakeAppendsResolver, $stub->getAppendsResolver());
         $this->assertEquals($fakePaginator, $stub->getPaginator());
         $this->assertEquals($fakeSearchBuilder, $stub->getSearchBuilder());
         $this->assertEquals($fakeQueryBuilder, $stub->getQueryBuilder());

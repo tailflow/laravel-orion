@@ -2,6 +2,7 @@
 
 namespace Orion\Concerns;
 
+use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -24,7 +25,7 @@ trait HandlesRelationOneToManyOperations
             $result = $this->associateWithTransaction($request, $parentKey);
             $this->commitTransaction();
             return $result;
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             $this->rollbackTransactionAndRaise($exception);
         }
     }
@@ -51,8 +52,8 @@ trait HandlesRelationOneToManyOperations
             return $beforeHookResult;
         }
 
-        $this->authorize('view', $parentEntity);
-        $this->authorize('update', [$entity, $parentEntity]);
+        $this->authorize($this->resolveAbility('show'), $parentEntity);
+        $this->authorize($this->resolveAbility('update'), [$entity, $parentEntity]);
 
         $this->performAssociate($request, $parentEntity, $entity);
 
@@ -101,8 +102,11 @@ trait HandlesRelationOneToManyOperations
      * @param array $requestedRelations
      * @return Builder
      */
-    protected function buildAssociateFetchQuery(Request $request, Model $parentEntity, array $requestedRelations): Builder
-    {
+    protected function buildAssociateFetchQuery(
+        Request $request,
+        Model $parentEntity,
+        array $requestedRelations
+    ): Builder {
         $relatedModel = $parentEntity->{$this->getRelation()}()->getModel();
 
         return $this->relationQueryBuilder->buildQuery($relatedModel->query(), $request)
@@ -176,7 +180,7 @@ trait HandlesRelationOneToManyOperations
             $result = $this->dissociateWithTransaction($request, $parentKey, $relatedKey);
             $this->commitTransaction();
             return $result;
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             $this->rollbackTransactionAndRaise($exception);
         }
     }
@@ -204,7 +208,7 @@ trait HandlesRelationOneToManyOperations
             return $beforeHookResult;
         }
 
-        $this->authorize('update', [$entity, $parentEntity]);
+        $this->authorize($this->resolveAbility('update'), [$entity, $parentEntity]);
 
         $this->performDissociate($request, $parentEntity, $entity);
 
@@ -214,7 +218,7 @@ trait HandlesRelationOneToManyOperations
                 $entity->{$this->keyName()}
             )->firstOrFail();
 
-        $afterHookResult = $this->afterDissociate($request, $parentEntity,$entity);
+        $afterHookResult = $this->afterDissociate($request, $parentEntity, $entity);
         if ($this->hookResponds($afterHookResult)) {
             return $afterHookResult;
         }
@@ -257,8 +261,11 @@ trait HandlesRelationOneToManyOperations
      * @param array $requestedRelations
      * @return Relation
      */
-    protected function buildDissociateFetchQuery(Request $request, Model $parentEntity, array $requestedRelations): Relation
-    {
+    protected function buildDissociateFetchQuery(
+        Request $request,
+        Model $parentEntity,
+        array $requestedRelations
+    ): Relation {
         return $this->buildRelationFetchQuery($request, $parentEntity, $requestedRelations);
     }
 
@@ -271,8 +278,12 @@ trait HandlesRelationOneToManyOperations
      * @param string|int $relatedKey
      * @return Model
      */
-    protected function runDissociateFetchQuery(Request $request, Relation $query, Model $parentEntity, $relatedKey): Model
-    {
+    protected function runDissociateFetchQuery(
+        Request $request,
+        Relation $query,
+        Model $parentEntity,
+        $relatedKey
+    ): Model {
         return $this->runRelationFetchQuery($request, $query, $parentEntity, $relatedKey);
     }
 

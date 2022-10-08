@@ -6,11 +6,17 @@ namespace Orion\Specs\Managers;
 
 use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\Schema\Column;
+use Doctrine\DBAL\Types\Types;
 use Illuminate\Database\Eloquent\Model;
+use Orion\ValueObjects\Specs\Schema\Properties\AnySchemaProperty;
+use Orion\ValueObjects\Specs\Schema\Properties\ArraySchemaProperty;
+use Orion\ValueObjects\Specs\Schema\Properties\BinarySchemaProperty;
 use Orion\ValueObjects\Specs\Schema\Properties\BooleanSchemaProperty;
+use Orion\ValueObjects\Specs\Schema\Properties\DateSchemaProperty;
 use Orion\ValueObjects\Specs\Schema\Properties\DateTimeSchemaProperty;
 use Orion\ValueObjects\Specs\Schema\Properties\IntegerSchemaProperty;
 use Orion\ValueObjects\Specs\Schema\Properties\NumberSchemaProperty;
+use Orion\ValueObjects\Specs\Schema\Properties\ObjectSchemaProperty;
 use Orion\ValueObjects\Specs\Schema\Properties\StringSchemaProperty;
 
 class SchemaManager
@@ -46,16 +52,39 @@ class SchemaManager
         }
 
         switch ($column->getType()->getName()) {
-            case 'integer':
-            case 'bigint':
-            case 'smallint':
+            case Types::BIGINT:
+            case Types::INTEGER:
+            case Types::SMALLINT:
                 return IntegerSchemaProperty::class;
-            case 'boolean':
-                return BooleanSchemaProperty::class;
-            case 'float':
+            case Types::FLOAT:
+            case Types::DECIMAL:
                 return NumberSchemaProperty::class;
-            default:
+            case Types::BOOLEAN:
+                return BooleanSchemaProperty::class;
+            case Types::STRING:
+            case Types::TEXT:
+            case Types::ASCII_STRING:
+            case Types::GUID:
+            case Types::TIME_MUTABLE:
+            case Types::TIME_IMMUTABLE:
                 return StringSchemaProperty::class;
+            case Types::DATE_MUTABLE:
+            case Types::DATE_IMMUTABLE:
+                return DateSchemaProperty::class;
+            case Types::DATETIME_MUTABLE:
+            case Types::DATETIME_IMMUTABLE:
+                return DateTimeSchemaProperty::class;
+            case Types::ARRAY:
+            case Types::SIMPLE_ARRAY:
+                return ArraySchemaProperty::class;
+            case Types::OBJECT:
+            case Types::JSON:
+                return ObjectSchemaProperty::class;
+            case Types::BINARY:
+            case Types::BLOB:
+                return BinarySchemaProperty::class;
+            default:
+                return AnySchemaProperty::class;
         }
     }
 }

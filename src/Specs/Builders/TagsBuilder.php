@@ -21,8 +21,12 @@ class TagsBuilder
 
     public function build(): array
     {
+        if (!config('orion.specs.tags.generate')) {
+            return [];
+        }
+
         $resources = $this->resourcesCacheStore->getResources();
-        $tags = collect(config('orion.specs.tags'));
+        $tags = collect(config('orion.specs.tags.default'));
 
         foreach ($resources as $resource) {
             $tags[] = [

@@ -43,10 +43,10 @@ class BatchRestoreRequest extends Request
                                     'type' => 'array',
                                     'items' => [
                                         'type' => $this->registeredResource->getKeyType(),
-                                        'description' => 'A list of resource IDs'
-                                    ]
-                                ]
-                            ]
+                                        'description' => 'A list of resource IDs',
+                                    ],
+                                ],
+                            ],
                         ],
                     ],
                 ],

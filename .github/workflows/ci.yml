@@ -1,0 +1,141 @@
+name: default
+
+on:
+  push:
+    branches: [ main, next ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        php-version: ['7.4', '8.0', '8.1' ]
+        laravel-version: [ '^6.0', '^7.0', '^8.0', '^9.0' ]
+        database: [ 'sqlite', 'mysql', 'pgsql' ]
+        exclude:
+          - php-version: '7.4'
+            laravel-version: '^9.0'
+            database: 'sqlite'
+          - php-version: '7.4'
+            laravel-version: '^9.0'
+            database: 'mysql'
+          - php-version: '7.4'
+            laravel-version: '^9.0'
+            database: 'pgsql'
+          - php-version: '8.1'
+            laravel-version: '^6.0'
+            database: 'sqlite'
+          - php-version: '8.1'
+            laravel-version: '^6.0'
+            database: 'mysql'
+          - php-version: '8.1'
+            laravel-version: '^6.0'
+            database: 'pgsql'
+          - php-version: '8.1'
+            laravel-version: '^7.0'
+            database: 'sqlite'
+          - php-version: '8.1'
+            laravel-version: '^7.0'
+            database: 'mysql'
+          - php-version: '8.1'
+            laravel-version: '^7.0'
+            database: 'pgsql'
+
+    name: Tests on PHP ${{ matrix.php-version }} with Laravel ${{ matrix.laravel-version }} and ${{ matrix.database }}
+
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+          MYSQL_DATABASE: orion
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+      pgsql:
+        image: postgres:10.8
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: orion
+        ports:
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-version }}
+          coverage: none
+
+      - name: Validate composer.json and composer.lock
+        run: composer validate
+
+      - name: Cache Composer packages
+        id: composer-cache
+        uses: actions/cache@v2
+        with:
+          path: vendor
+          key: ${{ runner.os }}-php-${{ matrix.php-version }}-laravel-${{ matrix.laravel-version }}-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-php-${{ matrix.php-version }}-laravel-${{ matrix.laravel-version }}-
+
+      - name: Install dependencies
+        if: steps.composer-cache.outputs.cache-hit != 'true'
+        run: composer update --with "illuminate/contracts=${{ matrix.laravel-version }}" --prefer-dist --no-progress
+
+      - name: Install orchestra/testbench=^4.0 only for Laravel 6.0
+        if: matrix.laravel-version == '^6.0'
+        run: composer update --with "orchestra/testbench=^4.0" --prefer-dist --no-progress
+
+      - name: Install orchestra/testbench=^5.0 only for Laravel 7.0
+        if: matrix.laravel-version == '^7.0'
+        run: composer update --with "orchestra/testbench=^5.0" --prefer-dist --no-progress
+
+      - name: Install laravel/legacy-factories only for Laravel >= 8.0
+        if: matrix.laravel-version == '^8.0' || matrix.laravel-version == '^9.0'
+        run: composer require "laravel/legacy-factories" --prefer-dist --no-progress
+
+      - name: Upgrade to PHPUnit 9 for PHP >= 8.0
+        if: matrix.laravel-version == '^8.0' || matrix.laravel-version == '^9.0'
+        run: composer update --with "phpunit/phpunit=^9.0" --prefer-dist --no-progress
+
+      - name: Upgrade PHPUnit Config for Laravel >= 8.0
+        if: matrix.laravel-version == '^8.0' || matrix.laravel-version == '^9.0'
+        run: vendor/bin/phpunit -c phpunit.xml.dist --migrate-configuration
+
+      - name: Run test suite with Sqlite
+        if: matrix.database == 'sqlite'
+        run: vendor/bin/phpunit --debug
+        env:
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ':memory:'
+
+      - name: Run test suite with MySQL
+        if: matrix.database == 'mysql'
+        run: vendor/bin/phpunit --debug
+        env:
+          DB_CONNECTION: mysql
+          DB_PORT: ${{ job.services.mysql.ports[3306] }}
+          DB_DATABASE: orion
+          DB_USERNAME: root
+
+      - name: Run test suite with PostgreSQL
+        if: matrix.database == 'pgsql'
+        run: vendor/bin/phpunit --debug
+        env:
+          DB_CONNECTION: pgsql
+          DB_PORT: ${{ job.services.pgsql.ports[5432] }}
+          DB_DATABASE: orion
+          DB_USERNAME: postgres
+          DB_PASSWORD: postgres

@@ -26,14 +26,14 @@ class ScopesBuilder extends SearchPartialBuilder
                     'parameters' => [
                         'type' => 'array',
                         'items' => [
-                            'type' => 'string'
-                        ]
-                    ]
+                            'type' => 'string',
+                        ],
+                    ],
                 ],
                 'required' => [
-                    'name'
-                ]
-            ]
+                    'name',
+                ],
+            ],
         ];
     }
 }

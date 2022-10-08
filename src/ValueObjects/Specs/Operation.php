@@ -30,10 +30,10 @@ class Operation implements Arrayable
             'summary' => $this->summary,
             'responses' => collect($this->responses)->mapWithKeys(
                 function (Response $response) {
-                    return [(string)$response->statusCode => $response->toArray()];
+                    return [(string) $response->statusCode => $response->toArray()];
                 }
             )->toArray(),
-            'tags' => $this->tags
+            'tags' => $this->tags,
         ];
 
         if ($this->request) {

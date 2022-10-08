@@ -14,30 +14,37 @@ class FiltersBuilder extends SearchPartialBuilder
             return null;
         }
 
+        $filters = [
+            'type' => [
+                'type' => 'string',
+                'enum' => ['and', 'or'],
+            ],
+            'field' => [
+                'type' => 'string',
+                'enum' => $this->controller->filterableBy(),
+            ],
+            'operator' => [
+                'type' => 'string',
+                'enum' => ['<','<=','>','>=','=','!=','like','not like','ilike','not ilike','in','not in', 'all in', 'any in'],
+            ],
+            'value' => [
+                'type' => 'string',
+            ]
+        ];
+
         return [
             'type' => 'array',
             'items' => [
                 'type' => 'object',
-                'properties' => [
-                    'type' => [
-                        'type' => 'string',
-                        'enum' => ['and', 'or'],
-                    ],
-                    'field' => [
-                        'type' => 'string',
-                        'enum' => $this->controller->filterableBy(),
-                    ],
-                    'operator' => [
-                        'type' => 'string',
-                        'enum' => ['<','<=','>','>=','=','!=','like','not like','ilike','not ilike','in','not in', 'all in', 'any in'],
-                    ],
-                    'value' => [
-                        'type' => 'string',
+                'properties' => array_merge($filters, [
+                    'nested' => [
+                        'type' => 'array',
+                        'items' => [
+                            'type' => 'object',
+                            'properties' => $filters
+                        ]
                     ]
-                ],
-                'required' => [
-                    'field', 'value'
-                ]
+                ])
             ]
         ];
     }

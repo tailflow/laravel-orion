@@ -47,6 +47,16 @@ class RelationControllerStub extends RelationController
         return ['testAlwaysIncludedRelation'];
     }
 
+    public function appends(): array
+    {
+        return ['testAppends'];
+    }
+
+    public function alwaysAppends(): array
+    {
+        return ['testAlwaysAppends'];
+    }
+
     protected function bindComponents(): void
     {
     }

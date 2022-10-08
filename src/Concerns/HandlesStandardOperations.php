@@ -27,7 +27,7 @@ trait HandlesStandardOperations
      */
     public function index(Request $request)
     {
-        $this->authorize('viewAny', $this->resolveResourceModelClass());
+        $this->authorize($this->resolveAbility('index'), $this->resolveResourceModelClass());
 
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
 
@@ -44,6 +44,8 @@ trait HandlesStandardOperations
         if ($this->hookResponds($afterHookResult)) {
             return $afterHookResult;
         }
+
+        $entities = $this->getAppendsResolver()->appendToCollection($entities, $request);
 
         $this->relationsResolver->guardRelationsForCollection(
             $entities instanceof Paginator ? $entities->getCollection() : $entities,
@@ -63,11 +65,11 @@ trait HandlesStandardOperations
     protected function buildIndexFetchQuery(Request $request, array $requestedRelations): Builder
     {
         $filters = collect($request->get('filters', []))
-            ->map(function(array $filterDescriptor) use ($request) {
+            ->map(function (array $filterDescriptor) use ($request) {
                 return $this->beforeFilterApplied($request, $filterDescriptor);
             })->toArray();
 
-        $request->merge(['filters' => $filters]);
+        $request->request->add(['filters' => $filters]);
 
         return $this->buildFetchQuery($request, $requestedRelations);
     }
@@ -165,7 +167,7 @@ trait HandlesStandardOperations
     {
         $resourceModelClass = $this->resolveResourceModelClass();
 
-        $this->authorize('create', $resourceModelClass);
+        $this->authorize($this->resolveAbility('create'), $resourceModelClass);
 
         /**
          * @var Model $entity
@@ -187,7 +189,9 @@ trait HandlesStandardOperations
         $this->performStore(
             $request,
             $entity,
-            $request->all()
+            config('orion.use_validated')
+                ? $request->validated()
+                : $request->all()
         );
 
         $beforeStoreFreshResult = $this->beforeStoreFresh($request, $entity);
@@ -208,7 +212,8 @@ trait HandlesStandardOperations
             return $afterHookResult;
         }
 
-        $entity = $this->relationsResolver->guardRelations($entity, $requestedRelations);
+        $entity = $this->getAppendsResolver()->appendToEntity($entity, $request);
+        $entity = $this->getRelationsResolver()->guardRelations($entity, $requestedRelations);
 
         return $this->entityResponse($entity);
     }
@@ -308,14 +313,15 @@ trait HandlesStandardOperations
 
         $entity = $this->runShowFetchQuery($request, $query, $key);
 
-        $this->authorize('view', $entity);
+        $this->authorize($this->resolveAbility('show'), $entity);
 
         $afterHookResult = $this->afterShow($request, $entity);
         if ($this->hookResponds($afterHookResult)) {
             return $afterHookResult;
         }
 
-        $entity = $this->relationsResolver->guardRelations($entity, $requestedRelations);
+        $entity = $this->getAppendsResolver()->appendToEntity($entity, $request);
+        $entity = $this->getRelationsResolver()->guardRelations($entity, $requestedRelations);
 
         return $this->entityResponse($entity);
     }
@@ -417,7 +423,7 @@ trait HandlesStandardOperations
         $query = $this->buildUpdateFetchQuery($request, $requestedRelations);
         $entity = $this->runUpdateFetchQuery($request, $query, $key);
 
-        $this->authorize('update', $entity);
+        $this->authorize($this->resolveAbility('update'), $entity);
 
         $beforeHookResult = $this->beforeUpdate($request, $entity);
         if ($this->hookResponds($beforeHookResult)) {
@@ -432,7 +438,9 @@ trait HandlesStandardOperations
         $this->performUpdate(
             $request,
             $entity,
-            $request->all()
+            config('orion.use_validated')
+                ? $request->validated()
+                : $request->all()
         );
 
         $beforeUpdateFreshResult = $this->beforeUpdateFresh($request, $entity);
@@ -452,7 +460,8 @@ trait HandlesStandardOperations
             return $afterHookResult;
         }
 
-        $entity = $this->relationsResolver->guardRelations($entity, $requestedRelations);
+        $entity = $this->getAppendsResolver()->appendToEntity($entity, $request);
+        $entity = $this->getRelationsResolver()->guardRelations($entity, $requestedRelations);
 
         return $this->entityResponse($entity);
     }
@@ -573,7 +582,7 @@ trait HandlesStandardOperations
             abort(404);
         }
 
-        $this->authorize($forceDeletes ? 'forceDelete' : 'delete', $entity);
+        $this->authorize($this->resolveAbility($forceDeletes ? 'forceDelete' : 'delete'), $entity);
 
         $beforeHookResult = $this->beforeDestroy($request, $entity);
         if ($this->hookResponds($beforeHookResult)) {
@@ -599,7 +608,8 @@ trait HandlesStandardOperations
             return $afterHookResult;
         }
 
-        $entity = $this->relationsResolver->guardRelations($entity, $requestedRelations);
+        $entity = $this->getAppendsResolver()->appendToEntity($entity, $request);
+        $entity = $this->getRelationsResolver()->guardRelations($entity, $requestedRelations);
 
         return $this->entityResponse($entity);
     }
@@ -729,7 +739,7 @@ trait HandlesStandardOperations
         $query = $this->buildRestoreFetchQuery($request, $requestedRelations);
         $entity = $this->runRestoreFetchQuery($request, $query, $key);
 
-        $this->authorize('restore', $entity);
+        $this->authorize($this->resolveAbility('restore'), $entity);
 
         $beforeHookResult = $this->beforeRestore($request, $entity);
         if ($this->hookResponds($beforeHookResult)) {
@@ -750,7 +760,8 @@ trait HandlesStandardOperations
             return $afterHookResult;
         }
 
-        $entity = $this->relationsResolver->guardRelations($entity, $requestedRelations);
+        $entity = $this->getAppendsResolver()->appendToEntity($entity, $request);
+        $entity = $this->getRelationsResolver()->guardRelations($entity, $requestedRelations);
 
         return $this->entityResponse($entity);
     }

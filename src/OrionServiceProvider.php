@@ -4,6 +4,7 @@ namespace Orion;
 
 use Illuminate\Support\ServiceProvider;
 use Orion\Commands\BuildSpecsCommand;
+use Orion\Contracts\AppendsResolver;
 use Orion\Contracts\ComponentsResolver;
 use Orion\Contracts\Paginator;
 use Orion\Contracts\ParamsValidator;
@@ -25,6 +26,7 @@ class OrionServiceProvider extends ServiceProvider
         $this->app->bind('orion', Orion::class);
         $this->app->bind(QueryBuilder::class, Drivers\Standard\QueryBuilder::class);
         $this->app->bind(RelationsResolver::class, Drivers\Standard\RelationsResolver::class);
+        $this->app->bind(AppendsResolver::class, Drivers\Standard\AppendsResolver::class);
         $this->app->bind(ParamsValidator::class, Drivers\Standard\ParamsValidator::class);
         $this->app->bind(Paginator::class, Drivers\Standard\Paginator::class);
         $this->app->bind(SearchBuilder::class, Drivers\Standard\SearchBuilder::class);
@@ -45,12 +47,12 @@ class OrionServiceProvider extends ServiceProvider
 
         $this->publishes(
             [
-                __DIR__ . '/../config/orion.php' => config_path('orion.php'),
+                __DIR__.'/../config/orion.php' => config_path('orion.php'),
             ],
             'orion-config'
         );
 
-        $this->mergeConfigFrom(__DIR__ . '/../config/orion.php', 'orion');
+        $this->mergeConfigFrom(__DIR__.'/../config/orion.php', 'orion');
 
         if ($this->app->runningInConsole()) {
             $this->commands(
