@@ -26,4 +26,6 @@ interface ParamsValidator
     public function validateSearch(Request $request): void;
 
     public function validateAggregators(Request $request): void;
+
+    public function validateIncludes(Request $request): void;
 }

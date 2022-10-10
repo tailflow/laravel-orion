@@ -23,11 +23,6 @@ class ParamsValidator implements \Orion\Contracts\ParamsValidator
     /**
      * @var string[]
      */
-    private $aggregatesFilterableBy;
-
-    /**
-     * @var string[]
-     */
     private $sortableBy;
 
     /**
@@ -36,15 +31,32 @@ class ParamsValidator implements \Orion\Contracts\ParamsValidator
     private $aggregatableBy;
 
     /**
+     * @var string[]
+     */
+    private $aggregatesFilterableBy;
+
+    /**
+     * @var string[]
+     */
+    private $includableBy;
+
+    /**
+     * @var string[]
+     */
+    private $includesFilterableBy;
+
+    /**
      * @inheritDoc
      */
-    public function __construct(array $exposedScopes = [], array $filterableBy = [], array $sortableBy = [], array $aggregatableBy = [], array $aggregatesFilterableBy = [])
+    public function __construct(array $exposedScopes = [], array $filterableBy = [], array $sortableBy = [], array $aggregatableBy = [], array $aggregatesFilterableBy = [], array $includableBy = [], array $includesFilterableBy = [])
     {
         $this->exposedScopes = $exposedScopes;
         $this->filterableBy = $filterableBy;
         $this->sortableBy = $sortableBy;
         $this->aggregatableBy = $aggregatableBy;
         $this->aggregatesFilterableBy = $aggregatesFilterableBy;
+        $this->includableBy = $includableBy;
+        $this->includesFilterableBy = $includesFilterableBy;
     }
 
     public function validateScopes(Request $request): void
@@ -176,7 +188,31 @@ class ParamsValidator implements \Orion\Contracts\ParamsValidator
         )->validate();
     }
 
+    public function validateIncludes(Request $request): void
+    {
+        $depth = $this->nestedFiltersDepth($request->input('includes', []), -1);
+
+        Validator::make(
+            $request->all(),
+            array_merge(
+                [
+                    'includes' => ['sometimes', 'array'],
+                    'includes.*.relation' => [
+                        'required',
+                        'regex:/^[\w.\_\-\>]+$/',
+                        new WhitelistedField($this->includableBy),
+                    ],
+                    'includes.*.filters' => ['sometimes', 'array'],
+                ],
+                $this->getNestedRules('includes.*.filters', $depth, $this->includesFilterableBy)
+            )
+        )->validate();
+    }
+
 
     // @TODO: once this is ready, do the same for "includes"
     // @TODO: implement aggregates in query params to allow access to it from "show" routes for example
+    // @TODO: update doc
+    // @TODO: update specs
+    // @TODO: update tests
 }

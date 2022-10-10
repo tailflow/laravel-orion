@@ -82,6 +82,7 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
                 $this->applySearchingToQuery($query, $request);
                 $this->applySortingToQuery($query, $request);
                 $this->applyAggregatesToQuery($query, $request);
+                $this->applyIncludesToQuery($query, $request);
             }
             $this->applySoftDeletesToQuery($query, $request);
         }
@@ -509,6 +510,32 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
                 $aggregateDescriptor['relation'] => function (Builder $query) use ($aggregateDescriptor, $request) {
                     $this->setQualifiedFieldNameFromRelation($aggregateDescriptor['relation']);
                     $this->applyFiltersToQuery($query, $request, $aggregateDescriptor['filters']);
+                    $this->table = null;
+                }
+            ]);
+        }
+    }
+
+
+    /**
+     * Apply eager loading relations to the query.
+     *
+     * @param Builder|Relation|SoftDeletes $query
+     * @param Request $request
+     * @return void
+     */
+    public function applyIncludesToQuery($query, Request $request, array $includeDescriptors = []): void
+    {
+        if (!$includeDescriptors) {
+            $this->paramsValidator->validateIncludes($request);
+            $includeDescriptors = $request->get('includes', []);
+        }
+
+        foreach ($includeDescriptors as $includeDescriptor) {
+            $query->with([
+                $includeDescriptor['relation'] => function (Relation $query) use ($includeDescriptor, $request) {
+                    $this->setQualifiedFieldNameFromRelation($includeDescriptor['relation']);
+                    $this->applyFiltersToQuery($query, $request, $includeDescriptor['filters']);
                     $this->table = null;
                 }
             ]);
