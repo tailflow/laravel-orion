@@ -3,6 +3,8 @@
 namespace Orion\Drivers\Standard;
 
 use Illuminate\Support\Facades\Validator;
+use Orion\Exceptions\MaxNestedDepthExceededException;
+use Orion\Helper\ArrayHelper;
 use Orion\Http\Requests\Request;
 use Orion\Http\Rules\WhitelistedField;
 
@@ -21,6 +23,11 @@ class ParamsValidator implements \Orion\Contracts\ParamsValidator
     /**
      * @var string[]
      */
+    private $aggregatesFilterableBy;
+
+    /**
+     * @var string[]
+     */
     private $sortableBy;
 
     /**
@@ -31,12 +38,13 @@ class ParamsValidator implements \Orion\Contracts\ParamsValidator
     /**
      * @inheritDoc
      */
-    public function __construct(array $exposedScopes = [], array $filterableBy = [], array $sortableBy = [], array $aggregatableBy = [])
+    public function __construct(array $exposedScopes = [], array $filterableBy = [], array $sortableBy = [], array $aggregatableBy = [], array $aggregatesFilterableBy = [])
     {
         $this->exposedScopes = $exposedScopes;
         $this->filterableBy = $filterableBy;
         $this->sortableBy = $sortableBy;
         $this->aggregatableBy = $aggregatableBy;
+        $this->aggregatesFilterableBy = $aggregatesFilterableBy;
     }
 
     public function validateScopes(Request $request): void
@@ -53,51 +61,49 @@ class ParamsValidator implements \Orion\Contracts\ParamsValidator
 
     public function validateFilters(Request $request): void
     {
-        $maxDepth = $this->getMaxDepth($request->input('filters', []));
+        $depth = $this->nestedFiltersDepth($request->input('filters', []));
 
         Validator::make(
             $request->all(),
             array_merge([
                 'filters' => ['sometimes', 'array'],
-            ], $this->getNestedRules('filters', $maxDepth))
+            ], $this->getNestedRules('filters', $depth, $this->filterableBy))
         )->validate();
     }
 
     /**
-     * Get the max depth of an array
-     *
-     * @param array $array
-     * @return float
+     * @throws MaxNestedDepthExceededException
      */
-    protected function getMaxDepth(array $array = []) {
-        $maxDepth = floor($this->getArrayDepth($array) / 2);
+    protected function nestedFiltersDepth($array, $modifier = 0) {
+        $depth = ArrayHelper::depth($array);
         $configMaxNestedDepth = config('orion.search.max_nested_depth', 1);
 
-        // @TODO: Replace this with an exception
-        abort_if(
-            $maxDepth > $configMaxNestedDepth,
-            422,
-            __('Max nested depth :depth is exceeded', ['depth' => $configMaxNestedDepth])
-        );
+        // Here we calculate the real nested filters depth
+        $depth = floor($depth / 2);
 
-        return $maxDepth;
+        if ($depth + $modifier > $configMaxNestedDepth) {
+            throw new MaxNestedDepthExceededException(422, __('Max nested depth :depth is exceeded', ['depth' => $configMaxNestedDepth]));
+        }
+
+        return $depth;
     }
 
     /**
      * @param string $prefix
      * @param int $maxDepth
+     * @param array $filterableBy
      * @param array $rules
      * @param int $currentDepth
      * @return array
      */
-    protected function getNestedRules(string $prefix, int $maxDepth, array $rules = [], int $currentDepth = 1): array
+    protected function getNestedRules(string $prefix, int $maxDepth, array $whitelistFilterFields, array $rules = [], int $currentDepth = 1): array
     {
         $rules = array_merge($rules, [
             $prefix.'.*.type' => ['sometimes', 'in:and,or'],
             $prefix.'.*.field' => [
                 "required_without:{$prefix}.*.nested",
                 'regex:/^[\w.\_\-\>]+$/',
-                new WhitelistedField($this->filterableBy),
+                new WhitelistedField($whitelistFilterFields),
             ],
             $prefix.'.*.operator' => [
                 'sometimes',
@@ -110,27 +116,11 @@ class ParamsValidator implements \Orion\Contracts\ParamsValidator
         if ($maxDepth >= $currentDepth) {
             $rules = array_merge(
                 $rules,
-                $this->getNestedRules("{$prefix}.*.nested", $maxDepth, $rules, ++$currentDepth)
+                $this->getNestedRules("{$prefix}.*.nested", $maxDepth, $whitelistFilterFields, $rules, ++$currentDepth)
             );
         }
 
         return $rules;
-    }
-
-    //@TODO: move this to another place
-    protected function getArrayDepth($array): int
-    {
-        $maxDepth = 0;
-
-        foreach ($array as $value) {
-            if (is_array($value)) {
-                $depth = $this->getArrayDepth($value) + 1;
-
-                $maxDepth = max($depth, $maxDepth);
-            }
-        }
-
-        return $maxDepth;
     }
 
     public function validateSort(Request $request): void
@@ -163,9 +153,7 @@ class ParamsValidator implements \Orion\Contracts\ParamsValidator
 
     public function validateAggregators(Request $request): void
     {
-        //@TODO: here the max depth needs to be determined from an array, needs to be implemented
-//        $maxDepth = $this->getMaxDepth($request->input('aggregates', []));
-        $maxDepth = 5;
+        $depth = $this->nestedFiltersDepth($request->input('aggregates', []), -1);
 
         Validator::make(
             $request->all(),
@@ -183,9 +171,8 @@ class ParamsValidator implements \Orion\Contracts\ParamsValidator
                     ],
                     'aggregates.*.filters' => ['sometimes', 'array'],
                 ],
-                $this->getNestedRules('aggregates.*.filters', $maxDepth)
+                $this->getNestedRules('aggregates.*.filters', $depth, $this->aggregatesFilterableBy)
             )
-            //@TODO: filters fields are not working because they are going with "filterableBy". May need to create specific function
         )->validate();
     }
 
