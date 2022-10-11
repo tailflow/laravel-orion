@@ -39,7 +39,6 @@ class WhitelistedQueryFields implements Rule
             }
 
             if (strpos($field, '.') === false) {
-                dd($fields);
                 return false;
             }
 

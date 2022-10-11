@@ -520,6 +520,7 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
 
         foreach ($aggregateDescriptors as $aggregateDescriptor) {
             // @TODO: refactor this, code dégue
+            // @TODO: this mights needs to regroup the count type and others since it's basically the same behind (withAggregate) this would be much better, might need to add a param to the query to make it simpler and set it by default to '*' for count
             if ($aggregateDescriptor['type'] === 'count') {
                 $query->withAggregate([
                     $aggregateDescriptor['relation'] => function (Builder $query) use ($aggregateDescriptor, $request) {
@@ -531,6 +532,7 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
             } else {
                 $exploded = explode('.', $aggregateDescriptor['relation']);
                 $query->withAggregate([$exploded[0] => function (Builder $query) use ($exploded, $aggregateDescriptor, $request) {
+                    // @TODO: may need to refactor these 3 lines, seems like a draft
                     $this->setQualifiedFieldNameFromRelation($exploded[0]);
                     $this->applyFiltersToQuery($query, $request, $aggregateDescriptor['filters'] ?? []);
                     $this->table = null;
@@ -566,7 +568,7 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
             $query->with([
                 $includeDescriptor['relation'] => function (Relation $query) use ($includeDescriptor, $request) {
                     $this->setQualifiedFieldNameFromRelation($includeDescriptor['relation']);
-                    $this->applyFiltersToQuery($query, $request, $includeDescriptor['filters']);
+                    $this->applyFiltersToQuery($query, $request, $includeDescriptor['filters'] ?? []);
                     $this->table = null;
                 }
             ]);

@@ -228,9 +228,7 @@ class ParamsValidator implements \Orion\Contracts\ParamsValidator
             ]
         )->validate();
     }
-
-
-    // @TODO: implement aggregates in query params to allow access to it from "show" routes for example
+    
     // @TODO: update doc
     // @TODO: update specs
     // @TODO: update tests
