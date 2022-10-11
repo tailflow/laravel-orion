@@ -114,7 +114,10 @@ abstract class RelationController extends BaseController
      */
     public function newRelationQuery(Model $parentEntity)
     {
-        return $parentEntity->{$this->getRelation()}();
+        return tap($parentEntity->{$this->getRelation()}(), function ($query) {
+            $this->relationQueryBuilder->applyFiltersToQuery($query, request());
+            $this->relationQueryBuilder->applyIncludesToQuery($query, request());
+        });
     }
 
     /**

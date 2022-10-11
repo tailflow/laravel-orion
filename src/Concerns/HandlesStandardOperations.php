@@ -82,8 +82,6 @@ trait HandlesStandardOperations
     protected function buildFetchQuery(Request $request, array $requestedRelations): Builder
     {
         return $this->queryBuilder->buildQuery($this->newModelQuery(), $request);
-        //@TODO: this with need to be rebuild with the aggregates, either specify another function here or rewrite this to allow applyance in another place
-//            ->with($requestedRelations);
     }
 
     /**

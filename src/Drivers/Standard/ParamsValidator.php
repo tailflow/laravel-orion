@@ -7,6 +7,7 @@ use Orion\Exceptions\MaxNestedDepthExceededException;
 use Orion\Helper\ArrayHelper;
 use Orion\Http\Requests\Request;
 use Orion\Http\Rules\WhitelistedField;
+use Orion\Http\Rules\WhitelistedQueryFields;
 
 class ParamsValidator implements \Orion\Contracts\ParamsValidator
 {
@@ -165,52 +166,70 @@ class ParamsValidator implements \Orion\Contracts\ParamsValidator
 
     public function validateAggregators(Request $request): void
     {
-        $depth = $this->nestedFiltersDepth($request->input('aggregates', []), -1);
+        $depth = $this->nestedFiltersDepth($request->post('aggregate', []), -1);
 
         Validator::make(
-            $request->all(),
+            $request->post(),
             array_merge(
                 [
-                    'aggregates' => ['sometimes', 'array'],
-                    'aggregates.*.relation' => [
+                    'aggregate' => ['sometimes', 'array'],
+                    'aggregate.*.relation' => [
                         'required',
                         'regex:/^[\w.\_\-\>]+$/',
                         new WhitelistedField($this->aggregatableBy),
                     ],
-                    'aggregates.*.type' => [
+                    'aggregate.*.type' => [
                         'required',
                         'in:count,min,max,avg,sum,exists'
                     ],
-                    'aggregates.*.filters' => ['sometimes', 'array'],
+                    'aggregate.*.filters' => ['sometimes', 'array'],
                 ],
-                $this->getNestedRules('aggregates.*.filters', $depth, $this->aggregatesFilterableBy)
+                $this->getNestedRules('aggregate.*.filters', $depth, $this->aggregatesFilterableBy)
             )
+        )->validate();
+
+        Validator::make(
+            $request->query(),
+            [
+                'aggregateCount' => ['sometimes', 'string', new WhitelistedQueryFields($this->aggregatableBy)],
+                'aggregateMin' => ['sometimes', 'string', new WhitelistedQueryFields($this->aggregatableBy)],
+                'aggregateMax' => ['sometimes', 'string', new WhitelistedQueryFields($this->aggregatableBy)],
+                'aggregateAvg' => ['sometimes', 'string', new WhitelistedQueryFields($this->aggregatableBy)],
+                'aggregateSum' => ['sometimes', 'string', new WhitelistedQueryFields($this->aggregatableBy)],
+                'aggregateExists' => ['sometimes', 'string', new WhitelistedQueryFields($this->aggregatableBy)],
+            ]
         )->validate();
     }
 
     public function validateIncludes(Request $request): void
     {
-        $depth = $this->nestedFiltersDepth($request->input('includes', []), -1);
+        $depth = $this->nestedFiltersDepth($request->post('include', []), -1);
 
         Validator::make(
-            $request->all(),
+            $request->post(),
             array_merge(
                 [
-                    'includes' => ['sometimes', 'array'],
-                    'includes.*.relation' => [
+                    'include' => ['sometimes', 'array'],
+                    'include.*.relation' => [
                         'required',
                         'regex:/^[\w.\_\-\>]+$/',
                         new WhitelistedField($this->includableBy),
                     ],
-                    'includes.*.filters' => ['sometimes', 'array'],
+                    'include.*.filters' => ['sometimes', 'array'],
                 ],
-                $this->getNestedRules('includes.*.filters', $depth, $this->includesFilterableBy)
+                $this->getNestedRules('include.*.filters', $depth, $this->includesFilterableBy)
             )
+        )->validate();
+
+        Validator::make(
+            $request->query(),
+            [
+                'include' => ['sometimes', 'string', new WhitelistedQueryFields($this->includableBy)],
+            ]
         )->validate();
     }
 
 
-    // @TODO: once this is ready, do the same for "includes"
     // @TODO: implement aggregates in query params to allow access to it from "show" routes for example
     // @TODO: update doc
     // @TODO: update specs

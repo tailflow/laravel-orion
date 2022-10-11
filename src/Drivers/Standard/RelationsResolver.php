@@ -41,9 +41,9 @@ class RelationsResolver implements \Orion\Contracts\RelationsResolver
      */
     public function requestedRelations(Request $request): array
     {
-        $requestedIncludesQueryStr = $request->get('include', '');
+        $requestedIncludesQueryStr = $request->query('include', '');
         $requestedIncludesQuery = explode(',', $requestedIncludesQueryStr);
-        $requestedIncludesPost = collect($request->input('includes', []))->pluck('relation');
+        $requestedIncludesPost = collect($request->post('include', []))->pluck('relation');
         $requestedIncludes = $requestedIncludesPost->merge($requestedIncludesQuery)->unique()->filter()->all();
 
         $allowedIncludes = array_unique(array_merge($this->includableRelations, $this->alwaysIncludedRelations));

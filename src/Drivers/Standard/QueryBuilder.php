@@ -81,9 +81,9 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
                 $this->applyFiltersToQuery($query, $request);
                 $this->applySearchingToQuery($query, $request);
                 $this->applySortingToQuery($query, $request);
-                $this->applyAggregatesToQuery($query, $request);
-                $this->applyIncludesToQuery($query, $request);
             }
+            $this->applyAggregatesToQuery($query, $request);
+            $this->applyIncludesToQuery($query, $request);
             $this->applySoftDeletesToQuery($query, $request);
         }
 
@@ -495,24 +495,47 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
      *
      * @param Builder|Relation|SoftDeletes $query
      * @param Request $request
+     * @param array $aggregateDescriptors
      * @return void
      */
     public function applyAggregatesToQuery($query, Request $request, array $aggregateDescriptors = []): void
     {
         if (!$aggregateDescriptors) {
             $this->paramsValidator->validateAggregators($request);
-            $aggregateDescriptors = $request->get('aggregates', []);
+
+            $aggregateDescriptors = collect();
+            // Here we regroup query and post params on the same format
+            foreach (['count', 'min', 'max', 'avg', 'sum', 'exists'] as $aggregateFunction) {
+                $aggregateDescriptors = $aggregateDescriptors->merge(
+                    collect(explode(',', $request->query('aggregate'.Str::studly($aggregateFunction), '')))
+                        ->filter()
+                        ->map(function($include) use ($aggregateFunction) {
+                            return ['relation' => $include, 'type' => $aggregateFunction];
+                        })->all()
+                );
+            }
+
+            $aggregateDescriptors = $aggregateDescriptors->merge($request->post('aggregate', []));
         }
 
         foreach ($aggregateDescriptors as $aggregateDescriptor) {
-            $studlyType = Str::studly($aggregateDescriptor['type']);
-            $query->{"with$studlyType"}([
-                $aggregateDescriptor['relation'] => function (Builder $query) use ($aggregateDescriptor, $request) {
-                    $this->setQualifiedFieldNameFromRelation($aggregateDescriptor['relation']);
-                    $this->applyFiltersToQuery($query, $request, $aggregateDescriptor['filters']);
+            // @TODO: refactor this, code dégue
+            if ($aggregateDescriptor['type'] === 'count') {
+                $query->withAggregate([
+                    $aggregateDescriptor['relation'] => function (Builder $query) use ($aggregateDescriptor, $request) {
+                        $this->setQualifiedFieldNameFromRelation($aggregateDescriptor['relation']);
+                        $this->applyFiltersToQuery($query, $request, $aggregateDescriptor['filters'] ?? []);
+                        $this->table = null;
+                    }
+                ], '*', $aggregateDescriptor['type']);
+            } else {
+                $exploded = explode('.', $aggregateDescriptor['relation']);
+                $query->withAggregate([$exploded[0] => function (Builder $query) use ($exploded, $aggregateDescriptor, $request) {
+                    $this->setQualifiedFieldNameFromRelation($exploded[0]);
+                    $this->applyFiltersToQuery($query, $request, $aggregateDescriptor['filters'] ?? []);
                     $this->table = null;
-                }
-            ]);
+                }], $exploded[1], $aggregateDescriptor['type']);
+            }
         }
     }
 
@@ -522,13 +545,21 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
      *
      * @param Builder|Relation|SoftDeletes $query
      * @param Request $request
+     * @param array $includeDescriptors
      * @return void
      */
     public function applyIncludesToQuery($query, Request $request, array $includeDescriptors = []): void
     {
         if (!$includeDescriptors) {
             $this->paramsValidator->validateIncludes($request);
-            $includeDescriptors = $request->get('includes', []);
+            // Here we regroup query and post params on the same format
+            $includeDescriptors =
+                collect(explode(',', $request->query('include', '')))
+                    ->filter()
+                    ->map(function($include) {
+                        return ['relation' => $include];
+                    })
+                    ->merge($request->post('include', []));
         }
 
         foreach ($includeDescriptors as $includeDescriptor) {

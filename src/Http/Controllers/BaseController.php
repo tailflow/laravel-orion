@@ -112,7 +112,7 @@ abstract class BaseController extends \Illuminate\Routing\Controller
                 'exposedScopes' => $this->exposedScopes(),
                 'filterableBy' => $this->filterableBy(),
                 'sortableBy' => $this->sortableBy(),
-                'aggregatableBy' => $this->aggregatableBy(),
+                'aggregatableBy' => $this->aggregates(),
                 'aggregatesFilterableBy' => $this->aggregatesFilterableBy(),
                 'includableBy' => $this->includes(),
                 'includesFilterableBy' => $this->includesFilterableBy()
@@ -186,13 +186,12 @@ abstract class BaseController extends \Illuminate\Routing\Controller
         return [];
     }
 
-    //@TODO: rename this to follow "includes"
     /**
      * The relations that are allowed to be aggregated with a resource.
      *
      * @return array
      */
-    public function aggregatableBy(): array
+    public function aggregates(): array
     {
         return [];
     }

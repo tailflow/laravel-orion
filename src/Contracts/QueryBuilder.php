@@ -61,7 +61,16 @@ interface QueryBuilder
     /**
      * @param Builder|Relation $query
      * @param Request $request
-     * @return bool
+     * @param array $aggregateDescriptors
+     * @return void
      */
     public function applyAggregatesToQuery($query, Request $request, array $aggregateDescriptors = []): void;
+
+    /**
+     * @param Builder|Relation $query
+     * @param Request $request
+     * @param array $includeDescriptors
+     * @return void
+     */
+    public function applyIncludesToQuery($query, Request $request, array $includeDescriptors = []): void;
 }
