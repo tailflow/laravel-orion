@@ -228,8 +228,8 @@ class ParamsValidator implements \Orion\Contracts\ParamsValidator
             ]
         )->validate();
     }
-    
-    // @TODO: update doc
-    // @TODO: update specs
+
+    // @TODO: update specs -- it might be a good idea to remove all those includes filters / etc to only use "filterableBy" i don't see any security reason here !
     // @TODO: update tests
+    // @TODO: update doc
 }

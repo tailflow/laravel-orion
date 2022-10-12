@@ -91,6 +91,20 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
     }
 
     /**
+     * Force table for some operations.
+     *
+     * @param Builder|Relation|SoftDeletes $query
+     * @param Request $request
+     * @param array $includeDescriptors
+     * @return void
+     */
+    protected function usingTable($table, $callback) {
+        $this->table = $table;
+        $callback();
+        unset($this->table);
+    }
+
+    /**
      * Apply scopes to the given query builder based on the query parameters.
      *
      * @param Builder|Relation $query
@@ -331,11 +345,11 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
      * Builds a complete field name with table from a relation.
      *
      * @param string $relation
-     * @return void
+     * @return string
      */
-    public function setQualifiedFieldNameFromRelation(string $relation): void
+    public function getQualifiedFieldNameFromRelation(string $relation):string
     {
-        $this->table = (new $this->resourceModelClass)->$relation()->getModel()->getTable();
+       return (new $this->resourceModelClass)->$relation()->getModel()->getTable();
     }
 
     /**
@@ -519,27 +533,16 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
         }
 
         foreach ($aggregateDescriptors as $aggregateDescriptor) {
-            // @TODO: refactor this, code dégue
-            // @TODO: this mights needs to regroup the count type and others since it's basically the same behind (withAggregate) this would be much better, might need to add a param to the query to make it simpler and set it by default to '*' for count
-            if ($aggregateDescriptor['type'] === 'count') {
-                $query->withAggregate([
-                    $aggregateDescriptor['relation'] => function (Builder $query) use ($aggregateDescriptor, $request) {
-                        $this->setQualifiedFieldNameFromRelation($aggregateDescriptor['relation']);
-                        $this->applyFiltersToQuery($query, $request, $aggregateDescriptor['filters'] ?? []);
-                        $this->table = null;
-                    }
-                ], '*', $aggregateDescriptor['type']);
-            } else {
-                $exploded = explode('.', $aggregateDescriptor['relation']);
-                $query->withAggregate([$exploded[0] => function (Builder $query) use ($exploded, $aggregateDescriptor, $request) {
-                    // @TODO: may need to refactor these 3 lines, seems like a draft
-                    $this->setQualifiedFieldNameFromRelation($exploded[0]);
+            $exploded = explode('.', $aggregateDescriptor['relation']);
+            $query->withAggregate([$exploded[0] => function (Builder $query) use ($exploded, $aggregateDescriptor, $request) {
+                $this->usingTable($this->getQualifiedFieldNameFromRelation($exploded[0]), function () use ($request, $query) {
                     $this->applyFiltersToQuery($query, $request, $aggregateDescriptor['filters'] ?? []);
-                    $this->table = null;
-                }], $exploded[1], $aggregateDescriptor['type']);
-            }
+                });
+            }], $exploded[1] ?? '*', $aggregateDescriptor['type']);
         }
     }
+
+
 
 
     /**
@@ -567,9 +570,9 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
         foreach ($includeDescriptors as $includeDescriptor) {
             $query->with([
                 $includeDescriptor['relation'] => function (Relation $query) use ($includeDescriptor, $request) {
-                    $this->setQualifiedFieldNameFromRelation($includeDescriptor['relation']);
-                    $this->applyFiltersToQuery($query, $request, $includeDescriptor['filters'] ?? []);
-                    $this->table = null;
+                    $this->usingTable($this->getQualifiedFieldNameFromRelation($includeDescriptor['relation']), function () use ($request, $query) {
+                        $this->applyFiltersToQuery($query, $request, $aggregateDescriptor['filters'] ?? []);
+                    });
                 }
             ]);
         }

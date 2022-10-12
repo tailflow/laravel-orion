@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Orion\ValueObjects\Specs\Requests;
 
 use Illuminate\Contracts\Container\BindingResolutionException;
+use Orion\Specs\Builders\Partials\RequestBody\Search\AggregateBuilder;
 use Orion\Specs\Builders\Partials\RequestBody\Search\FiltersBuilder;
+use Orion\Specs\Builders\Partials\RequestBody\Search\IncludeBuilder;
 use Orion\Specs\Builders\Partials\RequestBody\Search\ScopesBuilder;
 use Orion\Specs\Builders\Partials\RequestBody\Search\SearchBuilder;
 use Orion\Specs\Builders\Partials\RequestBody\Search\SortBuilder;
@@ -25,6 +27,12 @@ class SearchRequest extends Request
     /** @var SortBuilder */
     protected $sortBuilder;
 
+    /** @var IncludeBuilder */
+    protected $includeBuilder;
+
+    /** @var AggregateBuilder */
+    protected $aggregateBuilder;
+
     /**
      * SearchRequest constructor.
      *
@@ -37,6 +45,8 @@ class SearchRequest extends Request
         $this->filtersBuilder = app()->makeWith(FiltersBuilder::class, ['controller' => $controller]);
         $this->searchBuilder = app()->makeWith(SearchBuilder::class, ['controller' => $controller]);
         $this->sortBuilder = app()->makeWith(SortBuilder::class, ['controller' => $controller]);
+        $this->includeBuilder = app()->makeWith(IncludeBuilder::class, ['controller' => $controller]);
+        $this->aggregateBuilder = app()->makeWith(AggregateBuilder::class, ['controller' => $controller]);
     }
 
     /**
@@ -60,6 +70,14 @@ class SearchRequest extends Request
 
         if ($sort = $this->sortBuilder->build()) {
             $properties['sort'] = $sort;
+        }
+
+        if ($include = $this->includeBuilder->build()) {
+            $properties['include'] = $include;
+        }
+
+        if ($aggregate = $this->aggregateBuilder->build()) {
+            $properties['aggregate'] = $aggregate;
         }
 
         return array_merge(
