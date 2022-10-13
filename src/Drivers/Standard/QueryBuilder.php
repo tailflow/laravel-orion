@@ -82,10 +82,10 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
                 $this->applySearchingToQuery($query, $request);
                 $this->applySortingToQuery($query, $request);
             }
-            $this->applyAggregatesToQuery($query, $request);
-            $this->applyIncludesToQuery($query, $request);
             $this->applySoftDeletesToQuery($query, $request);
         }
+        $this->applyAggregatesToQuery($query, $request);
+        $this->applyIncludesToQuery($query, $request);
 
         return $query;
     }
