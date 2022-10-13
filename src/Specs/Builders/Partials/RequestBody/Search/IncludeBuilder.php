@@ -10,7 +10,7 @@ class IncludeBuilder extends SearchPartialBuilder
 {
     public function build(): ?array
     {
-        if (!count($this->controller->includesFilterableBy())) {
+        if (!count($this->controller->includes())) {
             return null;
         }
 
@@ -21,7 +21,7 @@ class IncludeBuilder extends SearchPartialBuilder
                 'properties' => [
                     'relation' => [
                         'type' => 'string',
-                        'enum' => $this->controller->includesFilterableBy(),
+                        'enum' => $this->controller->includes(),
                     ],
                     'filters' => [
                         'type' => 'object',

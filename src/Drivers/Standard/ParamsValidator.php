@@ -34,30 +34,18 @@ class ParamsValidator implements \Orion\Contracts\ParamsValidator
     /**
      * @var string[]
      */
-    private $aggregatesFilterableBy;
-
-    /**
-     * @var string[]
-     */
     private $includableBy;
-
-    /**
-     * @var string[]
-     */
-    private $includesFilterableBy;
 
     /**
      * @inheritDoc
      */
-    public function __construct(array $exposedScopes = [], array $filterableBy = [], array $sortableBy = [], array $aggregatableBy = [], array $aggregatesFilterableBy = [], array $includableBy = [], array $includesFilterableBy = [])
+    public function __construct(array $exposedScopes = [], array $filterableBy = [], array $sortableBy = [], array $aggregatableBy = [], array $includableBy = [])
     {
         $this->exposedScopes = $exposedScopes;
         $this->filterableBy = $filterableBy;
         $this->sortableBy = $sortableBy;
         $this->aggregatableBy = $aggregatableBy;
-        $this->aggregatesFilterableBy = $aggregatesFilterableBy;
         $this->includableBy = $includableBy;
-        $this->includesFilterableBy = $includesFilterableBy;
     }
 
     public function validateScopes(Request $request): void
@@ -80,7 +68,7 @@ class ParamsValidator implements \Orion\Contracts\ParamsValidator
             $request->all(),
             array_merge([
                 'filters' => ['sometimes', 'array'],
-            ], $this->getNestedRules('filters', $depth, $this->filterableBy))
+            ], $this->getNestedRules('filters', $depth))
         )->validate();
     }
 
@@ -109,14 +97,14 @@ class ParamsValidator implements \Orion\Contracts\ParamsValidator
      * @param int $currentDepth
      * @return array
      */
-    protected function getNestedRules(string $prefix, int $maxDepth, array $whitelistFilterFields, array $rules = [], int $currentDepth = 1): array
+    protected function getNestedRules(string $prefix, int $maxDepth, array $rules = [], int $currentDepth = 1): array
     {
         $rules = array_merge($rules, [
             $prefix.'.*.type' => ['sometimes', 'in:and,or'],
             $prefix.'.*.field' => [
                 "required_without:{$prefix}.*.nested",
                 'regex:/^[\w.\_\-\>]+$/',
-                new WhitelistedField($whitelistFilterFields),
+                new WhitelistedField($this->filterableBy),
             ],
             $prefix.'.*.operator' => [
                 'sometimes',
@@ -129,7 +117,7 @@ class ParamsValidator implements \Orion\Contracts\ParamsValidator
         if ($maxDepth >= $currentDepth) {
             $rules = array_merge(
                 $rules,
-                $this->getNestedRules("{$prefix}.*.nested", $maxDepth, $whitelistFilterFields, $rules, ++$currentDepth)
+                $this->getNestedRules("{$prefix}.*.nested", $maxDepth, $rules, ++$currentDepth)
             );
         }
 
@@ -184,7 +172,7 @@ class ParamsValidator implements \Orion\Contracts\ParamsValidator
                     ],
                     'aggregate.*.filters' => ['sometimes', 'array'],
                 ],
-                $this->getNestedRules('aggregate.*.filters', $depth, $this->aggregatesFilterableBy)
+                $this->getNestedRules('aggregate.*.filters', $depth)
             )
         )->validate();
 
@@ -217,7 +205,7 @@ class ParamsValidator implements \Orion\Contracts\ParamsValidator
                     ],
                     'include.*.filters' => ['sometimes', 'array'],
                 ],
-                $this->getNestedRules('include.*.filters', $depth, $this->includesFilterableBy)
+                $this->getNestedRules('include.*.filters', $depth)
             )
         )->validate();
 
@@ -229,7 +217,6 @@ class ParamsValidator implements \Orion\Contracts\ParamsValidator
         )->validate();
     }
 
-    // @TODO: update specs -- it might be a good idea to remove all those includes filters / etc to only use "filterableBy" i don't see any security reason here !
     // @TODO: update tests
     // @TODO: update doc
 }

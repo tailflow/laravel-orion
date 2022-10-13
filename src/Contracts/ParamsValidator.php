@@ -13,11 +13,9 @@ interface ParamsValidator
      * @param string[] $filterableBy
      * @param string[] $sortableBy
      * @param string[] $aggregatableBy
-     * @param string[] $aggregatesFilterableBy
      * @param string[] $includableBy
-     * @param string[] $includesFilterableBy
      */
-    public function __construct(array $exposedScopes = [], array $filterableBy = [], array $sortableBy = [], array $aggregatableBy = [], array $aggregatesFilterableBy = [], array $includableBy = [], array $includesFilterableBy = []);
+    public function __construct(array $exposedScopes = [], array $filterableBy = [], array $sortableBy = [], array $aggregatableBy = [], array $includableBy = []);
 
     public function validateScopes(Request $request): void;
 

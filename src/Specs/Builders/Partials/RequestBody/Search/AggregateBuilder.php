@@ -10,7 +10,7 @@ class AggregateBuilder extends SearchPartialBuilder
 {
     public function build(): ?array
     {
-        if (!count($this->controller->aggregatesFilterableBy())) {
+        if (!count($this->controller->aggregates())) {
             return null;
         }
 
@@ -25,7 +25,7 @@ class AggregateBuilder extends SearchPartialBuilder
                     ],
                     'relation' => [
                         'type' => 'string',
-                        'enum' => $this->controller->aggregatesFilterableBy(),
+                        'enum' => $this->controller->aggregates(),
                     ],
                     'filters' => [
                         'type' => 'object',
