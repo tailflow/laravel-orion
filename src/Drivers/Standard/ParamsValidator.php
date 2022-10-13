@@ -76,6 +76,12 @@ class ParamsValidator implements \Orion\Contracts\ParamsValidator
      * @throws MaxNestedDepthExceededException
      */
     protected function nestedFiltersDepth($array, $modifier = 0) {
+        // TODO 3.0 remove this
+        // For older versions, include query params could be in here.
+        if (is_string($array)) {
+            return 0;
+        }
+
         $depth = ArrayHelper::depth($array);
         $configMaxNestedDepth = config('orion.search.max_nested_depth', 1);
 
