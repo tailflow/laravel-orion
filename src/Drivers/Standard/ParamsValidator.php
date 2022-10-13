@@ -79,7 +79,7 @@ class ParamsValidator implements \Orion\Contracts\ParamsValidator
         // TODO 3.0 remove this
         // For older versions, include query params could be in here.
         if (is_string($array)) {
-            return dd($array);
+            dd(\request()->post(), \request()->request->all());
         }
         $depth = ArrayHelper::depth($array);
         $configMaxNestedDepth = config('orion.search.max_nested_depth', 1);
