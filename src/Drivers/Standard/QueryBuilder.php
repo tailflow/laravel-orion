@@ -75,17 +75,19 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
     {
         $actionMethod = $request->route()->getActionMethod();
 
-        if (!$this->intermediateMode && in_array($actionMethod, ['index', 'search', 'show'])) {
-            if ($actionMethod === 'search') {
-                $this->applyScopesToQuery($query, $request);
-                $this->applyFiltersToQuery($query, $request);
-                $this->applySearchingToQuery($query, $request);
-                $this->applySortingToQuery($query, $request);
+        if (!$this->intermediateMode) {
+            $this->applyAggregatesToQuery($query, $request);
+            $this->applyIncludesToQuery($query, $request);
+            if (in_array($actionMethod, ['index', 'search', 'show'])) {
+                if ($actionMethod === 'search') {
+                    $this->applyScopesToQuery($query, $request);
+                    $this->applyFiltersToQuery($query, $request);
+                    $this->applySearchingToQuery($query, $request);
+                    $this->applySortingToQuery($query, $request);
+                }
+                $this->applySoftDeletesToQuery($query, $request);
             }
-            $this->applySoftDeletesToQuery($query, $request);
         }
-        $this->applyAggregatesToQuery($query, $request);
-        $this->applyIncludesToQuery($query, $request);
 
         return $query;
     }
