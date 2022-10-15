@@ -5,6 +5,7 @@ namespace Orion\Drivers\Standard;
 use Illuminate\Support\Facades\Validator;
 use Orion\Exceptions\MaxNestedDepthExceededException;
 use Orion\Helper\ArrayHelper;
+use Orion\Helper\RequestHelper;
 use Orion\Http\Requests\Request;
 use Orion\Http\Rules\WhitelistedField;
 use Orion\Http\Rules\WhitelistedQueryFields;
@@ -76,11 +77,6 @@ class ParamsValidator implements \Orion\Contracts\ParamsValidator
      * @throws MaxNestedDepthExceededException
      */
     protected function nestedFiltersDepth($array, $modifier = 0) {
-        // TODO 3.0 remove this
-        // For older versions, include query params could be in here.
-        if (is_string($array)) {
-            dd(\request()->post(), \request()->request->all());
-        }
         $depth = ArrayHelper::depth($array);
         $configMaxNestedDepth = config('orion.search.max_nested_depth', 1);
 
@@ -159,10 +155,10 @@ class ParamsValidator implements \Orion\Contracts\ParamsValidator
 
     public function validateAggregators(Request $request): void
     {
-        $depth = $this->nestedFiltersDepth($request->request->all()['aggregate'] ?? [], -1);
+        $depth = $this->nestedFiltersDepth(RequestHelper::getPostRequestParam('aggregate', []), -1);
 
         Validator::make(
-            $request->request->all(),
+            RequestHelper::getPostRequestParam(),
             array_merge(
                 [
                     'aggregate' => ['sometimes', 'array'],
@@ -196,10 +192,10 @@ class ParamsValidator implements \Orion\Contracts\ParamsValidator
 
     public function validateIncludes(Request $request): void
     {
-        $depth = $this->nestedFiltersDepth($request->request->all()['include'] ?? [], -1);
+        $depth = $this->nestedFiltersDepth(RequestHelper::getPostRequestParam('include', []), -1);
 
         Validator::make(
-            $request->request->all(),
+            RequestHelper::getPostRequestParam(),
             array_merge(
                 [
                     'include' => ['sometimes', 'array'],

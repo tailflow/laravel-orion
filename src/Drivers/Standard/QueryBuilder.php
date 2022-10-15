@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use JsonException;
+use Orion\Helper\RequestHelper;
 use Orion\Http\Requests\Request;
 use RuntimeException;
 
@@ -351,7 +352,7 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
      */
     public function getQualifiedFieldNameFromRelation(string $relation):string
     {
-       return (new $this->resourceModelClass)->$relation()->getModel()->getTable();
+        return (new $this->resourceModelClass)->$relation()->getModel()->getTable();
     }
 
     /**
@@ -516,6 +517,12 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
      */
     public function applyAggregatesToQuery($query, Request $request, array $aggregateDescriptors = []): void
     {
+        if ((float) app()->version() < 8.0) {
+            throw new RuntimeException(
+                "Aggregate queries are only supported with Laravel 8 and later"
+            );
+        }
+
         if (!$aggregateDescriptors) {
             $this->paramsValidator->validateAggregators($request);
 
@@ -531,7 +538,7 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
                 );
             }
 
-            $aggregateDescriptors = $aggregateDescriptors->merge($request->post('aggregate', []));
+            $aggregateDescriptors = $aggregateDescriptors->merge(RequestHelper::getPostRequestParam('aggregate', []));
         }
 
         foreach ($aggregateDescriptors as $aggregateDescriptor) {
@@ -566,7 +573,7 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
                     ->map(function($include) {
                         return ['relation' => $include];
                     })
-                    ->merge($request->post('include', []));
+                    ->merge(RequestHelper::getPostRequestParam('include', []));
         }
 
         foreach ($includeDescriptors as $includeDescriptor) {
