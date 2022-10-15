@@ -159,10 +159,10 @@ class ParamsValidator implements \Orion\Contracts\ParamsValidator
 
     public function validateAggregators(Request $request): void
     {
-        $depth = $this->nestedFiltersDepth($request->post('aggregate', []), -1);
+        $depth = $this->nestedFiltersDepth($request->request->all()['aggregate'] ?? [], -1);
 
         Validator::make(
-            $request->post(),
+            $request->request->all(),
             array_merge(
                 [
                     'aggregate' => ['sometimes', 'array'],
@@ -196,10 +196,10 @@ class ParamsValidator implements \Orion\Contracts\ParamsValidator
 
     public function validateIncludes(Request $request): void
     {
-        $depth = $this->nestedFiltersDepth($request->post('include', []), -1);
+        $depth = $this->nestedFiltersDepth($request->request->all()['include'] ?? [], -1);
 
         Validator::make(
-            $request->post(),
+            $request->request->all(),
             array_merge(
                 [
                     'include' => ['sometimes', 'array'],
