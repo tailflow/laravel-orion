@@ -3,6 +3,7 @@
 namespace Orion\Drivers\Standard;
 
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 use Orion\Exceptions\MaxNestedDepthExceededException;
 use Orion\Helper\ArrayHelper;
 use Orion\Helper\RequestHelper;
@@ -165,7 +166,11 @@ class ParamsValidator implements \Orion\Contracts\ParamsValidator
                     'aggregate.*.relation' => [
                         'required',
                         'regex:/^[\w.\_\-\>]+$/',
-                        new WhitelistedField($this->aggregatableBy),
+                    ],
+                    'aggregate.*.field' => [
+                        'prohibited_if:aggregate.*.type,count',
+                        'prohibited_if:aggregate.*.type,exists',
+                        'required_if:aggregate.*.type,avg,sum,min,max'
                     ],
                     'aggregate.*.type' => [
                         'required',
@@ -177,15 +182,27 @@ class ParamsValidator implements \Orion\Contracts\ParamsValidator
             )
         )->validate();
 
+        // @TODO: make the error more logical by including key and replicated in tests errors 422
+        // Here we regroup the "relation" and "field" fields to validate them
+        Validator::make(
+            collect(RequestHelper::getPostRequestParam()['aggregate'] ?? [])
+                ->transform(function ($aggregate) {
+                    return isset($aggregate['field']) ? "{$aggregate['relation']}.{$aggregate['field']}" : $aggregate['relation'];
+                })->all(),
+            [
+                '*' => new WhitelistedQueryFields($this->aggregatableBy)
+            ]
+        )->validate();
+
         Validator::make(
             $request->query(),
             [
-                'aggregateCount' => ['sometimes', 'string', new WhitelistedQueryFields($this->aggregatableBy)],
-                'aggregateMin' => ['sometimes', 'string', new WhitelistedQueryFields($this->aggregatableBy)],
-                'aggregateMax' => ['sometimes', 'string', new WhitelistedQueryFields($this->aggregatableBy)],
-                'aggregateAvg' => ['sometimes', 'string', new WhitelistedQueryFields($this->aggregatableBy)],
-                'aggregateSum' => ['sometimes', 'string', new WhitelistedQueryFields($this->aggregatableBy)],
-                'aggregateExists' => ['sometimes', 'string', new WhitelistedQueryFields($this->aggregatableBy)],
+                'aggregateCount' => ['sometimes', 'string', 'not_regex:/\\./', new WhitelistedQueryFields($this->aggregatableBy)],
+                'aggregateExists' => ['sometimes', 'string', 'not_regex:/\\./', new WhitelistedQueryFields($this->aggregatableBy)],
+                'aggregateMin' => ['sometimes', 'string', 'regex:/^[a-z\d,]*\.+[a-z\d,]*$/', new WhitelistedQueryFields($this->aggregatableBy)],
+                'aggregateMax' => ['sometimes', 'string', 'regex:/^[a-z\d,]*\.+[a-z\d,]*$/', new WhitelistedQueryFields($this->aggregatableBy)],
+                'aggregateAvg' => ['sometimes', 'string', 'regex:/^[a-z\d,]*\.+[a-z\d,]*$/', new WhitelistedQueryFields($this->aggregatableBy)],
+                'aggregateSum' => ['sometimes', 'string', 'regex:/^[a-z\d,]*\.+[a-z\d,]*$/', new WhitelistedQueryFields($this->aggregatableBy)],
             ]
         )->validate();
     }
@@ -218,6 +235,5 @@ class ParamsValidator implements \Orion\Contracts\ParamsValidator
         )->validate();
     }
 
-    // @TODO: update tests
     // @TODO: update doc
 }

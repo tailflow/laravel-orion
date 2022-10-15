@@ -119,4 +119,17 @@ class HasManyRelationStandardShowOperationsTest extends TestCase
 
         $this->assertResourceShown($response, $team->fresh('company')->toArray());
     }
+
+    /** @test */
+    public function getting_a_single_relation_resource_with_aggregate(): void
+    {
+        $company = factory(Company::class)->create();
+        $team = factory(Team::class)->create(['company_id' => $company->id]);
+
+        Gate::policy(Team::class, GreenPolicy::class);
+
+        $response = $this->get("/api/companies/{$company->id}/teams/{$team->id}?aggregateCount=company");
+
+        $this->assertResourceShown($response, $team->fresh()->loadCount('company')->toArray());
+    }
 }

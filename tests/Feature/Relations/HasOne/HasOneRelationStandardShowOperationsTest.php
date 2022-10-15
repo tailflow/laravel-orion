@@ -103,4 +103,17 @@ class HasOneRelationStandardShowOperationsTest extends TestCase
 
         $this->assertResourceShown($response, $postMeta->fresh('post')->toArray());
     }
+
+    /** @test */
+    public function getting_a_single_relation_resource_with_aggregate(): void
+    {
+        $post = factory(Post::class)->create();
+        $postMeta = factory(PostMeta::class)->create(['post_id' => $post->id]);
+
+        Gate::policy(PostMeta::class, GreenPolicy::class);
+
+        $response = $this->get("/api/posts/{$post->id}/meta?aggregateCount=post");
+
+        $this->assertResourceShown($response, $postMeta->fresh()->loadCount('post')->toArray());
+    }
 }

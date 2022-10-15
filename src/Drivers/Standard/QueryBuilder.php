@@ -533,7 +533,8 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
                     collect(explode(',', $request->query('aggregate'.Str::studly($aggregateFunction), '')))
                         ->filter()
                         ->map(function($include) use ($aggregateFunction) {
-                            return ['relation' => $include, 'type' => $aggregateFunction];
+                            $explodedInclude = explode('.', $include);
+                            return ['relation' => $explodedInclude[0], 'field' => $explodedInclude[1] ?? '*', 'type' => $aggregateFunction];
                         })->all()
                 );
             }
@@ -542,12 +543,11 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
         }
 
         foreach ($aggregateDescriptors as $aggregateDescriptor) {
-            $exploded = explode('.', $aggregateDescriptor['relation']);
-            $query->withAggregate([$exploded[0] => function (Builder $query) use ($exploded, $aggregateDescriptor, $request) {
-                $this->usingTable($this->getQualifiedFieldNameFromRelation($exploded[0]), function () use ($request, $query) {
-                    $this->applyFiltersToQuery($query, $request, $aggregateDescriptor['filters'] ?? []);
+            $query->withAggregate([$aggregateDescriptor['relation'] => function (Builder $query) use ($aggregateDescriptor, $request) {
+                $this->usingTable($this->getQualifiedFieldNameFromRelation($aggregateDescriptor['relation']), function () use ($request, $query, $aggregateDescriptor) {
+                    $this->applyFiltersToQuery($query, $request, $this->removeFieldPrefixFromFields($aggregateDescriptor['filters'] ?? [], $aggregateDescriptor['relation'].'.'));
                 });
-            }], $exploded[1] ?? '*', $aggregateDescriptor['type']);
+            }], $aggregateDescriptor['field'] ?? '*', $aggregateDescriptor['type']);
         }
     }
 
@@ -579,11 +579,25 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
         foreach ($includeDescriptors as $includeDescriptor) {
             $query->with([
                 $includeDescriptor['relation'] => function (Relation $query) use ($includeDescriptor, $request) {
-                    $this->usingTable($this->getQualifiedFieldNameFromRelation($includeDescriptor['relation']), function () use ($request, $query) {
-                        $this->applyFiltersToQuery($query, $request, $aggregateDescriptor['filters'] ?? []);
+                    $this->usingTable($this->getQualifiedFieldNameFromRelation($includeDescriptor['relation']), function () use ($request, $query, $includeDescriptor) {
+                        $this->applyFiltersToQuery($query, $request, $this->removeFieldPrefixFromFields($includeDescriptor['filters'] ?? [], $includeDescriptor['relation'].'.'));
                     });
                 }
             ]);
         }
+    }
+
+    protected function removeFieldPrefixFromFields(array $array, string $search) {
+        return collect($array)
+            ->transform(function ($item) use ($search) {
+                if (isset($item['nested'])) {
+                    $item['nested'] = $this->removeFieldPrefixFromFields($item['nested'], $search);
+                } else {
+                    $item['field'] = Str::replaceFirst($search, '', $item['field']);
+                }
+
+               return $item;
+            })
+            ->all();
     }
 }

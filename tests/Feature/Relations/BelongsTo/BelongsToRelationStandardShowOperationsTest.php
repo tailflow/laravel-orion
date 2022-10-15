@@ -103,4 +103,17 @@ class BelongsToRelationStandardShowOperationsTest extends TestCase
 
         $this->assertResourceShown($response, $user->fresh('posts')->toArray());
     }
+
+    /** @test */
+    public function getting_a_single_relation_resource_with_aggregate(): void
+    {
+        $user = factory(User::class)->create();
+        $post = factory(Post::class)->create(['user_id' => $user->id]);
+
+        Gate::policy(User::class, GreenPolicy::class);
+
+        $response = $this->get("/api/posts/{$post->id}/user?aggregateCount=posts");
+
+        $this->assertResourceShown($response, $user->fresh()->loadCount('posts')->toArray());
+    }
 }
