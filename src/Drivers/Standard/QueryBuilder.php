@@ -530,7 +530,7 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
             // Here we regroup query and post params on the same format
             foreach (['count', 'min', 'max', 'avg', 'sum', 'exists'] as $aggregateFunction) {
                 $aggregateDescriptors = $aggregateDescriptors->merge(
-                    collect(explode(',', $request->query('aggregate'.Str::studly($aggregateFunction), '')))
+                    collect(explode(',', $request->query("with_$aggregateFunction", '')))
                         ->filter()
                         ->map(function($include) use ($aggregateFunction) {
                             $explodedInclude = explode('.', $include);

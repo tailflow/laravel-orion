@@ -128,7 +128,7 @@ class HasManyRelationStandardShowOperationsTest extends TestCase
 
         Gate::policy(Team::class, GreenPolicy::class);
 
-        $response = $this->get("/api/companies/{$company->id}/teams/{$team->id}?aggregateCount=company");
+        $response = $this->get("/api/companies/{$company->id}/teams/{$team->id}?with_count=company");
 
         $this->assertResourceShown($response, $team->fresh()->loadCount('company')->toArray());
     }

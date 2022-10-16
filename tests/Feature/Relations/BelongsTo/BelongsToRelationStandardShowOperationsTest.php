@@ -112,7 +112,7 @@ class BelongsToRelationStandardShowOperationsTest extends TestCase
 
         Gate::policy(User::class, GreenPolicy::class);
 
-        $response = $this->get("/api/posts/{$post->id}/user?aggregateCount=posts");
+        $response = $this->get("/api/posts/{$post->id}/user?with_count=posts");
 
         $this->assertResourceShown($response, $user->fresh()->loadCount('posts')->toArray());
     }

@@ -147,7 +147,7 @@ class BelongsToManyRelationStandardShowOperationsTest extends TestCase
 
         Gate::policy(Role::class, GreenPolicy::class);
 
-        $response = $this->get("/api/users/{$user->id}/roles/{$role->id}?aggregateCount=users");
+        $response = $this->get("/api/users/{$user->id}/roles/{$role->id}?with_count=users");
 
         $this->assertResourceShown($response, $user->roles()->withCount('users')->first()->toArray());
     }

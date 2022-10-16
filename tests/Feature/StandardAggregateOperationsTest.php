@@ -518,7 +518,7 @@ class StandardAggregateOperationsTest extends TestCase
         Gate::policy(User::class, GreenPolicy::class);
 
         $response = $this->post(
-            '/api/users/search?aggregateExists=posts'
+            '/api/users/search?with_exists=posts'
         );
 
         $this->assertResourcesPaginated(
@@ -539,7 +539,7 @@ class StandardAggregateOperationsTest extends TestCase
         Gate::policy(User::class, GreenPolicy::class);
 
         $response = $this->post(
-            '/api/users/search?aggregateCount=posts'
+            '/api/users/search?with_count=posts'
         );
 
         $this->assertResourcesPaginated(
@@ -560,7 +560,7 @@ class StandardAggregateOperationsTest extends TestCase
         Gate::policy(User::class, GreenPolicy::class);
 
         $response = $this->post(
-            '/api/users/search?aggregateMin=posts.stars'
+            '/api/users/search?with_min=posts.stars'
         );
 
         $this->assertResourcesPaginated(
@@ -581,7 +581,7 @@ class StandardAggregateOperationsTest extends TestCase
         Gate::policy(User::class, GreenPolicy::class);
 
         $response = $this->post(
-            '/api/users/search?aggregateMax=posts.stars'
+            '/api/users/search?with_max=posts.stars'
         );
 
         $this->assertResourcesPaginated(
@@ -602,7 +602,7 @@ class StandardAggregateOperationsTest extends TestCase
         Gate::policy(User::class, GreenPolicy::class);
 
         $response = $this->post(
-            '/api/users/search?aggregateSum=posts.stars'
+            '/api/users/search?with_sum=posts.stars'
         );
 
         $this->assertResourcesPaginated(
@@ -625,7 +625,7 @@ class StandardAggregateOperationsTest extends TestCase
         Gate::policy(User::class, GreenPolicy::class);
 
         $response = $this->post(
-            '/api/users/search?aggregateAvg=posts.stars'
+            '/api/users/search?with_avg=posts.stars'
         );
 
         $this->assertResourcesPaginated(

@@ -112,7 +112,7 @@ class HasOneRelationStandardShowOperationsTest extends TestCase
 
         Gate::policy(PostMeta::class, GreenPolicy::class);
 
-        $response = $this->get("/api/posts/{$post->id}/meta?aggregateCount=post");
+        $response = $this->get("/api/posts/{$post->id}/meta?with_count=post");
 
         $this->assertResourceShown($response, $postMeta->fresh()->loadCount('post')->toArray());
     }

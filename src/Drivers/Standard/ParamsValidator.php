@@ -197,12 +197,12 @@ class ParamsValidator implements \Orion\Contracts\ParamsValidator
         Validator::make(
             $request->query(),
             [
-                'aggregateCount' => ['sometimes', 'string', 'not_regex:/\\./', new WhitelistedQueryFields($this->aggregatableBy)],
-                'aggregateExists' => ['sometimes', 'string', 'not_regex:/\\./', new WhitelistedQueryFields($this->aggregatableBy)],
-                'aggregateMin' => ['sometimes', 'string', 'regex:/^[a-z\d,]*\.+[a-z\d,]*$/', new WhitelistedQueryFields($this->aggregatableBy)],
-                'aggregateMax' => ['sometimes', 'string', 'regex:/^[a-z\d,]*\.+[a-z\d,]*$/', new WhitelistedQueryFields($this->aggregatableBy)],
-                'aggregateAvg' => ['sometimes', 'string', 'regex:/^[a-z\d,]*\.+[a-z\d,]*$/', new WhitelistedQueryFields($this->aggregatableBy)],
-                'aggregateSum' => ['sometimes', 'string', 'regex:/^[a-z\d,]*\.+[a-z\d,]*$/', new WhitelistedQueryFields($this->aggregatableBy)],
+                'with_count' => ['sometimes', 'string', 'not_regex:/\\./', new WhitelistedQueryFields($this->aggregatableBy)],
+                'with_exists' => ['sometimes', 'string', 'not_regex:/\\./', new WhitelistedQueryFields($this->aggregatableBy)],
+                'with_min' => ['sometimes', 'string', 'regex:/^[a-z\d,]*\.+[a-z\d,]*$/', new WhitelistedQueryFields($this->aggregatableBy)],
+                'with_max' => ['sometimes', 'string', 'regex:/^[a-z\d,]*\.+[a-z\d,]*$/', new WhitelistedQueryFields($this->aggregatableBy)],
+                'with_avg' => ['sometimes', 'string', 'regex:/^[a-z\d,]*\.+[a-z\d,]*$/', new WhitelistedQueryFields($this->aggregatableBy)],
+                'with_sum' => ['sometimes', 'string', 'regex:/^[a-z\d,]*\.+[a-z\d,]*$/', new WhitelistedQueryFields($this->aggregatableBy)],
             ]
         )->validate();
     }
@@ -234,6 +234,4 @@ class ParamsValidator implements \Orion\Contracts\ParamsValidator
             ]
         )->validate();
     }
-
-    // @TODO: update doc
 }
