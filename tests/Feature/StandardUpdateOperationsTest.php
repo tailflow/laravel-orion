@@ -142,8 +142,8 @@ class StandardUpdateOperationsTest extends TestCase
     /** @test */
     public function updating_a_single_resource_and_getting_included_relation(): void
     {
-        $user = factory(User::class)->create();
-        $post = factory(Post::class)->create(['user_id' => $user->id]);
+        $user = factory(User::class)->create()->fresh();
+        $post = factory(Post::class)->create(['user_id' => $user->id])->fresh();
         $payload = ['title' => 'test post title updated'];
 
         Gate::policy(Post::class, GreenPolicy::class);
@@ -155,7 +155,7 @@ class StandardUpdateOperationsTest extends TestCase
             Post::class,
             $post->toArray(),
             $payload,
-            ['user' => $user->fresh()->toArray()]
+            ['user' => $user->toArray()]
         );
     }
 }
