@@ -1,6 +1,6 @@
 <?php
 
-namespace Orion\Helper;
+namespace Orion\Helpers;
 
 class ArrayHelper extends Helper
 {

@@ -1,6 +1,6 @@
 <?php
 
-namespace Orion\Helper;
+namespace Orion\Helpers;
 
 use Illuminate\Support\Facades\App;
 use Orion\Http\Requests\Request;

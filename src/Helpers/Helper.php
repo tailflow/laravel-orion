@@ -1,6 +1,6 @@
 <?php
 
-namespace Orion\Helper;
+namespace Orion\Helpers;
 
 /**
  * Helper is the base class for all helper classes.

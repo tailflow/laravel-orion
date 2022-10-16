@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
-use Orion\Helper\RequestHelper;
+use Orion\Helpers\RequestHelper;
 use Orion\Http\Requests\Request;
 
 class RelationsResolver implements \Orion\Contracts\RelationsResolver

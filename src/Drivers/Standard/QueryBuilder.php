@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use JsonException;
-use Orion\Helper\RequestHelper;
+use Orion\Helpers\RequestHelper;
 use Orion\Http\Requests\Request;
 use RuntimeException;
 
