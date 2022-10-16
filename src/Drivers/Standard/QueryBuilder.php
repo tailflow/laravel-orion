@@ -543,9 +543,9 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
         }
 
         foreach ($aggregateDescriptors as $aggregateDescriptor) {
-            $query->withAggregate([$aggregateDescriptor['relation'] => function (Builder $query) use ($aggregateDescriptor, $request) {
-                $this->usingTable($this->getQualifiedFieldNameFromRelation($aggregateDescriptor['relation']), function () use ($request, $query, $aggregateDescriptor) {
-                    $this->applyFiltersToQuery($query, $request, $this->removeFieldPrefixFromFields($aggregateDescriptor['filters'] ?? [], $aggregateDescriptor['relation'].'.'));
+            $query->withAggregate([$aggregateDescriptor['relation'] => function (Builder $aggregateQuery) use ($aggregateDescriptor, $request) {
+                $this->usingTable($this->getQualifiedFieldNameFromRelation($aggregateDescriptor['relation']), function () use ($request, $aggregateQuery, $aggregateDescriptor) {
+                    $this->applyFiltersToQuery($aggregateQuery, $request, $this->removeFieldPrefixFromFields($aggregateDescriptor['filters'] ?? [], $aggregateDescriptor['relation'].'.'));
                 });
             }], $aggregateDescriptor['field'] ?? '*', $aggregateDescriptor['type']);
         }
@@ -578,9 +578,9 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
 
         foreach ($includeDescriptors as $includeDescriptor) {
             $query->with([
-                $includeDescriptor['relation'] => function (Relation $query) use ($includeDescriptor, $request) {
-                    $this->usingTable($this->getQualifiedFieldNameFromRelation($includeDescriptor['relation']), function () use ($request, $query, $includeDescriptor) {
-                        $this->applyFiltersToQuery($query, $request, $this->removeFieldPrefixFromFields($includeDescriptor['filters'] ?? [], $includeDescriptor['relation'].'.'));
+                $includeDescriptor['relation'] => function (Relation $includeQuery) use ($includeDescriptor, $request) {
+                    $this->usingTable($this->getQualifiedFieldNameFromRelation($includeDescriptor['relation']), function () use ($request, $includeQuery, $includeDescriptor) {
+                        $this->applyFiltersToQuery($includeQuery, $request, $this->removeFieldPrefixFromFields($includeDescriptor['filters'] ?? [], $includeDescriptor['relation'].'.'));
                     });
                 }
             ]);
