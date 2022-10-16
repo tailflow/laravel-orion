@@ -182,15 +182,17 @@ class ParamsValidator implements \Orion\Contracts\ParamsValidator
             )
         )->validate();
 
-        // @TODO: make the error more logical by including key and replicated in tests errors 422
         // Here we regroup the "relation" and "field" fields to validate them
         Validator::make(
-            collect(RequestHelper::getPostRequestParam()['aggregate'] ?? [])
-                ->transform(function ($aggregate) {
-                    return isset($aggregate['field']) ? "{$aggregate['relation']}.{$aggregate['field']}" : $aggregate['relation'];
-                })->all(),
             [
-                '*' => new WhitelistedQueryFields($this->aggregatableBy)
+                'aggregate' =>
+                    collect(RequestHelper::getPostRequestParam()['aggregate'] ?? [])
+                        ->map(function ($aggregate) {
+                            return ['field' => isset($aggregate['field']) ? "{$aggregate['relation']}.{$aggregate['field']}" : $aggregate['relation']];
+                        })->all()
+            ],
+            [
+                'aggregate.*.field' => new WhitelistedQueryFields($this->aggregatableBy)
             ]
         )->validate();
 

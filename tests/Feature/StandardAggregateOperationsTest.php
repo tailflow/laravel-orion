@@ -448,7 +448,7 @@ class StandardAggregateOperationsTest extends TestCase
         );
 
         $response->assertStatus(422);
-        $response->assertJsonStructure(['message', 'errors']);
+        $response->assertJsonStructure(['message', 'errors' => ['aggregate.0.field']]);
     }
 
     /** @test */
@@ -473,7 +473,7 @@ class StandardAggregateOperationsTest extends TestCase
         );
 
         $response->assertStatus(422);
-        $response->assertJsonStructure(['message', 'errors']);
+        $response->assertJsonStructure(['message', 'errors' => ['aggregate.0.field']]);
     }
 
     /** @test */
@@ -503,7 +503,7 @@ class StandardAggregateOperationsTest extends TestCase
         );
 
         $response->assertStatus(422);
-        $response->assertJsonStructure(['message', 'errors']);
+        $response->assertJsonStructure(['message', 'errors' => ['aggregate.0.filters.0.field']]);
     }
 
     /** @test */
