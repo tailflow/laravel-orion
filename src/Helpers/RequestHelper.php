@@ -8,10 +8,12 @@ use Orion\Http\Requests\Request;
 class RequestHelper extends Helper
 {
     // For some reason when the version is older, query params are included in $request->post()
+    // @TODO: Remove for version >= Laravel 9.0
     public static function getPostRequestParam($key = null, $default = null) {
-        if ((float) app()->version() < 9.0) {
+        $request = App::make(Request::class);
+        if ($request->query() === $request->post()) {
             return $key ? $_POST[$key] ?? $default : $_POST;
         }
-        return App::make(Request::class)->post($key, $default);
+        return $request->post($key, $default);
     }
 }

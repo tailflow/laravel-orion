@@ -186,7 +186,7 @@ class ParamsValidator implements \Orion\Contracts\ParamsValidator
         Validator::make(
             [
                 'aggregate' =>
-                    collect(RequestHelper::getPostRequestParam()['aggregate'] ?? [])
+                    collect(RequestHelper::getPostRequestParam('aggregate', []))
                         ->map(function ($aggregate) {
                             return ['field' => isset($aggregate['field']) ? "{$aggregate['relation']}.{$aggregate['field']}" : $aggregate['relation']];
                         })->all()
