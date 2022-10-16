@@ -155,7 +155,7 @@ class StandardUpdateOperationsTest extends TestCase
             Post::class,
             $post->toArray(),
             $payload,
-            ['user' => $user->toArray()]
+            ['user' => $user->fresh()->toArray()]
         );
     }
 }
