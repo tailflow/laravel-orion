@@ -15,6 +15,10 @@ class StandardAggregateOperationsTest extends TestCase
     /** @test */
     public function getting_a_list_of_resources_with_avg_aggregate_operation(): void
     {
+        if ((float) app()->version() < 8.0) {
+            $this->markTestSkipped('Unsupported framework version');
+        }
+
         $user = User::query()->first();
 
         factory(Post::class)->create(['stars' => 3, 'user_id' => $user->id])->fresh();
@@ -41,6 +45,10 @@ class StandardAggregateOperationsTest extends TestCase
     /** @test */
     public function getting_a_list_of_resources_with_avg_aggregate_operation_with_filters(): void
     {
+        if ((float) app()->version() < 8.0) {
+            $this->markTestSkipped('Unsupported framework version');
+        }
+
         $user = User::query()->first();
 
         factory(Post::class)->create(['stars' => 2.8, 'user_id' => $user->id])->fresh();
@@ -74,6 +82,10 @@ class StandardAggregateOperationsTest extends TestCase
     /** @test */
     public function getting_a_list_of_resources_with_min_aggregate_operation(): void
     {
+        if ((float) app()->version() < 8.0) {
+            $this->markTestSkipped('Unsupported framework version');
+        }
+
         $user = User::query()->first();
 
         factory(Post::class)->create(['stars' => 2.8, 'user_id' => $user->id])->fresh();
@@ -101,6 +113,10 @@ class StandardAggregateOperationsTest extends TestCase
     /** @test */
     public function getting_a_list_of_resources_with_min_aggregate_operation_with_filters(): void
     {
+        if ((float) app()->version() < 8.0) {
+            $this->markTestSkipped('Unsupported framework version');
+        }
+
         $user = User::query()->first();
 
         factory(Post::class)->create(['stars' => 2.8, 'user_id' => $user->id])->fresh();
@@ -134,6 +150,10 @@ class StandardAggregateOperationsTest extends TestCase
     /** @test */
     public function getting_a_list_of_resources_with_max_aggregate_operation(): void
     {
+        if ((float) app()->version() < 8.0) {
+            $this->markTestSkipped('Unsupported framework version');
+        }
+
         $user = User::query()->first();
 
         factory(Post::class)->create(['stars' => 2.8, 'user_id' => $user->id])->fresh();
@@ -161,6 +181,10 @@ class StandardAggregateOperationsTest extends TestCase
     /** @test */
     public function getting_a_list_of_resources_with_max_aggregate_operation_with_filters(): void
     {
+        if ((float) app()->version() < 8.0) {
+            $this->markTestSkipped('Unsupported framework version');
+        }
+
         $user = User::query()->first();
 
         factory(Post::class)->create(['stars' => 2.8, 'user_id' => $user->id])->fresh();
@@ -194,6 +218,10 @@ class StandardAggregateOperationsTest extends TestCase
     /** @test */
     public function getting_a_list_of_resources_with_sum_aggregate_operation(): void
     {
+        if ((float) app()->version() < 8.0) {
+            $this->markTestSkipped('Unsupported framework version');
+        }
+
         $user = User::query()->first();
 
         factory(Post::class)->create(['stars' => 2.5, 'user_id' => $user->id])->fresh();
@@ -221,6 +249,10 @@ class StandardAggregateOperationsTest extends TestCase
     /** @test */
     public function getting_a_list_of_resources_with_sum_aggregate_operation_with_filters(): void
     {
+        if ((float) app()->version() < 8.0) {
+            $this->markTestSkipped('Unsupported framework version');
+        }
+
         $user = User::query()->first();
 
         factory(Post::class)->create(['stars' => 2.8, 'user_id' => $user->id])->fresh();
@@ -254,6 +286,10 @@ class StandardAggregateOperationsTest extends TestCase
     /** @test */
     public function getting_a_list_of_resources_with_count_aggregate_operation(): void
     {
+        if ((float) app()->version() < 8.0) {
+            $this->markTestSkipped('Unsupported framework version');
+        }
+
         $user = User::query()->first();
 
         factory(Post::class)->create(['stars' => 2.8, 'user_id' => $user->id])->fresh();
@@ -281,6 +317,10 @@ class StandardAggregateOperationsTest extends TestCase
     /** @test */
     public function getting_a_list_of_resources_with_count_aggregate_operation_with_filters(): void
     {
+        if ((float) app()->version() < 8.0) {
+            $this->markTestSkipped('Unsupported framework version');
+        }
+
         $user = User::query()->first();
 
         factory(Post::class)->create(['stars' => 2.8, 'user_id' => $user->id])->fresh();
@@ -313,6 +353,10 @@ class StandardAggregateOperationsTest extends TestCase
     /** @test */
     public function getting_a_list_of_resources_with_exists_aggregate_operation(): void
     {
+        if ((float) app()->version() < 8.0) {
+            $this->markTestSkipped('Unsupported framework version');
+        }
+
         $user = User::query()->first();
 
         factory(Post::class)->create(['stars' => 2.8, 'user_id' => $user->id])->fresh();
@@ -340,6 +384,10 @@ class StandardAggregateOperationsTest extends TestCase
     /** @test */
     public function getting_a_list_of_resources_with_exists_aggregate_operation_with_filters(): void
     {
+        if ((float) app()->version() < 8.0) {
+            $this->markTestSkipped('Unsupported framework version');
+        }
+
         $user = User::query()->first();
 
         factory(Post::class)->create(['stars' => 2.8, 'user_id' => $user->id])->fresh();
@@ -372,6 +420,10 @@ class StandardAggregateOperationsTest extends TestCase
     /** @test */
     public function getting_a_list_of_resources_with_exists_aggregate_operation_with_filters_and_no_results(): void
     {
+        if ((float) app()->version() < 8.0) {
+            $this->markTestSkipped('Unsupported framework version');
+        }
+
         $user = User::query()->first();
 
         factory(Post::class)->create(['stars' => 2.8, 'user_id' => $user->id])->fresh();
@@ -404,6 +456,10 @@ class StandardAggregateOperationsTest extends TestCase
     /** @test */
     public function getting_a_list_of_resources_with_unknown_aggregate(): void
     {
+        if ((float) app()->version() < 8.0) {
+            $this->markTestSkipped('Unsupported framework version');
+        }
+
         $user = User::query()->first();
 
         factory(Post::class)->create(['stars' => 2.8, 'user_id' => $user->id])->fresh();
@@ -429,6 +485,10 @@ class StandardAggregateOperationsTest extends TestCase
     /** @test */
     public function getting_a_list_of_resources_with_unauthorized_relation(): void
     {
+        if ((float) app()->version() < 8.0) {
+            $this->markTestSkipped('Unsupported framework version');
+        }
+
         $user = User::query()->first();
 
         factory(Post::class)->create(['stars' => 2.8, 'user_id' => $user->id])->fresh();
@@ -454,6 +514,10 @@ class StandardAggregateOperationsTest extends TestCase
     /** @test */
     public function getting_a_list_of_resources_with_unauthorized_field(): void
     {
+        if ((float) app()->version() < 8.0) {
+            $this->markTestSkipped('Unsupported framework version');
+        }
+
         $user = User::query()->first();
 
         factory(Post::class)->create(['stars' => 2.8, 'user_id' => $user->id])->fresh();
@@ -479,6 +543,10 @@ class StandardAggregateOperationsTest extends TestCase
     /** @test */
     public function getting_a_list_of_resources_with_unauthorized_filter(): void
     {
+        if ((float) app()->version() < 8.0) {
+            $this->markTestSkipped('Unsupported framework version');
+        }
+
         $user = User::query()->first();
 
         factory(Post::class)->create(['stars' => 2.8, 'user_id' => $user->id])->fresh();
@@ -509,6 +577,10 @@ class StandardAggregateOperationsTest extends TestCase
     /** @test */
     public function getting_a_list_of_resources_with_query_exists_aggregate_operation(): void
     {
+        if ((float) app()->version() < 8.0) {
+            $this->markTestSkipped('Unsupported framework version');
+        }
+
         $user = User::query()->first();
 
         factory(Post::class)->create(['stars' => 2.8, 'user_id' => $user->id])->fresh();
@@ -530,6 +602,10 @@ class StandardAggregateOperationsTest extends TestCase
     /** @test */
     public function getting_a_list_of_resources_with_query_count_aggregate_operation(): void
     {
+        if ((float) app()->version() < 8.0) {
+            $this->markTestSkipped('Unsupported framework version');
+        }
+
         $user = User::query()->first();
 
         factory(Post::class)->create(['stars' => 2.8, 'user_id' => $user->id])->fresh();
@@ -551,6 +627,10 @@ class StandardAggregateOperationsTest extends TestCase
     /** @test */
     public function getting_a_list_of_resources_with_query_min_aggregate_operation(): void
     {
+        if ((float) app()->version() < 8.0) {
+            $this->markTestSkipped('Unsupported framework version');
+        }
+
         $user = User::query()->first();
 
         factory(Post::class)->create(['stars' => 2.8, 'user_id' => $user->id])->fresh();
@@ -572,6 +652,10 @@ class StandardAggregateOperationsTest extends TestCase
     /** @test */
     public function getting_a_list_of_resources_with_query_max_aggregate_operation(): void
     {
+        if ((float) app()->version() < 8.0) {
+            $this->markTestSkipped('Unsupported framework version');
+        }
+
         $user = User::query()->first();
 
         factory(Post::class)->create(['stars' => 2.8, 'user_id' => $user->id])->fresh();
@@ -593,6 +677,10 @@ class StandardAggregateOperationsTest extends TestCase
     /** @test */
     public function getting_a_list_of_resources_with_query_sum_aggregate_operation(): void
     {
+        if ((float) app()->version() < 8.0) {
+            $this->markTestSkipped('Unsupported framework version');
+        }
+
         $user = User::query()->first();
 
         factory(Post::class)->create(['stars' => 2.8, 'user_id' => $user->id])->fresh();
@@ -616,6 +704,10 @@ class StandardAggregateOperationsTest extends TestCase
     /** @test */
     public function getting_a_list_of_resources_with_query_avg_aggregate_operation(): void
     {
+        if ((float) app()->version() < 8.0) {
+            $this->markTestSkipped('Unsupported framework version');
+        }
+
         $user = User::query()->first();
 
         factory(Post::class)->create(['stars' => 2.8, 'user_id' => $user->id])->fresh();

@@ -517,12 +517,6 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
      */
     public function applyAggregatesToQuery($query, Request $request, array $aggregateDescriptors = []): void
     {
-        if ((float) app()->version() < 8.0) {
-            throw new RuntimeException(
-                "Aggregate queries are only supported with Laravel 8 and later"
-            );
-        }
-
         if (!$aggregateDescriptors) {
             $this->paramsValidator->validateAggregators($request);
 
@@ -543,6 +537,12 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
         }
 
         foreach ($aggregateDescriptors as $aggregateDescriptor) {
+            if ((float) app()->version() < 8.0) {
+                throw new RuntimeException(
+                    "Aggregate queries are only supported with Laravel 8 and later"
+                );
+            }
+
             $query->withAggregate([$aggregateDescriptor['relation'] => function (Builder $aggregateQuery) use ($aggregateDescriptor, $request) {
                 $this->usingTable($this->getTableNameFromRelation($aggregateDescriptor['relation']), function () use ($request, $aggregateQuery, $aggregateDescriptor) {
                     $this->applyFiltersToQuery($aggregateQuery, $request, $this->removeFieldPrefixFromFields($aggregateDescriptor['filters'] ?? [], $aggregateDescriptor['relation'].'.'));

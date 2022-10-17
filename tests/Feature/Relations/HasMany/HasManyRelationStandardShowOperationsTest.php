@@ -123,6 +123,10 @@ class HasManyRelationStandardShowOperationsTest extends TestCase
     /** @test */
     public function getting_a_single_relation_resource_with_aggregate(): void
     {
+        if ((float) app()->version() < 8.0) {
+            $this->markTestSkipped('Unsupported framework version');
+        }
+
         $company = factory(Company::class)->create();
         $team = factory(Team::class)->create(['company_id' => $company->id]);
 

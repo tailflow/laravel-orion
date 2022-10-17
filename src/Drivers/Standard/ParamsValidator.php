@@ -168,8 +168,8 @@ class ParamsValidator implements \Orion\Contracts\ParamsValidator
                         'regex:/^[\w.\_\-\>]+$/',
                     ],
                     'aggregates.*.field' => [
-                        'prohibited_if:aggregate.*.type,count',
-                        'prohibited_if:aggregate.*.type,exists',
+                        (float) app()->version() >= 8.32 ? 'prohibited_if:aggregate.*.type,count' : '',
+                        (float) app()->version() >= 8.32 ? 'prohibited_if:aggregate.*.type,exists' : '',
                         'required_if:aggregate.*.type,avg,sum,min,max'
                     ],
                     'aggregates.*.type' => [
