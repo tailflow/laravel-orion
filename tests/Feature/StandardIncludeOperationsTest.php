@@ -26,7 +26,7 @@ class StandardIncludeOperationsTest extends TestCase
         $response = $this->post(
             '/api/users/search',
             [
-                'include' => [
+                'includes' => [
                     ['relation' => 'posts']
                 ]
             ]
@@ -54,7 +54,7 @@ class StandardIncludeOperationsTest extends TestCase
         $response = $this->post(
             '/api/users/search',
             [
-                'include' => [
+                'includes' => [
                     [
                         'relation' => 'posts',
                         'filters' => [
@@ -88,14 +88,14 @@ class StandardIncludeOperationsTest extends TestCase
         $response = $this->post(
             '/api/users/search',
             [
-                'include' => [
+                'includes' => [
                     ['relation' => 'unauthorized']
                 ]
             ]
         );
 
         $response->assertStatus(422);
-        $response->assertJsonStructure(['message', 'errors']);
+        $response->assertJsonStructure(['message', 'errors' => ['includes.0.relation']]);
     }
 
     /** @test */
@@ -112,7 +112,7 @@ class StandardIncludeOperationsTest extends TestCase
         $response = $this->post(
             '/api/users/search',
             [
-                'include' => [
+                'includes' => [
                     [
                         'relation' => 'posts',
                         'filters' => [
@@ -124,6 +124,6 @@ class StandardIncludeOperationsTest extends TestCase
         );
 
         $response->assertStatus(422);
-        $response->assertJsonStructure(['message', 'errors']);
+        $response->assertJsonStructure(['message', 'errors' => ['includes.0.filters.0.field']]);
     }
 }

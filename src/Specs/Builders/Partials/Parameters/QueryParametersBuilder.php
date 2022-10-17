@@ -29,6 +29,9 @@ class QueryParametersBuilder
         $includes = array_merge($controller->alwaysIncludes(), $controller->includes());
         $hasIncludes = (bool)count($includes);
 
+        $aggregates = $controller->aggregates();
+        $hasAggregates = (bool)count($aggregates);
+
         switch ($route->getActionMethod()) {
             case 'destroy':
             case 'batchDestroy':
@@ -40,6 +43,10 @@ class QueryParametersBuilder
 
                 if ($hasIncludes) {
                     $parameters[] = $this->buildQueryParameter('string', 'include', $includes);
+                }
+
+                if ($hasAggregates) {
+                    $parameters[] = $this->buildAggregatesQueryParameters($aggregates);
                 }
 
                 return $parameters;
@@ -57,11 +64,17 @@ class QueryParametersBuilder
                     $parameters[] = $this->buildQueryParameter('string', 'include', $includes);
                 }
 
-                return $parameters;
+            if ($hasAggregates) {
+                $parameters[] = $this->buildAggregatesQueryParameters($aggregates);
+            }
+
+
+            return $parameters;
             default:
-                return $hasIncludes ? [
-                    $this->buildQueryParameter('string', 'include', $includes)
-                ] : [];
+                return $hasIncludes ? array_merge(
+                    [$this->buildQueryParameter('string', 'include', $includes)],
+                    $this->buildAggregatesQueryParameters($aggregates)
+                ) : [];
         }
     }
 
@@ -80,5 +93,17 @@ class QueryParametersBuilder
         }
 
         return $descriptor;
+    }
+
+    protected function buildAggregatesQueryParameters(array $enum = []) {
+        $queryParameters = [];
+        $queryParameters[] = $this->buildQueryParameter('string', 'with_count', $enum);
+        $queryParameters[] = $this->buildQueryParameter('string', 'with_exists', $enum);
+        $queryParameters[] = $this->buildQueryParameter('string', 'with_avg', $enum);
+        $queryParameters[] = $this->buildQueryParameter('string', 'with_sum', $enum);
+        $queryParameters[] = $this->buildQueryParameter('string', 'with_min', $enum);
+        $queryParameters[] = $this->buildQueryParameter('string', 'with_max', $enum);
+
+        return $queryParameters;
     }
 }

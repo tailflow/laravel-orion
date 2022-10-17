@@ -6,11 +6,11 @@ namespace Orion\Specs\Builders\Partials\RequestBody\Search;
 
 use Orion\Specs\Builders\Partials\RequestBody\SearchPartialBuilder;
 
-class IncludeBuilder extends SearchPartialBuilder
+class AggregatesBuilder extends SearchPartialBuilder
 {
     public function build(): ?array
     {
-        if (!count($this->controller->includes())) {
+        if (!count($this->controller->aggregates())) {
             return null;
         }
 
@@ -19,9 +19,13 @@ class IncludeBuilder extends SearchPartialBuilder
             'items' => [
                 'type' => 'object',
                 'properties' => [
+                    'type' => [
+                        'type' => 'string',
+                        'enum' => ['count', 'min', 'max', 'avg', 'sum', 'exists'],
+                    ],
                     'relation' => [
                         'type' => 'string',
-                        'enum' => $this->controller->includes(),
+                        'enum' => $this->controller->aggregates(),
                     ],
                     'filters' => [
                         'type' => 'object',

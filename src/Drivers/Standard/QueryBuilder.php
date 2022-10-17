@@ -539,7 +539,7 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
                 );
             }
 
-            $aggregateDescriptors = $aggregateDescriptors->merge(RequestHelper::getPostRequestParam('aggregate', []));
+            $aggregateDescriptors = $aggregateDescriptors->merge($request->post('aggregates', []));
         }
 
         foreach ($aggregateDescriptors as $aggregateDescriptor) {
@@ -573,7 +573,7 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
                     ->map(function($include) {
                         return ['relation' => $include];
                     })
-                    ->merge(RequestHelper::getPostRequestParam('include', []));
+                    ->merge($request->post('includes', []));
         }
 
         foreach ($includeDescriptors as $includeDescriptor) {

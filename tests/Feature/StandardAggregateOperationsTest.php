@@ -26,7 +26,7 @@ class StandardAggregateOperationsTest extends TestCase
         $response = $this->post(
             '/api/users/search',
             [
-                'aggregate' => [
+                'aggregates' => [
                     ['relation' => 'posts', 'field' => 'stars', 'type' => 'avg']
                 ]
             ]
@@ -52,7 +52,7 @@ class StandardAggregateOperationsTest extends TestCase
         $response = $this->post(
             '/api/users/search',
             [
-                'aggregate' => [
+                'aggregates' => [
                     [
                         'relation' => 'posts',
                         'field' => 'stars',
@@ -86,7 +86,7 @@ class StandardAggregateOperationsTest extends TestCase
         $response = $this->post(
             '/api/users/search',
             [
-                'aggregate' => [
+                'aggregates' => [
                     ['relation' => 'posts', 'field' => 'stars', 'type' => 'min']
                 ]
             ]
@@ -112,7 +112,7 @@ class StandardAggregateOperationsTest extends TestCase
         $response = $this->post(
             '/api/users/search',
             [
-                'aggregate' => [
+                'aggregates' => [
                     [
                         'relation' => 'posts',
                         'field' => 'stars',
@@ -146,7 +146,7 @@ class StandardAggregateOperationsTest extends TestCase
         $response = $this->post(
             '/api/users/search',
             [
-                'aggregate' => [
+                'aggregates' => [
                     ['relation' => 'posts', 'field' => 'stars', 'type' => 'max']
                 ]
             ]
@@ -172,7 +172,7 @@ class StandardAggregateOperationsTest extends TestCase
         $response = $this->post(
             '/api/users/search',
             [
-                'aggregate' => [
+                'aggregates' => [
                     [
                         'relation' => 'posts',
                         'field' => 'stars',
@@ -206,7 +206,7 @@ class StandardAggregateOperationsTest extends TestCase
         $response = $this->post(
             '/api/users/search',
             [
-                'aggregate' => [
+                'aggregates' => [
                     ['relation' => 'posts', 'field' => 'stars', 'type' => 'sum']
                 ]
             ]
@@ -232,7 +232,7 @@ class StandardAggregateOperationsTest extends TestCase
         $response = $this->post(
             '/api/users/search',
             [
-                'aggregate' => [
+                'aggregates' => [
                     [
                         'relation' => 'posts',
                         'field' => 'stars',
@@ -266,7 +266,7 @@ class StandardAggregateOperationsTest extends TestCase
         $response = $this->post(
             '/api/users/search',
             [
-                'aggregate' => [
+                'aggregates' => [
                     ['relation' => 'posts', 'type' => 'count']
                 ]
             ]
@@ -292,7 +292,7 @@ class StandardAggregateOperationsTest extends TestCase
         $response = $this->post(
             '/api/users/search',
             [
-                'aggregate' => [
+                'aggregates' => [
                     [
                         'relation' => 'posts',
                         'type' => 'count',
@@ -325,7 +325,7 @@ class StandardAggregateOperationsTest extends TestCase
         $response = $this->post(
             '/api/users/search',
             [
-                'aggregate' => [
+                'aggregates' => [
                     ['relation' => 'posts', 'type' => 'exists']
                 ]
             ]
@@ -351,7 +351,7 @@ class StandardAggregateOperationsTest extends TestCase
         $response = $this->post(
             '/api/users/search',
             [
-                'aggregate' => [
+                'aggregates' => [
                     [
                         'relation' => 'posts',
                         'type' => 'exists',
@@ -383,7 +383,7 @@ class StandardAggregateOperationsTest extends TestCase
         $response = $this->post(
             '/api/users/search',
             [
-                'aggregate' => [
+                'aggregates' => [
                     [
                         'relation' => 'posts',
                         'type' => 'exists',
@@ -416,14 +416,14 @@ class StandardAggregateOperationsTest extends TestCase
         $response = $this->post(
             '/api/users/search',
             [
-                'aggregate' => [
+                'aggregates' => [
                     ['relation' => 'posts', 'type' => 'unknown']
                 ]
             ]
         );
 
         $response->assertStatus(422);
-        $response->assertJsonStructure(['message', 'errors' => ['aggregate.0.type']]);
+        $response->assertJsonStructure(['message', 'errors' => ['aggregates.0.type']]);
     }
 
     /** @test */
@@ -441,14 +441,14 @@ class StandardAggregateOperationsTest extends TestCase
         $response = $this->post(
             '/api/users/search',
             [
-                'aggregate' => [
+                'aggregates' => [
                     ['relation' => 'unauthorized', 'type' => 'count']
                 ]
             ]
         );
 
         $response->assertStatus(422);
-        $response->assertJsonStructure(['message', 'errors' => ['aggregate.0.field']]);
+        $response->assertJsonStructure(['message', 'errors' => ['aggregates.0.field']]);
     }
 
     /** @test */
@@ -466,14 +466,14 @@ class StandardAggregateOperationsTest extends TestCase
         $response = $this->post(
             '/api/users/search',
             [
-                'aggregate' => [
+                'aggregates' => [
                     ['relation' => 'posts', 'field' => 'id', 'type' => 'avg']
                 ]
             ]
         );
 
         $response->assertStatus(422);
-        $response->assertJsonStructure(['message', 'errors' => ['aggregate.0.field']]);
+        $response->assertJsonStructure(['message', 'errors' => ['aggregates.0.field']]);
     }
 
     /** @test */
@@ -490,7 +490,7 @@ class StandardAggregateOperationsTest extends TestCase
         $response = $this->post(
             '/api/users/search',
             [
-                'aggregate' => [
+                'aggregates' => [
                     [
                         'relation' => 'posts',
                         'type' => 'exists',
@@ -503,7 +503,7 @@ class StandardAggregateOperationsTest extends TestCase
         );
 
         $response->assertStatus(422);
-        $response->assertJsonStructure(['message', 'errors' => ['aggregate.0.filters.0.field']]);
+        $response->assertJsonStructure(['message', 'errors' => ['aggregates.0.filters.0.field']]);
     }
 
     /** @test */

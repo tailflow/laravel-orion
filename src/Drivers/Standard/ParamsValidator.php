@@ -156,43 +156,43 @@ class ParamsValidator implements \Orion\Contracts\ParamsValidator
 
     public function validateAggregators(Request $request): void
     {
-        $depth = $this->nestedFiltersDepth(RequestHelper::getPostRequestParam('aggregate', []), -1);
+        $depth = $this->nestedFiltersDepth($request->post('aggregates', []), -1);
 
         Validator::make(
-            RequestHelper::getPostRequestParam(),
+            $request->post(),
             array_merge(
                 [
-                    'aggregate' => ['sometimes', 'array'],
-                    'aggregate.*.relation' => [
+                    'aggregates' => ['sometimes', 'array'],
+                    'aggregates.*.relation' => [
                         'required',
                         'regex:/^[\w.\_\-\>]+$/',
                     ],
-                    'aggregate.*.field' => [
+                    'aggregates.*.field' => [
                         'prohibited_if:aggregate.*.type,count',
                         'prohibited_if:aggregate.*.type,exists',
                         'required_if:aggregate.*.type,avg,sum,min,max'
                     ],
-                    'aggregate.*.type' => [
+                    'aggregates.*.type' => [
                         'required',
                         'in:count,min,max,avg,sum,exists'
                     ],
-                    'aggregate.*.filters' => ['sometimes', 'array'],
+                    'aggregates.*.filters' => ['sometimes', 'array'],
                 ],
-                $this->getNestedRules('aggregate.*.filters', $depth)
+                $this->getNestedRules('aggregates.*.filters', $depth)
             )
         )->validate();
 
         // Here we regroup the "relation" and "field" fields to validate them
         Validator::make(
             [
-                'aggregate' =>
-                    collect(RequestHelper::getPostRequestParam('aggregate', []))
+                'aggregates' =>
+                    collect($request->post('aggregates', []))
                         ->map(function ($aggregate) {
                             return ['field' => isset($aggregate['field']) ? "{$aggregate['relation']}.{$aggregate['field']}" : $aggregate['relation']];
                         })->all()
             ],
             [
-                'aggregate.*.field' => new WhitelistedQueryFields($this->aggregatableBy)
+                'aggregates.*.field' => new WhitelistedQueryFields($this->aggregatableBy)
             ]
         )->validate();
 
@@ -211,28 +211,28 @@ class ParamsValidator implements \Orion\Contracts\ParamsValidator
 
     public function validateIncludes(Request $request): void
     {
-        $depth = $this->nestedFiltersDepth(RequestHelper::getPostRequestParam('include', []), -1);
+        $depth = $this->nestedFiltersDepth($request->post('includes', []), -1);
 
         Validator::make(
-            RequestHelper::getPostRequestParam(),
+            $request->post(),
             array_merge(
                 [
-                    'include' => ['sometimes', 'array'],
-                    'include.*.relation' => [
+                    'includes' => ['sometimes', 'array'],
+                    'includes.*.relation' => [
                         'required',
                         'regex:/^[\w.\_\-\>]+$/',
                         new WhitelistedField($this->includableBy),
                     ],
-                    'include.*.filters' => ['sometimes', 'array'],
+                    'includes.*.filters' => ['sometimes', 'array'],
                 ],
-                $this->getNestedRules('include.*.filters', $depth)
+                $this->getNestedRules('includes.*.filters', $depth)
             )
         )->validate();
 
         Validator::make(
             $request->query(),
             [
-                'include' => ['sometimes', 'string', new WhitelistedQueryFields($this->includableBy)],
+                'includes' => ['sometimes', 'string', new WhitelistedQueryFields($this->includableBy)],
             ]
         )->validate();
     }
