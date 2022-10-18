@@ -67,19 +67,6 @@ class StandardIndexOperationsTest extends TestCase
     }
 
     /** @test */
-    public function getting_a_list_of_resources_with_exceeded_pagination_limit(): void
-    {
-        $user = factory(User::class)->create();
-        factory(Post::class)->times(20)->create(['user_id' => $user->id]);
-
-        Gate::policy(Post::class, GreenPolicy::class);
-
-        $response = $this->get('/api/posts?limit=2000');
-
-        $response->assertStatus(422);
-    }
-
-    /** @test */
     public function getting_a_paginated_list_of_resources(): void
     {
         $posts = factory(Post::class)->times(45)->create();
