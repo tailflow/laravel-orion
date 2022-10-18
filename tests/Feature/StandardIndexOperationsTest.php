@@ -5,6 +5,7 @@ namespace Orion\Tests\Feature;
 use Illuminate\Support\Facades\Gate;
 use Mockery;
 use Orion\Contracts\ComponentsResolver;
+use Orion\Exceptions\MaxPaginationLimitExceededException;
 use Orion\Tests\Fixtures\App\Http\Resources\SampleCollectionResource;
 use Orion\Tests\Fixtures\App\Http\Resources\SampleResource;
 use Orion\Tests\Fixtures\App\Models\Post;
@@ -63,6 +64,19 @@ class StandardIndexOperationsTest extends TestCase
             $response,
             $posts
         );
+    }
+
+    /** @test */
+    public function getting_a_list_of_resources_with_exceeded_pagination_limit(): void
+    {
+        $user = factory(User::class)->create();
+        factory(Post::class)->times(20)->create(['user_id' => $user->id]);
+
+        Gate::policy(Post::class, GreenPolicy::class);
+
+        $response = $this->get('/api/posts?limit=2000');
+
+        $response->assertStatus(422);
     }
 
     /** @test */
