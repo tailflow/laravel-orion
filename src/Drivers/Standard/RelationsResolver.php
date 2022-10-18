@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
+use Orion\Helpers\RequestHelper;
 use Orion\Http\Requests\Request;
 
 class RelationsResolver implements \Orion\Contracts\RelationsResolver
@@ -41,8 +42,10 @@ class RelationsResolver implements \Orion\Contracts\RelationsResolver
      */
     public function requestedRelations(Request $request): array
     {
-        $requestedIncludesStr = $request->get('include', '');
-        $requestedIncludes = explode(',', $requestedIncludesStr);
+        $requestedIncludesQueryStr = $request->query('include', '');
+        $requestedIncludesQuery = explode(',', $requestedIncludesQueryStr);
+        $requestedIncludesPost = collect($request->post('includes', []))->pluck('relation');
+        $requestedIncludes = $requestedIncludesPost->merge($requestedIncludesQuery)->unique()->filter()->all();
 
         $allowedIncludes = array_unique(array_merge($this->includableRelations, $this->alwaysIncludedRelations));
 

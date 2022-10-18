@@ -52,6 +52,8 @@ class RelationControllerTest extends TestCase
                 'exposedScopes' => ['testScope'],
                 'filterableBy' => ['test_filterable_field'],
                 'sortableBy' => ['test_sortable_field'],
+                'aggregatableBy' => ['test_aggregatable_field'],
+                'includableBy' => ['testRelation'],
             ]
         )->once()->andReturn($fakeParamsValidator);
 

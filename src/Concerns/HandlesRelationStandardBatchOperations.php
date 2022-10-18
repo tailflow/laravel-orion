@@ -75,7 +75,7 @@ trait HandlesRelationStandardBatchOperations
                 Arr::get($resource, 'pivot', [])
             );
 
-            $entity = $this->newRelationQuery($parentEntity)->with($requestedRelations)->where(
+            $entity = $this->newRelationQuery($parentEntity)->where(
                 $this->resolveQualifiedKeyName(),
                 $entity->{$this->keyName()}
             )->first();
@@ -213,7 +213,7 @@ trait HandlesRelationStandardBatchOperations
                 Arr::get($resource, 'pivot', [])
             );
 
-            $entity = $this->newRelationQuery($parentEntity)->with($requestedRelations)->where(
+            $entity = $this->newRelationQuery($parentEntity)->where(
                 $this->resolveQualifiedKeyName(),
                 $entity->{$this->keyName()}
             )->first();
@@ -404,7 +404,7 @@ trait HandlesRelationStandardBatchOperations
             if (!$forceDeletes) {
                 $this->performDestroy($entity);
                 if ($softDeletes) {
-                    $entity = $this->newRelationQuery($parentEntity)->withTrashed()->with($requestedRelations)->where(
+                    $entity = $this->newRelationQuery($parentEntity)->withTrashed()->where(
                         $this->resolveQualifiedKeyName(),
                         $entity->{$this->keyName()}
                     )->firstOrFail();
@@ -570,7 +570,7 @@ trait HandlesRelationStandardBatchOperations
 
             $this->performRestore($entity);
 
-            $entity = $this->newRelationQuery($parentEntity)->with($requestedRelations)->where(
+            $entity = $this->newRelationQuery($parentEntity)->where(
                 $this->resolveQualifiedKeyName(),
                 $entity->{$this->keyName()}
             )->firstOrFail();

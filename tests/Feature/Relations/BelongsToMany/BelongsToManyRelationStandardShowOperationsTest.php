@@ -8,6 +8,7 @@ use Orion\Contracts\ComponentsResolver;
 use Orion\Tests\Feature\TestCase;
 use Orion\Tests\Fixtures\App\Http\Resources\SampleResource;
 use Orion\Tests\Fixtures\App\Models\Notification;
+use Orion\Tests\Fixtures\App\Models\Post;
 use Orion\Tests\Fixtures\App\Models\Role;
 use Orion\Tests\Fixtures\App\Models\User;
 use Orion\Tests\Fixtures\App\Policies\GreenPolicy;
@@ -135,5 +136,23 @@ class BelongsToManyRelationStandardShowOperationsTest extends TestCase
         $response = $this->get("/api/users/{$user->id}/roles/{$role->id}?include=users");
 
         $this->assertResourceShown($response, $user->roles()->with('users')->first()->toArray());
+    }
+
+    /** @test */
+    public function getting_a_single_relation_resource_with_aggregate(): void
+    {
+        if ((float) app()->version() < 8.0) {
+            $this->markTestSkipped('Unsupported framework version');
+        }
+
+        $user = factory(User::class)->create();
+        $role = factory(Role::class)->make();
+        $user->roles()->save($role);
+
+        Gate::policy(Role::class, GreenPolicy::class);
+
+        $response = $this->get("/api/users/{$user->id}/roles/{$role->id}?with_count=users");
+
+        $this->assertResourceShown($response, $user->roles()->withCount('users')->first()->toArray());
     }
 }

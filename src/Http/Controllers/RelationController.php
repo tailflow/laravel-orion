@@ -12,6 +12,7 @@ use Orion\Concerns\HandlesRelationStandardBatchOperations;
 use Orion\Concerns\HandlesRelationStandardOperations;
 use Orion\Contracts\QueryBuilder;
 use Orion\Exceptions\BindingException;
+use Orion\Http\Requests\Request;
 
 abstract class RelationController extends BaseController
 {
@@ -114,7 +115,10 @@ abstract class RelationController extends BaseController
      */
     public function newRelationQuery(Model $parentEntity)
     {
-        return $parentEntity->{$this->getRelation()}();
+        return tap($parentEntity->{$this->getRelation()}(), function ($query) {
+            $this->relationQueryBuilder->applyFiltersToQuery($query, App::make(Request::class));
+            $this->relationQueryBuilder->applyIncludesToQuery($query, App::make(Request::class));
+        });
     }
 
     /**

@@ -15,4 +15,9 @@ class CompanyTeamsController extends RelationController
     {
         return ['company'];
     }
+
+    public function aggregates(): array
+    {
+        return ['company'];
+    }
 }

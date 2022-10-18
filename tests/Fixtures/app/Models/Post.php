@@ -19,7 +19,7 @@ class Post extends Model
      *
      * @var array
      */
-    protected $fillable = ['title', 'body', 'user_id'];
+    protected $fillable = ['title', 'body', 'user_id', 'stars'];
 
     /**
      * The attributes that should be cast to native types.
@@ -29,6 +29,7 @@ class Post extends Model
     protected $casts = [
         'meta' => 'array',
         'options' => 'array',
+        'stars' => 'float'
     ];
 
     /**

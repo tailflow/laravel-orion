@@ -9,7 +9,9 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 use JsonException;
+use Orion\Helpers\RequestHelper;
 use Orion\Http\Requests\Request;
 use RuntimeException;
 
@@ -41,6 +43,11 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
     private $intermediateMode;
 
     /**
+     * @var string $table
+     */
+    private $table;
+
+    /**
      * @inheritDoc
      */
     public function __construct(
@@ -69,17 +76,35 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
     {
         $actionMethod = $request->route()->getActionMethod();
 
-        if (!$this->intermediateMode && in_array($actionMethod, ['index', 'search', 'show'])) {
-            if ($actionMethod === 'search') {
-                $this->applyScopesToQuery($query, $request);
-                $this->applyFiltersToQuery($query, $request);
-                $this->applySearchingToQuery($query, $request);
-                $this->applySortingToQuery($query, $request);
+        if (!$this->intermediateMode) {
+            $this->applyAggregatesToQuery($query, $request);
+            $this->applyIncludesToQuery($query, $request);
+            if (in_array($actionMethod, ['index', 'search', 'show'])) {
+                if ($actionMethod === 'search') {
+                    $this->applyScopesToQuery($query, $request);
+                    $this->applyFiltersToQuery($query, $request);
+                    $this->applySearchingToQuery($query, $request);
+                    $this->applySortingToQuery($query, $request);
+                }
+                $this->applySoftDeletesToQuery($query, $request);
             }
-            $this->applySoftDeletesToQuery($query, $request);
         }
 
         return $query;
+    }
+
+    /**
+     * Force table for some operations.
+     *
+     * @param Builder|Relation|SoftDeletes $query
+     * @param Request $request
+     * @param array $includeDescriptors
+     * @return void
+     */
+    protected function usingTable($table, $callback) {
+        $this->table = $table;
+        $callback();
+        unset($this->table);
     }
 
     /**
@@ -315,8 +340,19 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
      */
     public function getQualifiedFieldName(string $field): string
     {
-        $table = (new $this->resourceModelClass)->getTable();
+        $table = $this->table ?? (new $this->resourceModelClass)->getTable();
         return "{$table}.{$field}";
+    }
+
+    /**
+     * Get the table from a relation.
+     *
+     * @param string $relation
+     * @return string
+     */
+    public function getTableNameFromRelation(string $relation):string
+    {
+        return (new $this->resourceModelClass)->$relation()->getModel()->getTable();
     }
 
     /**
@@ -468,5 +504,100 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
         }
 
         return true;
+    }
+
+
+    /**
+     * Apply eager loading of aggregates to the query.
+     *
+     * @param Builder|Relation|SoftDeletes $query
+     * @param Request $request
+     * @param array $aggregateDescriptors
+     * @return void
+     */
+    public function applyAggregatesToQuery($query, Request $request, array $aggregateDescriptors = []): void
+    {
+        if (!$aggregateDescriptors) {
+            $this->paramsValidator->validateAggregators($request);
+
+            $aggregateDescriptors = collect();
+            // Here we regroup query and post params on the same format
+            foreach (['count', 'min', 'max', 'avg', 'sum', 'exists'] as $aggregateFunction) {
+                $aggregateDescriptors = $aggregateDescriptors->merge(
+                    collect(explode(',', $request->query("with_$aggregateFunction", '')))
+                        ->filter()
+                        ->map(function($include) use ($aggregateFunction) {
+                            $explodedInclude = explode('.', $include);
+                            return ['relation' => $explodedInclude[0], 'field' => $explodedInclude[1] ?? '*', 'type' => $aggregateFunction];
+                        })->all()
+                );
+            }
+
+            $aggregateDescriptors = $aggregateDescriptors->merge($request->post('aggregates', []));
+        }
+
+        foreach ($aggregateDescriptors as $aggregateDescriptor) {
+            if ((float) app()->version() < 8.0) {
+                throw new RuntimeException(
+                    "Aggregate queries are only supported with Laravel 8 and later"
+                );
+            }
+
+            $query->withAggregate([$aggregateDescriptor['relation'] => function (Builder $aggregateQuery) use ($aggregateDescriptor, $request) {
+                $this->usingTable($this->getTableNameFromRelation($aggregateDescriptor['relation']), function () use ($request, $aggregateQuery, $aggregateDescriptor) {
+                    $this->applyFiltersToQuery($aggregateQuery, $request, $this->removeFieldPrefixFromFields($aggregateDescriptor['filters'] ?? [], $aggregateDescriptor['relation'].'.'));
+                });
+            }], $aggregateDescriptor['field'] ?? '*', $aggregateDescriptor['type']);
+        }
+    }
+
+
+
+
+    /**
+     * Apply eager loading relations to the query.
+     *
+     * @param Builder|Relation|SoftDeletes $query
+     * @param Request $request
+     * @param array $includeDescriptors
+     * @return void
+     */
+    public function applyIncludesToQuery($query, Request $request, array $includeDescriptors = []): void
+    {
+        if (!$includeDescriptors) {
+            $this->paramsValidator->validateIncludes($request);
+            // Here we regroup query and post params on the same format
+            $includeDescriptors =
+                collect(explode(',', $request->query('include', '')))
+                    ->filter()
+                    ->map(function($include) {
+                        return ['relation' => $include];
+                    })
+                    ->merge($request->post('includes', []));
+        }
+
+        foreach ($includeDescriptors as $includeDescriptor) {
+            $query->with([
+                $includeDescriptor['relation'] => function (Relation $includeQuery) use ($includeDescriptor, $request) {
+                    $this->usingTable($this->getTableNameFromRelation($includeDescriptor['relation']), function () use ($request, $includeQuery, $includeDescriptor) {
+                        $this->applyFiltersToQuery($includeQuery, $request, $this->removeFieldPrefixFromFields($includeDescriptor['filters'] ?? [], $includeDescriptor['relation'].'.'));
+                    });
+                }
+            ]);
+        }
+    }
+
+    protected function removeFieldPrefixFromFields(array $array, string $search) {
+        return collect($array)
+            ->transform(function ($item) use ($search) {
+                if (isset($item['nested'])) {
+                    $item['nested'] = $this->removeFieldPrefixFromFields($item['nested'], $search);
+                } else {
+                    $item['field'] = Str::replaceFirst($search, '', $item['field']);
+                }
+
+               return $item;
+            })
+            ->all();
     }
 }

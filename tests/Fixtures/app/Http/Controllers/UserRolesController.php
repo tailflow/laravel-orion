@@ -31,4 +31,9 @@ class UserRolesController extends RelationController
     {
         return ['users'];
     }
+
+    public function aggregates(): array
+    {
+        return ['users'];
+    }
 }

@@ -14,11 +14,13 @@ use Orion\Tests\Fixtures\App\Http\Controllers\TeamsController;
 use Orion\Tests\Fixtures\App\Http\Controllers\UserNotificationsController;
 use Orion\Tests\Fixtures\App\Http\Controllers\UserPostsController;
 use Orion\Tests\Fixtures\App\Http\Controllers\UserRolesController;
+use Orion\Tests\Fixtures\App\Http\Controllers\UsersController;
 
 Route::group(['as' => 'api.', 'prefix' => 'api'], function () {
     Orion::resource('teams', TeamsController::class);
     Orion::resource('posts', PostsController::class)->withSoftDeletes();
     Orion::resource('access_keys', AccessKeysController::class)->withSoftDeletes();
+    Orion::resource('users', UsersController::class);
 
     Orion::belongsToResource('posts', 'user', PostUserController::class);
     Orion::belongsToResource('posts', 'category', PostCategoryController::class)->withSoftDeletes();

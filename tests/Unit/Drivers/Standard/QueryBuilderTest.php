@@ -35,6 +35,8 @@ class QueryBuilderTest extends TestCase
         $queryBuilderMock->shouldReceive('applySearchingToQuery')->with($query, $request)->never();
         $queryBuilderMock->shouldReceive('applySortingToQuery')->with($query, $request)->never();
 
+        $queryBuilderMock->shouldReceive('applyIncludesToQuery')->with($query, $request)->once();
+        $queryBuilderMock->shouldReceive('applyAggregatesToQuery')->with($query, $request)->once();
         $queryBuilderMock->shouldReceive('applySoftDeletesToQuery')->with($query, $request)->once();
 
         $this->assertSame($query, $queryBuilderMock->buildQuery($query, $request));
@@ -58,6 +60,8 @@ class QueryBuilderTest extends TestCase
         $queryBuilderMock->shouldReceive('applySearchingToQuery')->with($query, $request)->once();
         $queryBuilderMock->shouldReceive('applySortingToQuery')->with($query, $request)->once();
         $queryBuilderMock->shouldReceive('applySoftDeletesToQuery')->with($query, $request)->once();
+        $queryBuilderMock->shouldReceive('applyIncludesToQuery')->with($query, $request)->once();
+        $queryBuilderMock->shouldReceive('applyAggregatesToQuery')->with($query, $request)->once();
 
         $this->assertSame($query, $queryBuilderMock->buildQuery($query, $request));
     }
@@ -80,6 +84,8 @@ class QueryBuilderTest extends TestCase
         $queryBuilderMock->shouldReceive('applySearchingToQuery')->with($query, $request)->never();
         $queryBuilderMock->shouldReceive('applySortingToQuery')->with($query, $request)->never();
         $queryBuilderMock->shouldReceive('applySoftDeletesToQuery')->with($query, $request)->once();
+        $queryBuilderMock->shouldReceive('applyIncludesToQuery')->with($query, $request)->once();
+        $queryBuilderMock->shouldReceive('applyAggregatesToQuery')->with($query, $request)->once();
 
         $this->assertSame($query, $queryBuilderMock->buildQuery($query, $request));
     }

@@ -174,8 +174,7 @@ trait HandlesRelationStandardOperations
         Model $parentEntity,
         array $requestedRelations
     ): Relation {
-        return $this->relationQueryBuilder->buildQuery($this->newRelationQuery($parentEntity), $request)
-            ->with($requestedRelations);
+        return $this->relationQueryBuilder->buildQuery($this->newRelationQuery($parentEntity), $request);
     }
 
     /**
@@ -290,7 +289,7 @@ trait HandlesRelationStandardOperations
             $request->get('pivot', [])
         );
 
-        $entity = $this->newRelationQuery($parentEntity)->with($requestedRelations)->where(
+        $entity = $this->newRelationQuery($parentEntity)->where(
             $this->resolveQualifiedKeyName(),
             $entity->{$this->keyName()}
         )->firstOrFail();
@@ -644,7 +643,7 @@ trait HandlesRelationStandardOperations
             $request->get('pivot', [])
         );
 
-        $entity = $this->newRelationQuery($parentEntity)->with($requestedRelations)->where(
+        $entity = $this->newRelationQuery($parentEntity)->where(
             $this->resolveQualifiedKeyName(),
             $entity->{$this->keyName()}
         )->firstOrFail();
@@ -832,7 +831,7 @@ trait HandlesRelationStandardOperations
         if (!$forceDeletes) {
             $this->performDestroy($entity);
             if ($softDeletes) {
-                $entity = $this->newRelationQuery($parentEntity)->withTrashed()->with($requestedRelations)->where(
+                $entity = $this->newRelationQuery($parentEntity)->withTrashed()->where(
                     $this->resolveQualifiedKeyName(),
                     $entity->{$this->keyName()}
                 )->firstOrFail();
@@ -1014,7 +1013,7 @@ trait HandlesRelationStandardOperations
 
         $this->performRestore($entity);
 
-        $entity = $this->newRelationQuery($parentEntity)->with($requestedRelations)->where(
+        $entity = $this->newRelationQuery($parentEntity)->where(
             $this->resolveQualifiedKeyName(),
             $entity->{$this->keyName()}
         )->firstOrFail();

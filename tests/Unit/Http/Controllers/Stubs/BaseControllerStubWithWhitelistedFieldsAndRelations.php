@@ -46,6 +46,11 @@ class BaseControllerStubWithWhitelistedFieldsAndRelations extends BaseController
         return ['testRelation'];
     }
 
+    public function aggregates(): array
+    {
+        return ['test_aggregatable_field'];
+    }
+
     public function alwaysIncludes(): array
     {
         return ['testAlwaysIncludedRelation'];

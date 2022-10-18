@@ -112,6 +112,8 @@ abstract class BaseController extends \Illuminate\Routing\Controller
                 'exposedScopes' => $this->exposedScopes(),
                 'filterableBy' => $this->filterableBy(),
                 'sortableBy' => $this->sortableBy(),
+                'aggregatableBy' => $this->aggregates(),
+                'includableBy' => $this->includes(),
             ]
         );
         $this->relationsResolver = App::makeWith(
@@ -178,6 +180,16 @@ abstract class BaseController extends \Illuminate\Routing\Controller
      * @return array
      */
     public function filterableBy(): array
+    {
+        return [];
+    }
+
+    /**
+     * The relations that are allowed to be aggregated with a resource.
+     *
+     * @return array
+     */
+    public function aggregates(): array
     {
         return [];
     }
