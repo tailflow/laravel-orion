@@ -55,7 +55,7 @@ class HasManyRelationStandardUpdateOperationsTest extends TestCase
     {
         $accessKey = factory(AccessKey::class)->create();
         $accessKeyScope = factory(AccessKeyScope::class)->create(['access_key_id' => $accessKey->id]);
-        $payload = ['scope' => 'test updated'];
+        $payload = ['description' => 'test updated'];
 
         Gate::policy(AccessKeyScope::class, GreenPolicy::class);
 

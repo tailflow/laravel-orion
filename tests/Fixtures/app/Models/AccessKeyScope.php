@@ -18,7 +18,8 @@ class AccessKeyScope extends Model
      * @var array
      */
     protected $fillable = [
-        'scope'
+        'scope',
+        'description',
     ];
 
     public function accessKey()
