@@ -3,10 +3,8 @@
 namespace Orion\Drivers\Standard;
 
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\Rule;
 use Orion\Exceptions\MaxNestedDepthExceededException;
 use Orion\Helpers\ArrayHelper;
-use Orion\Helpers\RequestHelper;
 use Orion\Http\Requests\Request;
 use Orion\Http\Rules\WhitelistedField;
 use Orion\Http\Rules\WhitelistedQueryFields;
@@ -41,8 +39,13 @@ class ParamsValidator implements \Orion\Contracts\ParamsValidator
     /**
      * @inheritDoc
      */
-    public function __construct(array $exposedScopes = [], array $filterableBy = [], array $sortableBy = [], array $aggregatableBy = [], array $includableBy = [])
-    {
+    public function __construct(
+        array $exposedScopes = [],
+        array $filterableBy = [],
+        array $sortableBy = [],
+        array $aggregatableBy = [],
+        array $includableBy = []
+    ) {
         $this->exposedScopes = $exposedScopes;
         $this->filterableBy = $filterableBy;
         $this->sortableBy = $sortableBy;
@@ -72,58 +75,6 @@ class ParamsValidator implements \Orion\Contracts\ParamsValidator
                 'filters' => ['sometimes', 'array'],
             ], $this->getNestedRules('filters', $depth))
         )->validate();
-    }
-
-    /**
-     * @throws MaxNestedDepthExceededException
-     */
-    protected function nestedFiltersDepth($array, $modifier = 0) {
-        $depth = ArrayHelper::depth($array);
-        $configMaxNestedDepth = config('orion.search.max_nested_depth', 1);
-
-        // Here we calculate the real nested filters depth
-        $depth = floor($depth / 2);
-
-        if ($depth + $modifier > $configMaxNestedDepth) {
-            throw new MaxNestedDepthExceededException(422, __('Max nested depth :depth is exceeded', ['depth' => $configMaxNestedDepth]));
-        }
-
-        return $depth;
-    }
-
-    /**
-     * @param string $prefix
-     * @param int $maxDepth
-     * @param array $filterableBy
-     * @param array $rules
-     * @param int $currentDepth
-     * @return array
-     */
-    protected function getNestedRules(string $prefix, int $maxDepth, array $rules = [], int $currentDepth = 1): array
-    {
-        $rules = array_merge($rules, [
-            $prefix.'.*.type' => ['sometimes', 'in:and,or'],
-            $prefix.'.*.field' => [
-                "required_without:{$prefix}.*.nested",
-                'regex:/^[\w.\_\-\>]+$/',
-                new WhitelistedField($this->filterableBy),
-            ],
-            $prefix.'.*.operator' => [
-                'sometimes',
-                'in:<,<=,>,>=,=,!=,like,not like,ilike,not ilike,in,not in,all in,any in',
-            ],
-            $prefix.'.*.value' => ['nullable'],
-            $prefix.'.*.nested' => ['sometimes', 'array',],
-        ]);
-
-        if ($maxDepth >= $currentDepth) {
-            $rules = array_merge(
-                $rules,
-                $this->getNestedRules("{$prefix}.*.nested", $maxDepth, $rules, ++$currentDepth)
-            );
-        }
-
-        return $rules;
     }
 
     public function validateSort(Request $request): void
@@ -156,10 +107,10 @@ class ParamsValidator implements \Orion\Contracts\ParamsValidator
 
     public function validateAggregators(Request $request): void
     {
-        $depth = $this->nestedFiltersDepth($request->post('aggregates', []), -1);
+        $depth = $this->nestedFiltersDepth($request->input('aggregates', []), -1);
 
         Validator::make(
-            $request->post(),
+            $request->all(),
             array_merge(
                 [
                     'aggregates' => ['sometimes', 'array'],
@@ -170,11 +121,11 @@ class ParamsValidator implements \Orion\Contracts\ParamsValidator
                     'aggregates.*.field' => [
                         (float) app()->version() >= 8.32 ? 'prohibited_if:aggregate.*.type,count' : '',
                         (float) app()->version() >= 8.32 ? 'prohibited_if:aggregate.*.type,exists' : '',
-                        'required_if:aggregate.*.type,avg,sum,min,max'
+                        'required_if:aggregate.*.type,avg,sum,min,max',
                     ],
                     'aggregates.*.type' => [
                         'required',
-                        'in:count,min,max,avg,sum,exists'
+                        'in:count,min,max,avg,sum,exists',
                     ],
                     'aggregates.*.filters' => ['sometimes', 'array'],
                 ],
@@ -186,35 +137,65 @@ class ParamsValidator implements \Orion\Contracts\ParamsValidator
         Validator::make(
             [
                 'aggregates' =>
-                    collect($request->post('aggregates', []))
+                    collect($request->input('aggregates', []))
                         ->map(function ($aggregate) {
                             return ['field' => isset($aggregate['field']) ? "{$aggregate['relation']}.{$aggregate['field']}" : $aggregate['relation']];
-                        })->all()
+                        })->all(),
             ],
             [
-                'aggregates.*.field' => new WhitelistedQueryFields($this->aggregatableBy)
+                'aggregates.*.field' => new WhitelistedField($this->aggregatableBy),
             ]
         )->validate();
 
         Validator::make(
             $request->query(),
             [
-                'with_count' => ['sometimes', 'string', 'not_regex:/\\./', new WhitelistedQueryFields($this->aggregatableBy)],
-                'with_exists' => ['sometimes', 'string', 'not_regex:/\\./', new WhitelistedQueryFields($this->aggregatableBy)],
-                'with_min' => ['sometimes', 'string', 'regex:/^[a-z\d,]*\.+[a-z\d,]*$/', new WhitelistedQueryFields($this->aggregatableBy)],
-                'with_max' => ['sometimes', 'string', 'regex:/^[a-z\d,]*\.+[a-z\d,]*$/', new WhitelistedQueryFields($this->aggregatableBy)],
-                'with_avg' => ['sometimes', 'string', 'regex:/^[a-z\d,]*\.+[a-z\d,]*$/', new WhitelistedQueryFields($this->aggregatableBy)],
-                'with_sum' => ['sometimes', 'string', 'regex:/^[a-z\d,]*\.+[a-z\d,]*$/', new WhitelistedQueryFields($this->aggregatableBy)],
+                'with_count' => [
+                    'sometimes',
+                    'string',
+                    'not_regex:/\\./',
+                    new WhitelistedQueryFields($this->aggregatableBy),
+                ],
+                'with_exists' => [
+                    'sometimes',
+                    'string',
+                    'not_regex:/\\./',
+                    new WhitelistedQueryFields($this->aggregatableBy),
+                ],
+                'with_min' => [
+                    'sometimes',
+                    'string',
+                    'regex:/^[a-z\d,]*\.+[a-z\d,]*$/',
+                    new WhitelistedQueryFields($this->aggregatableBy),
+                ],
+                'with_max' => [
+                    'sometimes',
+                    'string',
+                    'regex:/^[a-z\d,]*\.+[a-z\d,]*$/',
+                    new WhitelistedQueryFields($this->aggregatableBy),
+                ],
+                'with_avg' => [
+                    'sometimes',
+                    'string',
+                    'regex:/^[a-z\d,]*\.+[a-z\d,]*$/',
+                    new WhitelistedQueryFields($this->aggregatableBy),
+                ],
+                'with_sum' => [
+                    'sometimes',
+                    'string',
+                    'regex:/^[a-z\d,]*\.+[a-z\d,]*$/',
+                    new WhitelistedQueryFields($this->aggregatableBy),
+                ],
             ]
         )->validate();
     }
 
     public function validateIncludes(Request $request): void
     {
-        $depth = $this->nestedFiltersDepth($request->post('includes', []), -1);
+        $depth = $this->nestedFiltersDepth($request->input('includes', []), -1);
 
         Validator::make(
-            $request->post(),
+            $request->all(),
             array_merge(
                 [
                     'includes' => ['sometimes', 'array'],
@@ -235,5 +216,60 @@ class ParamsValidator implements \Orion\Contracts\ParamsValidator
                 'includes' => ['sometimes', 'string', new WhitelistedQueryFields($this->includableBy)],
             ]
         )->validate();
+    }
+
+    /**
+     * @throws MaxNestedDepthExceededException
+     */
+    protected function nestedFiltersDepth($array, $modifier = 0)
+    {
+        $depth = ArrayHelper::depth($array);
+        $configMaxNestedDepth = config('orion.search.max_nested_depth', 1);
+
+        // Here we calculate the real nested filters depth
+        $depth = floor($depth / 2);
+
+        if ($depth + $modifier > $configMaxNestedDepth) {
+            throw new MaxNestedDepthExceededException(
+                422,
+                __('Max nested depth :depth is exceeded', ['depth' => $configMaxNestedDepth])
+            );
+        }
+
+        return $depth;
+    }
+
+    /**
+     * @param string $prefix
+     * @param int $maxDepth
+     * @param array $rules
+     * @param int $currentDepth
+     * @return array
+     */
+    protected function getNestedRules(string $prefix, int $maxDepth, array $rules = [], int $currentDepth = 1): array
+    {
+        $rules = array_merge($rules, [
+            $prefix.'.*.type' => ['sometimes', 'in:and,or'],
+            $prefix.'.*.field' => [
+                "required_without:{$prefix}.*.nested",
+                'regex:/^[\w.\_\-\>]+$/',
+                new WhitelistedField($this->filterableBy),
+            ],
+            $prefix.'.*.operator' => [
+                'sometimes',
+                'in:<,<=,>,>=,=,!=,like,not like,ilike,not ilike,in,not in,all in,any in',
+            ],
+            $prefix.'.*.value' => ['nullable'],
+            $prefix.'.*.nested' => ['sometimes', 'array',],
+        ]);
+
+        if ($maxDepth >= $currentDepth) {
+            $rules = array_merge(
+                $rules,
+                $this->getNestedRules("{$prefix}.*.nested", $maxDepth, $rules, ++$currentDepth)
+            );
+        }
+
+        return $rules;
     }
 }

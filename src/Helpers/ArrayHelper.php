@@ -2,7 +2,7 @@
 
 namespace Orion\Helpers;
 
-class ArrayHelper extends Helper
+class ArrayHelper
 {
     /**
      * Get the max depth of an array
