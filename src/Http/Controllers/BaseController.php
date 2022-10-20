@@ -90,11 +90,6 @@ abstract class BaseController extends \Illuminate\Routing\Controller
     protected $queryBuilder;
 
     /**
-     * @var int $paginationLimit
-     */
-    protected $paginationLimit = 500;
-
-    /**
      * Controller constructor.
      *
      * @throws BindingException
@@ -132,7 +127,7 @@ abstract class BaseController extends \Illuminate\Routing\Controller
             Paginator::class,
             [
                 'defaultLimit' => $this->limit(),
-                'maxLimit' => $this->paginationLimit
+                'maxLimit' => $this->maxLimit()
             ]
         );
         $this->searchBuilder = App::makeWith(
@@ -249,6 +244,16 @@ abstract class BaseController extends \Illuminate\Routing\Controller
     public function limit(): int
     {
         return 15;
+    }
+
+    /**
+     * Max pagination limit.
+     *
+     * @return int
+     */
+    public function maxLimit(): int
+    {
+        return 500;
     }
 
     /**
