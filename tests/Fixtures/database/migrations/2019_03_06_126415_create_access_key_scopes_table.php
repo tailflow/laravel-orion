@@ -16,6 +16,7 @@ class CreateAccessKeyScopesTable extends Migration
         Schema::create('access_key_scopes', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('scope');
+            $table->string('description')->nullable();
             $table->unsignedBigInteger('access_key_id');
             $table->foreign('access_key_id')->references('id')->on('access_keys')->onDelete('cascade');
             $table->timestamps();

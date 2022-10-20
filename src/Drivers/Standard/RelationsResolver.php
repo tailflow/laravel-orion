@@ -10,7 +10,6 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
-use Orion\Helpers\RequestHelper;
 use Orion\Http\Requests\Request;
 
 class RelationsResolver implements \Orion\Contracts\RelationsResolver
@@ -116,7 +115,7 @@ class RelationsResolver implements \Orion\Contracts\RelationsResolver
      */
     public function relationForeignKeyFromRelationInstance(Relation $relationInstance): string
     {
-        $laravelVersion = (float)app()->version();
+        $laravelVersion = (float) app()->version();
 
         return $laravelVersion > 5.7 || get_class(
             $relationInstance
@@ -135,7 +134,7 @@ class RelationsResolver implements \Orion\Contracts\RelationsResolver
         switch (get_class($relationInstance)) {
             case HasOne::class:
             case MorphOne::class:
-                return $relationInstance->getParent()->getTable() . '.' . $relationInstance->getLocalKeyName();
+                return $relationInstance->getParent()->getTable().'.'.$relationInstance->getLocalKeyName();
             case BelongsTo::class:
             case MorphTo::class:
                 return $relationInstance->getQualifiedOwnerKeyName();

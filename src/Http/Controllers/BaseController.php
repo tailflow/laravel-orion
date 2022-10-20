@@ -578,6 +578,7 @@ abstract class BaseController extends \Illuminate\Routing\Controller
     protected function keyName(): string
     {
         $resourceModelClass = $this->resolveResourceModelClass();
+
         return (new $resourceModelClass)->getKeyName();
     }
 

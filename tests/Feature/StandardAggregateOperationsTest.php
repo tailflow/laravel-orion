@@ -2,11 +2,8 @@
 
 namespace Orion\Tests\Feature;
 
-use Carbon\Carbon;
 use Illuminate\Support\Facades\Gate;
-use Orion\Tests\Fixtures\App\Models\Company;
 use Orion\Tests\Fixtures\App\Models\Post;
-use Orion\Tests\Fixtures\App\Models\Team;
 use Orion\Tests\Fixtures\App\Models\User;
 use Orion\Tests\Fixtures\App\Policies\GreenPolicy;
 

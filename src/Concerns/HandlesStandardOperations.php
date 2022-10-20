@@ -196,7 +196,9 @@ trait HandlesStandardOperations
             return $beforeStoreFreshResult;
         }
 
-        $entity = $entity->fresh($requestedRelations);
+        $query = $this->buildStoreFetchQuery($request, $requestedRelations);
+
+        $entity = $this->runStoreFetchQuery($request, $query, $entity->{$this->keyName()});
         $entity->wasRecentlyCreated = true;
 
         $afterSaveHookResult = $this->afterSave($request, $entity);
@@ -249,6 +251,31 @@ trait HandlesStandardOperations
     {
         $this->performFill($request, $entity, $attributes);
         $entity->save();
+    }
+
+    /**
+     * Builds Eloquent query for fetching entity in store method.
+     *
+     * @param Request $request
+     * @param array $requestedRelations
+     * @return Builder
+     */
+    protected function buildStoreFetchQuery(Request $request, array $requestedRelations): Builder
+    {
+        return $this->buildFetchQuery($request, $requestedRelations);
+    }
+
+    /**
+     * Runs the given query for fetching entity in store method.
+     *
+     * @param Request $request
+     * @param Builder $query
+     * @param int|string $key
+     * @return Model
+     */
+    protected function runStoreFetchQuery(Request $request, Builder $query, $key): Model
+    {
+        return $this->runFetchQuery($request, $query, $key);
     }
 
     /**
@@ -443,7 +470,7 @@ trait HandlesStandardOperations
             return $beforeUpdateFreshResult;
         }
 
-        $entity = $entity->fresh($requestedRelations);
+        $entity = $this->runUpdateFetchQuery($request, $query, $key);
 
         $afterSaveHookResult = $this->afterSave($request, $entity);
         if ($this->hookResponds($afterSaveHookResult)) {
@@ -585,13 +612,15 @@ trait HandlesStandardOperations
 
         if (!$forceDeletes) {
             $this->performDestroy($entity);
+
             if ($softDeletes) {
                 $beforeDestroyFreshResult = $this->beforeDestroyFresh($request, $entity);
+
                 if ($this->hookResponds($beforeDestroyFreshResult)) {
                     return $beforeDestroyFreshResult;
                 }
 
-                $entity = $entity->fresh($requestedRelations);
+                $entity = $this->runDestroyFetchQuery($request, $query, $key);
             }
         } else {
             $this->performForceDestroy($entity);
@@ -746,7 +775,7 @@ trait HandlesStandardOperations
             return $beforeHookResult;
         }
 
-        $entity = $entity->fresh($requestedRelations);
+        $entity = $this->runRestoreFetchQuery($request, $query, $key);
 
         $afterHookResult = $this->afterRestore($request, $entity);
         if ($this->hookResponds($afterHookResult)) {
