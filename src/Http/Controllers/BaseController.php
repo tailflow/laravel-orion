@@ -127,6 +127,7 @@ abstract class BaseController extends \Illuminate\Routing\Controller
             Paginator::class,
             [
                 'defaultLimit' => $this->limit(),
+                'maxLimit' => $this->maxLimit()
             ]
         );
         $this->searchBuilder = App::makeWith(
@@ -243,6 +244,16 @@ abstract class BaseController extends \Illuminate\Routing\Controller
     public function limit(): int
     {
         return 15;
+    }
+
+    /**
+     * Max pagination limit.
+     *
+     * @return int
+     */
+    public function maxLimit(): int
+    {
+        return 500;
     }
 
     /**
