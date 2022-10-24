@@ -249,11 +249,11 @@ abstract class BaseController extends \Illuminate\Routing\Controller
     /**
      * Max pagination limit.
      *
-     * @return int
+     * @return int?
      */
-    public function maxLimit(): int
+    public function maxLimit(): ?int
     {
-        return 500;
+        return null;
     }
 
     /**

@@ -41,7 +41,7 @@ class BaseControllerTest extends TestCase
         $fakeComponentsResolver = new ComponentsResolver(Post::class);
         $fakeParamsValidator = new ParamsValidator();
         $fakeRelationsResolver = new RelationsResolver([], []);
-        $fakePaginator = new Paginator(15, 500);
+        $fakePaginator = new Paginator(15, null);
         $fakeSearchBuilder = new SearchBuilder([]);
         $fakeQueryBuilder = new QueryBuilder(Post::class, $fakeParamsValidator, $fakeRelationsResolver, $fakeSearchBuilder);
 
@@ -75,7 +75,7 @@ class BaseControllerTest extends TestCase
             \Orion\Contracts\Paginator::class,
             [
                 'defaultLimit' => 15,
-                'maxLimit' => 500,
+                'maxLimit' => null,
             ]
         )->once()->andReturn($fakePaginator);
 
