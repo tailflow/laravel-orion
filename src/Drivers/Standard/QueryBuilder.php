@@ -94,21 +94,6 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
     }
 
     /**
-     * Force table for some operations.
-     *
-     * @param Builder|Relation|SoftDeletes $query
-     * @param Request $request
-     * @param array $includeDescriptors
-     * @return void
-     */
-    protected function usingTable($table, $callback)
-    {
-        $this->table = $table;
-        $callback();
-        unset($this->table);
-    }
-
-    /**
      * Apply scopes to the given query builder based on the query parameters.
      *
      * @param Builder|Relation $query
@@ -348,14 +333,14 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
     }
 
     /**
-     * Get the table from a relation.
+     * Get the model class from a given relation.
      *
      * @param string $relation
      * @return string
      */
-    public function getTableNameFromRelation(string $relation): string
+    public function getRelationModelClass(string $relation): string
     {
-        return (new $this->resourceModelClass)->$relation()->getModel()->getTable();
+        return get_class((new $this->resourceModelClass)->$relation()->getModel());
     }
 
     /**
@@ -555,18 +540,16 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
                     $aggregateDescriptor,
                     $request
                 ) {
-                    $this->usingTable(
-                        $this->getTableNameFromRelation($aggregateDescriptor['relation']),
-                        function () use ($request, $aggregateQuery, $aggregateDescriptor) {
-                            $this->applyFiltersToQuery(
-                                $aggregateQuery,
-                                $request,
-                                $this->removeFieldPrefixFromFields(
-                                    $aggregateDescriptor['filters'] ?? [],
-                                    $aggregateDescriptor['relation'].'.'
-                                )
-                            );
-                        }
+                    $relationModelClass = $this->getRelationModelClass($aggregateDescriptor['relation']);
+                    $relationQueryBuilder = $this->clone($relationModelClass);
+
+                    $relationQueryBuilder->applyFiltersToQuery(
+                        $aggregateQuery,
+                        $request,
+                        $this->removeFieldPrefixFromFields(
+                            $aggregateDescriptor['filters'] ?? [],
+                            $aggregateDescriptor['relation'].'.'
+                        )
                     );
                 },
             ], $aggregateDescriptor['field'] ?? '*', $aggregateDescriptor['type']);
@@ -599,22 +582,27 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
         foreach ($includeDescriptors as $includeDescriptor) {
             $query->with([
                 $includeDescriptor['relation'] => function (Relation $includeQuery) use ($includeDescriptor, $request) {
-                    $this->usingTable(
-                        $this->getTableNameFromRelation($includeDescriptor['relation']),
-                        function () use ($request, $includeQuery, $includeDescriptor) {
-                            $this->applyFiltersToQuery(
-                                $includeQuery,
-                                $request,
-                                $this->removeFieldPrefixFromFields(
-                                    $includeDescriptor['filters'] ?? [],
-                                    $includeDescriptor['relation'].'.'
-                                )
-                            );
-                        }
+                    $relationModelClass = $this->getRelationModelClass($includeDescriptor['relation']);
+                    $relationQueryBuilder = $this->clone($relationModelClass);
+
+                    $relationQueryBuilder->applyFiltersToQuery(
+                        $includeQuery,
+                        $request,
+                        $this->removeFieldPrefixFromFields(
+                            $includeDescriptor['filters'] ?? [],
+                            $includeDescriptor['relation'].'.'
+                        )
                     );
                 },
             ]);
         }
+    }
+
+    public function clone(string $resourceModelClass): self
+    {
+        return new static(
+            $resourceModelClass, $this->paramsValidator, $this->relationsResolver, $this->searchBuilder
+        );
     }
 
     protected function removeFieldPrefixFromFields(array $array, string $search)
