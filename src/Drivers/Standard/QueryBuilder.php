@@ -340,7 +340,16 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
      */
     public function getRelationModelClass(string $relation): string
     {
-        return get_class((new $this->resourceModelClass)->$relation()->getModel());
+        $relations = collect(explode('.', $relation));
+        $relation = $relations[0];
+
+        $resourceModel = (new $this->resourceModelClass)->$relation()->getModel();
+
+        foreach ($relations->skip(1) as $nestedRelation) {
+            $resourceModel = $resourceModel->$nestedRelation()->getModel();
+        }
+
+        return get_class($resourceModel);
     }
 
     /**
