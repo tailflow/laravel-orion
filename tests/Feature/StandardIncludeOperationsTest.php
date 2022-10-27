@@ -2,11 +2,8 @@
 
 namespace Orion\Tests\Feature;
 
-use Carbon\Carbon;
 use Illuminate\Support\Facades\Gate;
-use Orion\Tests\Fixtures\App\Models\Company;
 use Orion\Tests\Fixtures\App\Models\Post;
-use Orion\Tests\Fixtures\App\Models\Team;
 use Orion\Tests\Fixtures\App\Models\User;
 use Orion\Tests\Fixtures\App\Policies\GreenPolicy;
 
@@ -27,8 +24,8 @@ class StandardIncludeOperationsTest extends TestCase
             '/api/users/search',
             [
                 'includes' => [
-                    ['relation' => 'posts']
-                ]
+                    ['relation' => 'posts'],
+                ],
             ]
         );
 
@@ -58,16 +55,58 @@ class StandardIncludeOperationsTest extends TestCase
                     [
                         'relation' => 'posts',
                         'filters' => [
-                            ['field' => 'posts.stars', 'operator' => '>', 'value' => 3]
-                        ]
-                    ]
-                ]
+                            ['field' => 'posts.stars', 'operator' => '>', 'value' => 3],
+                        ],
+                    ],
+                ],
             ]
         );
 
         $this->assertResourcesPaginated(
             $response,
-            $this->makePaginator([$user->load(['posts' => function($query) {$query->where('stars', '>', 3);}])->toArray()], 'users/search'),
+            $this->makePaginator([
+                $user->load([
+                    'posts' => function ($query) {
+                        $query->where('stars', '>', 3);
+                    },
+                ])->toArray(),
+            ], 'users/search'),
+            [],
+            false
+        );
+    }
+
+    /** @test */
+    public function ensuring_root_level_filters_are_not_applied_on_includes(): void
+    {
+        /** @var User $user */
+        $user = User::query()->first();
+        $user->name = 'John Doe';
+        $user->save();
+
+        factory(Post::class)->create(['stars' => 3, 'user_id' => $user->id])->fresh();
+        factory(Post::class)->create(['stars' => 4, 'user_id' => $user->id])->fresh();
+        factory(Post::class)->create(['stars' => 5])->fresh();
+
+        Gate::policy(User::class, GreenPolicy::class);
+
+        $response = $this->post(
+            '/api/users/search',
+            [
+                'filters' => [
+                    ['field' => 'name', 'operator' => '=', 'value' => 'John Doe'],
+                ],
+                'includes' => [
+                    [
+                        'relation' => 'posts',
+                    ],
+                ],
+            ]
+        );
+
+        $this->assertResourcesPaginated(
+            $response,
+            $this->makePaginator([$user->load(['posts'])->toArray(),], 'users/search'),
             [],
             false
         );
@@ -89,8 +128,8 @@ class StandardIncludeOperationsTest extends TestCase
             '/api/users/search',
             [
                 'includes' => [
-                    ['relation' => 'unauthorized']
-                ]
+                    ['relation' => 'unauthorized'],
+                ],
             ]
         );
 
@@ -116,10 +155,10 @@ class StandardIncludeOperationsTest extends TestCase
                     [
                         'relation' => 'posts',
                         'filters' => [
-                            ['field' => 'unauthorized', 'operator' => '>', 'value' => 3]
-                        ]
-                    ]
-                ]
+                            ['field' => 'unauthorized', 'operator' => '>', 'value' => 3],
+                        ],
+                    ],
+                ],
             ]
         );
 

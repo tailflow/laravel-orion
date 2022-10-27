@@ -119,8 +119,9 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
      */
     public function applyFiltersToQuery($query, Request $request, array $filterDescriptors = []): void
     {
-        if (!$filterDescriptors) {
+        if (!$filterDescriptors && !$this->intermediateMode) {
             $this->paramsValidator->validateFilters($request);
+
             $filterDescriptors = $request->get('filters', []);
         }
 
@@ -610,7 +611,7 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
     public function clone(string $resourceModelClass): self
     {
         return new static(
-            $resourceModelClass, $this->paramsValidator, $this->relationsResolver, $this->searchBuilder
+            $resourceModelClass, $this->paramsValidator, $this->relationsResolver, $this->searchBuilder, true
         );
     }
 

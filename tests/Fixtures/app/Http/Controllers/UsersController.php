@@ -23,6 +23,6 @@ class UsersController extends Controller
 
     public function filterableBy(): array
     {
-        return ['posts.stars'];
+        return ['name','posts.stars'];
     }
 }
