@@ -339,14 +339,17 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
      * @param string $relation
      * @return string
      */
-    public function getRelationModelClass(string $relation): string
+    public function getRelationModelClass(string $relation): ?string
     {
         $relations = collect(explode('.', $relation));
-        $relation = $relations[0];
 
-        $resourceModel = (new $this->resourceModelClass)->$relation()->getModel();
+        $resourceModel = (new $this->resourceModelClass);
 
-        foreach ($relations->skip(1) as $nestedRelation) {
+        foreach ($relations as $nestedRelation) {
+            if (!method_exists($resourceModel, $nestedRelation)) {
+                return null;
+            }
+
             $resourceModel = $resourceModel->$nestedRelation()->getModel();
         }
 
@@ -545,12 +548,16 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
                 );
             }
 
+            if (!$relationModelClass = $this->getRelationModelClass($aggregateDescriptor['relation'])) {
+                continue;
+            }
+
             $query->withAggregate([
                 $aggregateDescriptor['relation'] => function (Builder $aggregateQuery) use (
                     $aggregateDescriptor,
-                    $request
+                    $request,
+                    $relationModelClass
                 ) {
-                    $relationModelClass = $this->getRelationModelClass($aggregateDescriptor['relation']);
                     $relationQueryBuilder = $this->clone($relationModelClass);
 
                     $relationQueryBuilder->applyFiltersToQuery(
@@ -590,9 +597,16 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
         }
 
         foreach ($includeDescriptors as $includeDescriptor) {
+            if (!$relationModelClass = $this->getRelationModelClass($includeDescriptor['relation'])) {
+                continue;
+            }
+
             $query->with([
-                $includeDescriptor['relation'] => function (Relation $includeQuery) use ($includeDescriptor, $request) {
-                    $relationModelClass = $this->getRelationModelClass($includeDescriptor['relation']);
+                $includeDescriptor['relation'] => function (Relation $includeQuery) use (
+                    $includeDescriptor,
+                    $request,
+                    $relationModelClass
+                ) {
                     $relationQueryBuilder = $this->clone($relationModelClass);
 
                     $relationQueryBuilder->applyFiltersToQuery(

@@ -120,4 +120,16 @@ class StandardShowOperationsTest extends TestCase
 
         $this->assertResourceShown($response, $post->fresh('user.roles')->toArray());
     }
+
+    /** @test */
+    public function getting_a_single_resource_with_nested_non_existing_included_relation(): void
+    {
+        $post = factory(Post::class)->create(['user_id' => factory(User::class)->create()->id]);
+
+        Gate::policy(Post::class, GreenPolicy::class);
+
+        $response = $this->get("/api/posts/{$post->id}?include=image.non-existing-relation");
+
+        $this->assertResourceShown($response, $post->fresh()->toArray());
+    }
 }
