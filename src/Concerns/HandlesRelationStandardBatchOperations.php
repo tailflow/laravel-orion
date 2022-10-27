@@ -60,8 +60,6 @@ trait HandlesRelationStandardBatchOperations
 
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
 
-        $entityQuery = $this->buildStoreFetchQuery($request, $parentEntity, $requestedRelations);
-
         foreach ($resources as $resource) {
             /** @var Model $entity */
             $entity = new $resourceModelClass;
@@ -77,12 +75,16 @@ trait HandlesRelationStandardBatchOperations
                 Arr::get($resource, 'pivot', [])
             );
 
+            $entityQuery = $this->buildStoreFetchQuery(
+                $request, $parentEntity, $requestedRelations
+            );
             $entity = $this->runStoreFetchQuery(
                 $request,
                 $entityQuery,
                 $parentEntity,
                 $entity->{$this->keyName()}
             );
+
             $entity->wasRecentlyCreated = true;
 
             $entity = $this->cleanupEntity($entity);
@@ -198,8 +200,6 @@ trait HandlesRelationStandardBatchOperations
         $query = $this->buildBatchUpdateFetchQuery($request, $parentEntity, $requestedRelations);
         $entities = $this->runBatchUpdateFetchQuery($request, $query, $parentEntity);
 
-        $entityQuery = $this->buildUpdateFetchQuery($request, $parentEntity, $requestedRelations);
-
         foreach ($entities as $entity) {
             /** @var Model $entity */
             $this->authorize($this->resolveAbility('update'), [$entity, $parentEntity]);
@@ -219,6 +219,9 @@ trait HandlesRelationStandardBatchOperations
                 Arr::get($resource, 'pivot', [])
             );
 
+            $entityQuery = $this->buildUpdateFetchQuery(
+                $request, $parentEntity, $requestedRelations
+            );
             $entity = $this->runUpdateFetchQuery(
                 $request, $entityQuery, $parentEntity, $entity->{$this->keyName()}
             );
@@ -400,8 +403,6 @@ trait HandlesRelationStandardBatchOperations
         $query = $this->buildBatchDestroyFetchQuery($request, $parentEntity, $requestedRelations, $softDeletes);
         $entities = $this->runBatchDestroyFetchQuery($request, $query, $parentEntity);
 
-        $entityQuery = $this->buildStoreFetchQuery($request, $parentEntity, $requestedRelations);
-
         foreach ($entities as $entity) {
             /** @var Model $entity */
             $this->authorize($this->resolveAbility($forceDeletes ? 'forceDelete' : 'delete'), [$entity, $parentEntity]);
@@ -412,6 +413,9 @@ trait HandlesRelationStandardBatchOperations
                 $this->performDestroy($entity);
 
                 if ($softDeletes) {
+                    $entityQuery = $this->buildDestroyFetchQuery(
+                        $request, $parentEntity, $requestedRelations, $softDeletes
+                    );
                     $entity = $this->runDestroyFetchQuery(
                         $request, $entityQuery, $parentEntity, $entity->{$this->keyName()}
                     );
@@ -569,8 +573,6 @@ trait HandlesRelationStandardBatchOperations
         $query = $this->buildBatchRestoreFetchQuery($request, $parentEntity, $requestedRelations);
         $entities = $this->runBatchRestoreFetchQuery($request, $query, $parentEntity);
 
-        $entityQuery = $this->buildRestoreFetchQuery($request, $parentEntity, $requestedRelations);
-
         foreach ($entities as $entity) {
             /** @var Model $entity */
             $this->authorize($this->resolveAbility('restore'), [$entity, $parentEntity]);
@@ -579,6 +581,9 @@ trait HandlesRelationStandardBatchOperations
 
             $this->performRestore($entity);
 
+            $entityQuery = $this->buildRestoreFetchQuery(
+                $request, $parentEntity, $requestedRelations
+            );
             $entity = $this->runRestoreFetchQuery(
                 $request, $entityQuery, $parentEntity, $entity->{$this->keyName()}
             );
