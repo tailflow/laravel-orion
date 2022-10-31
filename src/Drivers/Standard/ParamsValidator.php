@@ -213,7 +213,7 @@ class ParamsValidator implements \Orion\Contracts\ParamsValidator
         Validator::make(
             $request->query(),
             [
-                'includes' => ['sometimes', 'string', new WhitelistedQueryFields($this->includableBy)],
+                'include' => ['sometimes', 'string', new WhitelistedQueryFields($this->includableBy)],
             ]
         )->validate();
     }

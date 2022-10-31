@@ -42,11 +42,6 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
     private $intermediateMode;
 
     /**
-     * @var string $table
-     */
-    private $table;
-
-    /**
      * @inheritDoc
      */
     public function __construct(
@@ -329,7 +324,8 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
      */
     public function getQualifiedFieldName(string $field): string
     {
-        $table = $this->table ?? (new $this->resourceModelClass)->getTable();
+        $table = (new $this->resourceModelClass)->getTable();
+
         return "{$table}.{$field}";
     }
 
@@ -538,7 +534,7 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
                 );
             }
 
-            $aggregateDescriptors = $aggregateDescriptors->merge($request->post('aggregates', []));
+            $aggregateDescriptors = $aggregateDescriptors->merge($request->get('aggregates', []));
         }
 
         foreach ($aggregateDescriptors as $aggregateDescriptor) {
@@ -586,14 +582,17 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
     {
         if (!$includeDescriptors) {
             $this->paramsValidator->validateIncludes($request);
-            // Here we regroup query and post params on the same format
-            $includeDescriptors =
-                collect(explode(',', $request->query('include', '')))
-                    ->filter()
-                    ->map(function ($include) {
-                        return ['relation' => $include];
-                    })
-                    ->merge($request->post('includes', []));
+
+            $requestedIncludeDescriptors = collect($request->get('includes', []));
+
+            $includeDescriptors = collect($this->relationsResolver->requestedRelations($request))
+                ->map(function ($include) use ($requestedIncludeDescriptors) {
+                    $requestedIncludeDescriptor = $requestedIncludeDescriptors
+                        ->where('relation', $include)
+                        ->first();
+
+                    return $requestedIncludeDescriptor ?? ['relation' => $include];
+                })->toArray();
         }
 
         foreach ($includeDescriptors as $includeDescriptor) {

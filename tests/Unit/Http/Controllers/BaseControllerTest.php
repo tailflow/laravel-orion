@@ -59,7 +59,7 @@ class BaseControllerTest extends TestCase
                 'filterableBy' => ['test_filterable_field'],
                 'sortableBy' => ['test_sortable_field'],
                 'aggregatableBy' => ['test_aggregatable_field'],
-                'includableBy' => ['testRelation'],
+                'includableBy' => ['testRelation', 'testAlwaysIncludedRelation'],
             ]
         )->once()->andReturn($fakeParamsValidator);
 

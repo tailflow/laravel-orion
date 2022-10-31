@@ -113,7 +113,7 @@ abstract class BaseController extends \Illuminate\Routing\Controller
                 'filterableBy' => $this->filterableBy(),
                 'sortableBy' => $this->sortableBy(),
                 'aggregatableBy' => $this->aggregates(),
-                'includableBy' => $this->includes(),
+                'includableBy' => array_merge($this->includes(), $this->alwaysIncludes()),
             ]
         );
         $this->relationsResolver = App::makeWith(

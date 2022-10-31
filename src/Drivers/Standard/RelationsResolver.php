@@ -41,12 +41,17 @@ class RelationsResolver implements \Orion\Contracts\RelationsResolver
      */
     public function requestedRelations(Request $request): array
     {
-        $requestedIncludesQueryStr = $request->query('include', '');
-        $requestedIncludesQuery = explode(',', $requestedIncludesQueryStr);
-        $requestedIncludesPost = collect($request->post('includes', []))->pluck('relation');
-        $requestedIncludes = $requestedIncludesPost->merge($requestedIncludesQuery)->unique()->filter()->all();
+        $requestedIncludesQuery = collect(explode(',', $request->query('include', '')));
+        $requestedIncludesBody = collect($request->get('includes', []))->pluck('relation');
 
-        $allowedIncludes = array_unique(array_merge($this->includableRelations, $this->alwaysIncludedRelations));
+        $requestedIncludes = $requestedIncludesQuery
+            ->merge($requestedIncludesBody)
+            ->merge($this->alwaysIncludedRelations)
+            ->unique()->filter()->all();
+
+        $allowedIncludes = array_unique(
+            array_merge($this->includableRelations, $this->alwaysIncludedRelations)
+        );
 
         $validatedIncludes = [];
 
@@ -69,7 +74,7 @@ class RelationsResolver implements \Orion\Contracts\RelationsResolver
             }
         }
 
-        return array_unique(array_merge($validatedIncludes, $this->alwaysIncludedRelations));
+        return $validatedIncludes;
     }
 
     /**
