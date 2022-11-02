@@ -7,13 +7,14 @@ namespace Orion\Jobs;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Orion\Concerns\HandlesProcess;
 use Orion\Facades\OrionBuilder;
 
 class GetResourceWithIdJob extends Job implements ShouldQueue
 {
-    use Dispatchable, HandlesProcess;
+    use Dispatchable, HandlesProcess, AuthorizesRequests;
 
     /**
      * Create a new job instance.
@@ -44,9 +45,10 @@ class GetResourceWithIdJob extends Job implements ShouldQueue
             $result = $chain;
         } else {
             $result = OrionBuilder::build('query')->setModel($this->model)->getById($this->params);
+            $this->authorize('view',$result);
             $chain = $this->postProcess($result, 'getById');
             if ($chain) {
-                $result = $result->fresh();
+                $result = array_replace_recursive($result->toArray(), $chain);
             }
         }
 

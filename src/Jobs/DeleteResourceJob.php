@@ -4,16 +4,18 @@
 namespace Orion\Jobs;
 
 
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Orion\Concerns\HandlesProcess;
 use Orion\Facades\OrionBuilder;
 
 class DeleteResourceJob extends Job implements ShouldQueue
 {
-    use Dispatchable, HandlesProcess;
+    use Dispatchable, HandlesProcess, AuthorizesRequests;
 
     /**
      * Create a new job instance.
@@ -29,6 +31,7 @@ class DeleteResourceJob extends Job implements ShouldQueue
     /**
      *
      * @return Model|array
+     * @throws AuthorizationException
      */
     public function handle():Model|array
     {
@@ -38,6 +41,10 @@ class DeleteResourceJob extends Job implements ShouldQueue
         if ($chain) {
             $this->params = array_replace_recursive($this->params, $chain);
         }
+
+        $getResult = OrionBuilder::build('query')->setModel($this->model)->getById($this->params);
+        $this->authorize('delete', $getResult);
+
         $isNone = ($this->params['chain'] ?? null) === 'none' ? true : false;
 
         if ($isNone) {
@@ -46,7 +53,7 @@ class DeleteResourceJob extends Job implements ShouldQueue
             $result = OrionBuilder::build('query')->setModel($this->model)->delete($this->params);
             $chain = $this->postProcess($result, 'delete');
             if ($chain) {
-                $result = $result->fresh();
+                $result = array_replace_recursive($result->toArray(), $chain);
             }
         }
 

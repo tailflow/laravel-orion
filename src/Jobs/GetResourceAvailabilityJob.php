@@ -49,7 +49,7 @@ class GetResourceAvailabilityJob extends Job implements ShouldQueue
                 $result = ['output' => $output];
                 $chain = $this->postProcess($result, 'availability');
                 if ($chain) {
-                    $result = $result->fresh();
+                    $result = array_replace_recursive($result, $chain);
                 }
             }
 

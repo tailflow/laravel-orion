@@ -50,7 +50,7 @@ class CreateResourceJob extends Job implements ShouldQueue
 
             $chain = $this->postProcess($result, 'store');
             if ($chain) {
-                $result = $result->fresh();
+                $result = array_replace_recursive($result->toArray(), $chain);
             }
         }
 

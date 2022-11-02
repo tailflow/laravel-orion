@@ -50,7 +50,7 @@ class UpdateResourceJob extends Job implements ShouldQueue
 
             $chain = $this->postProcess($result, 'update');
             if ($chain) {
-                $result = $result->fresh();
+                $result = array_replace_recursive($result->toArray(), $chain);
             }
         }
         return $result;

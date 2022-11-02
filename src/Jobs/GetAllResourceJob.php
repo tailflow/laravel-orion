@@ -4,6 +4,7 @@
 namespace Orion\Jobs;
 
 
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Collection;
 use Orion\Concerns\HandlesProcess;
 use Orion\Jobs\Job;
@@ -16,7 +17,7 @@ use Orion\Facades\OrionBuilder;
 class GetAllResourceJob extends Job implements ShouldQueue
 {
 
-    use Dispatchable, HandlesProcess;
+    use Dispatchable, HandlesProcess, AuthorizesRequests;
 
     /**
      * GetAllImageLogsJob constructor.
@@ -54,8 +55,9 @@ class GetAllResourceJob extends Job implements ShouldQueue
                 /** @var LengthAwarePaginator $collection */
                 $result = OrionBuilder::build('query')->setModel($this->model)->list($this->params);
                 $chain = $this->postProcess($result, 'get');
-                if ($chain) {
-                    $result = $result->fresh();
+                if ($chain)
+                {
+                    $result = array_replace_recursive($result->toArray(), $chain);
                 }
             }
 

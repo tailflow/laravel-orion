@@ -54,7 +54,7 @@ class SearchResourceJob extends Job implements ShouldQueue
                 $result = OrionBuilder::build('query')->setModel($this->model)->search($this->params);
                 $chain = $this->postProcess($result, 'search');
                 if ($chain) {
-                    $result = $result->fresh();
+                    $result = array_replace_recursive($result->toArray(), $chain);
                 }
             }
 
