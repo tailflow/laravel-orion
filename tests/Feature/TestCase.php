@@ -23,4 +23,14 @@ abstract class TestCase extends BaseTestCase
     {
         return User::class;
     }
+
+    protected function noSupportForJsonDbOperations(): bool
+    {
+        if (config('database.default') === 'sqlite') {
+            return true;
+        }
+
+        return config('database.default') === 'testing' &&
+            config('database.connections.testing.driver') === 'sqlite';
+    }
 }
