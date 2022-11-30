@@ -163,8 +163,9 @@ trait HandlesStandardBatchOperations
 
             $this->beforeUpdateFresh($request, $entity);
 
-            $entityQuery = $this->buildUpdateFetchQuery($request, $requestedRelations);
-            $entity = $this->runUpdateFetchQuery($request, $entityQuery, $entity->{$this->keyName()});
+            $entity = $this->refreshUpdatedEntity(
+                $request, $requestedRelations, $entity->{$this->keyName()}
+            );
 
             $this->afterSave($request, $entity);
             $this->afterUpdate($request, $entity);

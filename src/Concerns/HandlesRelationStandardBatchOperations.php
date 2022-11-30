@@ -219,11 +219,8 @@ trait HandlesRelationStandardBatchOperations
                 Arr::get($resource, 'pivot', [])
             );
 
-            $entityQuery = $this->buildUpdateFetchQuery(
-                $request, $parentEntity, $requestedRelations
-            );
-            $entity = $this->runUpdateFetchQuery(
-                $request, $entityQuery, $parentEntity, $entity->{$this->keyName()}
+            $entity = $this->refreshUpdatedEntity(
+                $request, $parentEntity,$requestedRelations, $entity->{$this->keyName()}
             );
 
             $entity = $this->cleanupEntity($entity);

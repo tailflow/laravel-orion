@@ -73,13 +73,25 @@ trait HandlesStandardOperations
     }
 
     /**
-     * Builds Eloquent query for fetching entity(-ies).
+     * Wrapper function to build Eloquent query for fetching entity(-ies).
      *
      * @param Request $request
      * @param array $requestedRelations
      * @return Builder
      */
     protected function buildFetchQuery(Request $request, array $requestedRelations): Builder
+    {
+        return $this->buildFetchQueryBase($request, $requestedRelations);
+    }
+
+    /**
+     * Builds Eloquent query for fetching entity(-ies).
+     *
+     * @param Request $request
+     * @param array $requestedRelations
+     * @return Builder
+     */
+    protected function buildFetchQueryBase(Request $request, array $requestedRelations): Builder
     {
         return $this->queryBuilder->buildQuery($this->newModelQuery(), $request);
     }
@@ -386,7 +398,7 @@ trait HandlesStandardOperations
     }
 
     /**
-     * Runs the given query for fetching entity.
+     * Wrapper function to run the given query for fetching entity.
      *
      * @param Request $request
      * @param Builder $query
@@ -394,6 +406,19 @@ trait HandlesStandardOperations
      * @return Model
      */
     protected function runFetchQuery(Request $request, Builder $query, $key): Model
+    {
+        return $this->runFetchQueryBase($request, $query, $key);
+    }
+
+    /**
+     * Runs the given query for fetching entity.
+     *
+     * @param Request $request
+     * @param Builder $query
+     * @param int|string $key
+     * @return Model
+     */
+    protected function runFetchQueryBase(Request $request, Builder $query, $key): Model
     {
         return $query->where($this->resolveQualifiedKeyName(), $key)->firstOrFail();
     }
@@ -470,7 +495,7 @@ trait HandlesStandardOperations
             return $beforeUpdateFreshResult;
         }
 
-        $entity = $this->runUpdateFetchQuery($request, $query, $key);
+        $entity = $this->refreshUpdatedEntity($request, $requestedRelations,$key);
 
         $afterSaveHookResult = $this->afterSave($request, $entity);
         if ($this->hookResponds($afterSaveHookResult)) {
@@ -510,6 +535,21 @@ trait HandlesStandardOperations
     protected function runUpdateFetchQuery(Request $request, Builder $query, $key): Model
     {
         return $this->runFetchQuery($request, $query, $key);
+    }
+
+    /**
+     * Fetches the model that has just been updated using the given key.
+     *
+     * @param Request $request
+     * @param array $requestedRelations
+     * @param int|string $key
+     * @return Model
+     */
+    protected function refreshUpdatedEntity(Request $request, array $requestedRelations, $key): Model
+    {
+        $query = $this->buildFetchQueryBase($request, $requestedRelations);
+
+        return $this->runFetchQueryBase($request, $query, $key);
     }
 
     /**

@@ -162,7 +162,7 @@ trait HandlesRelationStandardOperations
     }
 
     /**
-     * Builds Eloquent query for fetching relation entity.
+     * Wrapper function to build Eloquent query for fetching relation entity.
      *
      * @param Request $request
      * @param Model $parentEntity
@@ -174,7 +174,29 @@ trait HandlesRelationStandardOperations
         Model $parentEntity,
         array $requestedRelations
     ): Relation {
-        return $this->relationQueryBuilder->buildQuery($this->newRelationQuery($parentEntity), $request);
+        return $this->buildRelationFetchQueryBase(
+            $request,
+            $parentEntity,
+            $requestedRelations
+        );
+    }
+
+    /**
+     * Builds Eloquent query for fetching relation entity.
+     *
+     * @param Request $request
+     * @param Model $parentEntity
+     * @param array $requestedRelations
+     * @return Relation
+     */
+    protected function buildRelationFetchQueryBase(
+        Request $request,
+        Model $parentEntity,
+        array $requestedRelations
+    ): Relation {
+        return $this->relationQueryBuilder->buildQuery(
+            $this->newRelationQuery($parentEntity), $request
+        );
     }
 
     /**
@@ -292,7 +314,10 @@ trait HandlesRelationStandardOperations
         $query = $this->buildStoreFetchQuery($request, $parentEntity, $requestedRelations);
 
         $entity = $this->runStoreFetchQuery(
-            $request, $query, $parentEntity, $entity->{$this->keyName()}
+            $request,
+            $query,
+            $parentEntity,
+            $entity->{$this->keyName()}
         );
         $entity->wasRecentlyCreated = true;
 
@@ -554,7 +579,7 @@ trait HandlesRelationStandardOperations
     }
 
     /**
-     * Runs the given query for fetching relation entity.
+     * Wrapper function to run the given query for fetching relation entity.
      *
      * @param Request $request
      * @param Relation $query
@@ -564,6 +589,29 @@ trait HandlesRelationStandardOperations
      */
     protected function runRelationFetchQuery(Request $request, Relation $query, Model $parentEntity, $relatedKey): Model
     {
+        return $this->runRelationFetchQueryBase(
+            $request,
+            $query,
+            $parentEntity,
+            $relatedKey
+        );
+    }
+
+    /**
+     * Runs the given query for fetching relation entity.
+     *
+     * @param Request $request
+     * @param Relation $query
+     * @param Model $parentEntity
+     * @param string|int $relatedKey
+     * @return Model
+     */
+    protected function runRelationFetchQueryBase(
+        Request $request,
+        Relation $query,
+        Model $parentEntity,
+        $relatedKey
+    ): Model {
         if ($this->isOneToOneRelation($parentEntity)) {
             return $query->firstOrFail();
         }
@@ -671,7 +719,9 @@ trait HandlesRelationStandardOperations
             $request->get('pivot', [])
         );
 
-        $entity = $this->runUpdateFetchQuery($request, $query, $parentEntity, $relatedKey);
+        $entity = $this->refreshUpdatedEntity(
+            $request, $parentEntity, $requestedRelations,  $relatedKey
+        );
         $entity = $this->cleanupEntity($entity);
 
         if (count($this->getPivotJson())) {
@@ -743,6 +793,35 @@ trait HandlesRelationStandardOperations
     protected function runUpdateFetchQuery(Request $request, Relation $query, Model $parentEntity, $relatedKey): Model
     {
         return $this->runRelationFetchQuery($request, $query, $parentEntity, $relatedKey);
+    }
+
+    /**
+     * Fetches the relation model that has just been updated using the given key.
+     *
+     * @param Request $request
+     * @param Model $parentEntity
+     * @param array $requestedRelations
+     * @param string|int $relatedKey
+     * @return Model
+     */
+    protected function refreshUpdatedEntity(
+        Request $request,
+        Model $parentEntity,
+        array $requestedRelations,
+        $relatedKey
+    ): Model {
+        $query = $this->buildRelationFetchQueryBase(
+            $request,
+            $parentEntity,
+            $requestedRelations
+        );
+
+        return $this->runRelationFetchQueryBase(
+            $request,
+            $query,
+            $parentEntity,
+            $relatedKey
+        );
     }
 
     /**
