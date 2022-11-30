@@ -71,6 +71,8 @@ class RelationsResolver implements \Orion\Contracts\RelationsResolver
                         $validatedIncludes[] = $requestedInclude;
                     }
                 }
+            } elseif (in_array('*', $allowedIncludes, true)) {
+                $validatedIncludes[] = $requestedInclude;
             }
         }
 

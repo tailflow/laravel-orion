@@ -16,4 +16,9 @@ class TeamsController extends Controller
     {
         return ['*', 'company.*'];
     }
+
+    public function includes(): array
+    {
+        return ['*'];
+    }
 }
