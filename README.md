@@ -4,7 +4,7 @@
 
 <p align="center">
 <a href="https://packagist.org/packages/tailflow/laravel-orion"><img src="https://img.shields.io/packagist/v/tailflow/laravel-orion.svg" alt="Latest Version on Packagist"></a>
-<a href="https://github.com/tailflow/laravel-orion/actions"><img src="https://img.shields.io/github/workflow/status/tailflow/laravel-orion/default" alt="Build Status"></a>
+<a href="https://github.com/tailflow/laravel-orion/actions"><img src="https://img.shields.io/github/actions/workflow/status/tailflow/laravel-orion/ci.yml?branch=main" alt="Build Status"></a>
 </p>
 
 ## Introduction
