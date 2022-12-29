@@ -133,7 +133,7 @@ class BelongsToRelationStandardDeleteOperationsTest extends TestCase
             ComponentsResolver::class,
             function () {
                 $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
-                $componentsResolverMock->shouldReceive('resolveResourceClass')->once()->andReturn(SampleResource::class);
+                $componentsResolverMock->shouldReceive('resolveResourceClass')->zeroOrMoreTimes()->andReturn(SampleResource::class);
 
                 return $componentsResolverMock;
             }

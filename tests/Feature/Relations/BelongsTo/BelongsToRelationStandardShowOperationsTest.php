@@ -3,8 +3,6 @@
 namespace Orion\Tests\Feature\Relations\BelongsTo;
 
 use Illuminate\Support\Facades\Gate;
-use Mockery;
-use Orion\Contracts\ComponentsResolver;
 use Orion\Tests\Feature\TestCase;
 use Orion\Tests\Fixtures\App\Http\Resources\SampleResource;
 use Orion\Tests\Fixtures\App\Models\Category;
@@ -74,15 +72,7 @@ class BelongsToRelationStandardShowOperationsTest extends TestCase
         $user = factory(User::class)->create();
         $post = factory(Post::class)->create(['user_id' => $user->id]);
 
-        app()->bind(
-            ComponentsResolver::class,
-            function () {
-                $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
-                $componentsResolverMock->shouldReceive('resolveResourceClass')->once()->andReturn(SampleResource::class);
-
-                return $componentsResolverMock;
-            }
-        );
+        $this->useResource(SampleResource::class);
 
         Gate::policy(User::class, GreenPolicy::class);
 

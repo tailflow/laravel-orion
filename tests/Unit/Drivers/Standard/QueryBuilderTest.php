@@ -18,7 +18,7 @@ use Orion\Tests\Unit\TestCase;
 class QueryBuilderTest extends TestCase
 {
     /** @test */
-    public function building_query_for_index_endpoint()
+    public function building_query_for_index_endpoint(): void
     {
         $request = new Request();
         $request->setRouteResolver(
@@ -43,7 +43,7 @@ class QueryBuilderTest extends TestCase
     }
 
     /** @test */
-    public function building_query_for_search_endpoint()
+    public function building_query_for_search_endpoint(): void
     {
         $request = new Request();
         $request->setRouteResolver(
@@ -67,7 +67,7 @@ class QueryBuilderTest extends TestCase
     }
 
     /** @test */
-    public function building_query_for_show_endpoint()
+    public function building_query_for_show_endpoint(): void
     {
         $request = new Request();
         $request->setRouteResolver(
@@ -91,7 +91,7 @@ class QueryBuilderTest extends TestCase
     }
 
     /** @test */
-    public function applying_scopes_to_query()
+    public function applying_scopes_to_query(): void
     {
         $request = new Request();
         $request->setRouteResolver(
@@ -128,7 +128,7 @@ class QueryBuilderTest extends TestCase
     }
 
     /** @test */
-    public function applying_model_level_fields_filters_with_singular_values()
+    public function applying_model_level_fields_filters_with_singular_values(): void
     {
         $request = $this->makeRequestWithFilters(
             [
@@ -159,7 +159,7 @@ class QueryBuilderTest extends TestCase
         $this->assertFalse($posts->contains('id', $postC->id));
     }
 
-    protected function makeRequestWithFilters(array $filters)
+    protected function makeRequestWithFilters(array $filters): Request
     {
         $request = new Request();
         $request->setRouteResolver(
@@ -173,7 +173,7 @@ class QueryBuilderTest extends TestCase
     }
 
     /** @test */
-    public function applying_model_level_fields_filters_with_multiple_values()
+    public function applying_model_level_fields_filters_with_multiple_values(): void
     {
         $request = $this->makeRequestWithFilters(
             [
@@ -205,7 +205,7 @@ class QueryBuilderTest extends TestCase
     }
 
     /** @test */
-    public function applying_relation_level_fields_filters_with_singular_values()
+    public function applying_relation_level_fields_filters_with_singular_values(): void
     {
         $request = $this->makeRequestWithFilters(
             [
@@ -242,7 +242,7 @@ class QueryBuilderTest extends TestCase
     }
 
     /** @test */
-    public function applying_relation_level_fields_filters_with_multiple_values()
+    public function applying_relation_level_fields_filters_with_multiple_values(): void
     {
         $request = $this->makeRequestWithFilters(
             [
@@ -279,7 +279,7 @@ class QueryBuilderTest extends TestCase
     }
 
     /** @test */
-    public function applying_filters_with_not_in_operator()
+    public function applying_filters_with_not_in_operator(): void
     {
         $request = $this->makeRequestWithFilters(
             [
@@ -310,7 +310,7 @@ class QueryBuilderTest extends TestCase
     }
 
     /** @test */
-    public function searching_on_model_fields()
+    public function searching_on_model_fields(): void
     {
         $request = $this->makeRequestWithSearch(
             [
@@ -344,7 +344,7 @@ class QueryBuilderTest extends TestCase
         $this->assertFalse($posts->contains('id', $postE->id));
     }
 
-    protected function makeRequestWithSearch(array $search)
+    protected function makeRequestWithSearch(array $search): Request
     {
         $request = new Request();
         $request->setRouteResolver(
@@ -358,7 +358,7 @@ class QueryBuilderTest extends TestCase
     }
 
     /** @test */
-    public function searching_on_relation_fields()
+    public function searching_on_relation_fields(): void
     {
         $request = $this->makeRequestWithSearch(
             [
@@ -402,7 +402,7 @@ class QueryBuilderTest extends TestCase
     }
 
     /** @test */
-    public function search_query_constraints_are_not_applied_if_descriptor_is_missing_in_request()
+    public function search_query_constraints_are_not_applied_if_descriptor_is_missing_in_request(): void
     {
         $request = new Request();
         $request->setRouteResolver(
@@ -431,7 +431,7 @@ class QueryBuilderTest extends TestCase
     //TODO: test sorting on different relation types
 
     /** @test */
-    public function default_sorting_based_on_model_fields()
+    public function default_sorting_based_on_model_fields(): void
     {
         $request = $this->makeRequestWithSort(
             [
@@ -460,7 +460,7 @@ class QueryBuilderTest extends TestCase
         $this->assertEquals($postC->id, $posts[2]->id);
     }
 
-    protected function makeRequestWithSort(array $sort)
+    protected function makeRequestWithSort(array $sort): Request
     {
         $request = new Request();
         $request->setRouteResolver(
@@ -474,7 +474,7 @@ class QueryBuilderTest extends TestCase
     }
 
     /** @test */
-    public function desc_sorting_based_on_model_fields()
+    public function desc_sorting_based_on_model_fields(): void
     {
         $request = $this->makeRequestWithSort(
             [
@@ -504,7 +504,7 @@ class QueryBuilderTest extends TestCase
     }
 
     /** @test */
-    public function default_sorting_based_on_relation_fields()
+    public function default_sorting_based_on_relation_fields(): void
     {
         $request = $this->makeRequestWithSort(
             [
@@ -539,7 +539,7 @@ class QueryBuilderTest extends TestCase
     }
 
     /** @test */
-    public function desc_sorting_based_on_relation_fields()
+    public function desc_sorting_based_on_relation_fields(): void
     {
         $request = $this->makeRequestWithSort(
             [
@@ -574,7 +574,7 @@ class QueryBuilderTest extends TestCase
     }
 
     /** @test */
-    public function soft_deletes_query_constraints_are_not_applied_if_model_is_not_soft_deletable()
+    public function soft_deletes_query_constraints_are_not_applied_if_model_is_not_soft_deletable(): void
     {
         $request = new Request();
         $request->setRouteResolver(
@@ -598,7 +598,7 @@ class QueryBuilderTest extends TestCase
     }
 
     /** @test */
-    public function trashed_models_are_returned_when_requested()
+    public function trashed_models_are_returned_when_requested(): void
     {
         $request = new Request();
         $request->setRouteResolver(
@@ -629,7 +629,7 @@ class QueryBuilderTest extends TestCase
     }
 
     /** @test */
-    public function only_trashed_models_are_returned_when_requested()
+    public function only_trashed_models_are_returned_when_requested(): void
     {
         $request = new Request();
         $request->setRouteResolver(

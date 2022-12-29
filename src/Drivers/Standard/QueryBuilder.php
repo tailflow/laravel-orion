@@ -150,6 +150,8 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
                 );
             }
         }
+
+        var_dump($query->toSql());
     }
 
     /**

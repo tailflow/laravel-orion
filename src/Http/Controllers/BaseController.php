@@ -60,6 +60,11 @@ abstract class BaseController extends \Illuminate\Routing\Controller
     protected $collectionResource = null;
 
     /**
+     * @var string|null $policy
+     */
+    protected $policy;
+
+    /**
      * @var ComponentsResolver $componentsResolver
      */
     protected $componentsResolver;
@@ -97,7 +102,7 @@ abstract class BaseController extends \Illuminate\Routing\Controller
     public function __construct()
     {
         if (!$this->model) {
-            throw new BindingException('Model is not defined for ' . static::class);
+            throw new BindingException('Model is not defined for '.static::class);
         }
 
         $this->componentsResolver = App::makeWith(
@@ -127,7 +132,7 @@ abstract class BaseController extends \Illuminate\Routing\Controller
             Paginator::class,
             [
                 'defaultLimit' => $this->limit(),
-                'maxLimit' => $this->maxLimit()
+                'maxLimit' => $this->maxLimit(),
             ]
         );
         $this->searchBuilder = App::makeWith(
@@ -309,6 +314,10 @@ abstract class BaseController extends \Illuminate\Routing\Controller
     protected function bindComponents(): void
     {
         $this->componentsResolver->bindRequestClass($this->getRequest());
+
+        if ($policy = $this->getPolicy()) {
+            $this->componentsResolver->bindPolicyClass($policy);
+        }
     }
 
     /**
@@ -326,6 +335,25 @@ abstract class BaseController extends \Illuminate\Routing\Controller
     public function setRequest(string $requestClass): self
     {
         $this->request = $requestClass;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getPolicy(): ?string
+    {
+        return $this->policy;
+    }
+
+    /**
+     * @param string $policy
+     * @return $this
+     */
+    public function setPolicy(string $policy): self
+    {
+        $this->policy = $policy;
 
         return $this;
     }

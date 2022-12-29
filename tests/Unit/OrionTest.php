@@ -9,7 +9,7 @@ use Orion\Tests\Fixtures\App\Http\Controllers\DummyController;
 class OrionTest extends TestCase
 {
     /** @test */
-    public function registering_resource()
+    public function registering_resource(): void
     {
         Route::group(
             ['as' => 'api.', 'prefix' => 'api'],
@@ -41,7 +41,7 @@ class OrionTest extends TestCase
      * @param string $uri
      * @param string $controller
      */
-    protected function assertRouteRegistered(string $name, array $methods, string $uri, string $controller)
+    protected function assertRouteRegistered(string $name, array $methods, string $uri, string $controller): void
     {
         $routes = Route::getRoutes();
         /**
@@ -62,13 +62,13 @@ class OrionTest extends TestCase
      *
      * @param string $name
      */
-    protected function assertRouteNotRegistered(string $name)
+    protected function assertRouteNotRegistered(string $name): void
     {
         $this->assertNull(Route::getRoutes()->getByName($name));
     }
 
     /** @test */
-    public function registering_resource_with_soft_deletes()
+    public function registering_resource_with_soft_deletes(): void
     {
         Route::group(
             ['as' => 'api.', 'prefix' => 'api'],
@@ -92,7 +92,7 @@ class OrionTest extends TestCase
     }
 
     /** @test */
-    public function registering_has_one_resource()
+    public function registering_has_one_resource(): void
     {
         Route::group(
             ['as' => 'api.', 'prefix' => 'api'],
@@ -117,7 +117,7 @@ class OrionTest extends TestCase
     }
 
     /** @test */
-    public function registering_has_one_resource_with_soft_deletes()
+    public function registering_has_one_resource_with_soft_deletes(): void
     {
         Route::group(
             ['as' => 'api.', 'prefix' => 'api'],
@@ -142,7 +142,7 @@ class OrionTest extends TestCase
     }
 
     /** @test */
-    public function registering_belongs_to_resource()
+    public function registering_belongs_to_resource(): void
     {
         Route::group(
             ['as' => 'api.', 'prefix' => 'api'],
@@ -167,7 +167,7 @@ class OrionTest extends TestCase
     }
 
     /** @test */
-    public function registering_belongs_to_resource_with_soft_deletes()
+    public function registering_belongs_to_resource_with_soft_deletes(): void
     {
         Route::group(
             ['as' => 'api.', 'prefix' => 'api'],
@@ -192,7 +192,7 @@ class OrionTest extends TestCase
     }
 
     /** @test */
-    public function registering_has_many_resource()
+    public function registering_has_many_resource(): void
     {
         Route::group(
             ['as' => 'api.', 'prefix' => 'api'],
@@ -220,7 +220,7 @@ class OrionTest extends TestCase
     }
 
     /** @test */
-    public function registering_has_many_resource_with_soft_deletes()
+    public function registering_has_many_resource_with_soft_deletes(): void
     {
         Route::group(
             ['as' => 'api.', 'prefix' => 'api'],
@@ -247,7 +247,7 @@ class OrionTest extends TestCase
     }
 
     /** @test */
-    public function registering_belongs_to_many_resource()
+    public function registering_belongs_to_many_resource(): void
     {
         Route::group(
             ['as' => 'api.', 'prefix' => 'api'],
@@ -278,7 +278,7 @@ class OrionTest extends TestCase
     }
 
     /** @test */
-    public function registering_belongs_to_many_resource_with_soft_deletes()
+    public function registering_belongs_to_many_resource_with_soft_deletes(): void
     {
         Route::group(
             ['as' => 'api.', 'prefix' => 'api'],
@@ -308,7 +308,7 @@ class OrionTest extends TestCase
     }
 
     /** @test */
-    public function registering_has_one_through_resource()
+    public function registering_has_one_through_resource(): void
     {
         Route::group(
             ['as' => 'api.', 'prefix' => 'api'],
@@ -333,7 +333,7 @@ class OrionTest extends TestCase
     }
 
     /** @test */
-    public function registering_has_one_through_resource_with_soft_deletes()
+    public function registering_has_one_through_resource_with_soft_deletes(): void
     {
         Route::group(
             ['as' => 'api.', 'prefix' => 'api'],
@@ -358,7 +358,7 @@ class OrionTest extends TestCase
     }
 
     /** @test */
-    public function registering_has_many_through_resource()
+    public function registering_has_many_through_resource(): void
     {
         Route::group(
             ['as' => 'api.', 'prefix' => 'api'],
@@ -386,7 +386,7 @@ class OrionTest extends TestCase
     }
 
     /** @test */
-    public function registering_has_many_through_resource_with_soft_deletes()
+    public function registering_has_many_through_resource_with_soft_deletes(): void
     {
         Route::group(
             ['as' => 'api.', 'prefix' => 'api'],
@@ -413,7 +413,7 @@ class OrionTest extends TestCase
     }
 
     /** @test */
-    public function registering_morph_one_resource()
+    public function registering_morph_one_resource(): void
     {
         Route::group(
             ['as' => 'api.', 'prefix' => 'api'],
@@ -438,7 +438,7 @@ class OrionTest extends TestCase
     }
 
     /** @test */
-    public function registering_morph_one_resource_with_soft_deletes()
+    public function registering_morph_one_resource_with_soft_deletes(): void
     {
         Route::group(
             ['as' => 'api.', 'prefix' => 'api'],
@@ -463,7 +463,7 @@ class OrionTest extends TestCase
     }
 
     /** @test */
-    public function registering_morph_many_resource()
+    public function registering_morph_many_resource(): void
     {
         Route::group(
             ['as' => 'api.', 'prefix' => 'api'],
@@ -491,7 +491,7 @@ class OrionTest extends TestCase
     }
 
     /** @test */
-    public function registering_morph_many_resource_with_soft_deletes()
+    public function registering_morph_many_resource_with_soft_deletes(): void
     {
         Route::group(
             ['as' => 'api.', 'prefix' => 'api'],
@@ -518,7 +518,7 @@ class OrionTest extends TestCase
     }
 
     /** @test */
-    public function registering_morph_to_resource()
+    public function registering_morph_to_resource(): void
     {
         Route::group(
             ['as' => 'api.', 'prefix' => 'api'],
@@ -543,7 +543,7 @@ class OrionTest extends TestCase
     }
 
     /** @test */
-    public function registering_morph_to_resource_with_soft_deletes()
+    public function registering_morph_to_resource_with_soft_deletes(): void
     {
         Route::group(
             ['as' => 'api.', 'prefix' => 'api'],
@@ -568,7 +568,7 @@ class OrionTest extends TestCase
     }
 
     /** @test */
-    public function registering_morph_to_many_resource()
+    public function registering_morph_to_many_resource(): void
     {
         Route::group(
             ['as' => 'api.', 'prefix' => 'api'],
@@ -599,7 +599,7 @@ class OrionTest extends TestCase
     }
 
     /** @test */
-    public function registering_morph_to_many_resource_with_soft_deletes()
+    public function registering_morph_to_many_resource_with_soft_deletes(): void
     {
         Route::group(
             ['as' => 'api.', 'prefix' => 'api'],
@@ -629,7 +629,7 @@ class OrionTest extends TestCase
     }
 
     /** @test */
-    public function registering_morphed_by_many_resource()
+    public function registering_morphed_by_many_resource(): void
     {
         Route::group(
             ['as' => 'api.', 'prefix' => 'api'],
@@ -660,7 +660,7 @@ class OrionTest extends TestCase
     }
 
     /** @test */
-    public function registering_morphed_by_many_resource_with_soft_deletes()
+    public function registering_morphed_by_many_resource_with_soft_deletes(): void
     {
         Route::group(
             ['as' => 'api.', 'prefix' => 'api'],

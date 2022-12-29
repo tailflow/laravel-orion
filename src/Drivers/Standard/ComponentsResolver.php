@@ -3,6 +3,7 @@
 namespace Orion\Drivers\Standard;
 
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Gate;
 use Orion\Http\Requests\Request;
 use Orion\Http\Resources\Resource;
 
@@ -62,6 +63,7 @@ class ComponentsResolver implements \Orion\Contracts\ComponentsResolver
     public function setRequestClassesNamespace(string $requestClassesNamespace): self
     {
         $this->requestClassesNamespace = $requestClassesNamespace;
+
         return $this;
     }
 
@@ -94,6 +96,7 @@ class ComponentsResolver implements \Orion\Contracts\ComponentsResolver
     public function setResourceClassesNamespace(string $resourceClassesNamespace): self
     {
         $this->resourceClassesNamespace = $resourceClassesNamespace;
+
         return $this;
     }
 
@@ -102,7 +105,9 @@ class ComponentsResolver implements \Orion\Contracts\ComponentsResolver
      */
     public function resolveCollectionResourceClass(): ?string
     {
-        $collectionResourceClassName = $this->getResourceClassesNamespace().class_basename($this->resourceModelClass).'CollectionResource';
+        $collectionResourceClassName = $this->getResourceClassesNamespace().class_basename(
+                $this->resourceModelClass
+            ).'CollectionResource';
 
         if (class_exists($collectionResourceClassName)) {
             return $collectionResourceClassName;
@@ -119,5 +124,10 @@ class ComponentsResolver implements \Orion\Contracts\ComponentsResolver
     public function bindRequestClass(string $requestClass): void
     {
         App::bind(Request::class, $requestClass);
+    }
+
+    public function bindPolicyClass(string $policyClass): void
+    {
+        Gate::policy($this->resourceModelClass, $policyClass);
     }
 }

@@ -3,12 +3,9 @@
 namespace Orion\Tests\Feature\Relations\BelongsToMany;
 
 use Illuminate\Support\Facades\Gate;
-use Mockery;
-use Orion\Contracts\ComponentsResolver;
 use Orion\Tests\Feature\TestCase;
 use Orion\Tests\Fixtures\App\Http\Resources\SampleResource;
 use Orion\Tests\Fixtures\App\Models\Notification;
-use Orion\Tests\Fixtures\App\Models\Post;
 use Orion\Tests\Fixtures\App\Models\Role;
 use Orion\Tests\Fixtures\App\Models\User;
 use Orion\Tests\Fixtures\App\Policies\GreenPolicy;
@@ -107,21 +104,17 @@ class BelongsToManyRelationStandardShowOperationsTest extends TestCase
         $role = factory(Role::class)->make();
         $user->roles()->save($role);
 
-        app()->bind(
-            ComponentsResolver::class,
-            function () {
-                $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
-                $componentsResolverMock->shouldReceive('resolveResourceClass')->once()->andReturn(SampleResource::class);
-
-                return $componentsResolverMock;
-            }
-        );
+        $this->useResource(SampleResource::class);
 
         Gate::policy(Role::class, GreenPolicy::class);
 
         $response = $this->get("/api/users/{$user->id}/roles/{$role->id}");
 
-        $this->assertResourceShown($response, $user->roles->first()->toArray(), ['test-field-from-resource' => 'test-value']);
+        $this->assertResourceShown(
+            $response,
+            $user->roles->first()->toArray(),
+            ['test-field-from-resource' => 'test-value']
+        );
     }
 
     /** @test */

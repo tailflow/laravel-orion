@@ -76,15 +76,7 @@ class HasOneRelationStandardUpdateOperationsTest extends TestCase
         factory(PostMeta::class)->create(['post_id' => $post->id]);
         $payload = ['notes' => 'abc'];
 
-        app()->bind(
-            ComponentsResolver::class,
-            function () {
-                $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
-                $componentsResolverMock->shouldReceive('resolveRequestClass')->once()->andReturn(PostMetaRequest::class);
-
-                return $componentsResolverMock;
-            }
-        );
+        $this->useRequest(PostMetaRequest::class);
 
         Gate::policy(PostMeta::class, GreenPolicy::class);
 
@@ -102,15 +94,7 @@ class HasOneRelationStandardUpdateOperationsTest extends TestCase
         $postMeta = factory(PostMeta::class)->create(['post_id' => $post->id]);
         $payload = ['notes' => 'test updated'];
 
-        app()->bind(
-            ComponentsResolver::class,
-            function () {
-                $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
-                $componentsResolverMock->shouldReceive('resolveResourceClass')->once()->andReturn(SampleResource::class);
-
-                return $componentsResolverMock;
-            }
-        );
+        $this->useResource(SampleResource::class);
 
         Gate::policy(PostMeta::class, GreenPolicy::class);
 

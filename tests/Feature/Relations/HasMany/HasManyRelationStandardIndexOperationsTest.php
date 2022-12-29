@@ -171,15 +171,7 @@ class HasManyRelationStandardIndexOperationsTest extends TestCase
         $company = factory(Company::class)->create();
         $teams = factory(Team::class)->times(5)->create(['company_id' => $company->id]);
 
-        app()->bind(
-            ComponentsResolver::class,
-            function () {
-                $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
-                $componentsResolverMock->shouldReceive('resolveResourceClass')->once()->andReturn(SampleResource::class);
-
-                return $componentsResolverMock;
-            }
-        );
+        $this->useResource(SampleResource::class);
 
         Gate::policy(Company::class, GreenPolicy::class);
         Gate::policy(Team::class, GreenPolicy::class);
@@ -199,15 +191,7 @@ class HasManyRelationStandardIndexOperationsTest extends TestCase
         $company = factory(Company::class)->create();
         $teams = factory(Team::class)->times(5)->create(['company_id' => $company->id]);
 
-        app()->bind(
-            ComponentsResolver::class,
-            function () {
-                $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
-                $componentsResolverMock->shouldReceive('resolveCollectionResourceClass')->once()->andReturn(SampleCollectionResource::class);
-
-                return $componentsResolverMock;
-            }
-        );
+        $this->useCollectionResource(SampleCollectionResource::class);
 
         Gate::policy(Company::class, GreenPolicy::class);
         Gate::policy(Team::class, GreenPolicy::class);

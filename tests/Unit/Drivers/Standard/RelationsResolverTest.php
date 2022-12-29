@@ -14,7 +14,7 @@ use Orion\Tests\Unit\TestCase;
 class RelationsResolverTest extends TestCase
 {
     /** @test */
-    public function resolving_requested_relations_with_wildcard()
+    public function resolving_requested_relations_with_wildcard(): void
     {
         $relationsResolver = new RelationsResolver(['user', 'editors.*', 'comments.*'], []);
 
@@ -26,7 +26,7 @@ class RelationsResolverTest extends TestCase
     }
 
     /** @test */
-    public function resolving_requested_relations_by_listing_nested_relations()
+    public function resolving_requested_relations_by_listing_nested_relations(): void
     {
         $relationsResolver = new RelationsResolver(['user', 'editors.team', 'editors.team.users'], []);
 
@@ -38,7 +38,7 @@ class RelationsResolverTest extends TestCase
     }
 
     /** @test */
-    public function guarding_entity_relations()
+    public function guarding_entity_relations(): void
     {
         $post = new Post(['title' => 'test post']);
         $post->setRelations(
@@ -56,7 +56,7 @@ class RelationsResolverTest extends TestCase
     }
 
     /** @test */
-    public function guarding_entity_nested_relations_of_the_same_parent()
+    public function guarding_entity_nested_relations_of_the_same_parent(): void
     {
         $user = new User(['name' => 'manager user']);
         $user->setRelations(
@@ -82,7 +82,7 @@ class RelationsResolverTest extends TestCase
     }
 
     /** @test */
-    public function guarding_entity_nested_relations()
+    public function guarding_entity_nested_relations(): void
     {
         $post = new Post(['title' => 'test post']);
 
@@ -111,7 +111,7 @@ class RelationsResolverTest extends TestCase
     }
 
     /** @test */
-    public function guarding_entity_recursive_nested_relations()
+    public function guarding_entity_recursive_nested_relations(): void
     {
         $post = new Post(['title' => 'test post']);
 
@@ -145,7 +145,7 @@ class RelationsResolverTest extends TestCase
     }
 
     /** @test */
-    public function guarding_collection_relations()
+    public function guarding_collection_relations(): void
     {
         $postA = new Post(['title' => 'test post A']);
         $postA->setRelations(

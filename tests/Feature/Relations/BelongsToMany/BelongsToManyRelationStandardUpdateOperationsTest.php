@@ -3,8 +3,6 @@
 namespace Orion\Tests\Feature\Relations\BelongsToMany;
 
 use Illuminate\Support\Facades\Gate;
-use Mockery;
-use Orion\Contracts\ComponentsResolver;
 use Orion\Tests\Feature\TestCase;
 use Orion\Tests\Fixtures\App\Http\Requests\RoleRequest;
 use Orion\Tests\Fixtures\App\Http\Resources\SampleResource;
@@ -175,15 +173,7 @@ class BelongsToManyRelationStandardUpdateOperationsTest extends TestCase
             ],
         ];
 
-        app()->bind(
-            ComponentsResolver::class,
-            function () {
-                $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
-                $componentsResolverMock->shouldReceive('resolveRequestClass')->once()->andReturn(RoleRequest::class);
-
-                return $componentsResolverMock;
-            }
-        );
+        $this->useRequest(RoleRequest::class);
 
         Gate::policy(Role::class, GreenPolicy::class);
 
@@ -209,15 +199,7 @@ class BelongsToManyRelationStandardUpdateOperationsTest extends TestCase
         $user->roles()->save($role);
         $payload = ['description' => 'a'];
 
-        app()->bind(
-            ComponentsResolver::class,
-            function () {
-                $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
-                $componentsResolverMock->shouldReceive('resolveRequestClass')->once()->andReturn(RoleRequest::class);
-
-                return $componentsResolverMock;
-            }
-        );
+        $this->useRequest(RoleRequest::class);
 
         Gate::policy(Role::class, GreenPolicy::class);
 
@@ -237,15 +219,7 @@ class BelongsToManyRelationStandardUpdateOperationsTest extends TestCase
         $user->roles()->save($role);
         $payload = ['name' => 'test updated'];
 
-        app()->bind(
-            ComponentsResolver::class,
-            function () {
-                $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
-                $componentsResolverMock->shouldReceive('resolveResourceClass')->once()->andReturn(SampleResource::class);
-
-                return $componentsResolverMock;
-            }
-        );
+        $this->useResource(SampleResource::class);
 
         Gate::policy(Role::class, GreenPolicy::class);
 

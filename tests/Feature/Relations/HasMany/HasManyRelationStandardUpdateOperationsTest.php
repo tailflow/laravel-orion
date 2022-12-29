@@ -97,15 +97,7 @@ class HasManyRelationStandardUpdateOperationsTest extends TestCase
         $team = factory(Team::class)->create(['company_id' => $company->id]);
         $payload = ['name' => 'test updated', 'description' => 5];
 
-        app()->bind(
-            ComponentsResolver::class,
-            function () {
-                $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
-                $componentsResolverMock->shouldReceive('resolveRequestClass')->once()->andReturn(TeamRequest::class);
-
-                return $componentsResolverMock;
-            }
-        );
+        $this->useRequest(TeamRequest::class);
 
         Gate::policy(Team::class, GreenPolicy::class);
 
@@ -123,15 +115,7 @@ class HasManyRelationStandardUpdateOperationsTest extends TestCase
         $team = factory(Team::class)->create(['company_id' => $company->id]);
         $payload = ['name' => 'test updated'];
 
-        app()->bind(
-            ComponentsResolver::class,
-            function () {
-                $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
-                $componentsResolverMock->shouldReceive('resolveResourceClass')->once()->andReturn(SampleResource::class);
-
-                return $componentsResolverMock;
-            }
-        );
+        $this->useResource(SampleResource::class);
 
         Gate::policy(Team::class, GreenPolicy::class);
 

@@ -75,15 +75,7 @@ class HasOneRelationStandardRestoreOperationsTest extends TestCase
 
         Gate::policy(PostImage::class, GreenPolicy::class);
 
-        app()->bind(
-            ComponentsResolver::class,
-            function () {
-                $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
-                $componentsResolverMock->shouldReceive('resolveResourceClass')->once()->andReturn(SampleResource::class);
-
-                return $componentsResolverMock;
-            }
-        );
+        $this->useResource(SampleResource::class);
 
         $response = $this->post("/api/posts/{$post->id}/image/{$trashedPostImage->id}/restore");
 

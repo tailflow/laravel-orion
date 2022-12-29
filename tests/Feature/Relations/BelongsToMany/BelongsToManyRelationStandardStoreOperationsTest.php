@@ -159,15 +159,7 @@ class BelongsToManyRelationStandardStoreOperationsTest extends TestCase
 
         Gate::policy(Role::class, GreenPolicy::class);
 
-        app()->bind(
-            ComponentsResolver::class,
-            function () {
-                $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
-                $componentsResolverMock->shouldReceive('resolveRequestClass')->once()->andReturn(RoleRequest::class);
-
-                return $componentsResolverMock;
-            }
-        );
+        $this->useRequest(RoleRequest::class);
 
         $response = $this->post("/api/users/{$user->id}/roles", $payload);
 
@@ -188,15 +180,7 @@ class BelongsToManyRelationStandardStoreOperationsTest extends TestCase
         $user = factory(User::class)->create();
         $payload = ['description' => 'abc'];
 
-        app()->bind(
-            ComponentsResolver::class,
-            function () {
-                $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
-                $componentsResolverMock->shouldReceive('resolveRequestClass')->once()->andReturn(RoleRequest::class);
-
-                return $componentsResolverMock;
-            }
-        );
+        $this->useRequest(RoleRequest::class);
 
         Gate::policy(Role::class, GreenPolicy::class);
 
@@ -213,15 +197,7 @@ class BelongsToManyRelationStandardStoreOperationsTest extends TestCase
         $user = factory(User::class)->create();
         $payload = ['name' => 'test stored'];
 
-        app()->bind(
-            ComponentsResolver::class,
-            function () {
-                $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
-                $componentsResolverMock->shouldReceive('resolveResourceClass')->once()->andReturn(SampleResource::class);
-
-                return $componentsResolverMock;
-            }
-        );
+        $this->useResource(SampleResource::class);
 
         Gate::policy(Role::class, GreenPolicy::class);
 
