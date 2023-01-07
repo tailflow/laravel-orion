@@ -27,10 +27,10 @@ class QueryParametersBuilder
         $softDeletes = $this->softDeletes($controller->resolveResourceModelClass());
 
         $includes = array_merge($controller->alwaysIncludes(), $controller->includes());
-        $hasIncludes = (bool)count($includes);
+        $hasIncludes = (bool) count($includes);
 
         $aggregates = $controller->aggregates();
-        $hasAggregates = (bool)count($aggregates);
+        $hasAggregates = (bool) count($aggregates);
 
         switch ($route->getActionMethod()) {
             case 'destroy':
@@ -64,17 +64,26 @@ class QueryParametersBuilder
                     $parameters[] = $this->buildQueryParameter('string', 'include', $includes);
                 }
 
-            if ($hasAggregates) {
-                $parameters[] = $this->buildAggregatesQueryParameters($aggregates);
-            }
+                if ($hasAggregates) {
+                    $parameters[] = $this->buildAggregatesQueryParameters($aggregates);
+                }
 
 
-            return $parameters;
+                return $parameters;
             default:
-                return $hasIncludes ? array_merge(
-                    [$this->buildQueryParameter('string', 'include', $includes)],
-                    $this->buildAggregatesQueryParameters($aggregates)
-                ) : [];
+                $parameters = [];
+
+                if ($hasIncludes) {
+                    $parameters[] = $this->buildQueryParameter('string', 'include', $includes);
+                }
+
+                if ($hasAggregates) {
+                    $parameters = array_merge(
+                        $parameters, $this->buildAggregatesQueryParameters($aggregates)
+                    );
+                }
+
+                return $parameters;
         }
     }
 
@@ -85,7 +94,7 @@ class QueryParametersBuilder
                 'type' => $type,
             ],
             'name' => $name,
-            'in' => 'query'
+            'in' => 'query',
         ];
 
         if (count($enum)) {
@@ -95,7 +104,8 @@ class QueryParametersBuilder
         return $descriptor;
     }
 
-    protected function buildAggregatesQueryParameters(array $enum = []) {
+    protected function buildAggregatesQueryParameters(array $enum = []): array
+    {
         $queryParameters = [];
         $queryParameters[] = $this->buildQueryParameter('string', 'with_count', $enum);
         $queryParameters[] = $this->buildQueryParameter('string', 'with_exists', $enum);
