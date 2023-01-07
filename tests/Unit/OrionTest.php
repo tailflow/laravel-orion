@@ -106,10 +106,6 @@ class OrionTest extends TestCase
         $this->assertRouteRegistered('api.projects.meta.update', ['PUT', 'PATCH'], 'api/projects/{project}/meta/{metum?}', DummyController::class.'@update');
         $this->assertRouteRegistered('api.projects.meta.destroy', ['DELETE'], 'api/projects/{project}/meta/{metum?}', DummyController::class.'@destroy');
 
-        $this->assertRouteRegistered('api.projects.meta.batchStore', ['POST'], 'api/projects/{project}/meta/batch', DummyController::class.'@batchStore');
-        $this->assertRouteRegistered('api.projects.meta.batchUpdate', ['PATCH'], 'api/projects/{project}/meta/batch', DummyController::class.'@batchUpdate');
-        $this->assertRouteRegistered('api.projects.meta.batchDestroy', ['DELETE'], 'api/projects/{project}/meta/batch', DummyController::class.'@batchDestroy');
-
         $this->assertRouteNotRegistered('api.projects.meta.index');
         $this->assertRouteNotRegistered('api.projects.meta.search');
         $this->assertRouteNotRegistered('api.projects.meta.restore');
@@ -131,11 +127,6 @@ class OrionTest extends TestCase
         $this->assertRouteRegistered('api.projects.meta.update', ['PUT', 'PATCH'], 'api/projects/{project}/meta/{metum?}', DummyController::class.'@update');
         $this->assertRouteRegistered('api.projects.meta.destroy', ['DELETE'], 'api/projects/{project}/meta/{metum?}', DummyController::class.'@destroy');
         $this->assertRouteRegistered('api.projects.meta.restore', ['POST'], 'api/projects/{project}/meta/{metum?}/restore', DummyController::class.'@restore');
-
-        $this->assertRouteRegistered('api.projects.meta.batchStore', ['POST'], 'api/projects/{project}/meta/batch', DummyController::class.'@batchStore');
-        $this->assertRouteRegistered('api.projects.meta.batchUpdate', ['PATCH'], 'api/projects/{project}/meta/batch', DummyController::class.'@batchUpdate');
-        $this->assertRouteRegistered('api.projects.meta.batchDestroy', ['DELETE'], 'api/projects/{project}/meta/batch', DummyController::class.'@batchDestroy');
-        $this->assertRouteRegistered('api.projects.meta.batchRestore', ['POST'], 'api/projects/{project}/meta/batch/restore', DummyController::class.'@batchRestore');
 
         $this->assertRouteNotRegistered('api.projects.meta.index');
         $this->assertRouteNotRegistered('api.projects.meta.search');
@@ -322,10 +313,6 @@ class OrionTest extends TestCase
         $this->assertRouteRegistered('api.projects.meta.update', ['PUT', 'PATCH'], 'api/projects/{project}/meta/{metum?}', DummyController::class.'@update');
         $this->assertRouteRegistered('api.projects.meta.destroy', ['DELETE'], 'api/projects/{project}/meta/{metum?}', DummyController::class.'@destroy');
 
-        $this->assertRouteRegistered('api.projects.meta.batchStore', ['POST'], 'api/projects/{project}/meta/batch', DummyController::class.'@batchStore');
-        $this->assertRouteRegistered('api.projects.meta.batchUpdate', ['PATCH'], 'api/projects/{project}/meta/batch', DummyController::class.'@batchUpdate');
-        $this->assertRouteRegistered('api.projects.meta.batchDestroy', ['DELETE'], 'api/projects/{project}/meta/batch', DummyController::class.'@batchDestroy');
-
         $this->assertRouteNotRegistered('api.projects.meta.index');
         $this->assertRouteNotRegistered('api.projects.meta.search');
         $this->assertRouteNotRegistered('api.projects.meta.restore');
@@ -347,11 +334,6 @@ class OrionTest extends TestCase
         $this->assertRouteRegistered('api.projects.meta.update', ['PUT', 'PATCH'], 'api/projects/{project}/meta/{metum?}', DummyController::class.'@update');
         $this->assertRouteRegistered('api.projects.meta.destroy', ['DELETE'], 'api/projects/{project}/meta/{metum?}', DummyController::class.'@destroy');
         $this->assertRouteRegistered('api.projects.meta.restore', ['POST'], 'api/projects/{project}/meta/{metum?}/restore', DummyController::class.'@restore');
-
-        $this->assertRouteRegistered('api.projects.meta.batchStore', ['POST'], 'api/projects/{project}/meta/batch', DummyController::class.'@batchStore');
-        $this->assertRouteRegistered('api.projects.meta.batchUpdate', ['PATCH'], 'api/projects/{project}/meta/batch', DummyController::class.'@batchUpdate');
-        $this->assertRouteRegistered('api.projects.meta.batchDestroy', ['DELETE'], 'api/projects/{project}/meta/batch', DummyController::class.'@batchDestroy');
-        $this->assertRouteRegistered('api.projects.meta.batchRestore', ['POST'], 'api/projects/{project}/meta/batch/restore', DummyController::class.'@batchRestore');
 
         $this->assertRouteNotRegistered('api.projects.meta.index');
         $this->assertRouteNotRegistered('api.projects.meta.search');
@@ -427,10 +409,6 @@ class OrionTest extends TestCase
         $this->assertRouteRegistered('api.projects.meta.update', ['PUT', 'PATCH'], 'api/projects/{project}/meta/{metum?}', DummyController::class.'@update');
         $this->assertRouteRegistered('api.projects.meta.destroy', ['DELETE'], 'api/projects/{project}/meta/{metum?}', DummyController::class.'@destroy');
 
-        $this->assertRouteRegistered('api.projects.meta.batchStore', ['POST'], 'api/projects/{project}/meta/batch', DummyController::class.'@batchStore');
-        $this->assertRouteRegistered('api.projects.meta.batchUpdate', ['PATCH'], 'api/projects/{project}/meta/batch', DummyController::class.'@batchUpdate');
-        $this->assertRouteRegistered('api.projects.meta.batchDestroy', ['DELETE'], 'api/projects/{project}/meta/batch', DummyController::class.'@batchDestroy');
-
         $this->assertRouteNotRegistered('api.projects.meta.index');
         $this->assertRouteNotRegistered('api.projects.meta.search');
         $this->assertRouteNotRegistered('api.projects.meta.restore');
@@ -452,11 +430,6 @@ class OrionTest extends TestCase
         $this->assertRouteRegistered('api.projects.meta.update', ['PUT', 'PATCH'], 'api/projects/{project}/meta/{metum?}', DummyController::class.'@update');
         $this->assertRouteRegistered('api.projects.meta.destroy', ['DELETE'], 'api/projects/{project}/meta/{metum?}', DummyController::class.'@destroy');
         $this->assertRouteRegistered('api.projects.meta.restore', ['POST'], 'api/projects/{project}/meta/{metum?}/restore', DummyController::class.'@restore');
-
-        $this->assertRouteRegistered('api.projects.meta.batchStore', ['POST'], 'api/projects/{project}/meta/batch', DummyController::class.'@batchStore');
-        $this->assertRouteRegistered('api.projects.meta.batchUpdate', ['PATCH'], 'api/projects/{project}/meta/batch', DummyController::class.'@batchUpdate');
-        $this->assertRouteRegistered('api.projects.meta.batchDestroy', ['DELETE'], 'api/projects/{project}/meta/batch', DummyController::class.'@batchDestroy');
-        $this->assertRouteRegistered('api.projects.meta.batchRestore', ['POST'], 'api/projects/{project}/meta/batch/restore', DummyController::class.'@batchRestore');
 
         $this->assertRouteNotRegistered('api.projects.meta.index');
         $this->assertRouteNotRegistered('api.projects.meta.search');
