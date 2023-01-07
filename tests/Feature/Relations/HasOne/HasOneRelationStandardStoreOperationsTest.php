@@ -3,8 +3,6 @@
 namespace Orion\Tests\Feature\Relations\HasOne;
 
 use Illuminate\Support\Facades\Gate;
-use Mockery;
-use Orion\Contracts\ComponentsResolver;
 use Orion\Tests\Feature\TestCase;
 use Orion\Tests\Fixtures\App\Http\Requests\PostMetaRequest;
 use Orion\Tests\Fixtures\App\Http\Resources\SampleResource;
@@ -30,6 +28,19 @@ class HasOneRelationStandardStoreOperationsTest extends TestCase
 
     /** @test */
     public function storing_a_single_relation_resource_when_authorized(): void
+    {
+        $post = factory(Post::class)->create();
+        $payload = ['notes' => 'test stored'];
+
+        Gate::policy(PostMeta::class, GreenPolicy::class);
+
+        $response = $this->post("/api/posts/{$post->id}/meta", $payload);
+
+        $this->assertResourceStored($response, PostMeta::class, $payload);
+    }
+
+    /** @test */
+    public function attempting_to_store_a_resource_over_an_existing_resource(): void
     {
         $post = factory(Post::class)->create();
         $payload = ['notes' => 'test stored'];
@@ -81,6 +92,11 @@ class HasOneRelationStandardStoreOperationsTest extends TestCase
     public function transforming_a_single_stored_relation_resource(): void
     {
         $post = factory(Post::class)->create();
+
+        $postMeta = factory(PostMeta::class)->make();
+        $postMeta->post()->associate($post);
+        $postMeta->save();
+
         $payload = ['notes' => 'test stored'];
 
         $this->useResource(SampleResource::class);
@@ -89,7 +105,8 @@ class HasOneRelationStandardStoreOperationsTest extends TestCase
 
         $response = $this->post("/api/posts/{$post->id}/meta", $payload);
 
-        $this->assertResourceStored($response, PostMeta::class, $payload, ['test-field-from-resource' => 'test-value']);
+        $response->assertStatus(409);
+        $response->assertJson(['message' => 'Entity already exists.']);
     }
 
     /** @test */

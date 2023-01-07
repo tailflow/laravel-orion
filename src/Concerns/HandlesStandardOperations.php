@@ -151,6 +151,7 @@ trait HandlesStandardOperations
      *
      * @param Request $request
      * @return Resource
+     * @throws Exception
      */
     public function store(Request $request)
     {

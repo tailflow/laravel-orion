@@ -301,6 +301,16 @@ trait HandlesRelationStandardOperations
 
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
 
+        if ($this->isOneToOneRelation($parentEntity)) {
+            $query = $this->buildStoreFetchQuery(
+                $request, $parentEntity, $requestedRelations
+            );
+
+            if ($query->exists()) {
+                abort(409, 'Entity already exists.');
+            }
+        }
+
         $this->performStore(
             $request,
             $parentEntity,
@@ -628,6 +638,7 @@ trait HandlesRelationStandardOperations
     protected function isOneToOneRelation(Model $parentEntity)
     {
         $relation = $parentEntity->{$this->getRelation()}();
+
         return $relation instanceof HasOne || $relation instanceof MorphOne || $relation instanceof BelongsTo || $relation instanceof HasOneThrough;
     }
 
@@ -853,6 +864,7 @@ trait HandlesRelationStandardOperations
         $entity->save();
 
         $relation = $parentEntity->{$this->getRelation()}();
+
         if ($relation instanceof BelongsToMany || $relation instanceof MorphToMany) {
             if (count($pivotFields = $this->preparePivotFields($pivot))) {
                 $relation->updateExistingPivot($entity->getKey(), $pivotFields);
