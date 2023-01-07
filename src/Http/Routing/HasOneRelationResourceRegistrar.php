@@ -9,5 +9,5 @@ class HasOneRelationResourceRegistrar extends RelationResourceRegistrar
      *
      * @var array
      */
-    protected $resourceDefaults = ['batchStore', 'batchUpdate', 'batchDestroy', 'batchRestore', 'store', 'show', 'update', 'destroy', 'restore'];
+    protected $resourceDefaults = ['store', 'show', 'update', 'destroy', 'restore'];
 }
