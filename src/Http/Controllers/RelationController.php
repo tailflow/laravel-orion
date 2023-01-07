@@ -97,9 +97,19 @@ abstract class RelationController extends BaseController
      */
     public function resolveResourceModelClass(): string
     {
+        return get_class($this->resolveRelation()->getRelated());
+    }
+
+    /**
+     * Retrieves relation method.
+     *
+     * @return Relation
+     */
+    public function resolveRelation(): Relation
+    {
         $model = $this->getModel();
 
-        return get_class((new $model)->{$this->getRelation()}()->getRelated());
+        return (new $model)->{$this->getRelation()}();
     }
 
     /**
