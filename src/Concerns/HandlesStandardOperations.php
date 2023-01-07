@@ -198,9 +198,7 @@ trait HandlesStandardOperations
         $this->performStore(
             $request,
             $entity,
-            config('orion.use_validated')
-                ? $request->validated()
-                : $request->all()
+            $this->retrieve($request)
         );
 
         $beforeStoreFreshResult = $this->beforeStoreFresh($request, $entity);
@@ -485,9 +483,7 @@ trait HandlesStandardOperations
         $this->performUpdate(
             $request,
             $entity,
-            config('orion.use_validated')
-                ? $request->validated()
-                : $request->all()
+            $this->retrieve($request)
         );
 
         $beforeUpdateFreshResult = $this->beforeUpdateFresh($request, $entity);

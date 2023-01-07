@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
 use Orion\Concerns\BuildsResponses;
@@ -625,5 +626,26 @@ abstract class BaseController extends \Illuminate\Routing\Controller
         }
 
         return !property_exists($this, 'paginationDisabled');
+    }
+
+    /**
+     * Retrieves data from the request
+     *
+     * @param Request $request
+     * @param string|null $key
+     * @param null $default
+     * @return mixed
+     */
+    protected function retrieve(Request $request, ?string $key = null, $default = null)
+    {
+        if (!config('orion.use_validated')) {
+            return $key ? $request->get($key, $default) : $request->all();
+        }
+
+        if (!$key) {
+            return $request->validated();
+        }
+
+        return Arr::get($request->safe([$key]), $key, $default);
     }
 }

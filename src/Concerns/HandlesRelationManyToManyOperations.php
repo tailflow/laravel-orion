@@ -54,9 +54,7 @@ trait HandlesRelationManyToManyOperations
         $attachResult = $this->performAttach(
             $request,
             $parentEntity,
-            config('orion.use_validated')
-                ? $request->validated('resources')
-                : $request->get('resources'),
+            $this->retrieve($request, 'resources'),
             $request->get('duplicates', false)
         );
 
@@ -276,9 +274,7 @@ trait HandlesRelationManyToManyOperations
         $detachResult = $this->performDetach(
             $request,
             $parentEntity,
-            config('orion.use_validated')
-                ? $request->validated('resources')
-                : $request->get('resources')
+            $this->retrieve($request, 'resources')
         );
 
         $afterHookResult = $this->afterDetach($request, $parentEntity, $detachResult);
@@ -401,9 +397,7 @@ trait HandlesRelationManyToManyOperations
         $syncResult = $this->performSync(
             $request,
             $parentEntity,
-            config('orion.use_validated')
-                ? $request->validated('resources')
-                : $request->get('resources'),
+            $this->retrieve($request, 'resources'),
             $request->get('detaching', true)
         );
 
@@ -529,9 +523,7 @@ trait HandlesRelationManyToManyOperations
         $toggleResult = $this->performToggle(
             $request,
             $parentEntity,
-            config('orion.use_validated')
-                ? $request->validated('resources')
-                : $request->get('resources')
+            $this->retrieve($request, 'resources')
         );
 
         $afterHookResult = $this->afterToggle($request, $parentEntity, $toggleResult);

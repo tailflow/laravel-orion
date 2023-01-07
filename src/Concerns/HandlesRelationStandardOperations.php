@@ -305,9 +305,7 @@ trait HandlesRelationStandardOperations
             $request,
             $parentEntity,
             $entity,
-            config('orion.use_validated')
-                ? $request->validated()
-                : $request->all(),
+            $this->retrieve($request),
             $request->get('pivot', [])
         );
 
@@ -713,9 +711,7 @@ trait HandlesRelationStandardOperations
             $request,
             $parentEntity,
             $entity,
-            config('orion.use_validated')
-                ? $request->validated()
-                : $request->all(),
+            $this->retrieve($request),
             $request->get('pivot', [])
         );
 
