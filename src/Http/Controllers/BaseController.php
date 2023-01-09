@@ -639,7 +639,7 @@ abstract class BaseController extends \Illuminate\Routing\Controller
     protected function retrieve(Request $request, ?string $key = null, $default = null)
     {
         if (!config('orion.use_validated')) {
-            return $key ? $request->get($key, $default) : $request->all();
+            return $key ? $request->input($key, $default) : $request->all();
         }
 
         if (!$key) {
