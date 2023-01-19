@@ -4,9 +4,11 @@ namespace Orion\Drivers\Standard;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
@@ -124,10 +126,23 @@ class RelationsResolver implements \Orion\Contracts\RelationsResolver
     {
         $laravelVersion = (float) app()->version();
 
-        return $laravelVersion > 5.7 || get_class(
-            $relationInstance
-        ) === HasOne::class ? $relationInstance->getQualifiedForeignKeyName(
-        ) : $relationInstance->getQualifiedForeignKey();
+        if ($laravelVersion < 5.8 && !($relationInstance instanceof HasOne)) {
+            return $relationInstance->getQualifiedForeignKey();
+        }
+
+        if ($relationInstance instanceof HasOne) {
+            return $relationInstance->getQualifiedForeignKeyName();
+        }
+
+        if ($relationInstance instanceof BelongsTo) {
+            return $relationInstance->getQualifiedForeignKeyName();
+        }
+
+        if ($relationInstance instanceof BelongsToMany) {
+            return $relationInstance->getQualifiedRelatedKeyName();
+        }
+
+        return $relationInstance->getQualifiedForeignKey();
     }
 
     /**
@@ -145,6 +160,9 @@ class RelationsResolver implements \Orion\Contracts\RelationsResolver
             case BelongsTo::class:
             case MorphTo::class:
                 return $relationInstance->getQualifiedOwnerKeyName();
+            case BelongsToMany::class:
+            case MorphToMany::class:
+                return $relationInstance->getQualifiedParentKeyName();
             default:
                 return $relationInstance->getQualifiedLocalKeyName();
         }

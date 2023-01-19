@@ -27,7 +27,7 @@ class PostsController extends Controller
 
     public function sortableBy(): array
     {
-        return ['title', 'user.name', 'user.email', 'meta->nested_field'];
+        return ['title', 'user.name', 'user.email', 'tags.name', 'meta->nested_field'];
     }
 
     public function filterableBy(): array
