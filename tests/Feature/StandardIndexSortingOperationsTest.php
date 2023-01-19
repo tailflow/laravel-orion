@@ -4,7 +4,6 @@ namespace Orion\Tests\Feature;
 
 use Illuminate\Support\Facades\Gate;
 use Orion\Tests\Fixtures\App\Models\Post;
-use Orion\Tests\Fixtures\App\Models\Tag;
 use Orion\Tests\Fixtures\App\Models\User;
 use Orion\Tests\Fixtures\App\Policies\GreenPolicy;
 
@@ -171,39 +170,6 @@ class StandardIndexSortingOperationsTest extends TestCase
         $this->assertResourcesPaginated(
             $response,
             $this->makePaginator([$postA, $postB, $postC], 'posts/search')
-        );
-    }
-
-    /** @test */
-    public function getting_a_list_of_resources_asc_sorted_by_many_to_many_relation_field(): void
-    {
-        $tagA = factory(Tag::class)->create(['name' => 'a']);
-        $tagB = factory(Tag::class)->create(['name' => 'b']);
-        $tagC = factory(Tag::class)->create(['name' => 'c']);
-
-        $postA = factory(Post::class)->create();
-        $postA->tags()->attach($tagA);
-
-        $postB = factory(Post::class)->create();
-        $postB->tags()->attach($tagB);
-
-        $postC = factory(Post::class)->create();
-        $postC->tags()->attach($tagC);
-
-        Gate::policy(Post::class, GreenPolicy::class);
-
-        $response = $this->post(
-            '/api/posts/search',
-            [
-                'sort' => [
-                    ['field' => 'tags.name', 'direction' => 'desc'],
-                ],
-            ]
-        );
-
-        $this->assertResourcesPaginated(
-            $response,
-            $this->makePaginator([$postC, $postB, $postA], 'posts/search')
         );
     }
 

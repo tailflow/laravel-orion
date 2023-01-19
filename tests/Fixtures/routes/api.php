@@ -9,9 +9,7 @@ use Orion\Tests\Fixtures\App\Http\Controllers\PostCategoryController;
 use Orion\Tests\Fixtures\App\Http\Controllers\PostPostImageController;
 use Orion\Tests\Fixtures\App\Http\Controllers\PostPostMetaController;
 use Orion\Tests\Fixtures\App\Http\Controllers\PostsController;
-use Orion\Tests\Fixtures\App\Http\Controllers\PostTagsController;
 use Orion\Tests\Fixtures\App\Http\Controllers\PostUserController;
-use Orion\Tests\Fixtures\App\Http\Controllers\TagPostsController;
 use Orion\Tests\Fixtures\App\Http\Controllers\TeamsController;
 use Orion\Tests\Fixtures\App\Http\Controllers\UserNotificationsController;
 use Orion\Tests\Fixtures\App\Http\Controllers\UserPostsController;
@@ -33,5 +31,4 @@ Route::group(['as' => 'api.', 'prefix' => 'api'], function () {
     Orion::hasManyResource('access_keys', 'scopes', AccessKeyAccessKeyScopesController::class)->withSoftDeletes();
     Orion::belongsToManyResource('users', 'roles', UserRolesController::class);
     Orion::belongsToManyResource('users', 'notifications', UserNotificationsController::class)->withSoftDeletes();
-    Orion::morphToManyResource('posts', 'tags', PostTagsController::class);
 });

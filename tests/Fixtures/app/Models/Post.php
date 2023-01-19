@@ -74,11 +74,6 @@ class Post extends Model
         return $this->hasOne(PostImage::class);
     }
 
-    public function tags()
-    {
-        return $this->morphToMany(Tag::class, 'taggable');
-    }
-
     /**
      * @param Builder $query
      * @return Builder|\Illuminate\Database\Query\Builder
