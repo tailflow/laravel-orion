@@ -138,7 +138,7 @@ class StandardShowOperationsTest extends TestCase
 
         Gate::policy(Comment::class, GreenPolicy::class);
 
-        $response = $this->get("/api/comments/{$post->id}?include=commentable.image");
+        $response = $this->get("/api/comments/{$comment->id}?include=commentable.image");
 
         $this->assertResourceShown($response, $comment->fresh('commentable.image')->toArray());
     }
