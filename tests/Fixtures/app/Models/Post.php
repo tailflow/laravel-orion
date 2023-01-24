@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Orion\Tests\Fixtures\App\Traits\AppliesDefaultOrder;
 
@@ -29,7 +30,7 @@ class Post extends Model
     protected $casts = [
         'meta' => 'array',
         'options' => 'array',
-        'stars' => 'float'
+        'stars' => 'float',
     ];
 
     /**
@@ -39,7 +40,8 @@ class Post extends Model
      */
     protected $dates = [
         'publish_at',
-        'deleted_at' //workaround for Laravel 5.7 - SoftDeletes trait adds deleted_at column to dates automatically since Laravel 5.8
+        'deleted_at',
+        //workaround for Laravel 5.7 - SoftDeletes trait adds deleted_at column to dates automatically since Laravel 5.8
     ];
 
     /**
@@ -72,6 +74,14 @@ class Post extends Model
     public function image()
     {
         return $this->hasOne(PostImage::class);
+    }
+
+    /**
+     * @return MorphMany
+     */
+    public function comments()
+    {
+        return $this->morphMany(Comment::class, 'commentable');
     }
 
     /**

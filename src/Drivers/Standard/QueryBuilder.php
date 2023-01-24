@@ -346,6 +346,10 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
                 return null;
             }
 
+            if ($resourceModel->$nestedRelation() instanceof MorphTo) {
+                return MorphTo::class;
+            }
+
             $resourceModel = $resourceModel->$nestedRelation()->getModel();
         }
 
@@ -548,6 +552,14 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
                 continue;
             }
 
+            if ($relationModelClass === MorphTo::class) {
+                $query->withAggregate(
+                    $aggregateDescriptor['relation'], $aggregateDescriptor['field'] ?? '*', $aggregateDescriptor['type']
+                );
+
+                continue;
+            }
+
             $query->withAggregate([
                 $aggregateDescriptor['relation'] => function (Builder $aggregateQuery) use (
                     $aggregateDescriptor,
@@ -597,6 +609,12 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
 
         foreach ($includeDescriptors as $includeDescriptor) {
             if (!$relationModelClass = $this->getRelationModelClass($includeDescriptor['relation'])) {
+                continue;
+            }
+
+            if ($relationModelClass === MorphTo::class) {
+                $query->with($includeDescriptor['relation']);
+
                 continue;
             }
 

@@ -7,8 +7,10 @@ use Mockery;
 use Orion\Contracts\ComponentsResolver;
 use Orion\Tests\Fixtures\App\Http\Resources\SampleResource;
 use Orion\Tests\Fixtures\App\Models\AccessKey;
+use Orion\Tests\Fixtures\App\Models\Comment;
 use Orion\Tests\Fixtures\App\Models\Company;
 use Orion\Tests\Fixtures\App\Models\Post;
+use Orion\Tests\Fixtures\App\Models\PostImage;
 use Orion\Tests\Fixtures\App\Models\Team;
 use Orion\Tests\Fixtures\App\Models\User;
 use Orion\Tests\Fixtures\App\Policies\GreenPolicy;
@@ -121,6 +123,24 @@ class StandardShowOperationsTest extends TestCase
         $response = $this->get("/api/posts/{$post->id}?include=user.roles");
 
         $this->assertResourceShown($response, $post->fresh('user.roles')->toArray());
+    }
+
+    /** @test */
+    public function getting_a_single_resource_with_polymorphic_included_relation(): void
+    {
+        $post = factory(Post::class)->create(['user_id' => factory(User::class)->create()->id]);
+
+        factory(PostImage::class)->create(['post_id' => $post->id]);
+
+        $comment = factory(Comment::class)->make();
+        $comment->commentable()->associate($post);
+        $comment->save();
+
+        Gate::policy(Comment::class, GreenPolicy::class);
+
+        $response = $this->get("/api/comments/{$post->id}?include=commentable.image");
+
+        $this->assertResourceShown($response, $comment->fresh('commentable.image')->toArray());
     }
 
     /** @test */

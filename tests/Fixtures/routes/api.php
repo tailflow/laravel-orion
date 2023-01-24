@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Orion\Facades\Orion;
 use Orion\Tests\Fixtures\App\Http\Controllers\AccessKeyAccessKeyScopesController;
 use Orion\Tests\Fixtures\App\Http\Controllers\AccessKeysController;
+use Orion\Tests\Fixtures\App\Http\Controllers\CommentsController;
 use Orion\Tests\Fixtures\App\Http\Controllers\CompanyTeamsController;
 use Orion\Tests\Fixtures\App\Http\Controllers\PostCategoryController;
 use Orion\Tests\Fixtures\App\Http\Controllers\PostPostImageController;
@@ -21,6 +22,7 @@ Route::group(['as' => 'api.', 'prefix' => 'api'], function () {
     Orion::resource('posts', PostsController::class)->withSoftDeletes();
     Orion::resource('access_keys', AccessKeysController::class)->withSoftDeletes();
     Orion::resource('users', UsersController::class);
+    Orion::resource('comments', CommentsController::class);
 
     Orion::belongsToResource('posts', 'user', PostUserController::class);
     Orion::belongsToResource('posts', 'category', PostCategoryController::class)->withSoftDeletes();
