@@ -398,13 +398,13 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
                                  */
                                 if (!$caseSensitive) {
                                     return $relationQuery->whereRaw(
-                                        "lower({$relationField}) like lower(?)",
+                                        "lower(`{$relationQuery->from}`.`{$relationField}`) like lower(?)",
                                         ['%'.$requestedSearchString.'%']
                                     );
                                 }
 
                                 return $relationQuery->where(
-                                    $relationField,
+                                    "`{$relationQuery->from}`.`{$relationField}`",
                                     'like',
                                     '%'.$requestedSearchString.'%'
                                 );
