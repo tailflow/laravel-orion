@@ -24,7 +24,7 @@ class TagsBuilder
         $tags = collect(config('orion.specs.tags'));
 
         foreach ($resources as $resource) {
-            $tags[] = [
+            if (!$tags->contains('name', $resource->tag)) $tags[] = [
                 'name'        => $resource->tag,
                 'description' => "API documentation for {$resource->tag}",
             ];
