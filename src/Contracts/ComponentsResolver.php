@@ -13,4 +13,5 @@ interface ComponentsResolver
     public function resolveCollectionResourceClass(): ?string;
 
     public function bindRequestClass(string $requestClass): void;
+    public function bindPolicyClass(string $policyClass): void;
 }

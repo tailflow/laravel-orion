@@ -95,10 +95,12 @@ class PathsBuilder
 
                 $operation = $operationBuilder->build();
 
-                if (!$path = $paths->where('path', $route->uri())->first()) {
-                    $path = app()->make(Path::class, ['path' => $route->uri()]);
+                $formattedPath =  str_replace('?', '', $route->uri());
 
-                    $paths->put(Str::start($path->path, '/'), $path);
+                if (!$path = $paths->where('path', $formattedPath)->first()) {
+                    $path = app()->make(Path::class, ['path' => $formattedPath]);
+
+                    $paths->put(Str::start($formattedPath, '/'), $path);
                 }
 
                 $path->operations->put(strtolower($operation->method), $operation);

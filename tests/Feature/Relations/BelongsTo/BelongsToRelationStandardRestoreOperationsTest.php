@@ -75,15 +75,7 @@ class BelongsToRelationStandardRestoreOperationsTest extends TestCase
 
         Gate::policy(Category::class, GreenPolicy::class);
 
-        app()->bind(
-            ComponentsResolver::class,
-            function () {
-                $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
-                $componentsResolverMock->shouldReceive('resolveResourceClass')->once()->andReturn(SampleResource::class);
-
-                return $componentsResolverMock;
-            }
-        );
+        $this->useResource(SampleResource::class);
 
         $response = $this->post("/api/posts/{$post->id}/category/{$trashedCategory->id}/restore");
 

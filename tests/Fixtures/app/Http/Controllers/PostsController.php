@@ -58,6 +58,6 @@ class PostsController extends Controller
      */
     public function includes(): array
     {
-        return ['user'];
+        return ['user', 'user.roles', 'image.*'];
     }
 }

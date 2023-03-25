@@ -3,8 +3,6 @@
 namespace Orion\Tests\Feature\Relations\BelongsTo;
 
 use Illuminate\Support\Facades\Gate;
-use Mockery;
-use Orion\Contracts\ComponentsResolver;
 use Orion\Tests\Feature\TestCase;
 use Orion\Tests\Fixtures\App\Http\Requests\UserRequest;
 use Orion\Tests\Fixtures\App\Http\Resources\SampleResource;
@@ -76,15 +74,7 @@ class BelongsToRelationStandardUpdateOperationsTest extends TestCase
         $post = factory(Post::class)->create(['user_id' => $user->id]);
         $payload = ['email' => 'test@example.com'];
 
-        app()->bind(
-            ComponentsResolver::class,
-            function () {
-                $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
-                $componentsResolverMock->shouldReceive('resolveRequestClass')->once()->andReturn(UserRequest::class);
-
-                return $componentsResolverMock;
-            }
-        );
+        $this->useRequest(UserRequest::class);
 
         Gate::policy(User::class, GreenPolicy::class);
 
@@ -102,15 +92,7 @@ class BelongsToRelationStandardUpdateOperationsTest extends TestCase
         $post = factory(Post::class)->create(['user_id' => $user->id]);
         $payload = ['name' => 'test user updated'];
 
-        app()->bind(
-            ComponentsResolver::class,
-            function () {
-                $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
-                $componentsResolverMock->shouldReceive('resolveResourceClass')->once()->andReturn(SampleResource::class);
-
-                return $componentsResolverMock;
-            }
-        );
+       $this->useResource(SampleResource::class);
 
         Gate::policy(User::class, GreenPolicy::class);
 

@@ -10,6 +10,7 @@ use Orion\Concerns\HandlesRelationManyToManyOperations;
 use Orion\Concerns\HandlesRelationOneToManyOperations;
 use Orion\Concerns\HandlesRelationStandardBatchOperations;
 use Orion\Concerns\HandlesRelationStandardOperations;
+use Orion\Contracts\ComponentsResolver;
 use Orion\Contracts\QueryBuilder;
 use Orion\Exceptions\BindingException;
 
@@ -21,6 +22,11 @@ abstract class RelationController extends BaseController
      * @var string $relation
      */
     protected $relation;
+
+    /**
+     * @var string|null $policy
+     */
+    protected $parentPolicy;
 
     /**
      * The list of pivot fields that can be set upon relation resource creation or update.
@@ -42,6 +48,11 @@ abstract class RelationController extends BaseController
     protected $relationQueryBuilder;
 
     /**
+     * @var ComponentsResolver $parentComponentsResolver
+     */
+    protected $parentComponentsResolver;
+
+    /**
      * RelationController constructor.
      *
      * @throws BindingException
@@ -51,6 +62,11 @@ abstract class RelationController extends BaseController
         if (!$this->relation) {
             throw new BindingException('Relation is not defined for '.static::class);
         }
+
+        $this->parentComponentsResolver = App::makeWith(
+            ComponentsResolver::class,
+            ['resourceModelClass' => $this->getModel(),]
+        );
 
         parent::__construct();
 
@@ -65,6 +81,15 @@ abstract class RelationController extends BaseController
         );
     }
 
+    protected function bindComponents(): void
+    {
+        parent::bindComponents();
+
+        if ($parentPolicy = $this->getParentPolicy()) {
+            $this->parentComponentsResolver->bindPolicyClass($parentPolicy);
+        }
+    }
+
     /**
      * Retrieves model related to resource.
      *
@@ -72,9 +97,19 @@ abstract class RelationController extends BaseController
      */
     public function resolveResourceModelClass(): string
     {
+        return get_class($this->resolveRelation()->getRelated());
+    }
+
+    /**
+     * Retrieves relation method.
+     *
+     * @return Relation
+     */
+    public function resolveRelation(): Relation
+    {
         $model = $this->getModel();
 
-        return get_class((new $model)->{$this->getRelation()}()->getRelated());
+        return (new $model)->{$this->getRelation()}();
     }
 
     /**
@@ -102,6 +137,25 @@ abstract class RelationController extends BaseController
     public function setRelation(string $relation): self
     {
         $this->relation = $relation;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getParentPolicy(): ?string
+    {
+        return $this->parentPolicy;
+    }
+
+    /**
+     * @param string $policy
+     * @return $this
+     */
+    public function setParentPolicy(string $policy): self
+    {
+        $this->parentPolicy = $policy;
 
         return $this;
     }
@@ -170,6 +224,25 @@ abstract class RelationController extends BaseController
     public function setRelationQueryBuilder(QueryBuilder $relationQueryBuilder): self
     {
         $this->relationQueryBuilder = $relationQueryBuilder;
+
+        return $this;
+    }
+
+    /**
+     * @return ComponentsResolver
+     */
+    public function getParentComponentsResolver(): ComponentsResolver
+    {
+        return $this->parentComponentsResolver;
+    }
+
+    /**
+     * @param ComponentsResolver $componentsResolver
+     * @return $this
+     */
+    public function setParentComponentsResolver(ComponentsResolver $componentsResolver): self
+    {
+        $this->parentComponentsResolver = $componentsResolver;
 
         return $this;
     }

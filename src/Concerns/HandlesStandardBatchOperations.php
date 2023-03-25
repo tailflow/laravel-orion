@@ -46,9 +46,7 @@ trait HandlesStandardBatchOperations
 
         $this->authorize($this->resolveAbility('create'), $resourceModelClass);
 
-        $resources = config('orion.use_validated')
-            ? $request->validated('resources', [])
-            : $request->get('resources', []);
+        $resources = $this->retrieve($request, 'resources', []);
         $entities = collect([]);
 
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
@@ -66,7 +64,9 @@ trait HandlesStandardBatchOperations
 
             $this->beforeStoreFresh($request, $entity);
 
-            $entity = $entity->fresh($requestedRelations);
+            $entityQuery = $this->buildStoreFetchQuery($request, $requestedRelations);
+            $entity = $this->runStoreFetchQuery($request, $entityQuery, $entity->{$this->keyName()});
+
             $entity->wasRecentlyCreated = true;
 
             $this->afterSave($request, $entity);
@@ -156,14 +156,14 @@ trait HandlesStandardBatchOperations
             $this->performUpdate(
                 $request,
                 $entity,
-                config('orion.use_validated')
-                    ? $request->validated("resources.{$entity->{$this->keyName()}}")
-                    : $request->input("resources.{$entity->{$this->keyName()}}")
+                $this->retrieve($request, "resources.{$entity->{$this->keyName()}}")
             );
 
             $this->beforeUpdateFresh($request, $entity);
 
-            $entity = $entity->fresh($requestedRelations);
+            $entity = $this->refreshUpdatedEntity(
+                $request, $requestedRelations, $entity->{$this->keyName()}
+            );
 
             $this->afterSave($request, $entity);
             $this->afterUpdate($request, $entity);
@@ -307,9 +307,12 @@ trait HandlesStandardBatchOperations
 
             if (!$forceDeletes) {
                 $this->performDestroy($entity);
+
                 if ($softDeletes) {
                     $this->beforeDestroyFresh($request, $entity);
-                    $entity = $entity->fresh($requestedRelations);
+
+                    $entityQuery = $this->buildDestroyFetchQuery($request, $requestedRelations, $softDeletes);
+                    $entity = $this->runDestroyFetchQuery($request, $entityQuery, $entity->{$this->keyName()});
                 }
             } else {
                 $this->performForceDestroy($entity);
@@ -434,7 +437,8 @@ trait HandlesStandardBatchOperations
 
             $this->beforeRestoreFresh($request, $entity);
 
-            $entity = $entity->fresh($requestedRelations);
+            $entityQuery = $this->buildRestoreFetchQuery($request, $requestedRelations);
+            $entity = $this->runRestoreFetchQuery($request, $entityQuery, $entity->{$this->keyName()});
 
             $this->afterRestore($request, $entity);
         }

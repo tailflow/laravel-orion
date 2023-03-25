@@ -3,8 +3,6 @@
 namespace Orion\Tests\Feature\Relations\BelongsTo;
 
 use Illuminate\Support\Facades\Gate;
-use Mockery;
-use Orion\Contracts\ComponentsResolver;
 use Orion\Tests\Feature\TestCase;
 use Orion\Tests\Fixtures\App\Http\Resources\SampleResource;
 use Orion\Tests\Fixtures\App\Models\Category;
@@ -74,15 +72,7 @@ class BelongsToRelationStandardShowOperationsTest extends TestCase
         $user = factory(User::class)->create();
         $post = factory(Post::class)->create(['user_id' => $user->id]);
 
-        app()->bind(
-            ComponentsResolver::class,
-            function () {
-                $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
-                $componentsResolverMock->shouldReceive('resolveResourceClass')->once()->andReturn(SampleResource::class);
-
-                return $componentsResolverMock;
-            }
-        );
+        $this->useResource(SampleResource::class);
 
         Gate::policy(User::class, GreenPolicy::class);
 
@@ -102,5 +92,22 @@ class BelongsToRelationStandardShowOperationsTest extends TestCase
         $response = $this->get("/api/posts/{$post->id}/user?include=posts");
 
         $this->assertResourceShown($response, $user->fresh('posts')->toArray());
+    }
+
+    /** @test */
+    public function getting_a_single_relation_resource_with_aggregate(): void
+    {
+        if ((float) app()->version() < 8.0) {
+            $this->markTestSkipped('Unsupported framework version');
+        }
+
+        $user = factory(User::class)->create();
+        $post = factory(Post::class)->create(['user_id' => $user->id]);
+
+        Gate::policy(User::class, GreenPolicy::class);
+
+        $response = $this->get("/api/posts/{$post->id}/user?with_count=posts");
+
+        $this->assertResourceShown($response, $user->fresh()->loadCount('posts')->toArray());
     }
 }

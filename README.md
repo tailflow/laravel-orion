@@ -4,7 +4,7 @@
 
 <p align="center">
 <a href="https://packagist.org/packages/tailflow/laravel-orion"><img src="https://img.shields.io/packagist/v/tailflow/laravel-orion.svg" alt="Latest Version on Packagist"></a>
-<a href="https://github.com/tailflow/laravel-orion/actions"><img src="https://img.shields.io/github/workflow/status/tailflow/laravel-orion/default" alt="Build Status"></a>
+<a href="https://github.com/tailflow/laravel-orion/actions"><img src="https://img.shields.io/github/actions/workflow/status/tailflow/laravel-orion/ci.yml?branch=main" alt="Build Status"></a>
 </p>
 
 ## Introduction
@@ -17,8 +17,13 @@ Documentation for Laravel Orion can be found on the [website](https://tailflow.g
 
 ## Supported By
 
-<a href="https://geecko.com" target="_blank">
+<a href="https://geecko.com?utm_campaign=opensource&utm_source=laravel-orion&utm_medium=github" target="_blank">
 <img src="https://res.cloudinary.com/dudxt4lp6/image/upload/v1639908579/Laravel%20Orion/logo_geecko_hcuz34.svg" width="300">
+</a>
+
+<a href="https://laraveldaily.com?utm_campaign=opensource&utm_source=laravel-orion&utm_medium=github" style="margin-left: 1rem">
+<img src="https://res.cloudinary.com/dudxt4lp6/image/upload/v1667408230/Laravel%20Orion/logo_laraveldaily_p3d00p.png"
+        height="100">
 </a>
 
 ## License

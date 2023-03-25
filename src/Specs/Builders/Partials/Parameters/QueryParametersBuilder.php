@@ -29,6 +29,9 @@ class QueryParametersBuilder
         $includes = array_merge($controller->alwaysIncludes(), $controller->includes());
         $hasIncludes = (bool) count($includes);
 
+        $aggregates = $controller->aggregates();
+        $hasAggregates = (bool) count($aggregates);
+
         $appends = array_merge($controller->alwaysAppends(), $controller->appends());
         $hasAppends = (bool) count($appends);
 
@@ -49,6 +52,10 @@ class QueryParametersBuilder
                     $parameters[] = $this->buildQueryParameter('string', 'append', $appends);
                 }
 
+                if ($hasAggregates) {
+                    $parameters = array_merge($parameters, $this->buildAggregatesQueryParameters($aggregates));
+                }
+
                 return $parameters;
             case 'index':
             case 'search':
@@ -64,6 +71,15 @@ class QueryParametersBuilder
                     $parameters[] = $this->buildQueryParameter('string', 'include', $includes);
                 }
 
+                if ($hasAppends) {
+                    $parameters[] = $this->buildQueryParameter('string', 'append', $appends);
+                }
+
+                if ($hasAggregates) {
+                    $parameters = array_merge($parameters, $this->buildAggregatesQueryParameters($aggregates));
+                }
+
+
                 return $parameters;
             default:
                 $parameters = [];
@@ -74,6 +90,12 @@ class QueryParametersBuilder
 
                 if ($hasAppends) {
                     $parameters[] = $this->buildQueryParameter('string', 'append', $appends);
+                }
+
+                if ($hasAggregates) {
+                    $parameters = array_merge(
+                        $parameters, $this->buildAggregatesQueryParameters($aggregates)
+                    );
                 }
 
                 return $parameters;
@@ -95,5 +117,18 @@ class QueryParametersBuilder
         }
 
         return $descriptor;
+    }
+
+    protected function buildAggregatesQueryParameters(array $enum = []): array
+    {
+        $queryParameters = [];
+        $queryParameters[] = $this->buildQueryParameter('string', 'with_count', $enum);
+        $queryParameters[] = $this->buildQueryParameter('string', 'with_exists', $enum);
+        $queryParameters[] = $this->buildQueryParameter('string', 'with_avg', $enum);
+        $queryParameters[] = $this->buildQueryParameter('string', 'with_sum', $enum);
+        $queryParameters[] = $this->buildQueryParameter('string', 'with_min', $enum);
+        $queryParameters[] = $this->buildQueryParameter('string', 'with_max', $enum);
+
+        return $queryParameters;
     }
 }

@@ -6,7 +6,8 @@ use Orion\Tests\Fixtures\App\Models\AccessKeyScope;
 
 $factory->define(AccessKeyScope::class, function (Faker $faker) {
     return [
-        'scope' => \Illuminate\Support\Str::slug($faker->words(3, true))
+        'scope' => \Illuminate\Support\Str::slug($faker->words(3, true)),
+        'description' => $faker->words(3, true)
     ];
 });
 

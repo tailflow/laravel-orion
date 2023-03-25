@@ -15,4 +15,9 @@ class PostPostMetaController extends RelationController
     {
         return ['post'];
     }
+
+    public function aggregates(): array
+    {
+        return ['post'];
+    }
 }

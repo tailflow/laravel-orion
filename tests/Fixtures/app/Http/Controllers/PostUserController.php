@@ -21,4 +21,9 @@ class PostUserController extends RelationController
     {
         return ['posts'];
     }
+
+    public function aggregates(): array
+    {
+        return ['posts'];
+    }
 }

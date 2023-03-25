@@ -42,7 +42,6 @@ class User extends Authenticatable
 
     public function notifications()
     {
-//        $this->roles()->whereDate()
         return $this->belongsToMany(Notification::class)->withPivot('meta');
     }
 }

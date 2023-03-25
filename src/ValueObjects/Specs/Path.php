@@ -22,7 +22,7 @@ class Path implements Arrayable
      */
     public function __construct(string $path)
     {
-        $this->path = str_replace('?', '', $path);
+        $this->path = $path;
         $this->operations = collect([]);
     }
 

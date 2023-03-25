@@ -43,7 +43,7 @@ class BaseControllerTest extends TestCase
         $fakeParamsValidator = new ParamsValidator();
         $fakeRelationsResolver = new RelationsResolver([], []);
         $fakeAppendsResolver = new AppendsResolver([], []);
-        $fakePaginator = new Paginator(15);
+        $fakePaginator = new Paginator(15, null);
         $fakeSearchBuilder = new SearchBuilder([]);
         $fakeQueryBuilder = new QueryBuilder(Post::class, $fakeParamsValidator, $fakeRelationsResolver, $fakeSearchBuilder);
 
@@ -60,6 +60,8 @@ class BaseControllerTest extends TestCase
                 'exposedScopes' => ['testScope'],
                 'filterableBy' => ['test_filterable_field'],
                 'sortableBy' => ['test_sortable_field'],
+                'aggregatableBy' => ['test_aggregatable_field'],
+                'includableBy' => ['testRelation', 'testAlwaysIncludedRelation'],
             ]
         )->once()->andReturn($fakeParamsValidator);
 
@@ -83,6 +85,7 @@ class BaseControllerTest extends TestCase
             \Orion\Contracts\Paginator::class,
             [
                 'defaultLimit' => 15,
+                'maxLimit' => null,
             ]
         )->once()->andReturn($fakePaginator);
 

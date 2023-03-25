@@ -109,8 +109,7 @@ trait HandlesRelationOneToManyOperations
     ): Builder {
         $relatedModel = $parentEntity->{$this->getRelation()}()->getModel();
 
-        return $this->relationQueryBuilder->buildQuery($relatedModel->query(), $request)
-            ->with($this->relationsResolver->requestedRelations($request));
+        return $this->relationQueryBuilder->buildQuery($relatedModel->query(), $request);
     }
 
     /**
@@ -213,7 +212,7 @@ trait HandlesRelationOneToManyOperations
         $this->performDissociate($request, $parentEntity, $entity);
 
         $entity = $this->relationQueryBuilder->buildQuery($entity::query(), $request)
-            ->with($this->relationsResolver->requestedRelations($request))->where(
+            ->where(
                 $this->resolveQualifiedKeyName(),
                 $entity->{$this->keyName()}
             )->firstOrFail();

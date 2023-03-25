@@ -197,15 +197,7 @@ class BelongsToManyRelationStandardIndexOperationsTest extends TestCase
         $roles = factory(Role::class)->times(15)->make();
         $user->roles()->saveMany($roles);
 
-        app()->bind(
-            ComponentsResolver::class,
-            function () {
-                $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
-                $componentsResolverMock->shouldReceive('resolveResourceClass')->once()->andReturn(SampleResource::class);
-
-                return $componentsResolverMock;
-            }
-        );
+        $this->useResource(SampleResource::class);
 
         Gate::policy(User::class, GreenPolicy::class);
         Gate::policy(Role::class, GreenPolicy::class);
@@ -227,15 +219,7 @@ class BelongsToManyRelationStandardIndexOperationsTest extends TestCase
         $roles = factory(Role::class)->times(15)->make();
         $user->roles()->saveMany($roles);
 
-        app()->bind(
-            ComponentsResolver::class,
-            function () {
-                $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
-                $componentsResolverMock->shouldReceive('resolveCollectionResourceClass')->once()->andReturn(SampleCollectionResource::class);
-
-                return $componentsResolverMock;
-            }
-        );
+        $this->useCollectionResource(SampleCollectionResource::class);
 
         Gate::policy(User::class, GreenPolicy::class);
         Gate::policy(Role::class, GreenPolicy::class);

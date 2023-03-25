@@ -126,15 +126,7 @@ class BelongsToManyRelationStandardRestoreOperationsTest extends TestCase
 
         Gate::policy(Notification::class, GreenPolicy::class);
 
-        app()->bind(
-            ComponentsResolver::class,
-            function () {
-                $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
-                $componentsResolverMock->shouldReceive('resolveResourceClass')->once()->andReturn(SampleResource::class);
-
-                return $componentsResolverMock;
-            }
-        );
+        $this->useResource(SampleResource::class);
 
         $response = $this->post("/api/users/{$user->id}/notifications/{$trashedNotification->id}/restore");
 

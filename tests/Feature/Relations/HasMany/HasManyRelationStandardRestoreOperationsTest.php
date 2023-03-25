@@ -91,15 +91,7 @@ class HasManyRelationStandardRestoreOperationsTest extends TestCase
 
         Gate::policy(Post::class, GreenPolicy::class);
 
-        app()->bind(
-            ComponentsResolver::class,
-            function () {
-                $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
-                $componentsResolverMock->shouldReceive('resolveResourceClass')->once()->andReturn(SampleResource::class);
-
-                return $componentsResolverMock;
-            }
-        );
+        $this->useResource(SampleResource::class);
 
         $response = $this->post("/api/users/{$user->id}/posts/{$trashedPost->id}/restore");
 

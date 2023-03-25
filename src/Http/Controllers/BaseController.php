@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
 use Orion\Concerns\BuildsResponses;
@@ -59,6 +60,11 @@ abstract class BaseController extends \Illuminate\Routing\Controller
      * @var string|null $collectionResource
      */
     protected $collectionResource = null;
+
+    /**
+     * @var string|null $policy
+     */
+    protected $policy;
 
     /**
      * @var ComponentsResolver $componentsResolver
@@ -118,6 +124,8 @@ abstract class BaseController extends \Illuminate\Routing\Controller
                 'exposedScopes' => $this->exposedScopes(),
                 'filterableBy' => $this->filterableBy(),
                 'sortableBy' => $this->sortableBy(),
+                'aggregatableBy' => $this->aggregates(),
+                'includableBy' => array_merge($this->includes(), $this->alwaysIncludes()),
             ]
         );
         $this->relationsResolver = App::makeWith(
@@ -138,6 +146,7 @@ abstract class BaseController extends \Illuminate\Routing\Controller
             Paginator::class,
             [
                 'defaultLimit' => $this->limit(),
+                'maxLimit' => $this->maxLimit(),
             ]
         );
         $this->searchBuilder = App::makeWith(
@@ -191,6 +200,16 @@ abstract class BaseController extends \Illuminate\Routing\Controller
      * @return array
      */
     public function filterableBy(): array
+    {
+        return [];
+    }
+
+    /**
+     * The relations that are allowed to be aggregated with a resource.
+     *
+     * @return array
+     */
+    public function aggregates(): array
     {
         return [];
     }
@@ -267,6 +286,16 @@ abstract class BaseController extends \Illuminate\Routing\Controller
     }
 
     /**
+     * Max pagination limit.
+     *
+     * @return int?
+     */
+    public function maxLimit(): ?int
+    {
+        return null;
+    }
+
+    /**
      * The attributes that are used for searching.
      *
      * @return array
@@ -319,6 +348,10 @@ abstract class BaseController extends \Illuminate\Routing\Controller
     protected function bindComponents(): void
     {
         $this->componentsResolver->bindRequestClass($this->getRequest());
+
+        if ($policy = $this->getPolicy()) {
+            $this->componentsResolver->bindPolicyClass($policy);
+        }
     }
 
     /**
@@ -336,6 +369,25 @@ abstract class BaseController extends \Illuminate\Routing\Controller
     public function setRequest(string $requestClass): self
     {
         $this->request = $requestClass;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getPolicy(): ?string
+    {
+        return $this->policy;
+    }
+
+    /**
+     * @param string $policy
+     * @return $this
+     */
+    public function setPolicy(string $policy): self
+    {
+        $this->policy = $policy;
 
         return $this;
     }
@@ -607,6 +659,7 @@ abstract class BaseController extends \Illuminate\Routing\Controller
     protected function keyName(): string
     {
         $resourceModelClass = $this->resolveResourceModelClass();
+
         return (new $resourceModelClass)->getKeyName();
     }
 
@@ -625,5 +678,26 @@ abstract class BaseController extends \Illuminate\Routing\Controller
         }
 
         return !property_exists($this, 'paginationDisabled');
+    }
+
+    /**
+     * Retrieves data from the request
+     *
+     * @param Request $request
+     * @param string|null $key
+     * @param null $default
+     * @return mixed
+     */
+    protected function retrieve(Request $request, ?string $key = null, $default = null)
+    {
+        if (!config('orion.use_validated')) {
+            return $key ? $request->input($key, $default) : $request->all();
+        }
+
+        if (!$key) {
+            return $request->validated();
+        }
+
+        return Arr::get($request->safe([$key]), $key, $default);
     }
 }

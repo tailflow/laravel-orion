@@ -120,15 +120,7 @@ class HasManyRelationOneToManyOperationsTest extends TestCase
         Gate::policy(Company::class, GreenPolicy::class);
         Gate::policy(Team::class, GreenPolicy::class);
 
-        app()->bind(
-            ComponentsResolver::class,
-            function () {
-                $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
-                $componentsResolverMock->shouldReceive('resolveResourceClass')->once()->andReturn(SampleResource::class);
-
-                return $componentsResolverMock;
-            }
-        );
+        $this->useResource(SampleResource::class);
 
         $response = $this->post(
             "/api/companies/{$company->id}/teams/associate",
@@ -201,15 +193,7 @@ class HasManyRelationOneToManyOperationsTest extends TestCase
         Gate::policy(Company::class, GreenPolicy::class);
         Gate::policy(Team::class, GreenPolicy::class);
 
-        app()->bind(
-            ComponentsResolver::class,
-            function () {
-                $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
-                $componentsResolverMock->shouldReceive('resolveResourceClass')->once()->andReturn(SampleResource::class);
-
-                return $componentsResolverMock;
-            }
-        );
+        $this->useResource(SampleResource::class);
 
         $response = $this->delete("/api/companies/{$company->id}/teams/{$team->id}/dissociate");
 

@@ -3,8 +3,6 @@
 namespace Orion\Tests\Feature\Relations\HasMany;
 
 use Illuminate\Support\Facades\Gate;
-use Mockery;
-use Orion\Contracts\ComponentsResolver;
 use Orion\Tests\Feature\TestCase;
 use Orion\Tests\Fixtures\App\Http\Resources\SampleResource;
 use Orion\Tests\Fixtures\App\Models\AccessKey;
@@ -90,15 +88,7 @@ class HasManyRelationStandardShowOperationsTest extends TestCase
         $company = factory(Company::class)->create();
         $team = factory(Team::class)->create(['company_id' => $company->id]);
 
-        app()->bind(
-            ComponentsResolver::class,
-            function () {
-                $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
-                $componentsResolverMock->shouldReceive('resolveResourceClass')->once()->andReturn(SampleResource::class);
-
-                return $componentsResolverMock;
-            }
-        );
+        $this->useResource(SampleResource::class);
 
         Gate::policy(Team::class, GreenPolicy::class);
 
@@ -118,5 +108,22 @@ class HasManyRelationStandardShowOperationsTest extends TestCase
         $response = $this->get("/api/companies/{$company->id}/teams/{$team->id}?include=company");
 
         $this->assertResourceShown($response, $team->fresh('company')->toArray());
+    }
+
+    /** @test */
+    public function getting_a_single_relation_resource_with_aggregate(): void
+    {
+        if ((float) app()->version() < 8.0) {
+            $this->markTestSkipped('Unsupported framework version');
+        }
+
+        $company = factory(Company::class)->create();
+        $team = factory(Team::class)->create(['company_id' => $company->id]);
+
+        Gate::policy(Team::class, GreenPolicy::class);
+
+        $response = $this->get("/api/companies/{$company->id}/teams/{$team->id}?with_count=company");
+
+        $this->assertResourceShown($response, $team->fresh()->loadCount('company')->toArray());
     }
 }

@@ -164,7 +164,7 @@ trait HandlesRelationStandardOperations
     }
 
     /**
-     * Builds Eloquent query for fetching relation entity.
+     * Wrapper function to build Eloquent query for fetching relation entity.
      *
      * @param Request $request
      * @param Model $parentEntity
@@ -176,8 +176,29 @@ trait HandlesRelationStandardOperations
         Model $parentEntity,
         array $requestedRelations
     ): Relation {
-        return $this->relationQueryBuilder->buildQuery($this->newRelationQuery($parentEntity), $request)
-            ->with($requestedRelations);
+        return $this->buildRelationFetchQueryBase(
+            $request,
+            $parentEntity,
+            $requestedRelations
+        );
+    }
+
+    /**
+     * Builds Eloquent query for fetching relation entity.
+     *
+     * @param Request $request
+     * @param Model $parentEntity
+     * @param array $requestedRelations
+     * @return Relation
+     */
+    protected function buildRelationFetchQueryBase(
+        Request $request,
+        Model $parentEntity,
+        array $requestedRelations
+    ): Relation {
+        return $this->relationQueryBuilder->buildQuery(
+            $this->newRelationQuery($parentEntity), $request
+        );
     }
 
     /**
@@ -282,20 +303,32 @@ trait HandlesRelationStandardOperations
 
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
 
+        if ($this->isOneToOneRelation($parentEntity)) {
+            $query = $this->buildStoreFetchQuery(
+                $request, $parentEntity, $requestedRelations
+            );
+
+            if ($query->exists()) {
+                abort(409, 'Entity already exists.');
+            }
+        }
+
         $this->performStore(
             $request,
             $parentEntity,
             $entity,
-            config('orion.use_validated')
-                ? $request->validated()
-                : $request->all(),
+            $this->retrieve($request),
             $request->get('pivot', [])
         );
 
-        $entity = $this->newRelationQuery($parentEntity)->with($requestedRelations)->where(
-            $this->resolveQualifiedKeyName(),
+        $query = $this->buildStoreFetchQuery($request, $parentEntity, $requestedRelations);
+
+        $entity = $this->runStoreFetchQuery(
+            $request,
+            $query,
+            $parentEntity,
             $entity->{$this->keyName()}
-        )->firstOrFail();
+        );
         $entity->wasRecentlyCreated = true;
 
         $entity = $this->cleanupEntity($entity);
@@ -395,6 +428,33 @@ trait HandlesRelationStandardOperations
             $entity->save();
             $parentEntity->{$this->getRelation()}()->associate($entity);
         }
+    }
+
+    /**
+     * Builds Eloquent query for fetching relation entity in store method.
+     *
+     * @param Request $request
+     * @param Model $parentEntity
+     * @param array $requestedRelations
+     * @return Relation
+     */
+    protected function buildStoreFetchQuery(Request $request, Model $parentEntity, array $requestedRelations): Relation
+    {
+        return $this->buildRelationFetchQuery($request, $parentEntity, $requestedRelations);
+    }
+
+    /**
+     * Runs the given query for fetching relation entity in store method.
+     *
+     * @param Request $request
+     * @param Relation $query
+     * @param Model $parentEntity
+     * @param string|int $relatedKey
+     * @return Model
+     */
+    protected function runStoreFetchQuery(Request $request, Relation $query, Model $parentEntity, $relatedKey): Model
+    {
+        return $this->runRelationFetchQuery($request, $query, $parentEntity, $relatedKey);
     }
 
     /**
@@ -531,7 +591,7 @@ trait HandlesRelationStandardOperations
     }
 
     /**
-     * Runs the given query for fetching relation entity.
+     * Wrapper function to run the given query for fetching relation entity.
      *
      * @param Request $request
      * @param Relation $query
@@ -541,6 +601,29 @@ trait HandlesRelationStandardOperations
      */
     protected function runRelationFetchQuery(Request $request, Relation $query, Model $parentEntity, $relatedKey): Model
     {
+        return $this->runRelationFetchQueryBase(
+            $request,
+            $query,
+            $parentEntity,
+            $relatedKey
+        );
+    }
+
+    /**
+     * Runs the given query for fetching relation entity.
+     *
+     * @param Request $request
+     * @param Relation $query
+     * @param Model $parentEntity
+     * @param string|int $relatedKey
+     * @return Model
+     */
+    protected function runRelationFetchQueryBase(
+        Request $request,
+        Relation $query,
+        Model $parentEntity,
+        $relatedKey
+    ): Model {
         if ($this->isOneToOneRelation($parentEntity)) {
             return $query->firstOrFail();
         }
@@ -559,6 +642,7 @@ trait HandlesRelationStandardOperations
     protected function isOneToOneRelation(Model $parentEntity)
     {
         $relation = $parentEntity->{$this->getRelation()}();
+
         return $relation instanceof HasOne || $relation instanceof MorphOne || $relation instanceof BelongsTo || $relation instanceof HasOneThrough;
     }
 
@@ -642,17 +726,13 @@ trait HandlesRelationStandardOperations
             $request,
             $parentEntity,
             $entity,
-            config('orion.use_validated')
-                ? $request->validated()
-                : $request->all(),
+            $this->retrieve($request),
             $request->get('pivot', [])
         );
 
-        $entity = $this->newRelationQuery($parentEntity)->with($requestedRelations)->where(
-            $this->resolveQualifiedKeyName(),
-            $entity->{$this->keyName()}
-        )->firstOrFail();
-
+        $entity = $this->refreshUpdatedEntity(
+            $request, $parentEntity, $requestedRelations,  $relatedKey
+        );
         $entity = $this->cleanupEntity($entity);
 
         if (count($this->getPivotJson())) {
@@ -728,6 +808,35 @@ trait HandlesRelationStandardOperations
     }
 
     /**
+     * Fetches the relation model that has just been updated using the given key.
+     *
+     * @param Request $request
+     * @param Model $parentEntity
+     * @param array $requestedRelations
+     * @param string|int $relatedKey
+     * @return Model
+     */
+    protected function refreshUpdatedEntity(
+        Request $request,
+        Model $parentEntity,
+        array $requestedRelations,
+        $relatedKey
+    ): Model {
+        $query = $this->buildRelationFetchQueryBase(
+            $request,
+            $parentEntity,
+            $requestedRelations
+        );
+
+        return $this->runRelationFetchQueryBase(
+            $request,
+            $query,
+            $parentEntity,
+            $relatedKey
+        );
+    }
+
+    /**
      * The hook is executed before updating a relation resource.
      *
      * @param Request $request
@@ -760,6 +869,7 @@ trait HandlesRelationStandardOperations
         $entity->save();
 
         $relation = $parentEntity->{$this->getRelation()}();
+
         if ($relation instanceof BelongsToMany || $relation instanceof MorphToMany) {
             if (count($pivotFields = $this->preparePivotFields($pivot))) {
                 $relation->updateExistingPivot($entity->getKey(), $pivotFields);
@@ -836,11 +946,9 @@ trait HandlesRelationStandardOperations
 
         if (!$forceDeletes) {
             $this->performDestroy($entity);
+
             if ($softDeletes) {
-                $entity = $this->newRelationQuery($parentEntity)->withTrashed()->with($requestedRelations)->where(
-                    $this->resolveQualifiedKeyName(),
-                    $entity->{$this->keyName()}
-                )->firstOrFail();
+                $entity = $this->runDestroyFetchQuery($request, $query, $parentEntity, $relatedKey);
             }
         } else {
             $this->performForceDestroy($entity);
@@ -1020,11 +1128,7 @@ trait HandlesRelationStandardOperations
 
         $this->performRestore($entity);
 
-        $entity = $this->newRelationQuery($parentEntity)->with($requestedRelations)->where(
-            $this->resolveQualifiedKeyName(),
-            $entity->{$this->keyName()}
-        )->firstOrFail();
-
+        $entity = $this->runRestoreFetchQuery($request, $query, $parentEntity, $relatedKey);
         $entity = $this->cleanupEntity($entity);
 
         if (count($this->getPivotJson())) {
