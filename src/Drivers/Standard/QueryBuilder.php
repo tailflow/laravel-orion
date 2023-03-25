@@ -626,6 +626,10 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
                 ) {
                     $relationQueryBuilder = $this->clone($relationModelClass);
 
+                    if(array_key_exists("limit", $includeDescriptor)) {
+                        $includeQuery->take($includeDescriptor["limit"]);
+                    }
+                    
                     $relationQueryBuilder->applyFiltersToQuery(
                         $includeQuery,
                         $request,
