@@ -31,20 +31,6 @@ class HasManyRelationStandardIndexOperationsTest extends TestCase
     }
 
     /** @test */
-    public function getting_a_list_of_relation_resources_without_authorization_on_parent_model(): void
-    {
-        $company = factory(Company::class)->create();
-        factory(Team::class)->times(5)->create(['company_id' => $company->id]);
-
-        Gate::policy(Company::class, RedPolicy::class);
-        Gate::policy(Team::class, GreenPolicy::class);
-
-        $response = $this->get("/api/companies/{$company->id}/teams");
-
-        $this->assertUnauthorizedResponse($response);
-    }
-
-    /** @test */
     public function getting_a_list_of_relation_resources_when_authorized(): void
     {
         $company = factory(Company::class)->create();

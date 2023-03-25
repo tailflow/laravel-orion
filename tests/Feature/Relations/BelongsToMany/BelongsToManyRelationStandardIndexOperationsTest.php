@@ -32,22 +32,6 @@ class BelongsToManyRelationStandardIndexOperationsTest extends TestCase
     }
 
     /** @test */
-    public function getting_a_list_of_relation_resources_without_authorization_on_parent_model(): void
-    {
-        /** @var User $user */
-        $user = factory(User::class)->create();
-        $roles = factory(Role::class)->times(5)->make();
-        $user->roles()->saveMany($roles);
-
-        Gate::policy(User::class, RedPolicy::class);
-        Gate::policy(Role::class, GreenPolicy::class);
-
-        $response = $this->get("/api/users/{$user->id}/roles");
-
-        $this->assertUnauthorizedResponse($response);
-    }
-
-    /** @test */
     public function getting_a_list_of_relation_resources_when_authorized(): void
     {
         /** @var User $user */

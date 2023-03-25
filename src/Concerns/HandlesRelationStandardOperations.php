@@ -44,8 +44,6 @@ trait HandlesRelationStandardOperations
             return $beforeHookResult;
         }
 
-        $this->authorize($this->resolveAbility('show'), $parentEntity);
-
         $query = $this->buildIndexFetchQuery($request, $parentEntity, $requestedRelations);
         $entities = $this->runIndexFetchQuery(
             $request,
