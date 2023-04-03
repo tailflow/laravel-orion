@@ -342,7 +342,7 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
         $resourceModel = (new $this->resourceModelClass);
 
         foreach ($relations as $nestedRelation) {
-            if (!method_exists($resourceModel, $nestedRelation)) {
+            if (!$resourceModel->isRelation($nestedRelation)) {
                 return null;
             }
 
@@ -629,7 +629,7 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
                     if(array_key_exists("limit", $includeDescriptor)) {
                         $includeQuery->take($includeDescriptor["limit"]);
                     }
-                    
+
                     $relationQueryBuilder->applyFiltersToQuery(
                         $includeQuery,
                         $request,
