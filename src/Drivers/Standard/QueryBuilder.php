@@ -342,7 +342,11 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
         $resourceModel = (new $this->resourceModelClass);
 
         foreach ($relations as $nestedRelation) {
-            if (!$resourceModel->isRelation($nestedRelation)) {
+            if ((float) app()->version() >= 8.0) {
+                if (!$resourceModel->isRelation($nestedRelation)) {
+                    return null;
+                }
+            } elseif (!method_exists($resourceModel, $nestedRelation)) {
                 return null;
             }
 
