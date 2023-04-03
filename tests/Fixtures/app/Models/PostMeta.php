@@ -15,7 +15,7 @@ class PostMeta extends Model
      *
      * @var array
      */
-    protected $fillable = ['notes'];
+    protected $fillable = ['name', 'title', 'notes'];
 
     /**
      * @return BelongsTo

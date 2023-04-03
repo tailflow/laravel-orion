@@ -15,6 +15,8 @@ class CreatePostMetasTable extends Migration
     {
         Schema::create('post_metas', function (Blueprint $table) {
             $table->increments('id');
+            $table->string('title')->nullable();
+            $table->string('name')->nullable();
             $table->text('notes');
             $table->boolean('comments_enabled')->default(true);
             $table->unsignedBigInteger('post_id');

@@ -134,10 +134,14 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
                 if ($relation === 'pivot') {
                     $this->buildPivotFilterQueryWhereClause($relationField, $filterDescriptor, $query, $or);
                 } else {
+                    $relationInstance = (new $this->resourceModelClass)->{$relation}();
+
+                    $qualifiedRelationFieldName = $this->relationsResolver->getQualifiedRelationFieldName($relationInstance, $relationField);
+
                     $query->{$or ? 'orWhereHas' : 'whereHas'}(
                         $relation,
-                        function ($relationQuery) use ($relationField, $filterDescriptor) {
-                            $this->buildFilterQueryWhereClause($relationField, $filterDescriptor, $relationQuery);
+                        function ($relationQuery) use ($qualifiedRelationFieldName, $filterDescriptor) {
+                            $this->buildFilterQueryWhereClause($qualifiedRelationFieldName, $filterDescriptor, $relationQuery);
                         }
                     );
                 }
@@ -394,21 +398,25 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
                         $relation = $this->relationsResolver->relationFromParamConstraint($searchable);
                         $relationField = $this->relationsResolver->relationFieldFromParamConstraint($searchable);
 
+                        $relationInstance = (new $this->resourceModelClass)->{$relation}();
+
+                        $qualifiedRelationFieldName = $this->relationsResolver->getQualifiedRelationFieldName($relationInstance, $relationField);
+
                         $whereQuery->orWhereHas(
                             $relation,
-                            function ($relationQuery) use ($relationField, $requestedSearchString, $caseSensitive) {
+                            function ($relationQuery) use ($qualifiedRelationFieldName, $requestedSearchString, $caseSensitive) {
                                 /**
                                  * @var Builder $relationQuery
                                  */
                                 if (!$caseSensitive) {
                                     return $relationQuery->whereRaw(
-                                        "lower({$relationField}) like lower(?)",
+                                        "lower({$qualifiedRelationFieldName}) like lower(?)",
                                         ['%'.$requestedSearchString.'%']
                                     );
                                 }
 
                                 return $relationQuery->where(
-                                    $relationField,
+                                    $qualifiedRelationFieldName,
                                     'like',
                                     '%'.$requestedSearchString.'%'
                                 );
@@ -481,7 +489,9 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
                     $query->leftJoin($relationTable, $relationForeignKey, '=', $relationLocalKey);
                 }
 
-                $query->orderBy("$relationTable.$relationField", $direction)
+                $qualifiedRelationFieldName = $this->relationsResolver->getQualifiedRelationFieldName($relationInstance,  $relationField);
+
+                $query->orderBy($qualifiedRelationFieldName, $direction)
                     ->select($this->getQualifiedFieldName('*'));
             } else {
                 $query->orderBy($this->getQualifiedFieldName($sortableField), $direction);

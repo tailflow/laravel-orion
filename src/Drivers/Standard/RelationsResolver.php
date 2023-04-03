@@ -131,6 +131,24 @@ class RelationsResolver implements \Orion\Contracts\RelationsResolver
     }
 
     /**
+     * Retrieve a fully-qualified field name of the given relation.
+     *
+     * @param Relation $relation
+     * @param string $field
+     * @return string
+     */
+    public function getQualifiedRelationFieldName(Relation $relation, string $field): string
+    {
+        if ($relation instanceof MorphTo) {
+            return $field;
+        }
+
+        $table = $relation->getModel()->getTable();
+
+        return "{$table}.{$field}";
+    }
+
+    /**
      * Resolves relation local key from the given relation instance.
      *
      * @param Relation $relationInstance
