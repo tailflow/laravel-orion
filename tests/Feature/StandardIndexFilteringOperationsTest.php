@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Gate;
 use Orion\Tests\Fixtures\App\Models\Company;
 use Orion\Tests\Fixtures\App\Models\Post;
+use Orion\Tests\Fixtures\App\Models\PostMeta;
 use Orion\Tests\Fixtures\App\Models\Team;
 use Orion\Tests\Fixtures\App\Models\User;
 use Orion\Tests\Fixtures\App\Policies\GreenPolicy;
@@ -636,6 +637,62 @@ class StandardIndexFilteringOperationsTest extends TestCase
             [
                 'filters' => [
                     ['field' => 'options->nested_field', 'operator' => 'any in', 'value' => ['a', 'b']],
+                ],
+            ]
+        );
+
+        $this->assertResourcesPaginated(
+            $response,
+            $this->makePaginator([$matchingPost], 'posts/search')
+        );
+    }
+
+    /** @test */
+    public function getting_a_list_of_resources_filtered_by_identically_named_relation_fields(): void
+    {
+        $user = factory(User::class)->create(['name' => 'John Doe']);
+        $matchingPost = factory(Post::class)
+            ->create([ 'user_id' => $user->id, ])->fresh();
+        factory(PostMeta::class)->create(['post_id' => $matchingPost->id, 'name' => 'test']);
+
+        factory(Post::class)->create(['publish_at' => Carbon::now()])->fresh();
+
+        Gate::policy(Post::class, GreenPolicy::class);
+
+        $response = $this->post(
+            '/api/posts/search',
+            [
+                'filters' => [
+                    ['field' => 'meta.name', 'operator' => '=', 'value' => 'test'],
+                    ['field' => 'user.name', 'operator' => '=', 'value' => 'John Doe'],
+                ],
+            ]
+        );
+
+        $this->assertResourcesPaginated(
+            $response,
+            $this->makePaginator([$matchingPost], 'posts/search')
+        );
+    }
+
+    /** @test */
+    public function getting_a_list_of_resources_filtered_by_identically_named_fields_on_different_nesting_level(): void
+    {
+        $matchingPost = factory(Post::class)
+            ->create(['title' => 'test' ])->fresh();
+        factory(PostMeta::class)->create(['post_id' => $matchingPost->id, 'title' => 'test']);
+
+
+        factory(Post::class)->create(['publish_at' => Carbon::now()])->fresh();
+
+        Gate::policy(Post::class, GreenPolicy::class);
+
+        $response = $this->post(
+            '/api/posts/search',
+            [
+                'filters' => [
+                    ['field' => 'meta.title', 'operator' => '=', 'value' => 'test'],
+                    ['field' => 'title', 'operator' => '=', 'value' => 'test'],
                 ],
             ]
         );

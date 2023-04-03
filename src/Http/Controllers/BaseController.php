@@ -673,11 +673,15 @@ abstract class BaseController extends \Illuminate\Routing\Controller
      */
     protected function shouldPaginate(Request $request, int $paginationLimit): bool
     {
+        if (property_exists($this, 'paginationDisabled')) {
+            return ! $this->paginationDisabled;
+        }
+
         if (app()->bound('orion.paginationEnabled')) {
             return app()->make('orion.paginationEnabled');
         }
 
-        return !property_exists($this, 'paginationDisabled');
+        return true;
     }
 
     /**

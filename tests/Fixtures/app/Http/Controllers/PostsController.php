@@ -37,6 +37,8 @@ class PostsController extends Controller
             'position',
             'publish_at',
             'user.name',
+            'meta.name',
+            'meta.title',
             'meta->nested_field',
             'options',
             'options->nested_field',
@@ -45,7 +47,7 @@ class PostsController extends Controller
 
     public function searchableBy(): array
     {
-        return ['title', 'user.name'];
+        return ['title', 'meta.title', 'meta.name', 'user.name'];
     }
 
     public function exposedScopes(): array
