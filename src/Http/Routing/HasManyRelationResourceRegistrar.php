@@ -22,9 +22,9 @@ class HasManyRelationResourceRegistrar extends RelationResourceRegistrar
      * @param array $options
      * @return Route
      */
-    protected function addResourceAssociate(string $name, string $base, string $controller, array $options)
+    protected function addResourceAssociate(string $name, string $base, string $controller, array $options): Route
     {
-        $uri = $this->getResourceUri($name).'/associate';
+        $uri = $this->getNestedResourceUriWithoutNestedParameter($name, $base).'/associate';
 
         $action = $this->getResourceAction($name, $controller, 'associate', $options);
 
@@ -40,9 +40,9 @@ class HasManyRelationResourceRegistrar extends RelationResourceRegistrar
      * @param array $options
      * @return Route
      */
-    protected function addResourceDissociate(string $name, string $base, string $controller, array $options)
+    protected function addResourceDissociate(string $name, string $base, string $controller, array $options): Route
     {
-        $uri = $this->getResourceUri($name).'/{'.$base.'?}/dissociate';
+        $uri = $this->getNestedResourceUriWithNestedParameter($name, $base).'/dissociate';
 
         $action = $this->getResourceAction($name, $controller, 'dissociate', $options);
 

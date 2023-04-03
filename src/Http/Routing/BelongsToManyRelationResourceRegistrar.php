@@ -22,9 +22,9 @@ class BelongsToManyRelationResourceRegistrar extends RelationResourceRegistrar
      * @param array $options
      * @return Route
      */
-    protected function addResourceSync(string $name, string $base, string $controller, array $options)
+    protected function addResourceSync(string $name, string $base, string $controller, array $options): Route
     {
-        $uri = $this->getResourceUri($name).'/sync';
+        $uri = $this->getNestedResourceUriWithoutNestedParameter($name, $base).'/sync';
 
         $action = $this->getResourceAction($name, $controller, 'sync', $options);
 
@@ -40,9 +40,9 @@ class BelongsToManyRelationResourceRegistrar extends RelationResourceRegistrar
      * @param array $options
      * @return Route
      */
-    protected function addResourceToggle(string $name, string $base, string $controller, array $options)
+    protected function addResourceToggle(string $name, string $base, string $controller, array $options): Route
     {
-        $uri = $this->getResourceUri($name).'/toggle';
+        $uri = $this->getNestedResourceUriWithoutNestedParameter($name, $base).'/toggle';
 
         $action = $this->getResourceAction($name, $controller, 'toggle', $options);
 
@@ -58,9 +58,9 @@ class BelongsToManyRelationResourceRegistrar extends RelationResourceRegistrar
      * @param array $options
      * @return Route
      */
-    protected function addResourceUpdatePivot(string $name, string $base, string $controller, array $options)
+    protected function addResourceUpdatePivot(string $name, string $base, string $controller, array $options): Route
     {
-        $uri = $this->getResourceUri($name).'/{'.$base.'?}/pivot';
+        $uri = $this->getNestedResourceUriWithNestedParameter($name, $base).'/pivot';
 
         $action = $this->getResourceAction($name, $controller, 'updatePivot', $options);
 
@@ -76,9 +76,9 @@ class BelongsToManyRelationResourceRegistrar extends RelationResourceRegistrar
      * @param array $options
      * @return Route
      */
-    protected function addResourceAttach(string $name, string $base, string $controller, array $options)
+    protected function addResourceAttach(string $name, string $base, string $controller, array $options): Route
     {
-        $uri = $this->getResourceUri($name).'/attach';
+        $uri = $this->getNestedResourceUriWithoutNestedParameter($name, $base).'/attach';
 
         $action = $this->getResourceAction($name, $controller, 'attach', $options);
 
@@ -94,9 +94,9 @@ class BelongsToManyRelationResourceRegistrar extends RelationResourceRegistrar
      * @param array $options
      * @return Route
      */
-    protected function addResourceDetach(string $name, string $base, string $controller, array $options)
+    protected function addResourceDetach(string $name, string $base, string $controller, array $options): Route
     {
-        $uri = $this->getResourceUri($name).'/detach';
+        $uri = $this->getNestedResourceUriWithoutNestedParameter($name, $base).'/detach';
 
         $action = $this->getResourceAction($name, $controller, 'detach', $options);
 

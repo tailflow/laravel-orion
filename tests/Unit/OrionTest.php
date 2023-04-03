@@ -92,6 +92,34 @@ class OrionTest extends TestCase
     }
 
     /** @test */
+    public function registering_relation_resource_with_the_same_name_as_parent(): void
+    {
+        Route::group(
+            ['as' => 'api.', 'prefix' => 'api'],
+            function () {
+                Orion::hasManyResource('projects', 'projects', DummyController::class);
+            }
+        );
+
+        $this->assertRouteRegistered('api.projects.projects.index', ['GET', 'HEAD'], 'api/projects/{project}/projects', DummyController::class.'@index');
+        $this->assertRouteRegistered('api.projects.projects.search', ['POST'], 'api/projects/{project}/projects/search', DummyController::class.'@search');
+        $this->assertRouteRegistered('api.projects.projects.store', ['POST'], 'api/projects/{project}/projects', DummyController::class.'@store');
+        $this->assertRouteRegistered('api.projects.projects.show', ['GET', 'HEAD'], 'api/projects/{project}/projects/{project?}', DummyController::class.'@show');
+        $this->assertRouteRegistered('api.projects.projects.update', ['PUT', 'PATCH'], 'api/projects/{project}/projects/{project?}', DummyController::class.'@update');
+        $this->assertRouteRegistered('api.projects.projects.destroy', ['DELETE'], 'api/projects/{project}/projects/{project?}', DummyController::class.'@destroy');
+
+        $this->assertRouteRegistered('api.projects.projects.associate', ['POST'], 'api/projects/{project}/projects/associate', DummyController::class.'@associate');
+        $this->assertRouteRegistered('api.projects.projects.dissociate', ['DELETE'], 'api/projects/{project}/projects/{project?}/dissociate', DummyController::class.'@dissociate');
+
+        $this->assertRouteRegistered('api.projects.projects.batchStore', ['POST'], 'api/projects/{project}/projects/batch', DummyController::class.'@batchStore');
+        $this->assertRouteRegistered('api.projects.projects.batchUpdate', ['PATCH'], 'api/projects/{project}/projects/batch', DummyController::class.'@batchUpdate');
+        $this->assertRouteRegistered('api.projects.projects.batchDestroy', ['DELETE'], 'api/projects/{project}/projects/batch', DummyController::class.'@batchDestroy');
+
+        $this->assertRouteNotRegistered('api.projects.projects.restore');
+        $this->assertRouteNotRegistered('api.projects.projects.batchRestore');
+    }
+
+    /** @test */
     public function registering_has_one_resource(): void
     {
         Route::group(
