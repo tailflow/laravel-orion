@@ -60,7 +60,7 @@ trait HandlesStandardOperations
      * @param array $requestedRelations
      * @return Builder
      */
-    protected function buildIndexFetchQuery(Request $request, array $requestedRelations): Builder
+    protected function buildIndexFetchQuery(Request $request, array &$requestedRelations): Builder
     {
         $filters = collect($request->get('filters', []))
             ->map(function (array $filterDescriptor) use ($request) {
