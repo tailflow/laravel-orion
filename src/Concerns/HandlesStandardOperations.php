@@ -118,13 +118,11 @@ trait HandlesStandardOperations
      */
     protected function runIndexFetchQuery(Request $request, Builder $query, int $paginationLimit)
     {
-        if ($fields = $request->query('fields')) {
-            $fieldsArray = implode(',', $fields);
-            
-            return $this->shouldPaginate($request, $paginationLimit) ? $query->paginate($paginationLimit, $fieldsArray) : $query->select($fieldsArray)->get();
-        }
-        
-        return $this->shouldPaginate($request, $paginationLimit) ? $query->paginate($paginationLimit) : $query->get();
+        $fieldsArray = $request->query('fields') ? $this->getSelectFields($request->query('fields'), $query->getModel()->getTable()) : ['*'];
+
+        return $this->shouldPaginate($request, $paginationLimit) 
+            ? $query->paginate($paginationLimit, $fieldsArray) 
+            : $query->select($fieldsArray)->get();
     }
 
     /**
@@ -426,14 +424,34 @@ trait HandlesStandardOperations
     protected function runFetchQueryBase(Request $request, Builder $query, $key): Model
     {
         $query = $query->where($this->resolveQualifiedKeyName(), $key);
-        
-        if ($fields = $request->query('fields')) {
-            $fieldsArray = implode(',', $fields);
-            
-            $query = $query->select($fieldsArray);
+
+        if ($request->query('fields')) {
+            $query = $query->select($this->getSelectFields($request->query('fields'), $query->getModel()->getTable()));
         }
-        
+
         return $query->firstOrFail();
+    }
+
+     /**
+     * Gets the selected fields for a query
+     *
+     * @param array $fields
+     * @param string $mainResource
+     * @return array
+     */
+    private function getSelectFields(array $fields, string $mainResource): array
+    {
+        $selectFields = [];
+
+        foreach ($fields as $resource => $fieldList) {
+            $fieldArray = explode(',', $fieldList);
+
+            foreach ($fieldArray as $field) {
+                $selectFields[] = $resource == $mainResource ? $field : "{$resource}.{$field}";
+            }
+        }
+
+        return $selectFields;
     }
 
     /**
