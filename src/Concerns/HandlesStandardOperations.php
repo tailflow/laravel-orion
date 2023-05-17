@@ -118,6 +118,12 @@ trait HandlesStandardOperations
      */
     protected function runIndexFetchQuery(Request $request, Builder $query, int $paginationLimit)
     {
+        if ($fields = $request->query('fields')) {
+            $fieldsArray = implode(',', $fields);
+            
+            return $this->shouldPaginate($request, $paginationLimit) ? $query->paginate($paginationLimit, $fieldsArray) : $query->select($fieldsArray)->get();
+        }
+        
         return $this->shouldPaginate($request, $paginationLimit) ? $query->paginate($paginationLimit) : $query->get();
     }
 
@@ -419,7 +425,15 @@ trait HandlesStandardOperations
      */
     protected function runFetchQueryBase(Request $request, Builder $query, $key): Model
     {
-        return $query->where($this->resolveQualifiedKeyName(), $key)->firstOrFail();
+        $query = $query->where($this->resolveQualifiedKeyName(), $key);
+        
+        if ($fields = $request->query('fields')) {
+            $fieldsArray = implode(',', $fields);
+            
+            $query = $query->select($fieldsArray);
+        }
+        
+        return $query->firstOrFail();
     }
 
     /**
