@@ -23,12 +23,8 @@ class IncludesBuilder extends SearchPartialBuilder
                         'type' => 'string',
                         'enum' => $this->controller->includes(),
                     ],
-                    'filters' => [
-                        'type' => 'object',
-                        'properties' => app()->makeWith(FiltersBuilder::class, ['controller' => get_class($this->controller)])->build(),
-                    ],
-                ]
-            ]
+                ],
+            ],
         ];
     }
 }
