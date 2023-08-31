@@ -28,6 +28,7 @@ class Operation implements Arrayable
         $operation = [
             'parameters' => $this->parameters,
             'summary' => $this->summary,
+            'description' => $this->summary,
             'responses' => collect($this->responses)->mapWithKeys(
                 function (Response $response) {
                     return [(string)$response->statusCode => $response->toArray()];
