@@ -288,18 +288,22 @@ trait HandlesRelationStandardOperations
 
         $this->authorize($this->resolveAbility('create'), [$resourceModelClass, $parentEntity]);
 
-        /** @var Model $entity */
-        $entity = new $resourceModelClass;
+        $entity = $this->repositoryInstance->make();
+        $attributes = $this->retrieve($request);
 
         $beforeHookResult = $this->beforeStore($request, $parentEntity, $entity);
         if ($this->hookResponds($beforeHookResult)) {
             return $beforeHookResult;
         }
 
+        $this->repositoryInstance->beforeStore($entity, $attributes);
+
         $beforeSaveHookResult = $this->beforeSave($request, $parentEntity, $entity);
         if ($this->hookResponds($beforeSaveHookResult)) {
             return $beforeSaveHookResult;
         }
+
+        $this->repositoryInstance->beforeSave($entity, $attributes);
 
         if ($this->isOneToOneRelation($parentEntity)) {
             $query = $this->buildStoreFetchQuery($request, $parentEntity,);
@@ -313,7 +317,7 @@ trait HandlesRelationStandardOperations
             $request,
             $parentEntity,
             $entity,
-            $this->retrieve($request),
+            $attributes,
             $request->get('pivot', [])
         );
 
@@ -333,10 +337,14 @@ trait HandlesRelationStandardOperations
             $entity = $this->castPivotJsonFields($entity);
         }
 
+        $this->repositoryInstance->afterSave($entity);
+
         $afterSaveHookResult = $this->afterSave($request, $parentEntity, $entity);
         if ($this->hookResponds($afterSaveHookResult)) {
             return $afterSaveHookResult;
         }
+
+        $this->repositoryInstance->afterStore($entity);
 
         $afterHookResult = $this->afterStore($request, $parentEntity, $entity);
         if ($this->hookResponds($afterHookResult)) {

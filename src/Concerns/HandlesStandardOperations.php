@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Orion\Concerns;
 
 use Exception;
-use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Contracts\Pagination\Paginator;
 use Illuminate\Database\Eloquent\Builder;
@@ -206,19 +205,19 @@ trait HandlesStandardOperations
         $entity = $this->runStoreFetchQuery($request, $query, $entity->{$this->keyName()});
         $entity->wasRecentlyCreated = true;
 
+        $this->repositoryInstance->afterSave($entity);
+
         $afterSaveHookResult = $this->afterSave($request, $entity);
         if ($this->hookResponds($afterSaveHookResult)) {
             return $afterSaveHookResult;
         }
 
-        $this->repositoryInstance->afterSave($entity);
+        $this->repositoryInstance->afterStore($entity);
 
         $afterHookResult = $this->afterStore($request, $entity);
         if ($this->hookResponds($afterHookResult)) {
             return $afterHookResult;
         }
-
-        $this->repositoryInstance->afterStore($entity);
 
         $entity = $this->getAppendsResolver()->appendToEntity($entity, $request);
         $entity = $this->getRelationsResolver()->guardRelations(
@@ -474,15 +473,19 @@ trait HandlesStandardOperations
 
         $attributes = $this->retrieve($request);
 
-        $beforeHookResult = $this->beforeUpdate($request, $entity);
+        $beforeHookResult = $this->beforeUpdate($request, $entity, $attributes);
         if ($this->hookResponds($beforeHookResult)) {
             return $beforeHookResult;
         }
+
+        $this->repositoryInstance->beforeUpdate($entity, $attributes);
 
         $beforeSaveHookResult = $this->beforeSave($request, $entity, $attributes);
         if ($this->hookResponds($beforeSaveHookResult)) {
             return $beforeSaveHookResult;
         }
+
+        $this->repositoryInstance->beforeSave($entity, $attributes);
 
         $this->performUpdate($request, $entity, $attributes);
 
@@ -493,10 +496,14 @@ trait HandlesStandardOperations
 
         $entity = $this->refreshUpdatedEntity($request, $key);
 
+        $this->repositoryInstance->afterSave($entity);
+
         $afterSaveHookResult = $this->afterSave($request, $entity);
         if ($this->hookResponds($afterSaveHookResult)) {
             return $afterSaveHookResult;
         }
+
+        $this->repositoryInstance->afterUpdate($entity);
 
         $afterHookResult = $this->afterUpdate($request, $entity);
         if ($this->hookResponds($afterHookResult)) {
@@ -555,9 +562,10 @@ trait HandlesStandardOperations
      *
      * @param Request $request
      * @param Model $entity
+     * @param array $attributes
      * @return Response|null
      */
-    protected function beforeUpdate(Request $request, Model $entity): ?Response
+    protected function beforeUpdate(Request $request, Model $entity, array &$attributes): ?Response
     {
         return null;
     }
@@ -571,8 +579,8 @@ trait HandlesStandardOperations
      */
     protected function performUpdate(Request $request, Model $entity, array $attributes): void
     {
-        $this->performFill($request, $entity, $attributes);
-        $entity->save();
+        $this->repositoryInstance->performFill($entity, $attributes);
+        $this->repositoryInstance->performUpdate($entity);
     }
 
     /**
@@ -646,6 +654,8 @@ trait HandlesStandardOperations
             return $beforeHookResult;
         }
 
+        $this->repositoryInstance->beforeDestroy($entity, $forceDeletes);
+
         if (!$forceDeletes) {
             $this->performDestroy($entity);
 
@@ -661,6 +671,8 @@ trait HandlesStandardOperations
         } else {
             $this->performForceDestroy($entity);
         }
+
+        $this->repositoryInstance->afterDestroy($entity);
 
         $afterHookResult = $this->afterDestroy($request, $entity);
         if ($this->hookResponds($afterHookResult)) {
@@ -723,7 +735,7 @@ trait HandlesStandardOperations
      */
     protected function performDestroy(Model $entity): void
     {
-        $entity->delete();
+        $this->repositoryInstance->performDestroy($entity, false);
     }
 
     /**
@@ -733,7 +745,7 @@ trait HandlesStandardOperations
      */
     protected function performForceDestroy(Model $entity): void
     {
-        $entity->forceDelete();
+        $this->repositoryInstance->performDestroy($entity, true);
     }
 
     /**
@@ -801,6 +813,8 @@ trait HandlesStandardOperations
             return $beforeHookResult;
         }
 
+        $this->repositoryInstance->beforeRestore($entity);
+
         $this->performRestore($entity);
 
         $beforeHookResult = $this->beforeRestoreFresh($request, $entity);
@@ -809,6 +823,8 @@ trait HandlesStandardOperations
         }
 
         $entity = $this->runRestoreFetchQuery($request, $query, $key);
+
+        $this->repositoryInstance->afterRestore($entity);
 
         $afterHookResult = $this->afterRestore($request, $entity);
         if ($this->hookResponds($afterHookResult)) {
@@ -867,7 +883,7 @@ trait HandlesStandardOperations
      */
     protected function performRestore(Model $entity): void
     {
-        $entity->restore();
+        $this->repositoryInstance->performRestore($entity);
     }
 
     /**

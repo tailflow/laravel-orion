@@ -62,8 +62,11 @@ trait HandlesStandardBatchOperations
              */
             $entity = new $resourceModelClass;
 
-            $this->beforeStore($request, $entity);
-            $this->beforeSave($request, $entity);
+            $this->beforeStore($request, $entity, $resource);
+            $this->repositoryInstance->beforeStore($entity, $resource);
+
+            $this->beforeSave($request, $entity, $resource);
+            $this->repositoryInstance->beforeSave($entity, $resource);
 
             $this->performStore($request, $entity, $resource);
 
@@ -74,7 +77,10 @@ trait HandlesStandardBatchOperations
 
             $entity->wasRecentlyCreated = true;
 
+            $this->repositoryInstance->afterSave($entity);
             $this->afterSave($request, $entity);
+
+            $this->repositoryInstance->afterStore($entity);
             $this->afterStore($request, $entity);
 
             $entities->push($entity);
@@ -157,14 +163,15 @@ trait HandlesStandardBatchOperations
             /** @var Model $entity */
             $this->authorize($this->resolveAbility('update'), $entity);
 
-            $this->beforeUpdate($request, $entity);
-            $this->beforeSave($request, $entity);
+            $attributes = $this->retrieve($request, "resources.{$entity->{$this->keyName()}}");
 
-            $this->performUpdate(
-                $request,
-                $entity,
-                $this->retrieve($request, "resources.{$entity->{$this->keyName()}}")
-            );
+            $this->beforeUpdate($request, $entity, $attributes);
+            $this->repositoryInstance->beforeUpdate($entity, $attributes);
+
+            $this->beforeSave($request, $entity, $attributes);
+            $this->repositoryInstance->beforeSave($entity, $attributes);
+
+            $this->performUpdate($request, $entity, $attributes);
 
             $this->beforeUpdateFresh($request, $entity);
 
@@ -172,7 +179,10 @@ trait HandlesStandardBatchOperations
                 $request, $entity->{$this->keyName()}
             );
 
+            $this->repositoryInstance->afterSave($entity);
             $this->afterSave($request, $entity);
+
+            $this->repositoryInstance->afterUpdate($entity);
             $this->afterUpdate($request, $entity);
         }
 
@@ -309,6 +319,7 @@ trait HandlesStandardBatchOperations
             $this->authorize($this->resolveAbility($forceDeletes ? 'forceDelete' : 'delete'), $entity);
 
             $this->beforeDestroy($request, $entity);
+            $this->repositoryInstance->beforeDestroy($entity, $forceDeletes);
 
             if (!$forceDeletes) {
                 $this->performDestroy($entity);
@@ -323,6 +334,7 @@ trait HandlesStandardBatchOperations
                 $this->performForceDestroy($entity);
             }
 
+            $this->repositoryInstance->afterDestroy($entity);
             $this->afterDestroy($request, $entity);
         }
 
@@ -432,6 +444,7 @@ trait HandlesStandardBatchOperations
             $this->authorize($this->resolveAbility('restore'), $entity);
 
             $this->beforeRestore($request, $entity);
+            $this->repositoryInstance->beforeRestore($entity);
 
             $this->performRestore($entity);
 
@@ -440,6 +453,7 @@ trait HandlesStandardBatchOperations
             $entityQuery = $this->buildRestoreFetchQuery($request);
             $entity = $this->runRestoreFetchQuery($request, $entityQuery, $entity->{$this->keyName()});
 
+            $this->repositoryInstance->afterRestore($entity);
             $this->afterRestore($request, $entity);
         }
 
