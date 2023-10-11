@@ -67,8 +67,11 @@ trait HandlesRelationStandardBatchOperations
             /** @var Model $entity */
             $entity = new $resourceModelClass;
 
-            $this->beforeStore($request, $parentEntity, $entity);
-            $this->beforeSave($request, $parentEntity, $entity);
+            $this->beforeStore($request, $parentEntity, $entity, $resource);
+            $this->repositoryInstance->beforeStore($entity, $resource);
+
+            $this->beforeSave($request, $parentEntity, $entity, $resource);
+            $this->repositoryInstance->beforeSave($entity, $resource);
 
             $this->performStore(
                 $request,
@@ -94,7 +97,10 @@ trait HandlesRelationStandardBatchOperations
                 $entity = $this->castPivotJsonFields($entity);
             }
 
+            $this->repositoryInstance->afterSave($entity);
             $this->afterSave($request, $parentEntity, $entity);
+
+            $this->repositoryInstance->afterStore($entity);
             $this->afterStore($request, $parentEntity, $entity);
 
             $entities->push($entity);
@@ -210,17 +216,20 @@ trait HandlesRelationStandardBatchOperations
             /** @var Model $entity */
             $this->authorize($this->resolveAbility('update'), [$entity, $parentEntity]);
 
-            $resource = $this->retrieve($request, "resources.{$entity->{$this->keyName()}}");
+            $attributes = $this->retrieve($request, "resources.{$entity->{$this->keyName()}}");
 
-            $this->beforeUpdate($request, $parentEntity, $entity);
-            $this->beforeSave($request, $parentEntity, $entity);
+            $this->beforeUpdate($request, $parentEntity, $entity, $attributes);
+            $this->repositoryInstance->beforeUpdate($entity, $attributes);
+
+            $this->beforeSave($request, $parentEntity, $entity, $attributes);
+            $this->repositoryInstance->beforeSave($entity, $attributes);
 
             $this->performUpdate(
                 $request,
                 $parentEntity,
                 $entity,
-                $resource,
-                Arr::get($resource, 'pivot', [])
+                $attributes,
+                Arr::get($attributes, 'pivot', [])
             );
 
             $entity = $this->refreshUpdatedEntity(
@@ -235,7 +244,10 @@ trait HandlesRelationStandardBatchOperations
                 $entity = $this->castPivotJsonFields($entity);
             }
 
+            $this->repositoryInstance->afterSave($entity);
             $this->afterSave($request, $parentEntity, $entity);
+
+            $this->repositoryInstance->afterUpdate($entity);
             $this->afterUpdate($request, $parentEntity, $entity);
         }
 
@@ -411,6 +423,7 @@ trait HandlesRelationStandardBatchOperations
             $this->authorize($this->resolveAbility($forceDeletes ? 'forceDelete' : 'delete'), [$entity, $parentEntity]);
 
             $this->beforeDestroy($request, $parentEntity, $entity);
+            $this->repositoryInstance->beforeDestroy($entity, $forceDeletes);
 
             if (!$forceDeletes) {
                 $this->performDestroy($entity);
@@ -434,6 +447,7 @@ trait HandlesRelationStandardBatchOperations
                 $entity = $this->castPivotJsonFields($entity);
             }
 
+            $this->repositoryInstance->afterDestroy($entity);
             $this->afterDestroy($request, $parentEntity, $entity);
         }
 
@@ -579,6 +593,7 @@ trait HandlesRelationStandardBatchOperations
             $this->authorize($this->resolveAbility('restore'), [$entity, $parentEntity]);
 
             $this->beforeRestore($request, $parentEntity, $entity);
+            $this->repositoryInstance->beforeRestore($entity);
 
             $this->performRestore($entity);
 
@@ -596,6 +611,7 @@ trait HandlesRelationStandardBatchOperations
                 $entity = $this->castPivotJsonFields($entity);
             }
 
+            $this->repositoryInstance->afterRestore($entity);
             $this->afterRestore($request, $parentEntity, $entity);
         }
 

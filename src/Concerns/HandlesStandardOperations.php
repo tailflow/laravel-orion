@@ -263,7 +263,7 @@ trait HandlesStandardOperations
      */
     protected function performStore(Request $request, Model $entity, array $attributes): void
     {
-        $this->repositoryInstance->performFill($entity, $attributes);
+        $this->performFill($request, $entity, $attributes);
         $this->repositoryInstance->performStore($entity);
     }
 
@@ -579,7 +579,7 @@ trait HandlesStandardOperations
      */
     protected function performUpdate(Request $request, Model $entity, array $attributes): void
     {
-        $this->repositoryInstance->performFill($entity, $attributes);
+        $this->performFill($request, $entity, $attributes);
         $this->repositoryInstance->performUpdate($entity);
     }
 
@@ -920,9 +920,7 @@ trait HandlesStandardOperations
      */
     protected function performFill(Request $request, Model $entity, array $attributes): void
     {
-        $entity->fill(
-            Arr::except($attributes, array_keys($entity->getDirty()))
-        );
+        $this->repositoryInstance->performFill($entity, $attributes);
     }
 
     /**

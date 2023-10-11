@@ -36,8 +36,10 @@ trait HandlesRelationStandardOperations
      * @return CollectionResource|AnonymousResourceCollection|Response
      * @throws BindingResolutionException
      */
-    public function index(Request $request, int|string $parentKey): CollectionResource|AnonymousResourceCollection|Response
-    {
+    public function index(
+        Request $request,
+        int|string $parentKey
+    ): CollectionResource|AnonymousResourceCollection|Response {
         $parentQuery = $this->buildIndexParentFetchQuery($request, $parentKey);
         $parentEntity = $this->runIndexParentFetchQuery($request, $parentQuery, $parentKey);
 
@@ -127,7 +129,7 @@ trait HandlesRelationStandardOperations
      * @param string|int $parentKey
      * @return Model
      */
-    protected function runIndexParentFetchQuery(Request $request, Builder $query,  string|int $parentKey): Model
+    protected function runIndexParentFetchQuery(Request $request, Builder $query, string|int $parentKey): Model
     {
         return $this->runParentFetchQuery($request, $query, $parentKey);
     }
@@ -246,8 +248,10 @@ trait HandlesRelationStandardOperations
      * @return CollectionResource|AnonymousResourceCollection|Response
      * @throws BindingResolutionException
      */
-    public function search(Request $request, int|string $parentKey): CollectionResource|AnonymousResourceCollection|Response
-    {
+    public function search(
+        Request $request,
+        int|string $parentKey
+    ): CollectionResource|AnonymousResourceCollection|Response {
         return $this->index($request, $parentKey);
     }
 
@@ -291,14 +295,14 @@ trait HandlesRelationStandardOperations
         $entity = $this->repositoryInstance->make();
         $attributes = $this->retrieve($request);
 
-        $beforeHookResult = $this->beforeStore($request, $parentEntity, $entity);
+        $beforeHookResult = $this->beforeStore($request, $parentEntity, $entity, $attributes);
         if ($this->hookResponds($beforeHookResult)) {
             return $beforeHookResult;
         }
 
         $this->repositoryInstance->beforeStore($entity, $attributes);
 
-        $beforeSaveHookResult = $this->beforeSave($request, $parentEntity, $entity);
+        $beforeSaveHookResult = $this->beforeSave($request, $parentEntity, $entity, $attributes);
         if ($this->hookResponds($beforeSaveHookResult)) {
             return $beforeSaveHookResult;
         }
@@ -353,7 +357,8 @@ trait HandlesRelationStandardOperations
 
         $entity = $this->getAppendsResolver()->appendToEntity($entity, $request);
         $entity = $this->getRelationsResolver()->guardRelations(
-            $entity, $this->relationsResolver->requestedRelations($request)
+            $entity,
+            $this->relationsResolver->requestedRelations($request)
         );
 
         return $this->entityResponse($entity);
@@ -390,9 +395,10 @@ trait HandlesRelationStandardOperations
      * @param Request $request
      * @param Model $parentEntity
      * @param Model $entity
+     * @param array $attributes
      * @return Response|null
      */
-    protected function beforeStore(Request $request, Model $parentEntity, Model $entity): ?Response
+    protected function beforeStore(Request $request, Model $parentEntity, Model $entity, array &$attributes): ?Response
     {
         return null;
     }
@@ -403,9 +409,10 @@ trait HandlesRelationStandardOperations
      * @param Request $request
      * @param Model $parentEntity
      * @param Model $entity
+     * @param array $attributes
      * @return Response|null
      */
-    protected function beforeSave(Request $request, Model $parentEntity, Model $entity): ?Response
+    protected function beforeSave(Request $request, Model $parentEntity, Model $entity, array &$attributes): ?Response
     {
         return null;
     }
@@ -431,7 +438,8 @@ trait HandlesRelationStandardOperations
         if (!$parentEntity->{$this->relation()}() instanceof BelongsTo) {
             $parentEntity->{$this->relation()}()->save($entity, $this->preparePivotFields($pivot));
         } else {
-            $entity->save();
+            $this->repositoryInstance->performStore($entity);
+
             $parentEntity->{$this->relation()}()->associate($entity);
         }
     }
@@ -457,8 +465,12 @@ trait HandlesRelationStandardOperations
      * @param string|int|null $relatedKey
      * @return Model
      */
-    protected function runStoreFetchQuery(Request $request, Relation $query, Model $parentEntity, string|int|null $relatedKey): Model
-    {
+    protected function runStoreFetchQuery(
+        Request $request,
+        Relation $query,
+        Model $parentEntity,
+        string|int|null $relatedKey
+    ): Model {
         return $this->runRelationFetchQuery($request, $query, $parentEntity, $relatedKey);
     }
 
@@ -525,7 +537,8 @@ trait HandlesRelationStandardOperations
 
         $entity = $this->getAppendsResolver()->appendToEntity($entity, $request);
         $entity = $this->getRelationsResolver()->guardRelations(
-            $entity, $this->relationsResolver->requestedRelations($request)
+            $entity,
+            $this->relationsResolver->requestedRelations($request)
         );
 
         return $this->entityResponse($entity);
@@ -590,8 +603,12 @@ trait HandlesRelationStandardOperations
      * @param string|int|null $relatedKey
      * @return Model
      */
-    protected function runShowFetchQuery(Request $request, Relation $query, Model $parentEntity, string|int|null $relatedKey): Model
-    {
+    protected function runShowFetchQuery(
+        Request $request,
+        Relation $query,
+        Model $parentEntity,
+        string|int|null $relatedKey
+    ): Model {
         return $this->runRelationFetchQuery($request, $query, $parentEntity, $relatedKey);
     }
 
@@ -604,8 +621,12 @@ trait HandlesRelationStandardOperations
      * @param string|int|null $relatedKey
      * @return Model
      */
-    protected function runRelationFetchQuery(Request $request, Relation $query, Model $parentEntity, string|int|null $relatedKey): Model
-    {
+    protected function runRelationFetchQuery(
+        Request $request,
+        Relation $query,
+        Model $parentEntity,
+        string|int|null $relatedKey
+    ): Model {
         return $this->runRelationFetchQueryBase(
             $request,
             $query,
@@ -686,8 +707,11 @@ trait HandlesRelationStandardOperations
      * @return Resource|Response
      * @throws Exception
      */
-    public function update(Request $request, string|int $parentKey, string|int|null $relatedKey = null): Resource|Response
-    {
+    public function update(
+        Request $request,
+        string|int $parentKey,
+        string|int|null $relatedKey = null
+    ): Resource|Response {
         try {
             $this->startTransaction();
             $result = $this->updateWithTransaction($request, $parentKey, $relatedKey);
@@ -707,8 +731,11 @@ trait HandlesRelationStandardOperations
      * @return Resource|Response
      * @throws BindingResolutionException
      */
-    protected function updateWithTransaction(Request $request, string|int $parentKey, string|int|null $relatedKey = null): Resource|Response
-    {
+    protected function updateWithTransaction(
+        Request $request,
+        string|int $parentKey,
+        string|int|null $relatedKey = null
+    ): Resource|Response {
         $parentQuery = $this->buildUpdateParentFetchQuery($request, $parentKey);
         $parentEntity = $this->runUpdateParentFetchQuery($request, $parentQuery, $parentKey);
 
@@ -717,21 +744,27 @@ trait HandlesRelationStandardOperations
 
         $this->authorize($this->resolveAbility('update'), [$entity, $parentEntity]);
 
-        $beforeHookResult = $this->beforeUpdate($request, $parentEntity, $entity);
+        $attributes = $this->retrieve($request);
+
+        $beforeHookResult = $this->beforeUpdate($request, $parentEntity, $entity, $attributes);
         if ($this->hookResponds($beforeHookResult)) {
             return $beforeHookResult;
         }
 
-        $beforeSaveHookResult = $this->beforeSave($request, $parentEntity, $entity);
+        $this->repositoryInstance->beforeUpdate($entity, $attributes);
+
+        $beforeSaveHookResult = $this->beforeSave($request, $parentEntity, $entity, $attributes);
         if ($this->hookResponds($beforeSaveHookResult)) {
             return $beforeSaveHookResult;
         }
+
+        $this->repositoryInstance->beforeSave($entity, $attributes);
 
         $this->performUpdate(
             $request,
             $parentEntity,
             $entity,
-            $this->retrieve($request),
+            $attributes,
             $request->get('pivot', [])
         );
 
@@ -742,10 +775,14 @@ trait HandlesRelationStandardOperations
             $entity = $this->castPivotJsonFields($entity);
         }
 
+        $this->repositoryInstance->afterSave($entity);
+
         $afterSaveHookResult = $this->afterSave($request, $parentEntity, $entity);
         if ($this->hookResponds($afterSaveHookResult)) {
             return $afterSaveHookResult;
         }
+
+        $this->repositoryInstance->afterUpdate($entity);
 
         $afterHookResult = $this->afterUpdate($request, $parentEntity, $entity);
         if ($this->hookResponds($afterHookResult)) {
@@ -754,7 +791,8 @@ trait HandlesRelationStandardOperations
 
         $entity = $this->getAppendsResolver()->appendToEntity($entity, $request);
         $entity = $this->getRelationsResolver()->guardRelations(
-            $entity, $this->relationsResolver->requestedRelations($request)
+            $entity,
+            $this->relationsResolver->requestedRelations($request)
         );
 
         return $this->entityResponse($entity);
@@ -806,8 +844,12 @@ trait HandlesRelationStandardOperations
      * @param string|int|null $relatedKey
      * @return Model
      */
-    protected function runUpdateFetchQuery(Request $request, Relation $query, Model $parentEntity, string|int|null $relatedKey): Model
-    {
+    protected function runUpdateFetchQuery(
+        Request $request,
+        Relation $query,
+        Model $parentEntity,
+        string|int|null $relatedKey
+    ): Model {
         return $this->runRelationFetchQuery($request, $query, $parentEntity, $relatedKey);
     }
 
@@ -843,9 +885,10 @@ trait HandlesRelationStandardOperations
      * @param Request $request
      * @param Model $parentEntity
      * @param Model $entity
+     * @param array $attributes
      * @return Response|null
      */
-    protected function beforeUpdate(Request $request, Model $parentEntity, Model $entity): ?Response
+    protected function beforeUpdate(Request $request, Model $parentEntity, Model $entity, array &$attributes): ?Response
     {
         return null;
     }
@@ -867,7 +910,7 @@ trait HandlesRelationStandardOperations
         array $pivot
     ): void {
         $this->performFill($request, $parentEntity, $entity, $attributes, $pivot);
-        $entity->save();
+        $this->repositoryInstance->performUpdate($entity);
 
         $relation = $parentEntity->{$this->relation()}();
 
@@ -900,8 +943,11 @@ trait HandlesRelationStandardOperations
      * @return Resource|Response
      * @throws Exception
      */
-    public function destroy(Request $request, int|string $parentKey, int|string|null $relatedKey = null): Resource|Response
-    {
+    public function destroy(
+        Request $request,
+        int|string $parentKey,
+        int|string|null $relatedKey = null
+    ): Resource|Response {
         try {
             $this->startTransaction();
             $result = $this->destroyWithTransaction($request, $parentKey, $relatedKey);
@@ -921,8 +967,11 @@ trait HandlesRelationStandardOperations
      * @return Resource|Response
      * @throws BindingResolutionException
      */
-    protected function destroyWithTransaction(Request $request, int|string $parentKey, int|string|null $relatedKey = null): Resource|Response
-    {
+    protected function destroyWithTransaction(
+        Request $request,
+        int|string $parentKey,
+        int|string|null $relatedKey = null
+    ): Resource|Response {
         $parentQuery = $this->buildDestroyParentFetchQuery($request, $parentKey);
         $parentEntity = $this->runDestroyParentFetchQuery($request, $parentQuery, $parentKey);
 
@@ -943,6 +992,8 @@ trait HandlesRelationStandardOperations
             return $beforeHookResult;
         }
 
+        $this->repositoryInstance->beforeDestroy($entity, $forceDeletes);
+
         if (!$forceDeletes) {
             $this->performDestroy($entity);
 
@@ -959,6 +1010,8 @@ trait HandlesRelationStandardOperations
             $entity = $this->castPivotJsonFields($entity);
         }
 
+        $this->repositoryInstance->afterDestroy($entity);
+
         $afterHookResult = $this->afterDestroy($request, $parentEntity, $entity);
         if ($this->hookResponds($afterHookResult)) {
             return $afterHookResult;
@@ -966,7 +1019,8 @@ trait HandlesRelationStandardOperations
 
         $entity = $this->getAppendsResolver()->appendToEntity($entity, $request);
         $entity = $this->getRelationsResolver()->guardRelations(
-            $entity, $this->relationsResolver->requestedRelations($request)
+            $entity,
+            $this->relationsResolver->requestedRelations($request)
         );
 
         return $this->entityResponse($entity);
@@ -1025,8 +1079,12 @@ trait HandlesRelationStandardOperations
      * @param string|int|null $relatedKey
      * @return Model
      */
-    protected function runDestroyFetchQuery(Request $request, Relation $query, Model $parentEntity, int|string|null $relatedKey): Model
-    {
+    protected function runDestroyFetchQuery(
+        Request $request,
+        Relation $query,
+        Model $parentEntity,
+        int|string|null $relatedKey
+    ): Model {
         return $this->runRelationFetchQuery($request, $query, $parentEntity, $relatedKey);
     }
 
@@ -1051,7 +1109,7 @@ trait HandlesRelationStandardOperations
      */
     protected function performDestroy(Model $entity): void
     {
-        $entity->delete();
+        $this->repositoryInstance->performDestroy($entity, false);
     }
 
     /**
@@ -1061,7 +1119,7 @@ trait HandlesRelationStandardOperations
      */
     protected function performForceDestroy(Model $entity): void
     {
-        $entity->forceDelete();
+        $this->repositoryInstance->performDestroy($entity, true);
     }
 
     /**
@@ -1086,8 +1144,11 @@ trait HandlesRelationStandardOperations
      * @return Resource|Response
      * @throws Exception
      */
-    public function restore(Request $request, int|string $parentKey, int|string|null $relatedKey = null): Resource|Response
-    {
+    public function restore(
+        Request $request,
+        int|string $parentKey,
+        int|string|null $relatedKey = null
+    ): Resource|Response {
         try {
             $this->startTransaction();
             $result = $this->restoreWithTransaction($request, $parentKey, $relatedKey);
@@ -1107,8 +1168,11 @@ trait HandlesRelationStandardOperations
      * @return Resource|Response
      * @throws BindingResolutionException
      */
-    protected function restoreWithTransaction(Request $request, int|string $parentKey, int|string|null $relatedKey = null): Resource|Response
-    {
+    protected function restoreWithTransaction(
+        Request $request,
+        int|string $parentKey,
+        int|string|null $relatedKey = null
+    ): Resource|Response {
         $parentQuery = $this->buildRestoreParentFetchQuery($request, $parentKey);
         $parentEntity = $this->runRestoreParentFetchQuery($request, $parentQuery, $parentKey);
 
@@ -1122,6 +1186,8 @@ trait HandlesRelationStandardOperations
             return $beforeHookResult;
         }
 
+        $this->repositoryInstance->beforeRestore($entity);
+
         $this->performRestore($entity);
 
         $entity = $this->runRestoreFetchQuery($request, $query, $parentEntity, $relatedKey);
@@ -1131,6 +1197,8 @@ trait HandlesRelationStandardOperations
             $entity = $this->castPivotJsonFields($entity);
         }
 
+        $this->repositoryInstance->afterRestore($entity);
+
         $afterHookResult = $this->afterRestore($request, $parentEntity, $entity);
         if ($this->hookResponds($afterHookResult)) {
             return $afterHookResult;
@@ -1138,7 +1206,8 @@ trait HandlesRelationStandardOperations
 
         $entity = $this->getAppendsResolver()->appendToEntity($entity, $request);
         $entity = $this->getRelationsResolver()->guardRelations(
-            $entity, $this->relationsResolver->requestedRelations($request)
+            $entity,
+            $this->relationsResolver->requestedRelations($request)
         );
 
         return $this->entityResponse($entity);
@@ -1193,8 +1262,12 @@ trait HandlesRelationStandardOperations
      * @param string|int $relatedKey
      * @return Model
      */
-    protected function runRestoreFetchQuery(Request $request, Relation $query, Model $parentEntity, string|int $relatedKey): Model
-    {
+    protected function runRestoreFetchQuery(
+        Request $request,
+        Relation $query,
+        Model $parentEntity,
+        string|int $relatedKey
+    ): Model {
         return $this->runRelationFetchQuery($request, $query, $parentEntity, $relatedKey);
     }
 
@@ -1218,7 +1291,7 @@ trait HandlesRelationStandardOperations
      */
     protected function performRestore(Model $entity): void
     {
-        $entity->restore();
+        $this->repositoryInstance->performRestore($entity);
     }
 
     /**
@@ -1250,9 +1323,7 @@ trait HandlesRelationStandardOperations
         array $attributes,
         array $pivot
     ): void {
-        $entity->fill(
-            Arr::except($attributes, array_keys($entity->getDirty()))
-        );
+        $this->repositoryInstance->performFill($entity, $attributes);
     }
 
     /**
