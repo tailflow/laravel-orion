@@ -9,9 +9,15 @@ use Orion\Tests\Fixtures\App\Models\AccessKey;
 
 class AccessKeyAccessKeyScopesController extends RelationController
 {
-    protected $model = AccessKey::class;
+    public function model(): string
+    {
+        return AccessKey::class;
+    }
 
-    protected $relation = 'scopes';
+    public function relation(): string
+    {
+        return 'scopes';
+    }
 
     protected function parentKeyName(): string
     {

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Orion\Tests\Feature\Relations\BelongsTo;
 
 use Illuminate\Support\Facades\Gate;
@@ -74,7 +76,7 @@ class BelongsToRelationStandardUpdateOperationsTest extends TestCase
         $post = factory(Post::class)->create(['user_id' => $user->id]);
         $payload = ['email' => 'test@example.com'];
 
-        $this->useRequest(UserRequest::class);
+        $this->useRequest(User::class, UserRequest::class);
 
         Gate::policy(User::class, GreenPolicy::class);
 
@@ -92,7 +94,7 @@ class BelongsToRelationStandardUpdateOperationsTest extends TestCase
         $post = factory(Post::class)->create(['user_id' => $user->id]);
         $payload = ['name' => 'test user updated'];
 
-       $this->useResource(SampleResource::class);
+       $this->useResource(User::class, SampleResource::class);
 
         Gate::policy(User::class, GreenPolicy::class);
 

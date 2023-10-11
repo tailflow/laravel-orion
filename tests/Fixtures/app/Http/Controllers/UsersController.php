@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Orion\Tests\Fixtures\App\Http\Controllers;
 
 use Orion\Http\Controllers\Controller;
@@ -9,7 +11,10 @@ use Orion\Tests\Fixtures\App\Models\User;
 
 class UsersController extends Controller
 {
-    protected $model = User::class;
+    public function model(): string
+    {
+        return User::class;
+    }
 
     public function aggregates(): array
     {
@@ -25,4 +30,6 @@ class UsersController extends Controller
     {
         return ['name','posts.stars'];
     }
+
+
 }

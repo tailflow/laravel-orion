@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Orion\Http\Rules;
 
 use Illuminate\Contracts\Validation\Rule;
@@ -7,14 +9,14 @@ use Illuminate\Contracts\Validation\Rule;
 class WhitelistedField implements Rule
 {
     /**
-     * @var array $constraints
+     * @var string[] $constraints
      */
-    protected $constraints;
+    protected array $constraints;
 
     /**
      * ValidField constructor.
      *
-     * @param $constraints
+     * @param string[] $constraints
      */
     public function __construct(array $constraints)
     {

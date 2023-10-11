@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Orion\Http\Controllers;
 
 use Illuminate\Database\Eloquent\Builder;
@@ -18,39 +20,39 @@ abstract class RelationController extends BaseController
 {
     use HandlesRelationStandardOperations, HandlesRelationStandardBatchOperations, HandlesRelationOneToManyOperations, HandlesRelationManyToManyOperations;
 
+    abstract public function relation(): string;
     /**
      * @var string $relation
      */
-    protected $relation;
 
     /**
      * @var string|null $policy
      */
-    protected $parentPolicy;
+    protected ?string $parentPolicy = null;
 
     /**
      * The list of pivot fields that can be set upon relation resource creation or update.
      *
      * @var array
      */
-    protected $pivotFillable = [];
+    protected array $pivotFillable = [];
 
     /**
      * The list of pivot json fields that needs to be casted to array.
      *
      * @var array
      */
-    protected $pivotJson = [];
+    protected array $pivotJson = [];
 
     /**
      * @var QueryBuilder $relationQueryBuilder
      */
-    protected $relationQueryBuilder;
+    protected QueryBuilder $relationQueryBuilder;
 
     /**
      * @var ComponentsResolver $parentComponentsResolver
      */
-    protected $parentComponentsResolver;
+    protected ComponentsResolver $parentComponentsResolver;
 
     /**
      * RelationController constructor.
@@ -59,13 +61,9 @@ abstract class RelationController extends BaseController
      */
     public function __construct()
     {
-        if (!$this->relation) {
-            throw new BindingException('Relation is not defined for '.static::class);
-        }
-
         $this->parentComponentsResolver = App::makeWith(
             ComponentsResolver::class,
-            ['resourceModelClass' => $this->getModel(),]
+            ['resourceModelClass' => $this->model(),]
         );
 
         parent::__construct();
@@ -107,9 +105,9 @@ abstract class RelationController extends BaseController
      */
     public function resolveRelation(): Relation
     {
-        $model = $this->getModel();
+        $model = $this->model();
 
-        return (new $model)->{$this->getRelation()}();
+        return (new $model)->{$this->relation()}();
     }
 
     /**
@@ -120,25 +118,6 @@ abstract class RelationController extends BaseController
     public function getResourceQueryBuilder(): QueryBuilder
     {
         return $this->getRelationQueryBuilder();
-    }
-
-    /**
-     * @return string
-     */
-    public function getRelation(): string
-    {
-        return $this->relation;
-    }
-
-    /**
-     * @param string $relation
-     * @return $this
-     */
-    public function setRelation(string $relation): self
-    {
-        $this->relation = $relation;
-
-        return $this;
     }
 
     /**
@@ -168,7 +147,7 @@ abstract class RelationController extends BaseController
      */
     public function newRelationQuery(Model $parentEntity)
     {
-        return $parentEntity->{$this->getRelation()}();
+        return $parentEntity->{$this->relation()}();
     }
 
     /**
@@ -254,7 +233,7 @@ abstract class RelationController extends BaseController
      */
     protected function resolveQualifiedParentKeyName(): string
     {
-        $modelClass = $this->getModel();
+        $modelClass = $this->model();
 
         return (new $modelClass)->qualifyColumn($this->parentKeyName());
     }
@@ -266,7 +245,7 @@ abstract class RelationController extends BaseController
      */
     protected function parentKeyName(): string
     {
-        $modelClass = $this->getModel();
+        $modelClass = $this->model();
 
         return (new $modelClass)->getKeyName();
     }
@@ -279,8 +258,8 @@ abstract class RelationController extends BaseController
      */
     protected function resolveQualifiedPivotFieldName(string $field): string
     {
-        $modelClass = $this->getModel();
+        $modelClass = $this->model();
 
-        return (new $modelClass)->{$this->getRelation()}()->qualifyPivotColumn($field);
+        return (new $modelClass)->{$this->relation()}()->qualifyPivotColumn($field);
     }
 }

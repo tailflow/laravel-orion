@@ -9,11 +9,17 @@ use Orion\Tests\Fixtures\App\Models\User;
 
 class UserNotificationsController extends RelationController
 {
-    protected $model = User::class;
+    public function model(): string
+    {
+        return User::class;
+    }
 
-    protected $relation = 'notifications';
+    public function relation(): string
+    {
+        return 'notifications';
+    }
 
-    protected $pivotJson = ['meta'];
+    protected array $pivotJson = ['meta'];
 
     public function includes(): array
     {

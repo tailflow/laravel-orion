@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Orion\Tests\Feature;
 
 use Illuminate\Support\Facades\Gate;
@@ -82,15 +84,7 @@ class StandardRestoreOperationsTest extends TestCase
 
         Gate::policy(Post::class, GreenPolicy::class);
 
-        app()->bind(
-            ComponentsResolver::class,
-            function () {
-                $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
-                $componentsResolverMock->shouldReceive('resolveResourceClass')->once()->andReturn(SampleResource::class);
-
-                return $componentsResolverMock;
-            }
-        );
+        $this->useResource(Post::class, SampleResource::class);
 
         $response = $this->post("/api/posts/{$trashedPost->id}/restore");
 

@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Orion\Tests\Unit\Drivers\Standard;
 
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Gate;
 use Orion\Drivers\Standard\ComponentsResolver;
 use Orion\Http\Requests\Request;
@@ -19,8 +22,9 @@ class ComponentsResolverTest extends TestCase
     /** @test */
     public function resolving_resource_specific_request_class(): void
     {
+        Config::set('orion.namespaces.requests', 'Orion\\Tests\\Unit\\Drivers\\Standard\\Stubs\\');
+
         $componentsResolver = new ComponentsResolver('Stub');
-        $componentsResolver->setRequestClassesNamespace('Orion\\Tests\\Unit\\Drivers\\Standard\\Stubs\\');
 
         $this->assertEquals(StubRequest::class, $componentsResolver->resolveRequestClass());
     }
@@ -36,8 +40,9 @@ class ComponentsResolverTest extends TestCase
     /** @test */
     public function resolving_resource_specific_resource_class(): void
     {
+        Config::set('orion.namespaces.resources', 'Orion\\Tests\\Unit\\Drivers\\Standard\\Stubs\\');
+
         $componentsResolver = new ComponentsResolver('Stub');
-        $componentsResolver->setResourceClassesNamespace('Orion\\Tests\\Unit\\Drivers\\Standard\\Stubs\\');
 
         $this->assertEquals(StubResource::class, $componentsResolver->resolveResourceClass());
     }
@@ -53,8 +58,9 @@ class ComponentsResolverTest extends TestCase
     /** @test */
     public function resolving_resource_specific_collection_resource_class(): void
     {
+        Config::set('orion.namespaces.resources', 'Orion\\Tests\\Unit\\Drivers\\Standard\\Stubs\\');
+
         $componentsResolver = new ComponentsResolver('Stub');
-        $componentsResolver->setResourceClassesNamespace('Orion\\Tests\\Unit\\Drivers\\Standard\\Stubs\\');
 
         $this->assertEquals(StubCollectionResource::class, $componentsResolver->resolveCollectionResourceClass());
     }

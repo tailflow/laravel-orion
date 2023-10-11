@@ -1,10 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Orion\Tests\Feature\Relations\HasOne;
 
 use Illuminate\Support\Facades\Gate;
-use Mockery;
-use Orion\Contracts\ComponentsResolver;
 use Orion\Tests\Feature\TestCase;
 use Orion\Tests\Fixtures\App\Http\Resources\SampleResource;
 use Orion\Tests\Fixtures\App\Models\Post;
@@ -75,7 +75,7 @@ class HasOneRelationStandardRestoreOperationsTest extends TestCase
 
         Gate::policy(PostImage::class, GreenPolicy::class);
 
-        $this->useResource(SampleResource::class);
+        $this->useResource(PostImage::class, SampleResource::class);
 
         $response = $this->post("/api/posts/{$post->id}/image/{$trashedPostImage->id}/restore");
 

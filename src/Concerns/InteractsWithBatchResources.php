@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Orion\Concerns;
 
 use Orion\Http\Requests\Request;

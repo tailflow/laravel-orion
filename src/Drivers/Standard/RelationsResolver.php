@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Orion\Drivers\Standard;
 
 use Illuminate\Database\Eloquent\Model;
@@ -15,14 +17,14 @@ use Orion\Http\Requests\Request;
 class RelationsResolver implements \Orion\Contracts\RelationsResolver
 {
     /**
-     * @var array
+     * @var string[]
      */
-    private $includableRelations;
+    private array $includableRelations;
 
     /**
-     * @var array
+     * @var string[]
      */
-    private $alwaysIncludedRelations;
+    private array $alwaysIncludedRelations;
 
     /**
      * @inheritDoc

@@ -1,10 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Orion\Tests\Feature\Relations\HasOne;
 
 use Illuminate\Support\Facades\Gate;
-use Mockery;
-use Orion\Contracts\ComponentsResolver;
 use Orion\Tests\Feature\TestCase;
 use Orion\Tests\Fixtures\App\Http\Requests\PostMetaRequest;
 use Orion\Tests\Fixtures\App\Http\Resources\SampleResource;
@@ -76,7 +76,7 @@ class HasOneRelationStandardUpdateOperationsTest extends TestCase
         factory(PostMeta::class)->create(['post_id' => $post->id]);
         $payload = ['notes' => 'abc'];
 
-        $this->useRequest(PostMetaRequest::class);
+        $this->useRequest(PostMeta::class, PostMetaRequest::class);
 
         Gate::policy(PostMeta::class, GreenPolicy::class);
 
@@ -94,7 +94,7 @@ class HasOneRelationStandardUpdateOperationsTest extends TestCase
         $postMeta = factory(PostMeta::class)->create(['post_id' => $post->id]);
         $payload = ['notes' => 'test updated'];
 
-        $this->useResource(SampleResource::class);
+        $this->useResource(PostMeta::class, SampleResource::class);
 
         Gate::policy(PostMeta::class, GreenPolicy::class);
 

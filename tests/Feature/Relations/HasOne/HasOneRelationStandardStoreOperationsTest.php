@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Orion\Tests\Feature\Relations\HasOne;
 
 use Illuminate\Support\Facades\Gate;
@@ -77,7 +79,7 @@ class HasOneRelationStandardStoreOperationsTest extends TestCase
         $post = factory(Post::class)->create();
         $payload = ['notes' => 'a'];
 
-        $this->useRequest(PostMetaRequest::class);
+        $this->useRequest(PostMeta::class, PostMetaRequest::class);
 
         Gate::policy(PostMeta::class, GreenPolicy::class);
 
@@ -99,7 +101,7 @@ class HasOneRelationStandardStoreOperationsTest extends TestCase
 
         $payload = ['notes' => 'test stored'];
 
-        $this->useResource(SampleResource::class);
+        $this->useResource(PostMeta::class, SampleResource::class);
 
         Gate::policy(PostMeta::class, GreenPolicy::class);
 

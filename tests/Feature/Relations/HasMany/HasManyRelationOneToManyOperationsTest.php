@@ -1,10 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Orion\Tests\Feature\Relations\HasMany;
 
 use Illuminate\Support\Facades\Gate;
-use Mockery;
-use Orion\Contracts\ComponentsResolver;
 use Orion\Tests\Feature\TestCase;
 use Orion\Tests\Fixtures\App\Http\Resources\SampleResource;
 use Orion\Tests\Fixtures\App\Models\Company;
@@ -120,7 +120,7 @@ class HasManyRelationOneToManyOperationsTest extends TestCase
         Gate::policy(Company::class, GreenPolicy::class);
         Gate::policy(Team::class, GreenPolicy::class);
 
-        $this->useResource(SampleResource::class);
+        $this->useResource(Team::class, SampleResource::class);
 
         $response = $this->post(
             "/api/companies/{$company->id}/teams/associate",
@@ -193,7 +193,7 @@ class HasManyRelationOneToManyOperationsTest extends TestCase
         Gate::policy(Company::class, GreenPolicy::class);
         Gate::policy(Team::class, GreenPolicy::class);
 
-        $this->useResource(SampleResource::class);
+        $this->useResource(Team::class, SampleResource::class);
 
         $response = $this->delete("/api/companies/{$company->id}/teams/{$team->id}/dissociate");
 

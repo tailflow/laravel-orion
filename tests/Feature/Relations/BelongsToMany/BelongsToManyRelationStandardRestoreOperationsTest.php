@@ -1,10 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Orion\Tests\Feature\Relations\BelongsToMany;
 
 use Illuminate\Support\Facades\Gate;
-use Mockery;
-use Orion\Contracts\ComponentsResolver;
 use Orion\Tests\Feature\TestCase;
 use Orion\Tests\Fixtures\App\Http\Resources\SampleResource;
 use Orion\Tests\Fixtures\App\Models\Notification;
@@ -126,7 +126,7 @@ class BelongsToManyRelationStandardRestoreOperationsTest extends TestCase
 
         Gate::policy(Notification::class, GreenPolicy::class);
 
-        $this->useResource(SampleResource::class);
+        $this->useResource(Notification::class, SampleResource::class);
 
         $response = $this->post("/api/users/{$user->id}/notifications/{$trashedNotification->id}/restore");
 

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Orion\Tests\Feature\Relations\HasMany;
 
 use Illuminate\Support\Facades\Gate;
@@ -88,7 +90,7 @@ class HasManyRelationStandardShowOperationsTest extends TestCase
         $company = factory(Company::class)->create();
         $team = factory(Team::class)->create(['company_id' => $company->id]);
 
-        $this->useResource(SampleResource::class);
+        $this->useResource(Team::class, SampleResource::class);
 
         Gate::policy(Team::class, GreenPolicy::class);
 

@@ -1,10 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Orion\Tests\Feature\Relations\HasMany;
 
 use Illuminate\Support\Facades\Gate;
-use Mockery;
-use Orion\Contracts\ComponentsResolver;
 use Orion\Tests\Feature\TestCase;
 use Orion\Tests\Fixtures\App\Http\Resources\SampleCollectionResource;
 use Orion\Tests\Fixtures\App\Http\Resources\SampleResource;
@@ -157,7 +157,7 @@ class HasManyRelationStandardIndexOperationsTest extends TestCase
         $company = factory(Company::class)->create();
         $teams = factory(Team::class)->times(5)->create(['company_id' => $company->id]);
 
-        $this->useResource(SampleResource::class);
+        $this->useResource(Team::class, SampleResource::class);
 
         Gate::policy(Company::class, GreenPolicy::class);
         Gate::policy(Team::class, GreenPolicy::class);
@@ -177,7 +177,7 @@ class HasManyRelationStandardIndexOperationsTest extends TestCase
         $company = factory(Company::class)->create();
         $teams = factory(Team::class)->times(5)->create(['company_id' => $company->id]);
 
-        $this->useCollectionResource(SampleCollectionResource::class);
+        $this->useCollectionResource(Team::class, SampleCollectionResource::class);
 
         Gate::policy(Company::class, GreenPolicy::class);
         Gate::policy(Team::class, GreenPolicy::class);

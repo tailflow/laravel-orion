@@ -6,8 +6,5 @@ namespace Orion\Concerns;
 
 trait DisablePagination
 {
-    /**
-     * @var bool $paginationDisabled
-     */
-    protected $paginationDisabled = true;
+    protected bool $paginationDisabled = true;
 }

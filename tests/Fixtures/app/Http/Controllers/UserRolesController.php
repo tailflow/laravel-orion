@@ -9,13 +9,19 @@ use Orion\Tests\Fixtures\App\Models\User;
 
 class UserRolesController extends RelationController
 {
-    protected $model = User::class;
+    public function model(): string
+    {
+        return User::class;
+    }
 
-    protected $relation = 'roles';
+    public function relation(): string
+    {
+        return 'roles';
+    }
 
-    protected $pivotJson = ['meta', 'references'];
+    protected array $pivotJson = ['meta', 'references'];
 
-    protected $pivotFillable = ['custom_name', 'references'];
+    protected array $pivotFillable = ['custom_name', 'references'];
 
     public function filterableBy(): array
     {

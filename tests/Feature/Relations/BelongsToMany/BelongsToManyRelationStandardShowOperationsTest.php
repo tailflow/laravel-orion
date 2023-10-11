@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Orion\Tests\Feature\Relations\BelongsToMany;
 
 use Illuminate\Support\Facades\Gate;
@@ -104,7 +106,7 @@ class BelongsToManyRelationStandardShowOperationsTest extends TestCase
         $role = factory(Role::class)->make();
         $user->roles()->save($role);
 
-        $this->useResource(SampleResource::class);
+        $this->useResource(Role::class, SampleResource::class);
 
         Gate::policy(Role::class, GreenPolicy::class);
 

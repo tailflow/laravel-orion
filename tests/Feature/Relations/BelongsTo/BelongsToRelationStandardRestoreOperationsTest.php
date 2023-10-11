@@ -1,10 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Orion\Tests\Feature\Relations\BelongsTo;
 
 use Illuminate\Support\Facades\Gate;
-use Mockery;
-use Orion\Contracts\ComponentsResolver;
 use Orion\Tests\Feature\TestCase;
 use Orion\Tests\Fixtures\App\Http\Resources\SampleResource;
 use Orion\Tests\Fixtures\App\Models\Category;
@@ -75,7 +75,7 @@ class BelongsToRelationStandardRestoreOperationsTest extends TestCase
 
         Gate::policy(Category::class, GreenPolicy::class);
 
-        $this->useResource(SampleResource::class);
+        $this->useResource(Category::class, SampleResource::class);
 
         $response = $this->post("/api/posts/{$post->id}/category/{$trashedCategory->id}/restore");
 

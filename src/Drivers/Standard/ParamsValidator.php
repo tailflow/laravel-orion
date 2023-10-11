@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Orion\Drivers\Standard;
 
 use Illuminate\Support\Facades\Validator;
@@ -14,27 +16,27 @@ class ParamsValidator implements \Orion\Contracts\ParamsValidator
     /**
      * @var string[]
      */
-    private $exposedScopes;
+    private array $exposedScopes;
 
     /**
      * @var string[]
      */
-    private $filterableBy;
+    private array $filterableBy;
 
     /**
      * @var string[]
      */
-    private $sortableBy;
+    private array $sortableBy;
+
+    /**
+     * @var array string[]
+     */
+    private array $aggregatableBy;
 
     /**
      * @var string[]
      */
-    private $aggregatableBy;
-
-    /**
-     * @var string[]
-     */
-    private $includableBy;
+    private array $includableBy;
 
     /**
      * @inheritDoc
@@ -221,13 +223,13 @@ class ParamsValidator implements \Orion\Contracts\ParamsValidator
     /**
      * @throws MaxNestedDepthExceededException
      */
-    protected function nestedFiltersDepth($array, $modifier = 0)
+    protected function nestedFiltersDepth($array, $modifier = 0): int
     {
         $depth = ArrayHelper::depth($array);
         $configMaxNestedDepth = config('orion.search.max_nested_depth', 1);
 
         // Here we calculate the real nested filters depth
-        $depth = floor($depth / 2);
+        $depth = (int) floor($depth / 2);
 
         if ($depth + $modifier > $configMaxNestedDepth) {
             throw new MaxNestedDepthExceededException(

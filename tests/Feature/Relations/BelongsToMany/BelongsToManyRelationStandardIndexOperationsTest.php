@@ -1,10 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Orion\Tests\Feature\Relations\BelongsToMany;
 
 use Illuminate\Support\Facades\Gate;
-use Mockery;
-use Orion\Contracts\ComponentsResolver;
 use Orion\Tests\Feature\TestCase;
 use Orion\Tests\Fixtures\App\Http\Resources\SampleCollectionResource;
 use Orion\Tests\Fixtures\App\Http\Resources\SampleResource;
@@ -181,7 +181,7 @@ class BelongsToManyRelationStandardIndexOperationsTest extends TestCase
         $roles = factory(Role::class)->times(15)->make();
         $user->roles()->saveMany($roles);
 
-        $this->useResource(SampleResource::class);
+        $this->useResource(Role::class, SampleResource::class);
 
         Gate::policy(User::class, GreenPolicy::class);
         Gate::policy(Role::class, GreenPolicy::class);
@@ -203,7 +203,7 @@ class BelongsToManyRelationStandardIndexOperationsTest extends TestCase
         $roles = factory(Role::class)->times(15)->make();
         $user->roles()->saveMany($roles);
 
-        $this->useCollectionResource(SampleCollectionResource::class);
+        $this->useCollectionResource(Role::class, SampleCollectionResource::class);
 
         Gate::policy(User::class, GreenPolicy::class);
         Gate::policy(Role::class, GreenPolicy::class);

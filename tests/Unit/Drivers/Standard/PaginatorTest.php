@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Orion\Tests\Unit\Drivers\Standard;
 
 use Orion\Drivers\Standard\Paginator;

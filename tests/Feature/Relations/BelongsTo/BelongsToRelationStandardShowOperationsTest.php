@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Orion\Tests\Feature\Relations\BelongsTo;
 
 use Illuminate\Support\Facades\Gate;
@@ -72,7 +74,7 @@ class BelongsToRelationStandardShowOperationsTest extends TestCase
         $user = factory(User::class)->create();
         $post = factory(Post::class)->create(['user_id' => $user->id]);
 
-        $this->useResource(SampleResource::class);
+        $this->useResource(User::class, SampleResource::class);
 
         Gate::policy(User::class, GreenPolicy::class);
 

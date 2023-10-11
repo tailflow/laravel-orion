@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Orion\Tests\Unit\Drivers\Standard;
 
 use Illuminate\Routing\Route;
+use JsonException;
 use Mockery;
 use Orion\Drivers\Standard\ParamsValidator;
 use Orion\Drivers\Standard\QueryBuilder;
@@ -17,7 +20,10 @@ use Orion\Tests\Unit\TestCase;
 
 class QueryBuilderTest extends TestCase
 {
-    /** @test */
+    /**
+     * @test
+     * @throws JsonException
+     */
     public function building_query_for_index_endpoint(): void
     {
         $request = new Request();
@@ -30,6 +36,7 @@ class QueryBuilderTest extends TestCase
         $query = Post::query();
 
         $queryBuilderMock = Mockery::mock(QueryBuilder::class)->makePartial();
+        $queryBuilderMock->setIntermediateMode(false);
         $queryBuilderMock->shouldReceive('applyScopesToQuery')->with($query, $request)->never();
         $queryBuilderMock->shouldReceive('applyFiltersToQuery')->with($query, $request)->never();
         $queryBuilderMock->shouldReceive('applySearchingToQuery')->with($query, $request)->never();
@@ -42,7 +49,10 @@ class QueryBuilderTest extends TestCase
         $this->assertSame($query, $queryBuilderMock->buildQuery($query, $request));
     }
 
-    /** @test */
+    /**
+     * @test
+     * @throws JsonException
+     */
     public function building_query_for_search_endpoint(): void
     {
         $request = new Request();
@@ -55,6 +65,7 @@ class QueryBuilderTest extends TestCase
         $query = Post::query();
 
         $queryBuilderMock = Mockery::mock(QueryBuilder::class)->makePartial();
+        $queryBuilderMock->setIntermediateMode(false);
         $queryBuilderMock->shouldReceive('applyScopesToQuery')->with($query, $request)->once();
         $queryBuilderMock->shouldReceive('applyFiltersToQuery')->with($query, $request)->once();
         $queryBuilderMock->shouldReceive('applySearchingToQuery')->with($query, $request)->once();
@@ -66,7 +77,10 @@ class QueryBuilderTest extends TestCase
         $this->assertSame($query, $queryBuilderMock->buildQuery($query, $request));
     }
 
-    /** @test */
+    /**
+     * @test
+     * @throws JsonException
+     */
     public function building_query_for_show_endpoint(): void
     {
         $request = new Request();
@@ -79,6 +93,7 @@ class QueryBuilderTest extends TestCase
         $query = Post::query();
 
         $queryBuilderMock = Mockery::mock(QueryBuilder::class)->makePartial();
+        $queryBuilderMock->setIntermediateMode(false);
         $queryBuilderMock->shouldReceive('applyScopesToQuery')->with($query, $request)->never();
         $queryBuilderMock->shouldReceive('applyFiltersToQuery')->with($query, $request)->never();
         $queryBuilderMock->shouldReceive('applySearchingToQuery')->with($query, $request)->never();
@@ -127,7 +142,10 @@ class QueryBuilderTest extends TestCase
         $this->assertSame($postA->id, $posts->first()->id);
     }
 
-    /** @test */
+    /**
+     * @test
+     * @throws JsonException
+     */
     public function applying_model_level_fields_filters_with_singular_values(): void
     {
         $request = $this->makeRequestWithFilters(
@@ -172,7 +190,10 @@ class QueryBuilderTest extends TestCase
         return $request;
     }
 
-    /** @test */
+    /**
+     * @test
+     * @throws JsonException
+     */
     public function applying_model_level_fields_filters_with_multiple_values(): void
     {
         $request = $this->makeRequestWithFilters(
@@ -204,7 +225,10 @@ class QueryBuilderTest extends TestCase
         $this->assertFalse($tags->contains('id', $postC->id));
     }
 
-    /** @test */
+    /**
+     * @test
+     * @throws JsonException
+     */
     public function applying_relation_level_fields_filters_with_singular_values(): void
     {
         $request = $this->makeRequestWithFilters(
@@ -241,7 +265,10 @@ class QueryBuilderTest extends TestCase
         $this->assertFalse($posts->contains('id', $postC->id));
     }
 
-    /** @test */
+    /**
+     * @test
+     * @throws JsonException
+     */
     public function applying_relation_level_fields_filters_with_multiple_values(): void
     {
         $request = $this->makeRequestWithFilters(
@@ -278,7 +305,10 @@ class QueryBuilderTest extends TestCase
         $this->assertTrue($posts->contains('id', $postC->id));
     }
 
-    /** @test */
+    /**
+     * @test
+     * @throws JsonException
+     */
     public function applying_filters_with_not_in_operator(): void
     {
         $request = $this->makeRequestWithFilters(
@@ -375,7 +405,9 @@ class QueryBuilderTest extends TestCase
         $postCUser = factory(User::class)->create(['name' => 'name with example in the middle']);
         $postC = factory(Post::class)->create(['user_id' => $postCUser->id]);
 
-        $postDUser = factory(User::class)->create(['name' => 'not matching name', 'email' => 'but-matching-email@example.com']);
+        $postDUser = factory(User::class)->create(
+            ['name' => 'not matching name', 'email' => 'but-matching-email@example.com']
+        );
         $postD = factory(Post::class)->create(['user_id' => $postDUser->id]);
 
         $postEUser = factory(User::class)->create(['name' => 'not matching name', 'email' => 'test@domain.com']);

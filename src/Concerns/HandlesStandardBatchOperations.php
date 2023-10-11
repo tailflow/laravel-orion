@@ -1,13 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Orion\Concerns;
 
 use Exception;
+use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Collection;
 use Orion\Http\Requests\Request;
 use Orion\Http\Resources\CollectionResource;
+use Symfony\Component\HttpFoundation\Response;
 
 trait HandlesStandardBatchOperations
 {
@@ -15,9 +20,10 @@ trait HandlesStandardBatchOperations
      * Creates a batch of new resources in a transaction-safe way.
      *
      * @param Request $request
-     * @return CollectionResource
+     * @return CollectionResource|AnonymousResourceCollection|Response
+     * @throws Exception
      */
-    public function batchStore(Request $request)
+    public function batchStore(Request $request): CollectionResource|AnonymousResourceCollection|Response
     {
         try {
             $this->startTransaction();
@@ -33,9 +39,10 @@ trait HandlesStandardBatchOperations
      * Creates a batch of new resources.
      *
      * @param Request $request
-     * @return CollectionResource
+     * @return CollectionResource|AnonymousResourceCollection|Response
+     * @throws BindingResolutionException
      */
-    protected function batchStoreWithTransaction(Request $request)
+    protected function batchStoreWithTransaction(Request $request): CollectionResource|AnonymousResourceCollection|Response
     {
         $beforeHookResult = $this->beforeBatchStore($request);
         if ($this->hookResponds($beforeHookResult)) {
@@ -48,8 +55,6 @@ trait HandlesStandardBatchOperations
 
         $resources = $this->retrieve($request, 'resources', []);
         $entities = collect([]);
-
-        $requestedRelations = $this->relationsResolver->requestedRelations($request);
 
         foreach ($resources as $resource) {
             /**
@@ -64,7 +69,7 @@ trait HandlesStandardBatchOperations
 
             $this->beforeStoreFresh($request, $entity);
 
-            $entityQuery = $this->buildStoreFetchQuery($request, $requestedRelations);
+            $entityQuery = $this->buildStoreFetchQuery($request);
             $entity = $this->runStoreFetchQuery($request, $entityQuery, $entity->{$this->keyName()});
 
             $entity->wasRecentlyCreated = true;
@@ -82,7 +87,9 @@ trait HandlesStandardBatchOperations
 
         $entities = $this->getAppendsResolver()->appendToCollection($entities, $request);
 
-        $this->relationsResolver->guardRelationsForCollection($entities, $requestedRelations);
+        $this->relationsResolver->guardRelationsForCollection(
+            $entities, $this->relationsResolver->requestedRelations($request)
+        );
 
         return $this->collectionResponse($entities);
     }
@@ -91,9 +98,9 @@ trait HandlesStandardBatchOperations
      * The hook is executed before creating a batch of new resources.
      *
      * @param Request $request
-     * @return mixed
+     * @return Response|null
      */
-    protected function beforeBatchStore(Request $request)
+    protected function beforeBatchStore(Request $request): ?Response
     {
         return null;
     }
@@ -103,9 +110,9 @@ trait HandlesStandardBatchOperations
      *
      * @param Request $request
      * @param Collection $entities
-     * @return mixed
+     * @return Response|null
      */
-    protected function afterBatchStore(Request $request, Collection $entities)
+    protected function afterBatchStore(Request $request, Collection $entities): ?Response
     {
         return null;
     }
@@ -114,9 +121,10 @@ trait HandlesStandardBatchOperations
      * Update a batch of resources in a transaction-safe way.
      *
      * @param Request $request
-     * @return CollectionResource
+     * @return CollectionResource|AnonymousResourceCollection|Response
+     * @throws Exception
      */
-    public function batchUpdate(Request $request)
+    public function batchUpdate(Request $request): CollectionResource|AnonymousResourceCollection|Response
     {
         try {
             $this->startTransaction();
@@ -132,18 +140,17 @@ trait HandlesStandardBatchOperations
      * Update a batch of resources.
      *
      * @param Request $request
-     * @return CollectionResource
+     * @return CollectionResource|AnonymousResourceCollection|Response
+     * @throws BindingResolutionException
      */
-    protected function batchUpdateWithTransaction(Request $request)
+    protected function batchUpdateWithTransaction(Request $request): CollectionResource|AnonymousResourceCollection|Response
     {
         $beforeHookResult = $this->beforeBatchUpdate($request);
         if ($this->hookResponds($beforeHookResult)) {
             return $beforeHookResult;
         }
 
-        $requestedRelations = $this->relationsResolver->requestedRelations($request);
-
-        $query = $this->buildBatchUpdateFetchQuery($request, $requestedRelations);
+        $query = $this->buildBatchUpdateFetchQuery($request);
         $entities = $this->runBatchUpdateFetchQuery($request, $query);
 
         foreach ($entities as $entity) {
@@ -162,7 +169,7 @@ trait HandlesStandardBatchOperations
             $this->beforeUpdateFresh($request, $entity);
 
             $entity = $this->refreshUpdatedEntity(
-                $request, $requestedRelations, $entity->{$this->keyName()}
+                $request, $entity->{$this->keyName()}
             );
 
             $this->afterSave($request, $entity);
@@ -176,7 +183,9 @@ trait HandlesStandardBatchOperations
 
         $entities = $this->getAppendsResolver()->appendToCollection($entities, $request);
 
-        $this->relationsResolver->guardRelationsForCollection($entities, $requestedRelations);
+        $this->relationsResolver->guardRelationsForCollection(
+            $entities, $this->relationsResolver->requestedRelations($request)
+        );
 
         return $this->collectionResponse($entities);
     }
@@ -185,9 +194,9 @@ trait HandlesStandardBatchOperations
      * The hook is executed before updating a batch of resources.
      *
      * @param Request $request
-     * @return mixed
+     * @return Response|null
      */
-    protected function beforeBatchUpdate(Request $request)
+    protected function beforeBatchUpdate(Request $request): ?Response
     {
         return null;
     }
@@ -196,27 +205,25 @@ trait HandlesStandardBatchOperations
      * Builds Eloquent query for fetching entities in batch update method.
      *
      * @param Request $request
-     * @param array $requestedRelations
      * @return Builder
      */
-    protected function buildBatchUpdateFetchQuery(Request $request, array $requestedRelations): Builder
+    protected function buildBatchUpdateFetchQuery(Request $request): Builder
     {
-        return $this->buildBatchFetchQuery($request, $requestedRelations);
+        return $this->buildBatchFetchQuery($request);
     }
 
     /**
      * Builds Eloquent query for fetching entities in batch methods.
      *
      * @param Request $request
-     * @param array $requestedRelations
      * @return Builder
      */
-    protected function buildBatchFetchQuery(Request $request, array $requestedRelations): Builder
+    protected function buildBatchFetchQuery(Request $request): Builder
     {
         $resourceKeyName = $this->resolveQualifiedKeyName();
         $resourceKeys = $this->resolveResourceKeys($request);
 
-        return $this->buildFetchQuery($request, $requestedRelations)
+        return $this->buildFetchQuery($request)
             ->whereIn($resourceKeyName, $resourceKeys);
     }
 
@@ -249,9 +256,9 @@ trait HandlesStandardBatchOperations
      *
      * @param Request $request
      * @param Collection $entities
-     * @return mixed
+     * @return Response|null
      */
-    protected function afterBatchUpdate(Request $request, Collection $entities)
+    protected function afterBatchUpdate(Request $request, Collection $entities): ?Response
     {
         return null;
     }
@@ -260,10 +267,10 @@ trait HandlesStandardBatchOperations
      * Deletes a batch of resources in a transaction-safe way.
      *
      * @param Request $request
-     * @return CollectionResource
+     * @return CollectionResource|AnonymousResourceCollection|Response
      * @throws Exception
      */
-    public function batchDestroy(Request $request)
+    public function batchDestroy(Request $request): CollectionResource|AnonymousResourceCollection|Response
     {
         try {
             $this->startTransaction();
@@ -279,10 +286,10 @@ trait HandlesStandardBatchOperations
      * Deletes a batch of resources.
      *
      * @param Request $request
-     * @return CollectionResource
-     * @throws Exception
+     * @return CollectionResource|AnonymousResourceCollection|Response
+     * @throws BindingResolutionException
      */
-    protected function batchDestroyWithTransaction(Request $request)
+    protected function batchDestroyWithTransaction(Request $request): CollectionResource|AnonymousResourceCollection|Response
     {
         $beforeHookResult = $this->beforeBatchDestroy($request);
         if ($this->hookResponds($beforeHookResult)) {
@@ -292,9 +299,7 @@ trait HandlesStandardBatchOperations
         $softDeletes = $this->softDeletes($this->resolveResourceModelClass());
         $forceDeletes = $this->forceDeletes($request, $softDeletes);
 
-        $requestedRelations = $this->relationsResolver->requestedRelations($request);
-
-        $query = $this->buildBatchDestroyFetchQuery($request, $requestedRelations, $softDeletes);
+        $query = $this->buildBatchDestroyFetchQuery($request, $softDeletes);
         $entities = $this->runBatchDestroyFetchQuery($request, $query);
 
         foreach ($entities as $entity) {
@@ -311,7 +316,7 @@ trait HandlesStandardBatchOperations
                 if ($softDeletes) {
                     $this->beforeDestroyFresh($request, $entity);
 
-                    $entityQuery = $this->buildDestroyFetchQuery($request, $requestedRelations, $softDeletes);
+                    $entityQuery = $this->buildDestroyFetchQuery($request,  $softDeletes);
                     $entity = $this->runDestroyFetchQuery($request, $entityQuery, $entity->{$this->keyName()});
                 }
             } else {
@@ -328,7 +333,9 @@ trait HandlesStandardBatchOperations
 
         $entities = $this->getAppendsResolver()->appendToCollection($entities, $request);
 
-        $this->relationsResolver->guardRelationsForCollection($entities, $requestedRelations);
+        $this->relationsResolver->guardRelationsForCollection(
+            $entities, $this->relationsResolver->requestedRelations($request)
+        );
 
         return $this->collectionResponse($entities);
     }
@@ -337,9 +344,9 @@ trait HandlesStandardBatchOperations
      * The hook is executed before deleting a batch of resources.
      *
      * @param Request $request
-     * @return mixed
+     * @return Response|null
      */
-    protected function beforeBatchDestroy(Request $request)
+    protected function beforeBatchDestroy(Request $request): ?Response
     {
         return null;
     }
@@ -348,16 +355,11 @@ trait HandlesStandardBatchOperations
      * Builds Eloquent query for fetching entities in batch destroy method.
      *
      * @param Request $request
-     * @param array $requestedRelations
      * @param bool $softDeletes
      * @return Builder
      */
-    protected function buildBatchDestroyFetchQuery(
-        Request $request,
-        array $requestedRelations,
-        bool $softDeletes
-    ): Builder {
-        return $this->buildBatchFetchQuery($request, $requestedRelations)
+    protected function buildBatchDestroyFetchQuery(Request $request, bool $softDeletes): Builder {
+        return $this->buildBatchFetchQuery($request)
             ->when($softDeletes, function ($query) {
                 $query->withTrashed();
             });
@@ -380,9 +382,9 @@ trait HandlesStandardBatchOperations
      *
      * @param Request $request
      * @param Collection $entities
-     * @return mixed
+     * @return Response|null
      */
-    protected function afterBatchDestroy(Request $request, Collection $entities)
+    protected function afterBatchDestroy(Request $request, Collection $entities): ?Response
     {
         return null;
     }
@@ -391,10 +393,10 @@ trait HandlesStandardBatchOperations
      * Restores a batch of resources in a transaction-safe way.
      *
      * @param Request $request
-     * @return CollectionResource
+     * @return CollectionResource|AnonymousResourceCollection|Response
      * @throws Exception
      */
-    public function batchRestore(Request $request)
+    public function batchRestore(Request $request): CollectionResource|AnonymousResourceCollection|Response
     {
         try {
             $this->startTransaction();
@@ -410,19 +412,17 @@ trait HandlesStandardBatchOperations
      * Restores a batch of resources.
      *
      * @param Request $request
-     * @return CollectionResource
+     * @return CollectionResource|AnonymousResourceCollection|Response
      * @throws Exception
      */
-    protected function batchRestoreWithTransaction(Request $request)
+    protected function batchRestoreWithTransaction(Request $request): CollectionResource|AnonymousResourceCollection|Response
     {
         $beforeHookResult = $this->beforeBatchRestore($request);
         if ($this->hookResponds($beforeHookResult)) {
             return $beforeHookResult;
         }
 
-        $requestedRelations = $this->relationsResolver->requestedRelations($request);
-
-        $query = $this->buildBatchRestoreFetchQuery($request, $requestedRelations);
+        $query = $this->buildBatchRestoreFetchQuery($request);
         $entities = $this->runBatchRestoreFetchQuery($request, $query);
 
         foreach ($entities as $entity) {
@@ -437,7 +437,7 @@ trait HandlesStandardBatchOperations
 
             $this->beforeRestoreFresh($request, $entity);
 
-            $entityQuery = $this->buildRestoreFetchQuery($request, $requestedRelations);
+            $entityQuery = $this->buildRestoreFetchQuery($request);
             $entity = $this->runRestoreFetchQuery($request, $entityQuery, $entity->{$this->keyName()});
 
             $this->afterRestore($request, $entity);
@@ -450,7 +450,9 @@ trait HandlesStandardBatchOperations
 
         $entities = $this->getAppendsResolver()->appendToCollection($entities, $request);
 
-        $this->relationsResolver->guardRelationsForCollection($entities, $requestedRelations);
+        $this->relationsResolver->guardRelationsForCollection(
+            $entities, $this->relationsResolver->requestedRelations($request)
+        );
 
         return $this->collectionResponse($entities);
     }
@@ -459,9 +461,9 @@ trait HandlesStandardBatchOperations
      * The hook is executed before restoring a batch of resources.
      *
      * @param Request $request
-     * @return mixed
+     * @return Response|null
      */
-    protected function beforeBatchRestore(Request $request)
+    protected function beforeBatchRestore(Request $request): ?Response
     {
         return null;
     }
@@ -470,12 +472,11 @@ trait HandlesStandardBatchOperations
      * Builds Eloquent query for fetching entities in batch restore method.
      *
      * @param Request $request
-     * @param array $requestedRelations
      * @return Builder
      */
-    protected function buildBatchRestoreFetchQuery(Request $request, array $requestedRelations): Builder
+    protected function buildBatchRestoreFetchQuery(Request $request): Builder
     {
-        return $this->buildBatchFetchQuery($request, $requestedRelations)->withTrashed();
+        return $this->buildBatchFetchQuery($request)->withTrashed();
     }
 
     /**
@@ -495,9 +496,9 @@ trait HandlesStandardBatchOperations
      *
      * @param Request $request
      * @param Collection $entities
-     * @return mixed
+     * @return Response|null
      */
-    protected function afterBatchRestore(Request $request, Collection $entities)
+    protected function afterBatchRestore(Request $request, Collection $entities): ?Response
     {
         return null;
     }

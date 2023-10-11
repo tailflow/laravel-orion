@@ -1,10 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Orion\Http\Rules;
 
-use Illuminate\Contracts\Validation\Rule;
-
-class WhitelistedQueryFields extends WhitelistedField implements Rule
+class WhitelistedQueryFields extends WhitelistedField
 {
 
     /**

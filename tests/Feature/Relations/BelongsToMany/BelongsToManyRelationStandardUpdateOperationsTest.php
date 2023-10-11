@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Orion\Tests\Feature\Relations\BelongsToMany;
 
 use Illuminate\Support\Facades\Gate;
@@ -173,7 +175,7 @@ class BelongsToManyRelationStandardUpdateOperationsTest extends TestCase
             ],
         ];
 
-        $this->useRequest(RoleRequest::class);
+        $this->useRequest(Role::class, RoleRequest::class);
 
         Gate::policy(Role::class, GreenPolicy::class);
 
@@ -199,7 +201,7 @@ class BelongsToManyRelationStandardUpdateOperationsTest extends TestCase
         $user->roles()->save($role);
         $payload = ['description' => 'a'];
 
-        $this->useRequest(RoleRequest::class);
+        $this->useRequest(Role::class, RoleRequest::class);
 
         Gate::policy(Role::class, GreenPolicy::class);
 
@@ -219,7 +221,7 @@ class BelongsToManyRelationStandardUpdateOperationsTest extends TestCase
         $user->roles()->save($role);
         $payload = ['name' => 'test updated'];
 
-        $this->useResource(SampleResource::class);
+        $this->useResource(Role::class, SampleResource::class);
 
         Gate::policy(Role::class, GreenPolicy::class);
 

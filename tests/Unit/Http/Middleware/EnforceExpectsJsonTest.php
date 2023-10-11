@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Orion\Tests\Unit\Http\Middleware;
 
 use Illuminate\Http\Request;

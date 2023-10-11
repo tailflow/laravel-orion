@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Orion\Tests\Unit\Http\Controllers;
 
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -11,23 +13,13 @@ use Orion\Drivers\Standard\ParamsValidator;
 use Orion\Drivers\Standard\QueryBuilder;
 use Orion\Drivers\Standard\RelationsResolver;
 use Orion\Drivers\Standard\SearchBuilder;
-use Orion\Exceptions\BindingException;
 use Orion\Tests\Fixtures\App\Models\Post;
 use Orion\Tests\Fixtures\App\Models\User;
 use Orion\Tests\Unit\Http\Controllers\Stubs\RelationControllerStub;
-use Orion\Tests\Unit\Http\Controllers\Stubs\RelationControllerStubWithoutRelation;
 use Orion\Tests\Unit\TestCase;
 
 class RelationControllerTest extends TestCase
 {
-    /** @test */
-    public function binding_exception_is_thrown_if_model_is_not_set(): void
-    {
-        $this->expectException(BindingException::class);
-        $this->expectExceptionMessage('Relation is not defined for '.RelationControllerStubWithoutRelation::class);
-
-        $stub = new RelationControllerStubWithoutRelation();
-    }
 
     /** @test */
     public function dependencies_are_resolved_correctly(): void

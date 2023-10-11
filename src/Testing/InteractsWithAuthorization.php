@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Orion\Testing;
 
 use Illuminate\Contracts\Auth\Authenticatable;

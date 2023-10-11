@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Orion\Tests\Fixtures\App\Http\Controllers;
 
 use Orion\Http\Controllers\RelationController;
@@ -7,9 +9,15 @@ use Orion\Tests\Fixtures\App\Models\Post;
 
 class PostPostImageController extends RelationController
 {
-    protected $model = Post::class;
+    public function model(): string
+    {
+        return Post::class;
+    }
 
-    protected $relation = 'image';
+    public function relation(): string
+    {
+        return 'image';
+    }
 
     public function includes(): array
     {

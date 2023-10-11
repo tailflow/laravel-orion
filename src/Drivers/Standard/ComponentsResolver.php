@@ -1,28 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Orion\Drivers\Standard;
 
+use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Gate;
 use Orion\Http\Requests\Request;
 use Orion\Http\Resources\Resource;
+use Orion\Repositories\Repository;
+use Orion\Repositories\BaseRepository;
 
 class ComponentsResolver implements \Orion\Contracts\ComponentsResolver
 {
-    /**
-     * @var string $resourceModelClass
-     */
-    protected $resourceModelClass;
-
-    /**
-     * @var string $requestClassesNamespace
-     */
-    protected $requestClassesNamespace = 'App\\Http\\Requests\\';
-
-    /**
-     * @var string $resourceClassesNamespace
-     */
-    protected $resourceClassesNamespace = 'App\\Http\\Resources\\';
+    protected string $resourceModelClass;
 
     /**
      * ComponentsResolver constructor.
@@ -32,6 +24,38 @@ class ComponentsResolver implements \Orion\Contracts\ComponentsResolver
     public function __construct(string $resourceModelClass)
     {
         $this->resourceModelClass = $resourceModelClass;
+    }
+
+    /**
+     * @return string
+     */
+    public function getRepositoryClassesNamespace(): string
+    {
+        return config('orion.namespaces.repositories');
+    }
+
+    /**
+     * @return string
+     */
+    public function getRequestClassesNamespace(): string
+    {
+        return config('orion.namespaces.requests');
+    }
+
+    /**
+     * Guesses request class based on the resource model.
+     */
+    public function resolveRepositoryClass(): string
+    {
+        $repositoryClassName = $this->getRepositoryClassesNamespace().class_basename(
+                $this->resourceModelClass
+            ).'Repository';
+
+        if (class_exists($repositoryClassName)) {
+            return $repositoryClassName;
+        }
+
+        return Repository::class;
     }
 
     /**
@@ -46,25 +70,6 @@ class ComponentsResolver implements \Orion\Contracts\ComponentsResolver
         }
 
         return Request::class;
-    }
-
-    /**
-     * @return string
-     */
-    public function getRequestClassesNamespace(): string
-    {
-        return $this->requestClassesNamespace;
-    }
-
-    /**
-     * @param string $requestClassesNamespace
-     * @return $this
-     */
-    public function setRequestClassesNamespace(string $requestClassesNamespace): self
-    {
-        $this->requestClassesNamespace = $requestClassesNamespace;
-
-        return $this;
     }
 
     /**
@@ -86,18 +91,7 @@ class ComponentsResolver implements \Orion\Contracts\ComponentsResolver
      */
     public function getResourceClassesNamespace(): string
     {
-        return $this->resourceClassesNamespace;
-    }
-
-    /**
-     * @param string $resourceClassesNamespace
-     * @return $this
-     */
-    public function setResourceClassesNamespace(string $resourceClassesNamespace): self
-    {
-        $this->resourceClassesNamespace = $resourceClassesNamespace;
-
-        return $this;
+        return config('orion.namespaces.resources');
     }
 
     /**
@@ -129,5 +123,21 @@ class ComponentsResolver implements \Orion\Contracts\ComponentsResolver
     public function bindPolicyClass(string $policyClass): void
     {
         Gate::policy($this->resourceModelClass, $policyClass);
+    }
+
+    /**
+     * @param string $repositoryClass
+     * @return BaseRepository
+     * @throws BindingResolutionException
+     */
+    public function instantiateRepository(string $repositoryClass): BaseRepository
+    {
+        $repository = app()->make($repositoryClass);
+
+        if ($repository instanceof Repository) {
+            $repository->setModel($this->resourceModelClass);
+        }
+
+        return $repository;
     }
 }

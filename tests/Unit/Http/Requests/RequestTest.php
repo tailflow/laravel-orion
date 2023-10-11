@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Orion\Tests\Unit\Http\Requests;
 
 use Illuminate\Routing\Route;
@@ -11,7 +13,7 @@ use Orion\Tests\Unit\TestCase;
 class RequestTest extends TestCase
 {
     /** @test */
-    public function resolving_store_endpoint_rules()
+    public function resolving_store_endpoint_rules(): void
     {
         $stub = new RequestStub();
         $stub->setRouteResolver(
@@ -30,7 +32,7 @@ class RequestTest extends TestCase
     }
 
     /** @test */
-    public function resolving_update_endpoint_rules()
+    public function resolving_update_endpoint_rules(): void
     {
         $stub = new RequestStub();
         $stub->setRouteResolver(
@@ -49,7 +51,7 @@ class RequestTest extends TestCase
     }
 
     /** @test */
-    public function resolving_associate_endpoint_rules()
+    public function resolving_associate_endpoint_rules(): void
     {
         $stub = new RequestStub();
         $stub->setRouteResolver(
@@ -68,7 +70,7 @@ class RequestTest extends TestCase
     }
 
     /** @test */
-    public function resolving_attach_endpoint_rules()
+    public function resolving_attach_endpoint_rules(): void
     {
         $stub = new RequestStub();
         $stub->setRouteResolver(
@@ -88,7 +90,7 @@ class RequestTest extends TestCase
     }
 
     /** @test */
-    public function resolving_detach_endpoint_rules()
+    public function resolving_detach_endpoint_rules(): void
     {
         $stub = new RequestStub();
         $stub->setRouteResolver(
@@ -107,7 +109,7 @@ class RequestTest extends TestCase
     }
 
     /** @test */
-    public function resolving_sync_endpoint_rules()
+    public function resolving_sync_endpoint_rules(): void
     {
         $stub = new RequestStub();
         $stub->setRouteResolver(
@@ -127,7 +129,7 @@ class RequestTest extends TestCase
     }
 
     /** @test */
-    public function resolving_toggle_endpoint_rules()
+    public function resolving_toggle_endpoint_rules(): void
     {
         $stub = new RequestStub();
         $stub->setRouteResolver(
@@ -146,7 +148,7 @@ class RequestTest extends TestCase
     }
 
     /** @test */
-    public function resolving_update_pivot_endpoint_rules()
+    public function resolving_update_pivot_endpoint_rules(): void
     {
         $stub = new RequestStub();
         $stub->setRouteResolver(
@@ -165,7 +167,7 @@ class RequestTest extends TestCase
     }
 
     /** @test */
-    public function resolving_custom_endpoint_rules()
+    public function resolving_custom_endpoint_rules(): void
     {
         $stub = new RequestStub();
         $stub->setRouteResolver(

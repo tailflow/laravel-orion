@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Orion\Tests\Unit\Http\Controllers\Stubs;
 
 use Orion\Contracts\QueryBuilder;
@@ -8,35 +10,29 @@ use Orion\Tests\Fixtures\App\Http\Requests\PostRequest;
 use Orion\Tests\Fixtures\App\Http\Resources\SampleCollectionResource;
 use Orion\Tests\Fixtures\App\Http\Resources\SampleResource;
 use Orion\Tests\Fixtures\App\Models\Post;
+use Orion\Tests\Fixtures\App\Repositories\PostBaseRepository;
 
 class BaseControllerStub extends BaseController
 {
-    /**
-     * @var string $tag
-     */
-    protected $model = Post::class;
+    public function model(): string
+    {
+        return Post::class;
+    }
 
-    /**
-     * @var string $request
-     */
-    protected $request = PostRequest::class;
+    protected ?string $repository = PostBaseRepository::class;
 
-    /**
-     * @var string $resource
-     */
-    protected $resource = SampleResource::class;
+    protected ?string $request = PostRequest::class;
 
-    /**
-     * @var string $collectionResource
-     */
-    protected $collectionResource = SampleCollectionResource::class;
+    protected ?string $resource = SampleResource::class;
+
+    protected ?string $collectionResource = SampleCollectionResource::class;
 
     /**
      * @inheritDoc
      */
     public function resolveResourceModelClass(): string
     {
-        return $this->getModel();
+        return $this->model();
     }
 
     public function getResourceQueryBuilder(): QueryBuilder

@@ -6,6 +6,7 @@ namespace Orion\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Container\BindingResolutionException;
+use Illuminate\Support\Facades\Storage;
 use InvalidArgumentException;
 use Orion\Contracts\Specs\Formatter;
 use Orion\Contracts\Specs\Parser;
@@ -14,7 +15,6 @@ use Orion\Specs\Formatters\JsonFormatter;
 use Orion\Specs\Formatters\YamlFormatter;
 use Orion\Specs\Parsers\JsonParser;
 use Orion\Specs\Parsers\YamlParser;
-use Storage;
 use Throwable;
 
 class BuildSpecsCommand extends Command

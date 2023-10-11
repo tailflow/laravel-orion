@@ -1,10 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Orion\Tests\Feature;
 
 use Illuminate\Support\Facades\Gate;
-use Mockery;
-use Orion\Contracts\ComponentsResolver;
 use Orion\Tests\Fixtures\App\Http\Requests\PostRequest;
 use Orion\Tests\Fixtures\App\Http\Resources\SampleResource;
 use Orion\Tests\Fixtures\App\Models\Post;
@@ -61,15 +61,7 @@ class StandardStoreOperationsTest extends TestCase
     {
         $payload = ['body' => 'test post body'];
 
-        app()->bind(
-            ComponentsResolver::class,
-            function () {
-                $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
-                $componentsResolverMock->shouldReceive('resolveRequestClass')->once()->andReturn(PostRequest::class);
-
-                return $componentsResolverMock;
-            }
-        );
+        $this->useRequest(Post::class, PostRequest::class);
 
         Gate::policy(Post::class, GreenPolicy::class);
 
@@ -85,15 +77,7 @@ class StandardStoreOperationsTest extends TestCase
     {
         $payload = ['title' => 'test post title', 'body' => 'test post body'];
 
-        app()->bind(
-            ComponentsResolver::class,
-            function () {
-                $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
-                $componentsResolverMock->shouldReceive('resolveResourceClass')->once()->andReturn(SampleResource::class);
-
-                return $componentsResolverMock;
-            }
-        );
+        $this->useResource(Post::class, SampleResource::class);
 
         Gate::policy(Post::class, GreenPolicy::class);
 

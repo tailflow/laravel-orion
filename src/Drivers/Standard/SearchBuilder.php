@@ -1,13 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Orion\Drivers\Standard;
 
 class SearchBuilder implements \Orion\Contracts\SearchBuilder
 {
     /**
-     * @var array
+     * @var string[]
      */
-    private $searchableBy;
+    private array $searchableBy;
 
     public function __construct(array $searchableBy)
     {

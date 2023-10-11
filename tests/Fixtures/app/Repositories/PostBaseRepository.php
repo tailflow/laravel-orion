@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Orion\Tests\Fixtures\App\Http\Controllers;
+namespace Orion\Tests\Fixtures\App\Repositories;
 
-use Orion\Http\Controllers\Controller;
+use Orion\Repositories\BaseRepository;
 use Orion\Tests\Fixtures\App\Models\Post;
 
-class DummyController extends Controller
+class PostBaseRepository extends BaseRepository
 {
     public function model(): string
     {

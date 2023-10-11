@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Orion\Tests\Feature;
 
 use Illuminate\Support\Facades\Gate;
@@ -91,15 +93,7 @@ class StandardUpdateOperationsTest extends TestCase
         $post = factory(Post::class)->create();
         $payload = ['body' => 'test post body updated'];
 
-        app()->bind(
-            ComponentsResolver::class,
-            function () {
-                $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
-                $componentsResolverMock->shouldReceive('resolveRequestClass')->once()->andReturn(PostRequest::class);
-
-                return $componentsResolverMock;
-            }
-        );
+        $this->useRequest(Post::class, PostRequest::class);
 
         Gate::policy(Post::class, GreenPolicy::class);
 
@@ -116,15 +110,7 @@ class StandardUpdateOperationsTest extends TestCase
         $post = factory(Post::class)->create();
         $payload = ['title' => 'test post title updated'];
 
-        app()->bind(
-            ComponentsResolver::class,
-            function () {
-                $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)->makePartial();
-                $componentsResolverMock->shouldReceive('resolveResourceClass')->once()->andReturn(SampleResource::class);
-
-                return $componentsResolverMock;
-            }
-        );
+        $this->useResource(Post::class, SampleResource::class);
 
         Gate::policy(Post::class, GreenPolicy::class);
 

@@ -1,10 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Orion\Tests\Feature\Relations\HasMany;
 
 use Illuminate\Support\Facades\Gate;
-use Mockery;
-use Orion\Contracts\ComponentsResolver;
 use Orion\Tests\Feature\TestCase;
 use Orion\Tests\Fixtures\App\Http\Resources\SampleResource;
 use Orion\Tests\Fixtures\App\Models\AccessKey;
@@ -145,7 +145,7 @@ class HasManyRelationStandardDeleteOperationsTest extends TestCase
         $company = factory(Company::class)->create();
         $team = factory(Team::class)->create(['company_id' => $company->id])->fresh();
 
-        $this->useResource(SampleResource::class);
+        $this->useResource(Team::class, SampleResource::class);
 
         Gate::policy(Team::class, GreenPolicy::class);
 

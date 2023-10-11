@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Orion\Tests\Unit\Http\Controllers\Stubs;
 
 use Orion\Http\Controllers\RelationController;
@@ -7,15 +9,15 @@ use Orion\Tests\Fixtures\App\Models\Post;
 
 class RelationControllerStub extends RelationController
 {
-    /**
-     * @var string $model
-     */
-    protected $model = Post::class;
+    public function model(): string
+    {
+        return Post::class;
+    }
 
-    /**
-     * @var string $relation
-     */
-    protected $relation = 'user';
+    public function relation(): string
+    {
+        return 'user';
+    }
 
     public function exposedScopes(): array
     {

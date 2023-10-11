@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Orion\Drivers\Standard;
 
 use Carbon\Carbon;
@@ -13,42 +15,30 @@ use Illuminate\Support\Str;
 use JsonException;
 use Orion\Http\Requests\Request;
 use RuntimeException;
+use Orion\Contracts\ParamsValidator;
+use Orion\Contracts\RelationsResolver;
+use Orion\Contracts\SearchBuilder;
 
 class QueryBuilder implements \Orion\Contracts\QueryBuilder
 {
-    /**
-     * @var string $resourceModelClass
-     */
-    private $resourceModelClass;
+    private string $resourceModelClass;
 
-    /**
-     * @var \Orion\Contracts\ParamsValidator $paramsValidator
-     */
-    private $paramsValidator;
+    private ParamsValidator $paramsValidator;
 
-    /**
-     * @var \Orion\Contracts\RelationsResolver $relationsResolver
-     */
-    private $relationsResolver;
+    private RelationsResolver $relationsResolver;
 
-    /**
-     * @var \Orion\Contracts\SearchBuilder $searchBuilder
-     */
-    private $searchBuilder;
+    private SearchBuilder $searchBuilder;
 
-    /**
-     * @var bool $intermediateMode
-     */
-    private $intermediateMode;
+    private bool $intermediateMode;
 
     /**
      * @inheritDoc
      */
     public function __construct(
         string $resourceModelClass,
-        \Orion\Contracts\ParamsValidator $paramsValidator,
-        \Orion\Contracts\RelationsResolver $relationsResolver,
-        \Orion\Contracts\SearchBuilder $searchBuilder,
+        ParamsValidator $paramsValidator,
+        RelationsResolver $relationsResolver,
+        SearchBuilder $searchBuilder,
         bool $intermediateMode = false
     ) {
         $this->resourceModelClass = $resourceModelClass;
@@ -677,5 +667,11 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
                 return $item;
             })
             ->all();
+    }
+
+    public function setIntermediateMode(bool $intermediateMode): static {
+        $this->intermediateMode = $intermediateMode;
+
+        return $this;
     }
 }

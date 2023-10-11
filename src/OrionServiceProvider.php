@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Orion;
 
 use Illuminate\Support\ServiceProvider;
@@ -21,7 +23,7 @@ class OrionServiceProvider extends ServiceProvider
      *
      * @return void
      */
-    public function register()
+    public function register(): void
     {
         $this->app->bind('orion', Orion::class);
         $this->app->bind(QueryBuilder::class, Drivers\Standard\QueryBuilder::class);
@@ -40,7 +42,7 @@ class OrionServiceProvider extends ServiceProvider
      *
      * @return void
      */
-    public function boot()
+    public function boot(): void
     {
         app('router')->pushMiddlewareToGroup('api', EnforceExpectsJson::class);
 

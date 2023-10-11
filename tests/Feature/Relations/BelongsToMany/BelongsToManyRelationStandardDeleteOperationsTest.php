@@ -1,10 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Orion\Tests\Feature\Relations\BelongsToMany;
 
 use Illuminate\Support\Facades\Gate;
-use Mockery;
-use Orion\Contracts\ComponentsResolver;
 use Orion\Tests\Feature\TestCase;
 use Orion\Tests\Fixtures\App\Http\Resources\SampleResource;
 use Orion\Tests\Fixtures\App\Models\Notification;
@@ -182,7 +182,7 @@ class BelongsToManyRelationStandardDeleteOperationsTest extends TestCase
 
         $role = $user->roles()->first();
 
-        $this->useResource(SampleResource::class);
+        $this->useResource(Role::class, SampleResource::class);
 
         Gate::policy(Role::class, GreenPolicy::class);
 

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Orion\Facades;
 
 use Illuminate\Routing\PendingResourceRegistration;

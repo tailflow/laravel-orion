@@ -1,11 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Orion\Concerns;
 
 trait DisableAuthorization
 {
-    /**
-     * @var bool $authorizationDisabled
-     */
-    protected $authorizationDisabled = true;
+    protected bool $authorizationDisabled = true;
 }

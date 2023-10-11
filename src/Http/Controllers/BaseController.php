@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Orion\Http\Controllers;
 
 use Illuminate\Auth\Access\AuthorizationException;
@@ -28,6 +30,7 @@ use Orion\Contracts\RelationsResolver;
 use Orion\Contracts\SearchBuilder;
 use Orion\Exceptions\BindingException;
 use Orion\Http\Requests\Request;
+use Orion\Repositories\BaseRepository;
 
 abstract class BaseController extends \Illuminate\Routing\Controller
 {
@@ -41,65 +44,57 @@ abstract class BaseController extends \Illuminate\Routing\Controller
         BuildsResponses,
         HandlesTransactions;
 
-    /**
-     * @var string $model
-     */
-    protected $model;
+    abstract public function model(): string;
 
-    /**
-     * @var string $request
-     */
-    protected $request;
+    protected ?string $repository = null;
 
-    /**
-     * @var string $resource
-     */
-    protected $resource;
+    protected ?string $request = null;
 
-    /**
-     * @var string|null $collectionResource
-     */
-    protected $collectionResource = null;
+    protected ?string $policy = null;
 
-    /**
-     * @var string|null $policy
-     */
-    protected $policy;
+    protected ?string $resource = null;
+
+    protected ?string $collectionResource = null;
 
     /**
      * @var ComponentsResolver $componentsResolver
      */
-    protected $componentsResolver;
+    protected ComponentsResolver $componentsResolver;
 
     /**
      * @var ParamsValidator $paramsValidator
      */
-    protected $paramsValidator;
+    protected ParamsValidator $paramsValidator;
 
     /**
      * @var RelationsResolver $relationsResolver
      */
-    protected $relationsResolver;
+    protected RelationsResolver $relationsResolver;
 
     /**
      * @var AppendsResolver $appendsResolver
      */
-    protected $appendsResolver;
+    protected AppendsResolver $appendsResolver;
 
     /**
      * @var Paginator $paginator
      */
-    protected $paginator;
+    protected Paginator $paginator;
 
     /**
      * @var SearchBuilder $searchBuilder
      */
-    protected $searchBuilder;
+    protected SearchBuilder $searchBuilder;
 
     /**
      * @var QueryBuilder $queryBuilder
      */
-    protected $queryBuilder;
+    protected QueryBuilder $queryBuilder;
+
+    /**
+     * @var BaseRepository $repositoryInstance
+     */
+    protected BaseRepository $repositoryInstance;
 
     /**
      * Controller constructor.
@@ -108,10 +103,6 @@ abstract class BaseController extends \Illuminate\Routing\Controller
      */
     public function __construct()
     {
-        if (!$this->model) {
-            throw new BindingException('Model is not defined for '.static::class);
-        }
-
         $this->componentsResolver = App::makeWith(
             ComponentsResolver::class,
             [
@@ -158,7 +149,7 @@ abstract class BaseController extends \Illuminate\Routing\Controller
         $this->queryBuilder = App::makeWith(
             QueryBuilder::class,
             [
-                'resourceModelClass' => $this->getModel(),
+                'resourceModelClass' => $this->model(),
                 'paramsValidator' => $this->paramsValidator,
                 'relationsResolver' => $this->relationsResolver,
                 'searchBuilder' => $this->searchBuilder,
@@ -168,6 +159,7 @@ abstract class BaseController extends \Illuminate\Routing\Controller
 
         $this->resolveComponents();
         $this->bindComponents();
+        $this->instantiateComponents();
     }
 
     /**
@@ -288,7 +280,7 @@ abstract class BaseController extends \Illuminate\Routing\Controller
     /**
      * Max pagination limit.
      *
-     * @return int?
+     * @return int|null
      */
     public function maxLimit(): ?int
     {
@@ -306,29 +298,14 @@ abstract class BaseController extends \Illuminate\Routing\Controller
     }
 
     /**
-     * @return string
-     */
-    public function getModel(): string
-    {
-        return $this->model;
-    }
-
-    /**
-     * @param string $modelClass
-     * @return $this
-     */
-    public function setModel(string $modelClass): self
-    {
-        $this->model = $modelClass;
-
-        return $this;
-    }
-
-    /**
      * Resolves request, resource and collection resource classes.
      */
     protected function resolveComponents(): void
     {
+        if (!$this->repository) {
+            $this->setRepository($this->componentsResolver->resolveRepositoryClass());
+        }
+
         if (!$this->request) {
             $this->setRequest($this->componentsResolver->resolveRequestClass());
         }
@@ -352,6 +329,30 @@ abstract class BaseController extends \Illuminate\Routing\Controller
         if ($policy = $this->getPolicy()) {
             $this->componentsResolver->bindPolicyClass($policy);
         }
+    }
+
+    protected function instantiateComponents(): void
+    {
+        $this->repositoryInstance = $this->componentsResolver->instantiateRepository($this->getRepository());
+    }
+
+    /**
+     * @return string
+     */
+    public function getRepository(): string
+    {
+        return $this->repository;
+    }
+
+    /**
+     * @param string $repositoryClass
+     * @return $this
+     */
+    public function setRepository(string $repositoryClass): self
+    {
+        $this->repository = $repositoryClass;
+
+        return $this;
     }
 
     /**
@@ -600,7 +601,7 @@ abstract class BaseController extends \Illuminate\Routing\Controller
      */
     public function newModelQuery(): Builder
     {
-        return $this->getModel()::query();
+        return $this->model()::query();
     }
 
     /**
@@ -674,7 +675,7 @@ abstract class BaseController extends \Illuminate\Routing\Controller
     protected function shouldPaginate(Request $request, int $paginationLimit): bool
     {
         if (property_exists($this, 'paginationDisabled')) {
-            return ! $this->paginationDisabled;
+            return !$this->paginationDisabled;
         }
 
         if (app()->bound('orion.paginationEnabled')) {

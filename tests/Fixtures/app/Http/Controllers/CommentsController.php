@@ -9,7 +9,10 @@ use Orion\Tests\Fixtures\App\Models\Comment;
 
 class CommentsController extends Controller
 {
-    protected $model = Comment::class;
+    public function model(): string
+    {
+        return Comment::class;
+    }
 
     public function includes(): array
     {

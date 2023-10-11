@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Orion\Drivers\Standard;
 
 use Orion\Exceptions\MaxPaginationLimitExceededException;
@@ -7,15 +9,9 @@ use Orion\Http\Requests\Request;
 
 class Paginator implements \Orion\Contracts\Paginator
 {
-    /**
-     * @var int $defaultLimit
-     */
-    protected $defaultLimit;
+    protected int $defaultLimit;
 
-    /**
-     * @var int|null $maxLimit
-     */
-    protected $maxLimit;
+    protected ?int $maxLimit;
 
     /**
      * Paginator constructor.

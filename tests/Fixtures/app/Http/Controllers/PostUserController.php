@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Orion\Tests\Fixtures\App\Http\Controllers;
 
 use Orion\Http\Controllers\RelationController;
@@ -7,15 +9,15 @@ use Orion\Tests\Fixtures\App\Models\Post;
 
 class PostUserController extends RelationController
 {
-    /**
-     * @var string|null $model
-     */
-    protected $model = Post::class;
+    public function model(): string
+    {
+        return Post::class;
+    }
 
-    /**
-     * @var string $relation
-     */
-    protected $relation = 'user';
+    public function relation(): string
+    {
+        return 'user';
+    }
 
     public function includes(): array
     {

@@ -1,28 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Orion\Tests\Fixtures\App\Http\Controllers;
 
+use Illuminate\Database\Eloquent\Model;
 use Orion\Http\Controllers\Controller;
 use Orion\Http\Requests\Request;
 use Orion\Tests\Fixtures\App\Models\Post;
+use Symfony\Component\HttpFoundation\Response;
 
 class PostsController extends Controller
 {
-    /**
-     * @var string|null $model
-     */
-    protected $model = Post::class;
-
-    /**
-     * @param Request $request
-     * @param Post $entity
-     * @return mixed|void
-     */
-    protected function beforeSave(Request $request, $entity)
+    public function model(): string
     {
-        if ($user = $request->user()) {
-            $entity->user()->associate($user);
-        }
+        return Post::class;
     }
 
     public function sortableBy(): array
@@ -61,5 +53,20 @@ class PostsController extends Controller
     public function includes(): array
     {
         return ['user', 'user.roles', 'image.*'];
+    }
+
+    /**
+     * @param Request $request
+     * @param Post $entity
+     * @param array $attributes
+     * @return Response|null
+     */
+    protected function beforeSave(Request $request, Model $entity, array &$attributes): ?Response
+    {
+        if ($user = $request->user()) {
+            $entity->user()->associate($user);
+        }
+
+        return null;
     }
 }

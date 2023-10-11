@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Orion\Http\Controllers;
 
 use Orion\Concerns\HandlesStandardBatchOperations;
@@ -17,7 +19,7 @@ abstract class Controller extends BaseController
      */
     public function resolveResourceModelClass(): string
     {
-        return $this->getModel();
+        return $this->model();
     }
 
     /**

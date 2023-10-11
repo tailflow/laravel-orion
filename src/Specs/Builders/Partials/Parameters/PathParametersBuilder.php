@@ -30,7 +30,7 @@ class PathParametersBuilder
             function (string $parameterName, int $index) use ($route, $controller) {
                 /** @var Model $model */
                 if ($index === 0 && $controller instanceof RelationController) {
-                    $model = app()->make($controller->getModel());
+                    $model = app()->make($controller->model());
                 } else {
                     $model = app()->make($controller->resolveResourceModelClass());
                 }

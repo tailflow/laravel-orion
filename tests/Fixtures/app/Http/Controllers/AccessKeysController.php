@@ -9,10 +9,10 @@ use Orion\Tests\Fixtures\App\Models\AccessKey;
 
 class AccessKeysController extends Controller
 {
-    /**
-     * @var string|null $model
-     */
-    protected $model = AccessKey::class;
+    public function model(): string
+    {
+        return AccessKey::class;
+    }
 
     protected function keyName(): string
     {

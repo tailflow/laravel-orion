@@ -1,10 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Orion\Tests\Feature\Relations\HasMany;
 
 use Illuminate\Support\Facades\Gate;
-use Mockery;
-use Orion\Contracts\ComponentsResolver;
 use Orion\Tests\Feature\TestCase;
 use Orion\Tests\Fixtures\App\Http\Requests\TeamRequest;
 use Orion\Tests\Fixtures\App\Http\Resources\SampleResource;
@@ -66,7 +66,7 @@ class HasManyRelationStandardStoreOperationsTest extends TestCase
         $company = factory(Company::class)->create();
         $payload = ['name' => 'test stored', 'description' => 5];
 
-        $this->useRequest(TeamRequest::class);
+        $this->useRequest(Team::class, TeamRequest::class);
 
         Gate::policy(Team::class, GreenPolicy::class);
 
@@ -83,7 +83,7 @@ class HasManyRelationStandardStoreOperationsTest extends TestCase
         $company = factory(Company::class)->create();
         $payload = ['name' => 'test stored'];
 
-        $this->useResource(SampleResource::class);
+        $this->useResource(Team::class, SampleResource::class);
 
         Gate::policy(Team::class, GreenPolicy::class);
 

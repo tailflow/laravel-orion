@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Orion\Concerns;
 
 use Exception;
@@ -10,6 +12,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Gate;
 use Orion\Http\Requests\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 trait HandlesRelationManyToManyOperations
 {
@@ -18,9 +21,10 @@ trait HandlesRelationManyToManyOperations
      *
      * @param Request $request
      * @param int|string $parentKey
-     * @return JsonResponse
+     * @return JsonResponse|Response
+     * @throws Exception
      */
-    public function attach(Request $request, $parentKey)
+    public function attach(Request $request, int|string $parentKey): JsonResponse|Response
     {
         try {
             $this->startTransaction();
@@ -37,9 +41,10 @@ trait HandlesRelationManyToManyOperations
      *
      * @param Request $request
      * @param int|string $parentKey
-     * @return JsonResponse
+     * @return JsonResponse|Response
+     * @throws BindingResolutionException
      */
-    protected function attachWithTransaction(Request $request, $parentKey)
+    protected function attachWithTransaction(Request $request, int|string $parentKey): JsonResponse|Response
     {
         $parentQuery = $this->buildAttachParentFetchQuery($request, $parentKey);
         $parentEntity = $this->runAttachParentFetchQuery($request, $parentQuery, $parentKey);
@@ -75,9 +80,9 @@ trait HandlesRelationManyToManyOperations
      *
      * @param Request $request
      * @param Model $parentEntity
-     * @return mixed
+     * @return Response|null
      */
-    protected function beforeAttach(Request $request, Model $parentEntity)
+    protected function beforeAttach(Request $request, Model $parentEntity): ?Response
     {
         return null;
     }
@@ -86,10 +91,10 @@ trait HandlesRelationManyToManyOperations
      * Builds Eloquent query for fetching parent entity in attach method.
      *
      * @param Request $request
-     * @param string|int $parentKey
+     * @param int|string $parentKey
      * @return Builder
      */
-    protected function buildAttachParentFetchQuery(Request $request, $parentKey): Builder
+    protected function buildAttachParentFetchQuery(Request $request, int|string $parentKey): Builder
     {
         return $this->buildParentFetchQuery($request, $parentKey);
     }
@@ -99,10 +104,10 @@ trait HandlesRelationManyToManyOperations
      *
      * @param Request $request
      * @param Builder $query
-     * @param string|int $parentKey
+     * @param int|string $parentKey
      * @return Model
      */
-    protected function runAttachParentFetchQuery(Request $request, Builder $query, $parentKey): Model
+    protected function runAttachParentFetchQuery(Request $request, Builder $query, int|string $parentKey): Model
     {
         return $this->runParentFetchQuery($request, $query, $parentKey);
     }
@@ -115,19 +120,20 @@ trait HandlesRelationManyToManyOperations
      * @param array $resources
      * @param bool $duplicates
      * @return array
+     * @throws BindingResolutionException
      */
     protected function performAttach(Request $request, Model $parentEntity, array $resources, bool $duplicates): array
     {
         $resources = $this->prepareResourcePivotFields($this->preparePivotResources($resources));
 
         if ($duplicates) {
-            $parentEntity->{$this->getRelation()}()->attach($resources);
+            $parentEntity->{$this->relation()}()->attach($resources);
             return [
                 'attached' => array_keys($resources),
             ];
         }
 
-        return $parentEntity->{$this->getRelation()}()->sync($resources, false);
+        return $parentEntity->{$this->relation()}()->sync($resources, false);
     }
 
     /**
@@ -136,7 +142,7 @@ trait HandlesRelationManyToManyOperations
      * @param array $resources
      * @return array
      */
-    protected function prepareResourcePivotFields(array $resources)
+    protected function prepareResourcePivotFields(array $resources): array
     {
         foreach ($resources as $key => &$pivotFields) {
             if (!is_array($pivotFields)) {
@@ -154,7 +160,7 @@ trait HandlesRelationManyToManyOperations
      * @param array $pivotFields
      * @return array mixed
      */
-    protected function preparePivotFields(array $pivotFields)
+    protected function preparePivotFields(array $pivotFields): array
     {
         foreach ($pivotFields as &$field) {
             if (is_array($field) || is_object($field)) {
@@ -178,8 +184,8 @@ trait HandlesRelationManyToManyOperations
     {
         $resources = $this->standardizePivotResourcesArray($resources);
 
-        $model = $this->getModel();
-        $relationInstance = (new $model)->{$this->getRelation()}();
+        $model = $this->model();
+        $relationInstance = (new $model)->{$this->relation()}();
 
         $resourceModelClass = $this->resolveResourceModelClass();
         $resourceModel = new $resourceModelClass();
@@ -205,7 +211,7 @@ trait HandlesRelationManyToManyOperations
      * @param array $resources
      * @return array
      */
-    protected function standardizePivotResourcesArray($resources)
+    protected function standardizePivotResourcesArray(array $resources): array
     {
         $resources = Arr::wrap($resources);
 
@@ -227,9 +233,9 @@ trait HandlesRelationManyToManyOperations
      * @param Request $request
      * @param Model $parentEntity
      * @param array $attachResult
-     * @return mixed
+     * @return Response|null
      */
-    protected function afterAttach(Request $request, Model $parentEntity, array &$attachResult)
+    protected function afterAttach(Request $request, Model $parentEntity, array &$attachResult): ?Response
     {
         return null;
     }
@@ -239,9 +245,10 @@ trait HandlesRelationManyToManyOperations
      *
      * @param Request $request
      * @param int|string $parentKey
-     * @return JsonResponse
+     * @return JsonResponse|Response
+     * @throws Exception
      */
-    public function detach(Request $request, $parentKey)
+    public function detach(Request $request, int|string $parentKey): JsonResponse|Response
     {
         try {
             $this->startTransaction();
@@ -258,9 +265,10 @@ trait HandlesRelationManyToManyOperations
      *
      * @param Request $request
      * @param int|string $parentKey
-     * @return JsonResponse
+     * @return JsonResponse|Response
+     * @throws BindingResolutionException
      */
-    protected function detachWithTransaction(Request $request, $parentKey)
+    protected function detachWithTransaction(Request $request, int|string $parentKey): JsonResponse|Response
     {
         $parentQuery = $this->buildDetachParentFetchQuery($request, $parentKey);
         $parentEntity = $this->runDetachParentFetchQuery($request, $parentQuery, $parentKey);
@@ -295,9 +303,9 @@ trait HandlesRelationManyToManyOperations
      *
      * @param Request $request
      * @param Model $parentEntity
-     * @return mixed
+     * @return Response|null
      */
-    protected function beforeDetach(Request $request, Model $parentEntity)
+    protected function beforeDetach(Request $request, Model $parentEntity): ?Response
     {
         return null;
     }
@@ -306,10 +314,10 @@ trait HandlesRelationManyToManyOperations
      * Builds Eloquent query for fetching parent entity in detach method.
      *
      * @param Request $request
-     * @param string|int $parentKey
+     * @param int|string $parentKey
      * @return Builder
      */
-    protected function buildDetachParentFetchQuery(Request $request, $parentKey): Builder
+    protected function buildDetachParentFetchQuery(Request $request, int|string $parentKey): Builder
     {
         return $this->buildParentFetchQuery($request, $parentKey);
     }
@@ -319,10 +327,10 @@ trait HandlesRelationManyToManyOperations
      *
      * @param Request $request
      * @param Builder $query
-     * @param string|int $parentKey
+     * @param int|string $parentKey
      * @return Model
      */
-    protected function runDetachParentFetchQuery(Request $request, Builder $query, $parentKey): Model
+    protected function runDetachParentFetchQuery(Request $request, Builder $query, int|string $parentKey): Model
     {
         return $this->runParentFetchQuery($request, $query, $parentKey);
     }
@@ -334,12 +342,13 @@ trait HandlesRelationManyToManyOperations
      * @param Model $parentEntity
      * @param array $resources
      * @return array
+     * @throws BindingResolutionException
      */
     protected function performDetach(Request $request, Model $parentEntity, array $resources): array
     {
         $resources = $this->prepareResourcePivotFields($this->preparePivotResources($resources));
 
-        $parentEntity->{$this->getRelation()}()->detach(array_keys($resources));
+        $parentEntity->{$this->relation()}()->detach(array_keys($resources));
 
         return array_keys($resources);
     }
@@ -350,9 +359,9 @@ trait HandlesRelationManyToManyOperations
      * @param Request $request
      * @param Model $parentEntity
      * @param array $detachResult
-     * @return mixed
+     * @return Response|null
      */
-    protected function afterDetach(Request $request, Model $parentEntity, array &$detachResult)
+    protected function afterDetach(Request $request, Model $parentEntity, array &$detachResult): ?Response
     {
         return null;
     }
@@ -362,9 +371,10 @@ trait HandlesRelationManyToManyOperations
      *
      * @param Request $request
      * @param int|string $parentKey
-     * @return JsonResponse
+     * @return JsonResponse|Response
+     * @throws Exception
      */
-    public function sync(Request $request, $parentKey)
+    public function sync(Request $request, int|string $parentKey): JsonResponse|Response
     {
         try {
             $this->startTransaction();
@@ -381,9 +391,10 @@ trait HandlesRelationManyToManyOperations
      *
      * @param Request $request
      * @param int|string $parentKey
-     * @return JsonResponse
+     * @return JsonResponse|Response
+     * @throws BindingResolutionException
      */
-    protected function syncWithTransaction(Request $request, $parentKey)
+    protected function syncWithTransaction(Request $request, int|string $parentKey): JsonResponse|Response
     {
         $parentQuery = $this->buildSyncParentFetchQuery($request, $parentKey);
         $parentEntity = $this->runSyncParentFetchQuery($request, $parentQuery, $parentKey);
@@ -415,9 +426,9 @@ trait HandlesRelationManyToManyOperations
      *
      * @param Request $request
      * @param Model $parentEntity
-     * @return mixed
+     * @return Response|null
      */
-    protected function beforeSync(Request $request, Model $parentEntity)
+    protected function beforeSync(Request $request, Model $parentEntity): ?Response
     {
         return null;
     }
@@ -426,10 +437,10 @@ trait HandlesRelationManyToManyOperations
      * Builds Eloquent query for fetching parent entity in sync method.
      *
      * @param Request $request
-     * @param string|int $parentKey
+     * @param int|string $parentKey
      * @return Builder
      */
-    protected function buildSyncParentFetchQuery(Request $request, $parentKey): Builder
+    protected function buildSyncParentFetchQuery(Request $request, int|string $parentKey): Builder
     {
         return $this->buildParentFetchQuery($request, $parentKey);
     }
@@ -439,10 +450,10 @@ trait HandlesRelationManyToManyOperations
      *
      * @param Request $request
      * @param Builder $query
-     * @param string|int $parentKey
+     * @param int|string $parentKey
      * @return Model
      */
-    protected function runSyncParentFetchQuery(Request $request, Builder $query, $parentKey): Model
+    protected function runSyncParentFetchQuery(Request $request, Builder $query, int|string $parentKey): Model
     {
         return $this->runParentFetchQuery($request, $query, $parentKey);
     }
@@ -455,12 +466,13 @@ trait HandlesRelationManyToManyOperations
      * @param array $resources
      * @param bool $detaching
      * @return array
+     * @throws BindingResolutionException
      */
     protected function performSync(Request $request, Model $parentEntity, array $resources, bool $detaching): array
     {
         $resources = $this->prepareResourcePivotFields($this->preparePivotResources($resources));
 
-        $syncResult = $parentEntity->{$this->getRelation()}()->sync(
+        $syncResult = $parentEntity->{$this->relation()}()->sync(
             $resources,
             $detaching
         );
@@ -476,9 +488,9 @@ trait HandlesRelationManyToManyOperations
      * @param Request $request
      * @param Model $parentEntity
      * @param array $syncResult
-     * @return mixed
+     * @return Response|null
      */
-    protected function afterSync(Request $request, Model $parentEntity, array &$syncResult)
+    protected function afterSync(Request $request, Model $parentEntity, array &$syncResult): ?Response
     {
         return null;
     }
@@ -488,9 +500,10 @@ trait HandlesRelationManyToManyOperations
      *
      * @param Request $request
      * @param int|string $parentKey
-     * @return JsonResponse
+     * @return JsonResponse|Response
+     * @throws Exception
      */
-    public function toggle(Request $request, $parentKey)
+    public function toggle(Request $request, int|string $parentKey): JsonResponse|Response
     {
         try {
             $this->startTransaction();
@@ -507,9 +520,10 @@ trait HandlesRelationManyToManyOperations
      *
      * @param Request $request
      * @param int|string $parentKey
-     * @return JsonResponse
+     * @return JsonResponse|Response
+     * @throws BindingResolutionException
      */
-    protected function toggleWithTransaction(Request $request, $parentKey)
+    protected function toggleWithTransaction(Request $request, int|string $parentKey): JsonResponse|Response
     {
         $parentQuery = $this->buildToggleParentFetchQuery($request, $parentKey);
         $parentEntity = $this->runToggleParentFetchQuery($request, $parentQuery, $parentKey);
@@ -540,9 +554,9 @@ trait HandlesRelationManyToManyOperations
      *
      * @param Request $request
      * @param Model $parentEntity
-     * @return mixed
+     * @return Response|null
      */
-    protected function beforeToggle(Request $request, Model $parentEntity)
+    protected function beforeToggle(Request $request, Model $parentEntity): ?Response
     {
         return null;
     }
@@ -551,10 +565,10 @@ trait HandlesRelationManyToManyOperations
      * Builds Eloquent query for fetching parent entity in toggle method.
      *
      * @param Request $request
-     * @param string|int $parentKey
+     * @param int|string $parentKey
      * @return Builder
      */
-    protected function buildToggleParentFetchQuery(Request $request, $parentKey): Builder
+    protected function buildToggleParentFetchQuery(Request $request, int|string $parentKey): Builder
     {
         return $this->buildParentFetchQuery($request, $parentKey);
     }
@@ -564,10 +578,10 @@ trait HandlesRelationManyToManyOperations
      *
      * @param Request $request
      * @param Builder $query
-     * @param string|int $parentKey
+     * @param int|string $parentKey
      * @return Model
      */
-    protected function runToggleParentFetchQuery(Request $request, Builder $query, $parentKey): Model
+    protected function runToggleParentFetchQuery(Request $request, Builder $query, int|string $parentKey): Model
     {
         return $this->runParentFetchQuery($request, $query, $parentKey);
     }
@@ -579,12 +593,13 @@ trait HandlesRelationManyToManyOperations
      * @param Model $parentEntity
      * @param array $resources
      * @return array
+     * @throws BindingResolutionException
      */
     protected function performToggle(Request $request, Model $parentEntity, array $resources): array
     {
         $resources = $this->prepareResourcePivotFields($this->preparePivotResources($resources));
 
-        return $parentEntity->{$this->getRelation()}()->toggle($resources);
+        return $parentEntity->{$this->relation()}()->toggle($resources);
     }
 
     /**
@@ -593,9 +608,9 @@ trait HandlesRelationManyToManyOperations
      * @param Request $request
      * @param Model $parentEntity
      * @param array $toggleResult
-     * @return mixed
+     * @return Response|null
      */
-    protected function afterToggle(Request $request, Model $parentEntity, array &$toggleResult)
+    protected function afterToggle(Request $request, Model $parentEntity, array &$toggleResult): ?Response
     {
         return null;
     }
@@ -606,9 +621,10 @@ trait HandlesRelationManyToManyOperations
      * @param Request $request
      * @param int|string $parentKey
      * @param int|string $relatedKey
-     * @return JsonResponse
+     * @return JsonResponse|Response
+     * @throws Exception
      */
-    public function updatePivot(Request $request, $parentKey, $relatedKey)
+    public function updatePivot(Request $request, int|string $parentKey, int|string $relatedKey): JsonResponse|Response
     {
         try {
             $this->startTransaction();
@@ -626,9 +642,10 @@ trait HandlesRelationManyToManyOperations
      * @param Request $request
      * @param int|string $parentKey
      * @param int|string $relatedKey
-     * @return JsonResponse
+     * @return JsonResponse|Response
+     * @throws BindingResolutionException
      */
-    protected function updatePivotWithTransaction(Request $request, $parentKey, $relatedKey)
+    protected function updatePivotWithTransaction(Request $request, int|string $parentKey, int|string $relatedKey): JsonResponse|Response
     {
         $parentQuery = $this->buildUpdatePivotParentFetchQuery($request, $parentKey);
         $parentEntity = $this->runUpdatePivotParentFetchQuery($request, $parentQuery, $parentKey);
@@ -662,9 +679,9 @@ trait HandlesRelationManyToManyOperations
      *
      * @param Request $request
      * @param Model $parentEntity
-     * @return mixed
+     * @return Response|null
      */
-    protected function beforeUpdatePivot(Request $request, Model $parentEntity)
+    protected function beforeUpdatePivot(Request $request, Model $parentEntity): ?Response
     {
         return null;
     }
@@ -673,10 +690,10 @@ trait HandlesRelationManyToManyOperations
      * Builds Eloquent query for fetching parent entity in update pivot method.
      *
      * @param Request $request
-     * @param string|int $parentKey
+     * @param int|string $parentKey
      * @return Builder
      */
-    protected function buildUpdatePivotParentFetchQuery(Request $request, $parentKey): Builder
+    protected function buildUpdatePivotParentFetchQuery(Request $request, int|string $parentKey): Builder
     {
         return $this->buildParentFetchQuery($request, $parentKey);
     }
@@ -686,10 +703,10 @@ trait HandlesRelationManyToManyOperations
      *
      * @param Request $request
      * @param Builder $query
-     * @param string|int $parentKey
+     * @param int|string $parentKey
      * @return Model
      */
-    protected function runUpdatePivotParentFetchQuery(Request $request, Builder $query, $parentKey): Model
+    protected function runUpdatePivotParentFetchQuery(Request $request, Builder $query, int|string $parentKey): Model
     {
         return $this->runParentFetchQuery($request, $query, $parentKey);
     }
@@ -699,15 +716,15 @@ trait HandlesRelationManyToManyOperations
      *
      * @param Request $request
      * @param Model $parentEntity
-     * @param string|int $relatedKey
+     * @param int|string $relatedKey
      * @param array $pivot
      * @return array
      */
-    protected function performUpdatePivot(Request $request, Model $parentEntity, $relatedKey, array $pivot): array
+    protected function performUpdatePivot(Request $request, Model $parentEntity, int|string $relatedKey, array $pivot): array
     {
         $pivot = $this->preparePivotFields($pivot);
 
-        $parentEntity->{$this->getRelation()}()->updateExistingPivot($relatedKey, $pivot);
+        $parentEntity->{$this->relation()}()->updateExistingPivot($relatedKey, $pivot);
 
         return [is_numeric($relatedKey) ? (int) $relatedKey : $relatedKey];
     }
@@ -718,9 +735,9 @@ trait HandlesRelationManyToManyOperations
      * @param Request $request
      * @param Model $parentEntity
      * @param array $updateResult
-     * @return mixed
+     * @return Response|null
      */
-    protected function afterUpdatePivot(Request $request, Model $parentEntity, array &$updateResult)
+    protected function afterUpdatePivot(Request $request, Model $parentEntity, array &$updateResult): ?Response
     {
         return null;
     }
@@ -731,7 +748,7 @@ trait HandlesRelationManyToManyOperations
      * @param Model $entity
      * @return Model
      */
-    protected function castPivotJsonFields(Model $entity)
+    protected function castPivotJsonFields(Model $entity): Model
     {
         if (!$entity->pivot) {
             return $entity;

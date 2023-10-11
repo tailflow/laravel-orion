@@ -1,10 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Orion\Tests\Feature\Relations\BelongsToMany;
 
 use Illuminate\Support\Facades\Gate;
-use Mockery;
-use Orion\Contracts\ComponentsResolver;
 use Orion\Tests\Feature\TestCase;
 use Orion\Tests\Fixtures\App\Http\Requests\RoleRequest;
 use Orion\Tests\Fixtures\App\Http\Resources\SampleResource;
@@ -159,7 +159,7 @@ class BelongsToManyRelationStandardStoreOperationsTest extends TestCase
 
         Gate::policy(Role::class, GreenPolicy::class);
 
-        $this->useRequest(RoleRequest::class);
+        $this->useRequest(Role::class, RoleRequest::class);
 
         $response = $this->post("/api/users/{$user->id}/roles", $payload);
 
@@ -180,7 +180,7 @@ class BelongsToManyRelationStandardStoreOperationsTest extends TestCase
         $user = factory(User::class)->create();
         $payload = ['description' => 'abc'];
 
-        $this->useRequest(RoleRequest::class);
+        $this->useRequest(Role::class, RoleRequest::class);
 
         Gate::policy(Role::class, GreenPolicy::class);
 
@@ -197,7 +197,7 @@ class BelongsToManyRelationStandardStoreOperationsTest extends TestCase
         $user = factory(User::class)->create();
         $payload = ['name' => 'test stored'];
 
-        $this->useResource(SampleResource::class);
+        $this->useResource(Role::class, SampleResource::class);
 
         Gate::policy(Role::class, GreenPolicy::class);
 

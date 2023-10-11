@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Orion\Tests\Unit\Concerns;
 
 use Illuminate\Http\Request;
@@ -11,7 +13,7 @@ use Orion\Tests\TestCase;
 class ExtendsResourcesTest extends TestCase
 {
     /** @test */
-    public function merging_data_with_array_representation_of_resource()
+    public function merging_data_with_array_representation_of_resource(): void
     {
         $stub = new ExtendsResourcesStub(new Post(['title' => 'test']));
         $this->assertSame(

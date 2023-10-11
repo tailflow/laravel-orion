@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Orion\Tests\Feature;
 
 use Mockery;
@@ -36,12 +38,12 @@ abstract class TestCase extends BaseTestCase
             config('database.connections.testing.driver') === 'sqlite';
     }
 
-    protected function useRequest(string $requestClass): self
+    protected function useRequest(string $resourceModelClass, string $requestClass): self
     {
         app()->bind(
             ComponentsResolver::class,
-            function () use ($requestClass) {
-                $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)
+            function () use ($resourceModelClass, $requestClass) {
+                $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class, [$resourceModelClass])
                     ->makePartial();
                 $componentsResolverMock->shouldReceive('resolveRequestClass')
                     ->zeroOrMoreTimes()->andReturn($requestClass);
@@ -53,12 +55,12 @@ abstract class TestCase extends BaseTestCase
         return $this;
     }
 
-    protected function useResource(string $resourceClass): self
+    protected function useResource(string $resourceModelClass, string $resourceClass): self
     {
         app()->bind(
             ComponentsResolver::class,
-            function () use ($resourceClass) {
-                $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)
+            function () use ($resourceModelClass, $resourceClass) {
+                $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class, [$resourceModelClass])
                     ->makePartial();
                 $componentsResolverMock->shouldReceive('resolveResourceClass')
                     ->zeroOrMoreTimes()->andReturn($resourceClass);
@@ -70,12 +72,12 @@ abstract class TestCase extends BaseTestCase
         return $this;
     }
 
-    protected function useCollectionResource(string $collectionResourceClass): self
+    protected function useCollectionResource(string $resourceModelClass, string $collectionResourceClass): self
     {
         app()->bind(
             ComponentsResolver::class,
-            function () use ($collectionResourceClass) {
-                $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class)
+            function () use ($resourceModelClass, $collectionResourceClass) {
+                $componentsResolverMock = Mockery::mock(\Orion\Drivers\Standard\ComponentsResolver::class, [$resourceModelClass])
                     ->makePartial();
                 $componentsResolverMock->shouldReceive('resolveCollectionResourceClass')
                     ->zeroOrMoreTimes()->andReturn($collectionResourceClass);

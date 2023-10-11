@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Orion\Tests\Unit\Http\Controllers\Stubs;
 
 use Orion\Contracts\QueryBuilder;
@@ -9,16 +11,19 @@ use Orion\Tests\Fixtures\App\Models\Post;
 
 class BaseControllerStubWithWhitelistedFieldsAndRelations extends BaseController
 {
-    protected $model = Post::class;
+    public function model(): string
+    {
+        return Post::class;
+    }
 
-    protected $request = PostRequest::class;
+    protected ?string $request = PostRequest::class;
 
     /**
      * @inheritDoc
      */
     public function resolveResourceModelClass(): string
     {
-        return $this->getModel();
+        return $this->model();
     }
 
     public function exposedScopes(): array

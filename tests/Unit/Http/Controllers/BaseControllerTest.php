@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Orion\Tests\Unit\Http\Controllers;
 
+use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\App;
 use Mockery;
@@ -12,15 +15,16 @@ use Orion\Drivers\Standard\ParamsValidator;
 use Orion\Drivers\Standard\QueryBuilder;
 use Orion\Drivers\Standard\RelationsResolver;
 use Orion\Drivers\Standard\SearchBuilder;
-use Orion\Exceptions\BindingException;
+use Orion\Repositories\Repository;
+use Orion\Repositories\BaseRepository;
 use Orion\Tests\Fixtures\App\Http\Requests\PostRequest;
 use Orion\Tests\Fixtures\App\Http\Resources\SampleCollectionResource;
 use Orion\Tests\Fixtures\App\Http\Resources\SampleResource;
 use Orion\Tests\Fixtures\App\Models\Post;
 use Orion\Tests\Fixtures\App\Models\User;
+use Orion\Tests\Fixtures\App\Repositories\PostBaseRepository;
 use Orion\Tests\Unit\Http\Controllers\Stubs\BaseControllerStub;
 use Orion\Tests\Unit\Http\Controllers\Stubs\BaseControllerStubWithoutComponents;
-use Orion\Tests\Unit\Http\Controllers\Stubs\BaseControllerStubWithoutModel;
 use Orion\Tests\Unit\Http\Controllers\Stubs\BaseControllerStubWithWhitelistedFieldsAndRelations;
 use Orion\Tests\Unit\TestCase;
 
@@ -28,16 +32,7 @@ class BaseControllerTest extends TestCase
 {
 
     /** @test */
-    public function binding_exception_is_thrown_if_model_is_not_set()
-    {
-        $this->expectException(BindingException::class);
-        $this->expectExceptionMessage('Model is not defined for '.BaseControllerStubWithoutModel::class);
-
-        $stub = new BaseControllerStubWithoutModel();
-    }
-
-    /** @test */
-    public function dependencies_are_resolved_correctly()
+    public function dependencies_are_resolved_correctly(): void
     {
         $fakeComponentsResolver = new ComponentsResolver(Post::class);
         $fakeParamsValidator = new ParamsValidator();
@@ -118,12 +113,13 @@ class BaseControllerTest extends TestCase
     }
 
     /** @test */
-    public function using_predefined_components()
+    public function using_predefined_components(): void
     {
         App::bind(
             \Orion\Contracts\ComponentsResolver::class,
             function () {
-                $componentsResolverMock = Mockery::mock(ComponentsResolver::class)->makePartial();
+                $componentsResolverMock = Mockery::mock(ComponentsResolver::class, [Post::class])->makePartial();
+                $componentsResolverMock->shouldReceive('resolveRepositoryClass')->never();
                 $componentsResolverMock->shouldReceive('resolveRequestClass')->never();
                 $componentsResolverMock->shouldReceive('resolveResourceClass')->never();
                 $componentsResolverMock->shouldReceive('resolveCollectionResourceClass')->never();
@@ -133,18 +129,19 @@ class BaseControllerTest extends TestCase
         );
 
         $stub = new BaseControllerStub();
+        $this->assertEquals(PostBaseRepository::class, $stub->getRepository());
         $this->assertEquals(PostRequest::class, $stub->getRequest());
         $this->assertEquals(SampleResource::class, $stub->getResource());
         $this->assertEquals(SampleCollectionResource::class, $stub->getCollectionResource());
     }
 
     /** @test */
-    public function resolving_components()
+    public function resolving_components(): void
     {
         App::bind(
             \Orion\Contracts\ComponentsResolver::class,
             function () {
-                $componentsResolverMock = Mockery::mock(ComponentsResolver::class)->makePartial();
+                $componentsResolverMock = Mockery::mock(ComponentsResolver::class, [Post::class])->makePartial();
                 $componentsResolverMock->shouldReceive('resolveRequestClass')->once()->withNoArgs()->andReturn('testRequestClass');
                 $componentsResolverMock->shouldReceive('resolveResourceClass')->once()->withNoArgs()->andReturn('testResourceClass');
                 $componentsResolverMock->shouldReceive('resolveCollectionResourceClass')->once()->withNoArgs()->andReturn('testCollectionResourceClass');
@@ -154,18 +151,19 @@ class BaseControllerTest extends TestCase
         );
 
         $stub = new BaseControllerStubWithoutComponents();
+        $this->assertEquals(Repository::class, $stub->getRepository());
         $this->assertEquals('testRequestClass', $stub->getRequest());
         $this->assertEquals('testResourceClass', $stub->getResource());
         $this->assertEquals('testCollectionResourceClass', $stub->getCollectionResource());
     }
 
     /** @test */
-    public function binding_components()
+    public function binding_components(): void
     {
         App::bind(
             \Orion\Contracts\ComponentsResolver::class,
             function () {
-                $componentsResolverMock = Mockery::mock(ComponentsResolver::class)->makePartial();
+                $componentsResolverMock = Mockery::mock(ComponentsResolver::class, [Post::class])->makePartial();
                 $componentsResolverMock->shouldReceive('bindRequestClass')->with(PostRequest::class)->once();
 
                 return $componentsResolverMock;
@@ -176,11 +174,30 @@ class BaseControllerTest extends TestCase
     }
 
     /** @test */
-    public function authorize()
+    public function instantiating_components(): void
+    {
+        App::bind(
+            \Orion\Contracts\ComponentsResolver::class,
+            function () {
+                $componentsResolverMock = Mockery::mock(ComponentsResolver::class, [Post::class])->makePartial();
+                $componentsResolverMock->shouldReceive('instantiateRepository')->with(PostBaseRepository::class)->once();
+
+                return $componentsResolverMock;
+            }
+        );
+
+        $stub = new BaseControllerStub();
+    }
+
+    /**
+     * @test
+     * @throws BindingResolutionException
+     */
+    public function authorize(): void
     {
         $user = new User(['name' => 'test user']);
         $ability = 'create';
-        $arguments = [Tag::class];
+        $arguments = [User::class];
 
         $controllerMock = Mockery::mock(BaseControllerStub::class)->makePartial();
         $controllerMock->shouldReceive('resolveUser')->once()->withNoArgs()->andReturn($user);
@@ -190,7 +207,7 @@ class BaseControllerTest extends TestCase
     }
 
     /** @test */
-    public function creating_new_model_query()
+    public function creating_new_model_query(): void
     {
         $stub = new BaseControllerStub();
 
@@ -201,15 +218,15 @@ class BaseControllerTest extends TestCase
     }
 
     /** @test */
-    public function resolving_model_class()
+    public function resolving_model_class(): void
     {
         $stub = new BaseControllerStub();
 
-        $this->assertEquals(Post::class, $stub->getModel());
+        $this->assertEquals(Post::class, $stub->model());
     }
 
     /** @test */
-    public function resolving_user_with_api_guard()
+    public function resolving_user_with_api_guard(): void
     {
         $user = new User(['name' => 'test user']);
         $this->actingAs($user, 'api');
@@ -221,7 +238,7 @@ class BaseControllerTest extends TestCase
     }
 
     /** @test */
-    public function resolving_user_with_other_guards()
+    public function resolving_user_with_other_guards(): void
     {
         $user = new User(['name' => 'test user']);
         $this->actingAs($user, 'web');
