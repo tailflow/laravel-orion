@@ -32,7 +32,26 @@ abstract class BaseRepository
         return $entity;
     }
 
+    public function update(Model $entity, array $attributes): Model
+    {
+        $this->beforeUpdate($entity, $attributes)
+            ->beforeSave($entity, $attributes)
+            ->performFill($entity, $attributes)
+            ->performUpdate($entity)
+            ->afterSave($entity)
+            ->afterUpdate($entity);
+
+        return $entity;
+    }
+
     public function performStore(Model $entity): static
+    {
+        $entity->save();
+
+        return $this;
+    }
+
+    public function performUpdate(Model $entity): static
     {
         $entity->save();
 
@@ -53,12 +72,22 @@ abstract class BaseRepository
         return $this;
     }
 
+    public function beforeUpdate(Model $entity, array &$attributes): static
+    {
+        return $this;
+    }
+
     public function beforeSave(Model $entity, array &$attributes): static
     {
         return $this;
     }
 
     public function afterStore(Model $entity): static
+    {
+        return $this;
+    }
+
+    public function afterUpdate(Model $entity): static
     {
         return $this;
     }

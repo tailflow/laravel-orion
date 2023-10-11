@@ -14,8 +14,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php-version: ['8.0', '8.1', '8.2' ]
-        laravel-version: [ '^6.0', '^7.0', '^8.0', '^9.0' ]
+        php-version: [ '8.0', '8.1', '8.2' ]
+        laravel-version: [ '^6.0', '^7.0', '^8.0', '^9.0', '^10.0' ]
         database: [ 'sqlite', 'mysql', 'pgsql' ]
         exclude:
           - php-version: '8.1'
