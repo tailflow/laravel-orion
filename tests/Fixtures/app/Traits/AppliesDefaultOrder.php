@@ -11,7 +11,7 @@ trait AppliesDefaultOrder
         parent::boot();
         // Order by name ASC
         static::addGlobalScope('order', function (Builder $builder) {
-            $builder->orderBy('id', 'asc');
+            $builder->orderBy($builder->getModel()->getTable().'.id', 'asc');
         });
     }
 }

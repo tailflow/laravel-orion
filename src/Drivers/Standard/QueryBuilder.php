@@ -134,8 +134,7 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
                 if ($relation === 'pivot') {
                     $this->buildPivotFilterQueryWhereClause($relationField, $filterDescriptor, $query, $or);
                 } else {
-                    $relationInstance = (new $this->resourceModelClass)->{$relation}();
-
+                    $relationInstance = $this->relationsResolver->relationInstanceFromParamConstraint($this->resourceModelClass, $filterDescriptor['field']);
                     $qualifiedRelationFieldName = $this->relationsResolver->getQualifiedRelationFieldName($relationInstance, $relationField);
 
                     $query->{$or ? 'orWhereHas' : 'whereHas'}(

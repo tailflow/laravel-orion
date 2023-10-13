@@ -13,6 +13,10 @@ interface RelationsResolver
 
     public function requestedRelations(Request $request): array;
 
+    public function relationInstanceFromParamConstraint(string $resourceModelClass, string $paramConstraint): Relation;
+
+    public function rootRelationFromParamConstraint(string $paramConstraint): string;
+
     public function relationFromParamConstraint(string $paramConstraint): string;
 
     public function relationFieldFromParamConstraint(string $paramConstraint): string;
