@@ -65,4 +65,20 @@ class PendingResourceRegistration extends \Illuminate\Routing\PendingResourceReg
 
         return $this;
     }
+
+    /**
+     * Disables the search operation on the resource.
+     *
+     * @return $this
+     */
+    public function withoutSearch(): PendingResourceRegistration
+    {
+        $except = Arr::get($this->options, 'except');
+
+        $except = array_merge($except, ['search']);
+
+        $this->except($except);
+
+        return $this;
+    }
 }

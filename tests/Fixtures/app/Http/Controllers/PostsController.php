@@ -29,6 +29,7 @@ class PostsController extends Controller
             'position',
             'publish_at',
             'user.name',
+            'user.roles.name',
             'meta.name',
             'meta.title',
             'meta->nested_field',

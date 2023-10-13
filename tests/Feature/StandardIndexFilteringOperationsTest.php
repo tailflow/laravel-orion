@@ -354,6 +354,35 @@ class StandardIndexFilteringOperationsTest extends TestCase
     }
 
     /** @test */
+    public function getting_a_list_of_resources_filtered_by_deep_relation_field_resources(): void
+    {
+        $matchingPostUser = factory(User::class)->create(['name' => 'match']);
+        $matchingPostUser->roles()->create(['name' => 'matching-role-name']);
+        $matchingPost = factory(Post::class)->create(['user_id' => $matchingPostUser->id])->fresh();
+
+        $nonMatchingPostUser = factory(User::class)->create(['name' => 'not match']);
+        $nonMatchingPostUser->roles()->create(['name' => 'non-matching-role-name']);
+        factory(Post::class)->create(['user_id' => $nonMatchingPostUser->id])->fresh();
+
+        Gate::policy(Post::class, GreenPolicy::class);
+
+        $response = $this->post(
+            '/api/posts/search',
+            [
+                'filters' => [
+                    ['field' => 'user.name', 'operator' => '=', 'value' => 'match'],
+                    ['field' => 'user.roles.name', 'operator' => '=', 'value' => 'matching-role-name'],
+                ],
+            ]
+        );
+
+        $this->assertResourcesPaginated(
+            $response,
+            $this->makePaginator([$matchingPost], 'posts/search')
+        );
+    }
+
+    /** @test */
     public function getting_a_list_of_resources_filtered_by_not_whitelisted_field(): void
     {
         factory(Post::class)->create(['body' => 'match'])->fresh();

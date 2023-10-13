@@ -691,4 +691,49 @@ class OrionTest extends TestCase
         $this->assertRouteRegistered('api.projects.users.batchDestroy', ['DELETE'], 'api/projects/{project}/users/batch', DummyController::class.'@batchDestroy');
         $this->assertRouteRegistered('api.projects.users.batchRestore', ['POST'], 'api/projects/{project}/users/batch/restore', DummyController::class.'@batchRestore');
     }
+
+    /** @test */
+    public function registering_resource_without_batch_removes_routes(): void
+    {
+        Route::group(
+            ['as' => 'api.', 'prefix' => 'api'],
+            function () {
+                Orion::resource('projects', DummyController::class)->withoutBatch();
+            }
+        );
+
+        $this->assertRouteRegistered('api.projects.search', ['POST'], 'api/projects/search', DummyController::class.'@search');
+        $this->assertRouteRegistered('api.projects.index', ['GET', 'HEAD'], 'api/projects', DummyController::class.'@index');
+        $this->assertRouteRegistered('api.projects.store', ['POST'], 'api/projects', DummyController::class.'@store');
+        $this->assertRouteRegistered('api.projects.show', ['GET', 'HEAD'], 'api/projects/{project}', DummyController::class.'@show');
+        $this->assertRouteRegistered('api.projects.update', ['PUT', 'PATCH'], 'api/projects/{project}', DummyController::class.'@update');
+        $this->assertRouteRegistered('api.projects.destroy', ['DELETE'], 'api/projects/{project}', DummyController::class.'@destroy');
+
+        $this->assertRouteNotRegistered('api.projects.batchStore');
+        $this->assertRouteNotRegistered('api.projects.batchUpdate');
+        $this->assertRouteNotRegistered('api.projects.batchDestroy');
+    }
+
+    /** @test */
+    public function registering_resource_without_search_removes_routes(): void
+    {
+        Route::group(
+            ['as' => 'api.', 'prefix' => 'api'],
+            function () {
+                Orion::resource('projects', DummyController::class)->withoutSearch();
+            }
+        );
+
+        $this->assertRouteNotRegistered('api.projects.search');
+
+        $this->assertRouteRegistered('api.projects.index', ['GET', 'HEAD'], 'api/projects', DummyController::class.'@index');
+        $this->assertRouteRegistered('api.projects.store', ['POST'], 'api/projects', DummyController::class.'@store');
+        $this->assertRouteRegistered('api.projects.show', ['GET', 'HEAD'], 'api/projects/{project}', DummyController::class.'@show');
+        $this->assertRouteRegistered('api.projects.update', ['PUT', 'PATCH'], 'api/projects/{project}', DummyController::class.'@update');
+        $this->assertRouteRegistered('api.projects.destroy', ['DELETE'], 'api/projects/{project}', DummyController::class.'@destroy');
+
+        $this->assertRouteRegistered('api.projects.batchStore', ['POST'], 'api/projects/batch', DummyController::class.'@batchStore');
+        $this->assertRouteRegistered('api.projects.batchUpdate', ['PATCH'], 'api/projects/batch', DummyController::class.'@batchUpdate');
+        $this->assertRouteRegistered('api.projects.batchDestroy', ['DELETE'], 'api/projects/batch', DummyController::class.'@batchDestroy');
+    }
 }
