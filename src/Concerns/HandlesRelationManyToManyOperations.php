@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 use Orion\Http\Requests\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -192,17 +193,17 @@ trait HandlesRelationManyToManyOperations
         $resourceKeyName = $this->keyName();
         $resourceModels = $resourceModel->whereIn($resourceKeyName, array_keys($resources))->get();
 
-        return $resourceModels->filter(function ($resourceModel) {
-            return !$this->authorizationRequired() ||
-                Gate::forUser($this->resolveUser())->allows('view', $resourceModel);
-        })
-            ->mapWithKeys(function ($resourceModel) use ($relationInstance, $resources, $resourceKeyName) {
+        $resourceModels = $this->authorizePivotResources($resourceModels);
+
+        return $this->validatePivotResources($resourceModels)
+            ->mapWithKeys(
+            function ($resourceModel) use ($relationInstance, $resources, $resourceKeyName) {
                 return [
                     $resourceModel->{$relationInstance->getRelatedKeyName(
                     )} => $resources[$resourceModel->{$resourceKeyName}],
                 ];
             }
-            )->all();
+        )->all();
     }
 
     /**
@@ -225,6 +226,31 @@ trait HandlesRelationManyToManyOperations
         }
 
         return $standardizedResources;
+    }
+
+    /**
+     * Checks whether the currently authenticated user has permissions to view each of the given pivot resource models.
+     *
+     * @param Collection $resources
+     * @return Collection
+     */
+    protected function authorizePivotResources(Collection $resources): Collection
+    {
+        return $resources->filter(function ($resourceModel) {
+            return !$this->authorizationRequired() ||
+                Gate::forUser($this->resolveUser())->allows('view', $resourceModel);
+        });
+    }
+
+    /**
+     * Checks whether the given pivot resource models meet any required criteria to be attached to the main resource.
+     *
+     * @param Collection $resources
+     * @return Collection
+     */
+    protected function validatePivotResources(Collection $resources): Collection
+    {
+        return $resources;
     }
 
     /**
@@ -645,8 +671,11 @@ trait HandlesRelationManyToManyOperations
      * @return JsonResponse|Response
      * @throws BindingResolutionException
      */
-    protected function updatePivotWithTransaction(Request $request, int|string $parentKey, int|string $relatedKey): JsonResponse|Response
-    {
+    protected function updatePivotWithTransaction(
+        Request $request,
+        int|string $parentKey,
+        int|string $relatedKey
+    ): JsonResponse|Response {
         $parentQuery = $this->buildUpdatePivotParentFetchQuery($request, $parentKey);
         $parentEntity = $this->runUpdatePivotParentFetchQuery($request, $parentQuery, $parentKey);
 
@@ -720,8 +749,12 @@ trait HandlesRelationManyToManyOperations
      * @param array $pivot
      * @return array
      */
-    protected function performUpdatePivot(Request $request, Model $parentEntity, int|string $relatedKey, array $pivot): array
-    {
+    protected function performUpdatePivot(
+        Request $request,
+        Model $parentEntity,
+        int|string $relatedKey,
+        array $pivot
+    ): array {
         $pivot = $this->preparePivotFields($pivot);
 
         $parentEntity->{$this->relation()}()->updateExistingPivot($relatedKey, $pivot);
