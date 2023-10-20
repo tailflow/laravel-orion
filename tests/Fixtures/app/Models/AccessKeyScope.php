@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Orion\Tests\Fixtures\App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Orion\Tests\Fixtures\App\Traits\AppliesDefaultOrder;
 
@@ -22,7 +23,7 @@ class AccessKeyScope extends Model
         'description',
     ];
 
-    public function accessKey()
+    public function accessKey(): BelongsTo
     {
         return $this->belongsTo(AccessKey::class);
     }

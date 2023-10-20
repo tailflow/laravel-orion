@@ -60,7 +60,7 @@ trait HandlesRelationManyToManyOperations
             $request,
             $parentEntity,
             $this->retrieve($request, 'resources'),
-            $request->get('duplicates', false)
+            $request->boolean('duplicates')
         );
 
         $afterHookResult = $this->afterAttach($request, $parentEntity, $attachResult);

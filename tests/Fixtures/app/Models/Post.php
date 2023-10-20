@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Orion\Tests\Fixtures\App\Models;
 
 use Carbon\Carbon;
@@ -45,62 +47,42 @@ class Post extends Model
     /**
      * @return BelongsTo
      */
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    /**
-     * @return BelongsTo
-     */
-    public function category()
+    public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
     }
 
-    /**
-     * @return HasOne
-     */
-    public function meta()
+    public function meta(): HasOne
     {
         return $this->hasOne(PostMeta::class);
     }
 
-    /**
-     * @return HasOne
-     */
-    public function image()
+    public function image(): HasOne
     {
         return $this->hasOne(PostImage::class);
     }
 
-    /**
-     * @return MorphMany
-     */
-    public function comments()
+    public function comments(): MorphMany
     {
         return $this->morphMany(Comment::class, 'commentable');
     }
 
-    /**
-     * @param Builder $query
-     * @return Builder|\Illuminate\Database\Query\Builder
-     */
-    public function scopePublished(Builder $query)
+    public function scopePublished(Builder $query): Builder
     {
         return $query->where('publish_at', '<', Carbon::now());
     }
 
-    public function scopePublishedAt(Builder $query, string $dateTime)
+    public function scopePublishedAt(Builder $query, string $dateTime): Builder
     {
         return $query->where('publish_at', $dateTime);
     }
 
-    /**
-     * @param Builder $query
-     * @return Builder|\Illuminate\Database\Query\Builder
-     */
-    public function scopeWithMeta(Builder $query)
+    public function scopeWithMeta(Builder $query): Builder
     {
         return $query->whereNotNull('meta');
     }

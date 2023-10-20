@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Orion\Tests\Fixtures\App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Orion\Tests\Fixtures\App\Traits\AppliesDefaultOrder;
 
 class Comment extends Model
@@ -18,10 +21,7 @@ class Comment extends Model
         'body'
     ];
 
-    /**
-     * @return \Illuminate\Database\Eloquent\Relations\MorphTo
-     */
-    public function commentable()
+    public function commentable(): MorphTo
     {
         return $this->morphTo();
     }

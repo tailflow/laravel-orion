@@ -25,10 +25,11 @@ abstract class BaseRepository
 
     /**
      * @param array $attributes
+     * @param array $relations
      * @return Model
      * @throws Exception
      */
-    public function store(array $attributes): Model
+    public function store(array $attributes, array $relations = []): Model
     {
         $entity = $this->make();
 
@@ -37,7 +38,7 @@ abstract class BaseRepository
 
             $this->beforeStore($entity, $attributes)
                 ->beforeSave($entity, $attributes)
-                ->performFill($entity, $attributes)
+                ->performFill($entity, $attributes, $relations)
                 ->performStore($entity)
                 ->afterSave($entity)
                 ->afterStore($entity);
@@ -131,11 +132,15 @@ abstract class BaseRepository
         return $this;
     }
 
-    public function performFill(Model $entity, array $attributes): static
+    public function performFill(Model $entity, array $attributes, array $relations = []): static
     {
         $entity->fill(
             Arr::except($attributes, array_keys($entity->getDirty()))
         );
+
+        foreach ($relations as $relation => $value) {
+            $entity->setRelation($relation, $value);
+        }
 
         return $this;
     }

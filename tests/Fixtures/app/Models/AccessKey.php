@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Orion\Tests\Fixtures\App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Orion\Tests\Fixtures\App\Traits\AppliesDefaultOrder;
 
@@ -21,7 +22,7 @@ class AccessKey extends Model
         'name'
     ];
 
-    public function scopes()
+    public function scopes(): HasMany
     {
         return $this->hasMany(AccessKeyScope::class);
     }

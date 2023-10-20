@@ -12,14 +12,17 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasOneThrough;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
-use Illuminate\Support\Arr;
 use InvalidArgumentException;
 use Orion\Http\Requests\Request;
 use Orion\Http\Resources\CollectionResource;
@@ -433,14 +436,27 @@ trait HandlesRelationStandardOperations
         array $attributes,
         array $pivot
     ): void {
+        $relation = $parentEntity->{$this->relation()}();
+
+        if ($relation instanceof BelongsTo || $relation instanceof MorphTo) {
+            $relation->associate($entity);
+        }
+
+        if ($relation instanceof HasOne || $relation instanceof HasOneThrough || $relation instanceof MorphOne || $relation instanceof HasMany || $relation instanceof HasManyThrough || $relation instanceof MorphMany) {
+            $entity->{$relation->getForeignKeyName()} = $relation->getParentKey();
+        }
+
+        if ($relation instanceof MorphOne || $relation instanceof MorphMany) {
+            $entity->{$relation->getMorphType()} = $relation->getMorphClass();
+        }
+
         $this->performFill($request, $parentEntity, $entity, $attributes, $pivot);
+        $this->repositoryInstance->performStore($entity);
 
-        if (!$parentEntity->{$this->relation()}() instanceof BelongsTo) {
-            $parentEntity->{$this->relation()}()->save($entity, $this->preparePivotFields($pivot));
-        } else {
-            $this->repositoryInstance->performStore($entity);
+        if ($relation instanceof BelongsToMany || $relation instanceof MorphToMany) {
+            $pivotFields = $this->preparePivotFields($pivot);
 
-            $parentEntity->{$this->relation()}()->associate($entity);
+            $relation->attach($entity->getKey(), $pivotFields);
         }
     }
 
