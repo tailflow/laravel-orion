@@ -12,7 +12,6 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
-use Illuminate\Support\Arr;
 use Orion\Http\Requests\Request;
 use Orion\Http\Resources\CollectionResource;
 use Orion\Http\Resources\Resource;
@@ -155,7 +154,7 @@ trait HandlesStandardOperations
     {
         try {
             $this->startTransaction();
-            $result = $this->storeWithTransaction($request);
+            $result = $this->runStoreOperation($request);
             $this->commitTransaction();
             return $result;
         } catch (Exception $exception) {
@@ -170,7 +169,7 @@ trait HandlesStandardOperations
      * @return Resource|Response
      * @throws BindingResolutionException
      */
-    protected function storeWithTransaction(Request $request): Resource|Response
+    protected function runStoreOperation(Request $request): Resource|Response
     {
         $resourceModelClass = $this->resolveResourceModelClass();
 
@@ -448,7 +447,7 @@ trait HandlesStandardOperations
     {
         try {
             $this->startTransaction();
-            $result = $this->updateWithTransaction($request, $key);
+            $result = $this->runUpdateOperation($request, $key);
             $this->commitTransaction();
             return $result;
         } catch (Exception $exception) {
@@ -464,7 +463,7 @@ trait HandlesStandardOperations
      * @return Resource|Response
      * @throws BindingResolutionException
      */
-    protected function updateWithTransaction(Request $request, int|string $key): Resource|Response
+    protected function runUpdateOperation(Request $request, int|string $key): Resource|Response
     {
         $query = $this->buildUpdateFetchQuery($request);
         $entity = $this->runUpdateFetchQuery($request, $query, $key);
@@ -619,7 +618,7 @@ trait HandlesStandardOperations
     {
         try {
             $this->startTransaction();
-            $result = $this->destroyWithTransaction($request, $key);
+            $result = $this->runDestroyOperation($request, $key);
             $this->commitTransaction();
             return $result;
         } catch (Exception $exception) {
@@ -634,8 +633,9 @@ trait HandlesStandardOperations
      * @param int|string $key
      * @return Resource|Response
      * @throws BindingResolutionException
+     * @throws Exception
      */
-    protected function destroyWithTransaction(Request $request, int|string $key): Resource|Response
+    protected function runDestroyOperation(Request $request, int|string $key): Resource|Response
     {
         $softDeletes = $this->softDeletes($this->resolveResourceModelClass());
         $forceDeletes = $this->forceDeletes($request, $softDeletes);
@@ -785,7 +785,7 @@ trait HandlesStandardOperations
     {
         try {
             $this->startTransaction();
-            $result = $this->restoreWithTransaction($request, $key);
+            $result = $this->runRestoreOperation($request, $key);
             $this->commitTransaction();
             return $result;
         } catch (Exception $exception) {
@@ -801,7 +801,7 @@ trait HandlesStandardOperations
      * @return Resource|Response
      * @throws BindingResolutionException
      */
-    protected function restoreWithTransaction(Request $request, int|string $key): Resource|Response
+    protected function runRestoreOperation(Request $request, int|string $key): Resource|Response
     {
         $query = $this->buildRestoreFetchQuery($request);
         $entity = $this->runRestoreFetchQuery($request, $query, $key);

@@ -29,7 +29,7 @@ trait HandlesRelationManyToManyOperations
     {
         try {
             $this->startTransaction();
-            $result = $this->attachWithTransaction($request, $parentKey);
+            $result = $this->runAttachOperation($request, $parentKey);
             $this->commitTransaction();
             return $result;
         } catch (Exception $exception) {
@@ -45,7 +45,7 @@ trait HandlesRelationManyToManyOperations
      * @return JsonResponse|Response
      * @throws BindingResolutionException
      */
-    protected function attachWithTransaction(Request $request, int|string $parentKey): JsonResponse|Response
+    protected function runAttachOperation(Request $request, int|string $parentKey): JsonResponse|Response
     {
         $parentQuery = $this->buildAttachParentFetchQuery($request, $parentKey);
         $parentEntity = $this->runAttachParentFetchQuery($request, $parentQuery, $parentKey);
@@ -69,11 +69,7 @@ trait HandlesRelationManyToManyOperations
             return $afterHookResult;
         }
 
-        return response()->json(
-            [
-                'attached' => Arr::get($attachResult, 'attached', []),
-            ]
-        );
+        return response()->json(['attached' => Arr::get($attachResult, 'attached', [])]);
     }
 
     /**
@@ -169,9 +165,7 @@ trait HandlesRelationManyToManyOperations
             }
         }
 
-        $pivotFields = Arr::only($pivotFields, $this->getPivotFillable());
-
-        return $pivotFields;
+        return Arr::only($pivotFields, $this->getPivotFillable());
     }
 
     /**
@@ -278,7 +272,7 @@ trait HandlesRelationManyToManyOperations
     {
         try {
             $this->startTransaction();
-            $result = $this->detachWithTransaction($request, $parentKey);
+            $result = $this->runDetachOperation($request, $parentKey);
             $this->commitTransaction();
             return $result;
         } catch (Exception $exception) {
@@ -294,7 +288,7 @@ trait HandlesRelationManyToManyOperations
      * @return JsonResponse|Response
      * @throws BindingResolutionException
      */
-    protected function detachWithTransaction(Request $request, int|string $parentKey): JsonResponse|Response
+    protected function runDetachOperation(Request $request, int|string $parentKey): JsonResponse|Response
     {
         $parentQuery = $this->buildDetachParentFetchQuery($request, $parentKey);
         $parentEntity = $this->runDetachParentFetchQuery($request, $parentQuery, $parentKey);
@@ -404,7 +398,7 @@ trait HandlesRelationManyToManyOperations
     {
         try {
             $this->startTransaction();
-            $result = $this->syncWithTransaction($request, $parentKey);
+            $result = $this->runSyncOperation($request, $parentKey);
             $this->commitTransaction();
             return $result;
         } catch (Exception $exception) {
@@ -420,7 +414,7 @@ trait HandlesRelationManyToManyOperations
      * @return JsonResponse|Response
      * @throws BindingResolutionException
      */
-    protected function syncWithTransaction(Request $request, int|string $parentKey): JsonResponse|Response
+    protected function runSyncOperation(Request $request, int|string $parentKey): JsonResponse|Response
     {
         $parentQuery = $this->buildSyncParentFetchQuery($request, $parentKey);
         $parentEntity = $this->runSyncParentFetchQuery($request, $parentQuery, $parentKey);
@@ -533,7 +527,7 @@ trait HandlesRelationManyToManyOperations
     {
         try {
             $this->startTransaction();
-            $result = $this->toggleWithTransaction($request, $parentKey);
+            $result = $this->runToggleOperation($request, $parentKey);
             $this->commitTransaction();
             return $result;
         } catch (Exception $exception) {
@@ -549,7 +543,7 @@ trait HandlesRelationManyToManyOperations
      * @return JsonResponse|Response
      * @throws BindingResolutionException
      */
-    protected function toggleWithTransaction(Request $request, int|string $parentKey): JsonResponse|Response
+    protected function runToggleOperation(Request $request, int|string $parentKey): JsonResponse|Response
     {
         $parentQuery = $this->buildToggleParentFetchQuery($request, $parentKey);
         $parentEntity = $this->runToggleParentFetchQuery($request, $parentQuery, $parentKey);
@@ -654,7 +648,7 @@ trait HandlesRelationManyToManyOperations
     {
         try {
             $this->startTransaction();
-            $result = $this->updatePivotWithTransaction($request, $parentKey, $relatedKey);
+            $result = $this->runUpdatePivotOperation($request, $parentKey, $relatedKey);
             $this->commitTransaction();
             return $result;
         } catch (Exception $exception) {
@@ -671,7 +665,7 @@ trait HandlesRelationManyToManyOperations
      * @return JsonResponse|Response
      * @throws BindingResolutionException
      */
-    protected function updatePivotWithTransaction(
+    protected function runUpdatePivotOperation(
         Request $request,
         int|string $parentKey,
         int|string $relatedKey
