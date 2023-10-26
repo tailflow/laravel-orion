@@ -250,4 +250,21 @@ class StandardIndexOperationsTest extends TestCase
             $this->makePaginator($posts, 'posts')
         );
     }
+
+    /** @test */
+    public function getting_a_list_of_resources_with_fields(): void
+    {
+        $user = factory(User::class)->create();
+        factory(Post::class)->times(5)->create(['user_id' => $user->id]);
+
+
+        Gate::policy(Post::class, GreenPolicy::class);
+
+        $response = $this->get('/api/posts?fields[posts]=title,user_id&fields[user]=id,name&include=user');
+        $expectedResult = Post::with('user:id,name')->select('title', 'user_id')->get()->toArray();
+        $this->assertResourcesPaginated(
+            $response,
+            $this->makePaginator($expectedResult, 'posts')
+        );
+    }
 }

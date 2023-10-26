@@ -118,6 +118,10 @@ trait HandlesStandardOperations
      */
     protected function runIndexFetchQuery(Request $request, Builder $query, int $paginationLimit)
     {
+        if ($request->query('fields')) {
+            $query = $this->addSelectFields($query, $request->query('fields'));
+        }
+
         return $this->shouldPaginate($request, $paginationLimit) ? $query->paginate($paginationLimit) : $query->get();
     }
 
@@ -419,6 +423,10 @@ trait HandlesStandardOperations
      */
     protected function runFetchQueryBase(Request $request, Builder $query, $key): Model
     {
+        if ($request->query('fields')) {
+            $query = $this->addSelectFields($query, $request->query('fields'));
+        }
+
         return $query->where($this->resolveQualifiedKeyName(), $key)->firstOrFail();
     }
 
@@ -492,7 +500,7 @@ trait HandlesStandardOperations
             return $beforeUpdateFreshResult;
         }
 
-        $entity = $this->refreshUpdatedEntity($request, $requestedRelations,$key);
+        $entity = $this->refreshUpdatedEntity($request, $requestedRelations, $key);
 
         $afterSaveHookResult = $this->afterSave($request, $entity);
         if ($this->hookResponds($afterSaveHookResult)) {
@@ -919,5 +927,39 @@ trait HandlesStandardOperations
     protected function beforeFilterApplied(Request $request, array $filterDescriptor): array
     {
         return $filterDescriptor;
+    }
+
+    /**
+     * Gets the selected fields for a query
+     *
+     * @param Builder $query
+     * @param array $fields
+     * @return Builder
+     */
+    private function addSelectFields(Builder $query, array $fields): Builder
+    {
+        $relationsArray = [];
+
+        foreach ($fields as $resource => $resourceFields) {
+            $relationships = explode('.', $resource);
+            $lastRelationship = end($relationships);
+
+            foreach ($relationships as $relation) {
+                if ($relation === $query->getModel()->getTable()) {
+                    $query->select(explode(',', $resourceFields));
+                } else {
+                    if ($relation === $lastRelationship) {
+                        $relationFields = explode(',', $resourceFields);
+                        if (isset($relationFields) && !empty($relationFields)) {
+                            $relationsArray[$resource] = function ($query) use ($relationFields) {
+                                return $query->select($relationFields);
+                            };
+                        }
+                    }
+                }
+            }
+        }
+
+        return $query->with($relationsArray);
     }
 }
