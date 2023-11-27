@@ -6,7 +6,6 @@ namespace Orion\Drivers\Standard;
 
 use Illuminate\Support\Facades\Validator;
 use Orion\Exceptions\MaxNestedDepthExceededException;
-use Orion\Helpers\ArrayHelper;
 use Orion\Http\Requests\Request;
 use Orion\Http\Rules\WhitelistedField;
 use Orion\Http\Rules\WhitelistedQueryFields;
@@ -109,7 +108,7 @@ class ParamsValidator implements \Orion\Contracts\ParamsValidator
 
     public function validateAggregators(Request $request): void
     {
-        $depth = $this->nestedFiltersDepth($request->input('aggregates', []), -1);
+        $depth = $this->nestedFiltersDepth($request->input('aggregates', []));
 
         Validator::make(
             $request->all(),
@@ -194,7 +193,7 @@ class ParamsValidator implements \Orion\Contracts\ParamsValidator
 
     public function validateIncludes(Request $request): void
     {
-        $depth = $this->nestedFiltersDepth($request->input('includes', []), -1);
+        $depth = $this->nestedFiltersDepth($request->input('includes', []));
 
         Validator::make(
             $request->all(),
@@ -223,15 +222,25 @@ class ParamsValidator implements \Orion\Contracts\ParamsValidator
     /**
      * @throws MaxNestedDepthExceededException
      */
-    protected function nestedFiltersDepth($array, $modifier = 0): int
+    protected function nestedFiltersDepth($array): int
     {
-        $depth = ArrayHelper::depth($array);
+        $depth = 0;
+
+        foreach ($array as $filterDescriptor) {
+            if (!isset($filterDescriptor['nested'])) {
+                continue;
+            }
+
+            $currentFilterDescriptorDepth = 1 + $this->nestedFiltersDepth($filterDescriptor['nested']);
+
+            if ($depth < $currentFilterDescriptorDepth) {
+                $depth = $currentFilterDescriptorDepth;
+            }
+        }
+
         $configMaxNestedDepth = config('orion.search.max_nested_depth', 1);
 
-        // Here we calculate the real nested filters depth
-        $depth = (int) floor($depth / 2);
-
-        if ($depth + $modifier > $configMaxNestedDepth) {
+        if ($depth > $configMaxNestedDepth) {
             throw new MaxNestedDepthExceededException(
                 422,
                 __('Max nested depth :depth is exceeded', ['depth' => $configMaxNestedDepth])
