@@ -11,7 +11,7 @@
 
 Laravel Orion allows you to build a fully featured REST API based on your Eloquent models and relationships with simplicity of Laravel as you love it.
 
-## Official Documentation
+## Documentation
 
 Documentation for Laravel Orion can be found on the [website](https://tailflow.github.io/laravel-orion-docs/).
 
