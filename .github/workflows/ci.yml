@@ -296,15 +296,15 @@ jobs:
         run: composer update --with "orchestra/testbench=^5.0" --prefer-dist --no-progress
 
       - name: Install laravel/legacy-factories only for Laravel >= 8.0
-        if: matrix.laravel-version == '^8.0' || matrix.laravel-version == '^9.0'
+        if: matrix.laravel-version == '^8.0' || matrix.laravel-version == '^9.0' || matrix.laravel-version == '^10.0' || matrix.laravel-version == '^11.0'
         run: composer require "laravel/legacy-factories" --prefer-dist --no-progress
 
       - name: Upgrade to PHPUnit 9 for PHP >= 8.0
-        if: matrix.laravel-version == '^8.0' || matrix.laravel-version == '^9.0'
+        if: matrix.laravel-version == '^8.0' || matrix.laravel-version == '^9.0' || matrix.laravel-version == '^10.0' || matrix.laravel-version == '^11.0'
         run: composer update --with "phpunit/phpunit=^9.0" --prefer-dist --no-progress
 
       - name: Upgrade PHPUnit Config for Laravel >= 8.0
-        if: matrix.laravel-version == '^8.0' || matrix.laravel-version == '^9.0'
+        if: matrix.laravel-version == '^8.0' || matrix.laravel-version == '^9.0' || matrix.laravel-version == '^10.0' || matrix.laravel-version == '^11.0'
         run: vendor/bin/phpunit -c phpunit.xml.dist --migrate-configuration
 
       - name: Run test suite with Sqlite
