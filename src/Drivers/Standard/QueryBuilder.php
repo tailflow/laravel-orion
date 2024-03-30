@@ -4,6 +4,7 @@ namespace Orion\Drivers\Standard;
 
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -194,8 +195,17 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
         $query,
         bool $or = false
     ) {
+        /** @var Model $resourceModel */
+        $resourceModel = (new $this->resourceModelClass);
+
+        $dateCasts = collect($resourceModel->getCasts())->filter(function(string $type) {
+            return in_array($type, ['date', 'datetime']);
+        })->keys()->toArray();
+
+        $dateFields = array_merge($resourceModel->getDates(), $dateCasts);
+
         $treatAsDateField = $filterDescriptor['value'] !== null &&
-            in_array($filterDescriptor['field'], (new $this->resourceModelClass)->getDates(), true);
+            in_array($filterDescriptor['field'], $dateFields , true);
 
         if ($treatAsDateField && Carbon::parse($filterDescriptor['value'])->toTimeString() === '00:00:00') {
             $constraint = 'whereDate';

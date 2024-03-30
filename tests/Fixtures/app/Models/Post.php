@@ -31,6 +31,7 @@ class Post extends Model
         'meta' => 'array',
         'options' => 'array',
         'stars' => 'float',
+        'publish_at' => 'datetime',
     ];
 
     /**
