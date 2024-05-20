@@ -94,9 +94,26 @@ class Post extends Model
         return $query->where('publish_at', '<', Carbon::now());
     }
 
+    /**
+     * @param Builder $query
+     * @param string $dateTime
+     * @return Builder|\Illuminate\Database\Query\Builder
+     */
     public function scopePublishedAt(Builder $query, string $dateTime)
     {
         return $query->where('publish_at', $dateTime);
+    }
+
+    /**
+     * @param Builder $query
+     * @param string $direction
+     * @return Builder|\Illuminate\Database\Query\Builder
+     */
+    public function scopeOrderComments(Builder $query, string $direction = 'asc')
+    {
+        return $query->with(['comments' => function (MorphMany $query) use ($direction) {
+            $query->orderBy('created_at', $direction);
+        }]);
     }
 
     /**
