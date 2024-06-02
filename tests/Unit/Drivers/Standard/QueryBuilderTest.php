@@ -2,6 +2,7 @@
 
 namespace Orion\Tests\Unit\Drivers\Standard;
 
+use Carbon\Carbon;
 use Illuminate\Routing\Route;
 use Mockery;
 use Orion\Drivers\Standard\ParamsValidator;
@@ -9,6 +10,7 @@ use Orion\Drivers\Standard\QueryBuilder;
 use Orion\Drivers\Standard\RelationsResolver;
 use Orion\Drivers\Standard\SearchBuilder;
 use Orion\Http\Requests\Request;
+use Orion\Tests\Fixtures\App\Models\Comment;
 use Orion\Tests\Fixtures\App\Models\Post;
 use Orion\Tests\Fixtures\App\Models\Team;
 use Orion\Tests\Fixtures\App\Models\User;
@@ -125,6 +127,51 @@ class QueryBuilderTest extends TestCase
 
         $this->assertCount(1, $posts);
         $this->assertSame($postA->id, $posts->first()->id);
+    }
+
+    /** @test */
+    public function include_relations_do_not_overwrite_scopes_with_same_relations(): void
+    {
+        $request = new Request(['include' => 'comments']);
+        $request->setRouteResolver(
+            function () {
+                return new Route('POST', '/api/posts/search', [ControllerStub::class, 'search']);
+            }
+        );
+        $request->query->set(
+            'scopes',
+            [
+                ['name' => 'orderComments', 'parameters' => ['asc']],
+            ]
+        );
+
+        $post = factory(Post::class)->create();
+
+        $commentA = factory(Comment::class)->make(['created_at' => Carbon::parse('2019-01-01 09:35:14')]);
+        $commentA->commentable()->associate($post);
+        $commentA->save();
+
+        $commentB = factory(Comment::class)->make(['created_at' => Carbon::parse('2018-01-01 09:35:14')]);
+        $commentB->commentable()->associate($post);
+        $commentB->save();
+
+        $query = Post::query();
+
+        $queryBuilder = new QueryBuilder(
+            Post::class,
+            new ParamsValidator(['orderComments'], [], [], [], ['comments']),
+            new RelationsResolver(['comments'], []),
+            new SearchBuilder([])
+        );
+        $queryBuilder->buildQuery($query, $request);
+
+        $posts = $query->get();
+
+        $dates = $posts->first()->comments->map(function(Comment $comment) {
+            return $comment->created_at;
+        });
+
+        $this->assertTrue(Carbon::parse($dates->first())->isBefore(Carbon::parse($dates->last())));
     }
 
     /** @test */
