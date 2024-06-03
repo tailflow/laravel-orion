@@ -1,5 +1,5 @@
 <p align="center">
-<img src="https://res.cloudinary.com/dudxt4lp6/image/upload/v1572976051/Laravel%20Orion/logo_with_text_t5jjyc.png" width="400">
+<img src="https://res.cloudinary.com/dudxt4lp6/image/upload/v1717408304/orion-for-laravel-logo_uqyyz3.png" width="400">
 </p>
 
 <p align="center">
@@ -9,11 +9,11 @@
 
 ## Introduction
 
-Laravel Orion allows you to build a fully featured REST API based on your Eloquent models and relationships with simplicity of Laravel as you love it.
+Orion for Laravel allows you to build a fully featured REST API based on your Eloquent models and relationships with simplicity of Laravel as you love it.
 
 ## Documentation
 
-Documentation for Laravel Orion can be found on the [website](https://tailflow.github.io/laravel-orion-docs/).
+Documentation can be found on the [website](https://orion.tailflow.org).
 
 ## Supported By
 
@@ -22,8 +22,7 @@ Documentation for Laravel Orion can be found on the [website](https://tailflow.g
 </a>
 
 <a href="https://laraveldaily.com?utm_campaign=opensource&utm_source=laravel-orion&utm_medium=github" style="margin-left: 1rem">
-<img src="https://res.cloudinary.com/dudxt4lp6/image/upload/v1667408230/Laravel%20Orion/logo_laraveldaily_p3d00p.png"
-        height="100">
+<img src="https://res.cloudinary.com/dudxt4lp6/image/upload/v1667408230/Laravel%20Orion/logo_laraveldaily_p3d00p.png" height="100">
 </a>
 
 ## License
