@@ -48,15 +48,15 @@ class BaseModelComponentBuilder extends ModelComponentBuilder
 
         return collect($columns)
             ->filter(
-                function (Column $column) use ($excludedColumns) {
-                    return !in_array($column->getName(), $excludedColumns, true);
+                function (array $column) use ($excludedColumns) {
+                    return !in_array($column['name'], $excludedColumns, true);
                 }
             )->filter(
-                function (Column $column) use ($resourceModel) {
-                    return $resourceModel->isFillable($column->getName());
+                function (array $column) use ($resourceModel) {
+                    return $resourceModel->isFillable($column['name']);
                 }
             )->map(
-                function (Column $column) use ($resourceModel) {
+                function (array $column) use ($resourceModel) {
                     $propertyClass = $this->schemaManager->resolveSchemaPropertyClass($column, $resourceModel);
 
                     return $this->propertyBuilder->build($column, $propertyClass);

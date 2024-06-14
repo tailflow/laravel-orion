@@ -48,11 +48,11 @@ class ModelResourceComponentBuilder extends ModelComponentBuilder
 
         return collect($columns)
             ->filter(
-                function (Column $column) use ($resourceModel) {
-                    return !$resourceModel->isFillable($column->getName());
+                function (array $column) use ($resourceModel) {
+                    return !$resourceModel->isFillable($column['name']);
                 }
             )->map(
-                function (Column $column) use ($resourceModel) {
+                function (array $column) use ($resourceModel) {
                     $propertyClass = $this->schemaManager->resolveSchemaPropertyClass($column, $resourceModel);
 
                     return $this->propertyBuilder->build($column, $propertyClass);

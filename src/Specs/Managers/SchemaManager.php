@@ -6,7 +6,6 @@ namespace Orion\Specs\Managers;
 
 use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\Schema\Column;
-use Doctrine\DBAL\Types\Types;
 use Illuminate\Database\Eloquent\Model;
 use Orion\ValueObjects\Specs\Schema\Properties\AnySchemaProperty;
 use Orion\ValueObjects\Specs\Schema\Properties\ArraySchemaProperty;
@@ -27,61 +26,68 @@ class SchemaManager
     public function getSchemaColumns(Model $resourceModel): array
     {
         $table = $resourceModel->getConnection()->getTablePrefix().$resourceModel->getTable();
-        $schema = $resourceModel->getConnection()->getDoctrineSchemaManager();
-
-        $databasePlatform = $schema->getDatabasePlatform();
-        $databasePlatform->registerDoctrineTypeMapping('enum', 'string');
 
         $database = null;
+
         if (strpos($table, '.')) {
             [$database, $table] = explode('.', $table);
         }
 
-        return $schema->listTableColumns($table, $database) ?? [];
+        if ((float) app()->version() < 11.0) {
+            $schema = $resourceModel->getConnection()->getDoctrineSchemaManager();
+
+            $databasePlatform = $schema->getDatabasePlatform();
+            $databasePlatform->registerDoctrineTypeMapping('enum', 'string');
+
+            return collect($schema->listTableColumns($table, $database))->map(function(Column $column) {
+                return [
+                    'name' => $column->getName(),
+                    'type' => $column->getType()->getName(),
+                    'nullable' => !$column->getNotnull()
+                ];
+            })->toArray();
+        }
+
+        return $resourceModel->getConnection()->getSchemaBuilder()->getColumns($table);
     }
 
     /**
-     * @param Column $column
+     * @param array $column
      * @param Model $resourceModel
      * @return string
      */
-    public function resolveSchemaPropertyClass(Column $column, Model $resourceModel): string
+    public function resolveSchemaPropertyClass(array $column, Model $resourceModel): string
     {
-        if (in_array($column->getName(), $resourceModel->getDates(), true)) {
+        if (in_array($column['name'], $resourceModel->getDates(), true)) {
             return DateTimeSchemaProperty::class;
         }
 
-        switch ($column->getType()->getName()) {
-            case Types::BIGINT:
-            case Types::INTEGER:
-            case Types::SMALLINT:
+        switch ($column['type']) {
+            case strpos($column['type'], 'int') !== false:
                 return IntegerSchemaProperty::class;
-            case Types::FLOAT:
-            case Types::DECIMAL:
+            case 'float':
+            case 'decimal':
                 return NumberSchemaProperty::class;
-            case Types::BOOLEAN:
+            case strpos($column['type'], 'bool') !== false:
                 return BooleanSchemaProperty::class;
-            case Types::STRING:
-            case Types::TEXT:
-            case Types::ASCII_STRING:
-            case Types::GUID:
-            case Types::TIME_MUTABLE:
-            case Types::TIME_IMMUTABLE:
+            case strpos($column['type'], 'char') !== false:
+            case strpos($column['type'], 'time') !== false:
+            case 'text':
+            case 'string':
+            case 'guid':
                 return StringSchemaProperty::class;
-            case Types::DATE_MUTABLE:
-            case Types::DATE_IMMUTABLE:
+            case 'date':
+            case 'date_immutable':
                 return DateSchemaProperty::class;
-            case Types::DATETIME_MUTABLE:
-            case Types::DATETIME_IMMUTABLE:
+            case 'datetime':
+            case 'datetime_immutable':
                 return DateTimeSchemaProperty::class;
-            case Types::ARRAY:
-            case Types::SIMPLE_ARRAY:
+            case 'array':
                 return ArraySchemaProperty::class;
-            case Types::OBJECT:
-            case Types::JSON:
+            case strpos($column['type'], 'json') !== false:
                 return ObjectSchemaProperty::class;
-            case Types::BINARY:
-            case Types::BLOB:
+            case 'binary':
+            case 'blob':
                 return BinarySchemaProperty::class;
             default:
                 return AnySchemaProperty::class;
