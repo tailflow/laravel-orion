@@ -11,6 +11,44 @@
 
 Orion for Laravel allows you to build a fully featured REST API based on your Eloquent models and relationships with simplicity of Laravel as you love it.
 
+## How to Contribute
+
+To get started with contributing to this project, please follow the steps below:
+
+1. **Read the Contribution Guidelines**: Make sure you understand the contribution process. You can find the guidelines [here](https://github.com/your-repo/contributing.md).
+
+2. **Fork the Repository**: Click the 'Fork' button at the top right corner of the repository page to create your own copy of the project.
+
+3. **Clone the Repository**: Use the following command to clone the repository to your local machine:
+    ```bash
+    git clone https://github.com/your-username/laravel-orion.git
+    ```
+
+4. **Create a New Branch**: It’s important to work on a separate branch for your changes. Create a new branch using:
+    ```bash
+    git checkout -b your-branch-name
+    ```
+
+5. **Make Your Changes**: Implement your changes or new features.
+
+6. **Commit Your Changes**: Once you’re done, commit your changes with a meaningful commit message:
+    ```bash
+    git add .
+    git commit -m "Your detailed commit message"
+    ```
+
+7. **Push Your Changes**: Push your changes to your forked repository:
+    ```bash
+    git push origin your-branch-name
+    ```
+
+8. **Create a Pull Request**: Go to the original repository and open a pull request to have your changes reviewed and merged.
+
+For more detailed instructions, refer to our [contributing guide](https://github.com/your-repo/contributing.md).
+
+Thank you for contributing!
+
+
 ## Documentation
 
 Documentation can be found on the [website](https://orion.tailflow.org).
