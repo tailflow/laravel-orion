@@ -33,4 +33,8 @@ Route::group(['as' => 'api.', 'prefix' => 'api'], function () {
     Orion::hasManyResource('access_keys', 'scopes', AccessKeyAccessKeyScopesController::class)->withSoftDeletes();
     Orion::belongsToManyResource('users', 'roles', UserRolesController::class);
     Orion::belongsToManyResource('users', 'notifications', UserNotificationsController::class)->withSoftDeletes();
+
+    Route::group(['prefix' => '{apiVersion}'], function () {
+        Orion::resource('teams', TeamsController::class);
+    });
 });

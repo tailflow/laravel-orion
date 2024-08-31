@@ -20,6 +20,7 @@ use Orion\Concerns\InteractsWithBatchResources;
 use Orion\Concerns\InteractsWithHooks;
 use Orion\Concerns\InteractsWithSoftDeletes;
 use Orion\Contracts\ComponentsResolver;
+use Orion\Contracts\KeyResolver;
 use Orion\Contracts\Paginator;
 use Orion\Contracts\ParamsValidator;
 use Orion\Contracts\QueryBuilder;
@@ -79,6 +80,11 @@ abstract class BaseController extends \Illuminate\Routing\Controller
      * @var RelationsResolver $relationsResolver
      */
     protected $relationsResolver;
+
+    /**
+     * @var KeyResolver $keyResolver
+     */
+    protected $keyResolver;
 
     /**
      * @var Paginator $paginator
@@ -152,6 +158,7 @@ abstract class BaseController extends \Illuminate\Routing\Controller
                 'intermediateMode' => $this instanceof RelationController,
             ]
         );
+        $this->keyResolver = App::make(KeyResolver::class);
 
         $this->resolveComponents();
         $this->bindComponents();
@@ -480,6 +487,25 @@ abstract class BaseController extends \Illuminate\Routing\Controller
     public function setRelationsResolver(RelationsResolver $relationsResolver): self
     {
         $this->relationsResolver = $relationsResolver;
+
+        return $this;
+    }
+
+    /**
+     * @return KeyResolver
+     */
+    public function getKeyResolver(): KeyResolver
+    {
+        return $this->keyResolver;
+    }
+
+    /**
+     * @param KeyResolver $keyResolver
+     * @return $this
+     */
+    public function setKeyResolver(KeyResolver $keyResolver): self
+    {
+        $this->keyResolver = $keyResolver;
 
         return $this;
     }

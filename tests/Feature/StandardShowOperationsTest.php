@@ -5,6 +5,8 @@ namespace Orion\Tests\Feature;
 use Illuminate\Support\Facades\Gate;
 use Mockery;
 use Orion\Contracts\ComponentsResolver;
+use Orion\Tests\Fixtures\App\Drivers\TwoRouteParameterKeyResolver;
+use Orion\Tests\Fixtures\App\Http\Resources\SampleCollectionResource;
 use Orion\Tests\Fixtures\App\Http\Resources\SampleResource;
 use Orion\Tests\Fixtures\App\Models\AccessKey;
 use Orion\Tests\Fixtures\App\Models\Comment;
@@ -165,5 +167,31 @@ class StandardShowOperationsTest extends TestCase
         $response = $this->get("/api/teams/{$team->id}?include=company");
 
         $this->assertResourceShown($response, $team->fresh('company')->toArray());
+    }
+
+    /** @test */
+    public function getting_a_single_resource_with_multiple_route_parameters(): void
+    {
+        $this->useKeyResolver(TwoRouteParameterKeyResolver::class);
+
+        $team = factory(Team::class)->create();
+
+        Gate::policy(Team::class, GreenPolicy::class);
+
+        $response = $this->get("/api/v1/teams/$team->id");
+
+        $this->assertResourceShown($response, $team->fresh()->toArray());
+    }
+
+    /** @test */
+    public function getting_a_single_resource_with_multiple_route_parameters_fails_with_default_key_resolver(): void
+    {
+        $team = factory(Team::class)->create();
+
+        Gate::policy(Team::class, GreenPolicy::class);
+
+        $response = $this->get("/api/v1/teams/$team->id");
+
+        $response->assertNotFound();
     }
 }

@@ -334,11 +334,13 @@ trait HandlesStandardOperations
      * @throws AuthorizationException
      * @throws BindingResolutionException
      */
-    public function show(Request $request, $key)
+    public function show(Request $request, ...$args)
     {
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
 
         $query = $this->buildShowFetchQuery($request, $requestedRelations);
+
+        $key = $this->keyResolver->resolveStandardOperationKey($request, $args);
 
         $beforeHookResult = $this->beforeShow($request, $key);
         if ($this->hookResponds($beforeHookResult)) {

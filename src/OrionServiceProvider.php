@@ -5,6 +5,7 @@ namespace Orion;
 use Illuminate\Support\ServiceProvider;
 use Orion\Commands\BuildSpecsCommand;
 use Orion\Contracts\ComponentsResolver;
+use Orion\Contracts\KeyResolver;
 use Orion\Contracts\Paginator;
 use Orion\Contracts\ParamsValidator;
 use Orion\Contracts\QueryBuilder;
@@ -29,6 +30,7 @@ class OrionServiceProvider extends ServiceProvider
         $this->app->bind(Paginator::class, Drivers\Standard\Paginator::class);
         $this->app->bind(SearchBuilder::class, Drivers\Standard\SearchBuilder::class);
         $this->app->bind(ComponentsResolver::class, Drivers\Standard\ComponentsResolver::class);
+        $this->app->bind(KeyResolver::class, Drivers\Standard\KeyResolver::class);
 
         $this->app->singleton(ResourcesCacheStore::class);
     }
@@ -41,7 +43,6 @@ class OrionServiceProvider extends ServiceProvider
     public function boot()
     {
         app('router')->pushMiddlewareToGroup('api', EnforceExpectsJson::class);
-
 
         $this->publishes(
             [
