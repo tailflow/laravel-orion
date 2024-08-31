@@ -19,6 +19,6 @@ class TwoRouteParameterKeyResolver implements KeyResolver
 
     public function resolveRelationOperationRelatedKey(Request $request, array $args)
     {
-        return $args[2];
+        return $args[2] ?? null;
     }
 }

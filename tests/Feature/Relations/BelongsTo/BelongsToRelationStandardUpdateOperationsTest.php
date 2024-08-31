@@ -4,6 +4,7 @@ namespace Orion\Tests\Feature\Relations\BelongsTo;
 
 use Illuminate\Support\Facades\Gate;
 use Orion\Tests\Feature\TestCase;
+use Orion\Tests\Fixtures\App\Drivers\TwoRouteParameterKeyResolver;
 use Orion\Tests\Fixtures\App\Http\Requests\UserRequest;
 use Orion\Tests\Fixtures\App\Http\Resources\SampleResource;
 use Orion\Tests\Fixtures\App\Models\Post;
@@ -92,7 +93,7 @@ class BelongsToRelationStandardUpdateOperationsTest extends TestCase
         $post = factory(Post::class)->create(['user_id' => $user->id]);
         $payload = ['name' => 'test user updated'];
 
-       $this->useResource(SampleResource::class);
+        $this->useResource(SampleResource::class);
 
         Gate::policy(User::class, GreenPolicy::class);
 
@@ -125,5 +126,40 @@ class BelongsToRelationStandardUpdateOperationsTest extends TestCase
             $payload,
             ['posts' => $user->fresh('posts')->posts->toArray()]
         );
+    }
+
+    /** @test */
+    public function updating_a_single_relation_resource_with_multiple_route_parameters(): void
+    {
+        $this->useKeyResolver(TwoRouteParameterKeyResolver::class);
+
+        $user = factory(User::class)->create();
+        $post = factory(Post::class)->create(['user_id' => $user->id]);
+        $payload = ['name' => 'test user updated'];
+
+        Gate::policy(User::class, GreenPolicy::class);
+
+        $response = $this->patch("/api/v1/posts/{$post->id}/user", $payload);
+
+        $this->assertResourceUpdated(
+            $response,
+            User::class,
+            $user->toArray(),
+            $payload
+        );
+    }
+
+    /** @test */
+    public function updating_a_single_relation_resource_with_multiple_route_parameters_fails_with_default_key_resolver(): void
+    {
+        $user = factory(User::class)->create();
+        $post = factory(Post::class)->create(['user_id' => $user->id]);
+        $payload = ['name' => 'test user updated'];
+
+        Gate::policy(User::class, GreenPolicy::class);
+
+        $response = $this->patch("/api/v1/posts/{$post->id}/user", $payload);
+
+        $response->assertNotFound();
     }
 }

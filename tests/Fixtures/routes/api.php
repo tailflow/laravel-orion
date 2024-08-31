@@ -36,5 +36,8 @@ Route::group(['as' => 'api.', 'prefix' => 'api'], function () {
 
     Route::group(['prefix' => '{apiVersion}'], function () {
         Orion::resource('posts', PostsController::class)->withSoftDeletes();
+
+        Orion::belongsToResource('posts', 'user', PostUserController::class);
+        Orion::belongsToResource('posts', 'category', PostCategoryController::class)->withSoftDeletes();
     });
 });

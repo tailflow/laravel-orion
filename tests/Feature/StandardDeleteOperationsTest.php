@@ -200,7 +200,7 @@ class StandardDeleteOperationsTest extends TestCase
 
         $response = $this->delete("/api/v1/posts/$post->id");
 
-        $this->assertResourceShown($response, $post);
+        $this->assertResourceTrashed($response, $post);
     }
 
     /** @test */

@@ -173,7 +173,12 @@ class StandardUpdateOperationsTest extends TestCase
 
         $response = $this->patch("/api/v1/posts/$post->id", $payload);
 
-        $this->assertResourceShown($response, $post);
+        $this->assertResourceUpdated(
+            $response,
+            Post::class,
+            $post->toArray(),
+            $payload
+        );
     }
 
     /** @test */

@@ -27,12 +27,14 @@ trait HandlesRelationStandardOperations
      * Fetch the list of relation resources.
      *
      * @param Request $request
-     * @param int|string $parentKey
+     * @param array<int, mixed> $args
      * @return CollectionResource
      */
-    public function index(Request $request, $parentKey)
+    public function index(Request $request, ...$args)
     {
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
+
+        $parentKey = $this->keyResolver->resolveRelationOperationParentKey($request, $args);
 
         $parentQuery = $this->buildIndexParentFetchQuery($request, $parentKey);
         $parentEntity = $this->runIndexParentFetchQuery($request, $parentQuery, $parentKey);
@@ -484,12 +486,14 @@ trait HandlesRelationStandardOperations
      * Fetch a relation resource.
      *
      * @param Request $request
-     * @param int|string $parentKey
-     * @param int|string|null $relatedKey
+     * @param array<int, mixed> $args
      * @return Resource
      */
-    public function show(Request $request, $parentKey, $relatedKey = null)
+    public function show(Request $request, ...$args)
     {
+        $parentKey = $this->keyResolver->resolveRelationOperationParentKey($request, $args);
+        $relatedKey = $this->keyResolver->resolveRelationOperationRelatedKey($request, $args);
+
         $parentQuery = $this->buildShowParentFetchQuery($request, $parentKey);
         $parentEntity = $this->runShowParentFetchQuery($request, $parentQuery, $parentKey);
 
@@ -672,12 +676,15 @@ trait HandlesRelationStandardOperations
      * Update a relation resource in a transaction-safe way.
      *
      * @param Request $request
-     * @param int|string $parentKey
+     * @param array<int, mixed> $args
      * @param int|string|null $relatedKey
      * @return Resource
      */
-    public function update(Request $request, $parentKey, $relatedKey = null)
+    public function update(Request $request, ...$args)
     {
+        $parentKey = $this->keyResolver->resolveRelationOperationParentKey($request, $args);
+        $relatedKey = $this->keyResolver->resolveRelationOperationRelatedKey($request, $args);
+
         try {
             $this->startTransaction();
             $result = $this->updateWithTransaction($request, $parentKey, $relatedKey);
@@ -889,13 +896,16 @@ trait HandlesRelationStandardOperations
      * Delete a relation resource.
      *
      * @param Request $request
-     * @param int|string $parentKey
+     * @param array<int, mixed> $args
      * @param int|string|null $relatedKey
      * @return Resource
      * @throws Exception
      */
-    public function destroy(Request $request, $parentKey, $relatedKey = null)
+    public function destroy(Request $request, ...$args)
     {
+        $parentKey = $this->keyResolver->resolveRelationOperationParentKey($request, $args);
+        $relatedKey = $this->keyResolver->resolveRelationOperationRelatedKey($request, $args);
+
         try {
             $this->startTransaction();
             $result = $this->destroyWithTransaction($request, $parentKey, $relatedKey);
@@ -1079,12 +1089,15 @@ trait HandlesRelationStandardOperations
      * Restores a previously deleted relation resource in a transaction-save way.
      *
      * @param Request $request
-     * @param int|string $parentKey
+     * @param array<int, mixed> $args
      * @param int|string|null $relatedKey
      * @return Resource
      */
-    public function restore(Request $request, $parentKey, $relatedKey = null)
+    public function restore(Request $request, ...$args)
     {
+        $parentKey = $this->keyResolver->resolveRelationOperationParentKey($request, $args);
+        $relatedKey = $this->keyResolver->resolveRelationOperationRelatedKey($request, $args);
+
         try {
             $this->startTransaction();
             $result = $this->restoreWithTransaction($request, $parentKey, $relatedKey);

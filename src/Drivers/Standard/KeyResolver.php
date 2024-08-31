@@ -18,6 +18,6 @@ class KeyResolver implements \Orion\Contracts\KeyResolver
 
     public function resolveRelationOperationRelatedKey(Request $request, array $args)
     {
-        return $args[1];
+        return $args[1] ?? null;
     }
 }
