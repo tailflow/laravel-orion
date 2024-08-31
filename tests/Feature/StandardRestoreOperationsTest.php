@@ -5,6 +5,7 @@ namespace Orion\Tests\Feature;
 use Illuminate\Support\Facades\Gate;
 use Mockery;
 use Orion\Contracts\ComponentsResolver;
+use Orion\Tests\Fixtures\App\Drivers\TwoRouteParameterKeyResolver;
 use Orion\Tests\Fixtures\App\Http\Resources\SampleResource;
 use Orion\Tests\Fixtures\App\Models\AccessKey;
 use Orion\Tests\Fixtures\App\Models\Post;
@@ -108,5 +109,31 @@ class StandardRestoreOperationsTest extends TestCase
         $response = $this->post("/api/posts/{$trashedPost->id}/restore?include=user");
 
         $this->assertResourceRestored($response, $trashedPost, ['user' => $user->toArray()]);
+    }
+
+    /** @test */
+    public function restoring_a_single_resource_with_multiple_route_parameters(): void
+    {
+        $this->useKeyResolver(TwoRouteParameterKeyResolver::class);
+
+        $trashedPost = factory(Post::class)->state('trashed')->create(['user_id' => factory(User::class)->create()->id]);
+
+        Gate::policy(Post::class, GreenPolicy::class);
+
+        $response = $this->post("/api/v1/posts/{$trashedPost->id}/restore");
+
+        $this->assertResourceRestored($response, $trashedPost);
+    }
+
+    /** @test */
+    public function restoring_a_single_resource_with_multiple_route_parameters_fails_with_default_key_resolver(): void
+    {
+        $trashedPost = factory(Post::class)->state('trashed')->create(['user_id' => factory(User::class)->create()->id]);
+
+        Gate::policy(Post::class, GreenPolicy::class);
+
+        $response = $this->post("/api/v1/posts/{$trashedPost->id}/restore");
+
+        $response->assertNotFound();
     }
 }

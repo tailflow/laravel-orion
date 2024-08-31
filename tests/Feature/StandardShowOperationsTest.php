@@ -6,7 +6,6 @@ use Illuminate\Support\Facades\Gate;
 use Mockery;
 use Orion\Contracts\ComponentsResolver;
 use Orion\Tests\Fixtures\App\Drivers\TwoRouteParameterKeyResolver;
-use Orion\Tests\Fixtures\App\Http\Resources\SampleCollectionResource;
 use Orion\Tests\Fixtures\App\Http\Resources\SampleResource;
 use Orion\Tests\Fixtures\App\Models\AccessKey;
 use Orion\Tests\Fixtures\App\Models\Comment;
@@ -174,23 +173,25 @@ class StandardShowOperationsTest extends TestCase
     {
         $this->useKeyResolver(TwoRouteParameterKeyResolver::class);
 
-        $team = factory(Team::class)->create();
+        $user = factory(User::class)->create();
+        $post = factory(Post::class)->create(['user_id' => $user->id]);
 
-        Gate::policy(Team::class, GreenPolicy::class);
+        Gate::policy(Post::class, GreenPolicy::class);
 
-        $response = $this->get("/api/v1/teams/$team->id");
+        $response = $this->get("/api/v1/posts/$post->id");
 
-        $this->assertResourceShown($response, $team->fresh()->toArray());
+        $this->assertResourceShown($response, $post);
     }
 
     /** @test */
     public function getting_a_single_resource_with_multiple_route_parameters_fails_with_default_key_resolver(): void
     {
-        $team = factory(Team::class)->create();
+        $user = factory(User::class)->create();
+        $post = factory(Post::class)->create(['user_id' => $user->id]);
 
-        Gate::policy(Team::class, GreenPolicy::class);
+        Gate::policy(Post::class, GreenPolicy::class);
 
-        $response = $this->get("/api/v1/teams/$team->id");
+        $response = $this->get("/api/v1/posts/$post->id");
 
         $response->assertNotFound();
     }

@@ -35,6 +35,6 @@ Route::group(['as' => 'api.', 'prefix' => 'api'], function () {
     Orion::belongsToManyResource('users', 'notifications', UserNotificationsController::class)->withSoftDeletes();
 
     Route::group(['prefix' => '{apiVersion}'], function () {
-        Orion::resource('teams', TeamsController::class);
+        Orion::resource('posts', PostsController::class)->withSoftDeletes();
     });
 });
