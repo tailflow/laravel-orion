@@ -14,11 +14,13 @@ trait HandlesRelationOneToManyOperations
      * Associates resource with another resource in a transaction-safe way.
      *
      * @param Request $request
-     * @param int|string $parentKey
+     * @param array<int, mixed> $args
      * @return Resource
      */
-    public function associate(Request $request, $parentKey)
+    public function associate(Request $request, ...$args)
     {
+        $parentKey = $this->keyResolver->resolveRelationOperationParentKey($request, $args);
+
         try {
             $this->startTransaction();
             $result = $this->associateWithTransaction($request, $parentKey);
@@ -164,12 +166,14 @@ trait HandlesRelationOneToManyOperations
      * Disassociates resource from another resource in a transaction-safe way.
      *
      * @param Request $request
-     * @param int|string $parentKey
-     * @param int|string $relatedKey
+     * @param array<int, mixed> $args
      * @return Resource
      */
-    public function dissociate(Request $request, $parentKey, $relatedKey)
+    public function dissociate(Request $request, ...$args)
     {
+        $parentKey = $this->keyResolver->resolveRelationOperationParentKey($request, $args);
+        $relatedKey = $this->keyResolver->resolveRelationOperationRelatedKey($request, $args);
+
         try {
             $this->startTransaction();
             $result = $this->dissociateWithTransaction($request, $parentKey, $relatedKey);
