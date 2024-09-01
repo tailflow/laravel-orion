@@ -15,7 +15,6 @@ abstract class TestCase extends \Orchestra\Testbench\TestCase
         parent::setUp();
 
         $this->withFactories(__DIR__ . '/Fixtures/database/factories');
-        $this->withoutExceptionHandling();
     }
 
     /**
