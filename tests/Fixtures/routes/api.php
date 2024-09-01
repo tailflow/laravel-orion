@@ -39,5 +39,9 @@ Route::group(['as' => 'api.', 'prefix' => 'api'], function () {
 
         Orion::belongsToResource('posts', 'user', PostUserController::class);
         Orion::belongsToResource('posts', 'category', PostCategoryController::class)->withSoftDeletes();
+
+        Orion::hasManyResource('companies', 'teams', CompanyTeamsController::class);
+
+        Orion::belongsToManyResource('users', 'roles', UserRolesController::class);
     });
 });

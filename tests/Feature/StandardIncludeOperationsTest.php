@@ -106,7 +106,7 @@ class StandardIncludeOperationsTest extends TestCase
 
         $this->assertResourcesPaginated(
             $response,
-            $this->makePaginator([$user->load(['posts'])->toArray(),], 'users/search'),
+            $this->makePaginator([$user->load(['posts'])->toArray()], 'users/search'),
             [],
             false
         );

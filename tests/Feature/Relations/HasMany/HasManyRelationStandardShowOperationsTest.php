@@ -81,7 +81,6 @@ class HasManyRelationStandardShowOperationsTest extends TestCase
         $this->assertResourceShown($response, $trashedPost);
     }
 
-
     /** @test */
     public function getting_a_single_transformed_relation_resource(): void
     {

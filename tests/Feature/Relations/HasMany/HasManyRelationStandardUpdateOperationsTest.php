@@ -3,8 +3,6 @@
 namespace Orion\Tests\Feature\Relations\HasMany;
 
 use Illuminate\Support\Facades\Gate;
-use Mockery;
-use Orion\Contracts\ComponentsResolver;
 use Orion\Tests\Feature\TestCase;
 use Orion\Tests\Fixtures\App\Http\Requests\TeamRequest;
 use Orion\Tests\Fixtures\App\Http\Resources\SampleResource;

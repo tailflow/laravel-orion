@@ -189,6 +189,7 @@ class StandardShowOperationsTest extends TestCase
     public function getting_a_single_resource_with_multiple_route_parameters_fails_with_default_key_resolver(): void
     {
         if (DB::connection()->getDriverName() === 'pgsql') {
+            $this->withoutExceptionHandling();
             $this->expectException(QueryException::class);
         }
 

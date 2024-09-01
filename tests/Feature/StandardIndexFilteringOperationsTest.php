@@ -681,7 +681,7 @@ class StandardIndexFilteringOperationsTest extends TestCase
     {
         $user = factory(User::class)->create(['name' => 'John Doe']);
         $matchingPost = factory(Post::class)
-            ->create([ 'user_id' => $user->id, ])->fresh();
+            ->create(['user_id' => $user->id])->fresh();
         factory(PostMeta::class)->create(['post_id' => $matchingPost->id, 'name' => 'test']);
 
         factory(Post::class)->create(['publish_at' => Carbon::now()])->fresh();
@@ -708,9 +708,8 @@ class StandardIndexFilteringOperationsTest extends TestCase
     public function getting_a_list_of_resources_filtered_by_identically_named_fields_on_different_nesting_level(): void
     {
         $matchingPost = factory(Post::class)
-            ->create(['title' => 'test' ])->fresh();
+            ->create(['title' => 'test'])->fresh();
         factory(PostMeta::class)->create(['post_id' => $matchingPost->id, 'title' => 'test']);
-
 
         factory(Post::class)->create(['publish_at' => Carbon::now()])->fresh();
 

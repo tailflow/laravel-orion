@@ -95,7 +95,6 @@ class BelongsToManyRelationStandardShowOperationsTest extends TestCase
         $this->assertResourceShown($response, $user->notifications()->withTrashed()->first()->toArray());
     }
 
-
     /** @test */
     public function getting_a_single_transformed_relation_resource(): void
     {

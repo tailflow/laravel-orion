@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace Orion\Tests\Feature\Relations\BelongsToMany;
 
+use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Orion\Tests\Feature\TestCase;
+use Orion\Tests\Fixtures\App\Drivers\TwoRouteParameterKeyResolver;
 use Orion\Tests\Fixtures\App\Models\Role;
 use Orion\Tests\Fixtures\App\Models\User;
 use Orion\Tests\Fixtures\App\Policies\GreenPolicy;
@@ -45,7 +48,6 @@ class BelongsToManyRelationManyToManyOperationsTest extends TestCase
         Gate::policy(User::class, GreenPolicy::class);
 
         self::assertEquals(0, $user->roles()->count());
-
 
         $response = $this->post(
             "/api/users/{$user->id}/roles/attach",
@@ -753,5 +755,308 @@ class BelongsToManyRelationManyToManyOperationsTest extends TestCase
             $role,
             ['references' => ['key' => 'value']]
         );
+    }
+
+    /** @test */
+    public function attaching_relation_resources_with_multiple_route_parameters(): void
+    {
+        $this->useKeyResolver(TwoRouteParameterKeyResolver::class);
+
+        /** @var User $user */
+        $user = factory(User::class)->create();
+        $roleA = factory(Role::class)->create();
+        $roleB = factory(Role::class)->create();
+
+        Gate::policy(User::class, GreenPolicy::class);
+        Gate::policy(Role::class, GreenPolicy::class);
+
+        self::assertEquals(0, $user->roles()->count());
+
+        $response = $this->post(
+            "/api/v1/users/{$user->id}/roles/attach",
+            [
+                'resources' => [$roleA->id, $roleB->id],
+            ]
+        );
+
+        $this->assertResourcesAttached(
+            $response,
+            'roles',
+            $user,
+            collect([$roleA, $roleB])
+        );
+    }
+
+    /** @test */
+    public function attaching_relation_resources_with_multiple_route_parameters_fails_with_default_key_resolver(): void
+    {
+        if (DB::connection()->getDriverName() === 'pgsql') {
+            $this->withoutExceptionHandling();
+            $this->expectException(QueryException::class);
+        }
+
+        /** @var User $user */
+        $user = factory(User::class)->create();
+        $roleA = factory(Role::class)->create();
+        $roleB = factory(Role::class)->create();
+
+        Gate::policy(User::class, GreenPolicy::class);
+        Gate::policy(Role::class, GreenPolicy::class);
+
+        self::assertEquals(0, $user->roles()->count());
+
+        $response = $this->post(
+            "/api/v1/users/{$user->id}/roles/attach",
+            [
+                'resources' => [$roleA->id, $roleB->id],
+            ]
+        );
+
+        $response->assertNotFound();
+    }
+
+    /** @test */
+    public function detaching_relation_resources_with_multiple_route_parameters(): void
+    {
+        $this->useKeyResolver(TwoRouteParameterKeyResolver::class);
+
+        /** @var User $user */
+        $user = factory(User::class)->create();
+        $roles = factory(Role::class)->times(5)->make();
+        $user->roles()->saveMany($roles);
+
+        Gate::policy(User::class, GreenPolicy::class);
+        Gate::policy(Role::class, GreenPolicy::class);
+
+        $roles = $user->roles()->get();
+
+        self::assertEquals(5, $roles->count());
+
+        $response = $this->delete(
+            "/api/v1/users/{$user->id}/roles/detach",
+            [
+                'resources' => $roles->pluck('id')->toArray(),
+            ]
+        );
+
+        $this->assertResourcesDetached($response, 'roles', $user, $roles);
+    }
+
+    /** @test */
+    public function detaching_relation_resources_with_multiple_route_parameters_fails_with_default_key_resolver(): void
+    {
+        if (DB::connection()->getDriverName() === 'pgsql') {
+            $this->withoutExceptionHandling();
+            $this->expectException(QueryException::class);
+        }
+
+        /** @var User $user */
+        $user = factory(User::class)->create();
+        $roles = factory(Role::class)->times(5)->make();
+        $user->roles()->saveMany($roles);
+
+        Gate::policy(User::class, GreenPolicy::class);
+        Gate::policy(Role::class, GreenPolicy::class);
+
+        $roles = $user->roles()->get();
+
+        self::assertEquals(5, $roles->count());
+
+        $response = $this->delete(
+            "/api/v1/users/{$user->id}/roles/detach",
+            [
+                'resources' => $roles->pluck('id')->toArray(),
+            ]
+        );
+
+        $response->assertNotFound();
+    }
+
+    /** @test */
+    public function syncing_relation_resources_with_multiple_route_parameters(): void
+    {
+        $this->useKeyResolver(TwoRouteParameterKeyResolver::class);
+
+        /** @var User $user */
+        $user = factory(User::class)->create();
+        $roleToAttach = factory(Role::class)->create();
+        $roleToDetach = factory(Role::class)->create();
+        $roleToUpdate = factory(Role::class)->create();
+        $user->roles()->attach($roleToDetach->id);
+        $user->roles()->attach($roleToUpdate->id, ['custom_name' => 'test original']);
+
+        Gate::policy(User::class, GreenPolicy::class);
+        Gate::policy(Role::class, GreenPolicy::class);
+
+        self::assertEquals(2, $user->roles()->count());
+
+        $response = $this->patch(
+            "/api/v1/users/{$user->id}/roles/sync",
+            [
+                'resources' => [
+                    $roleToAttach->id,
+                    $roleToUpdate->id => ['custom_name' => 'test updated'],
+                ],
+            ]
+        );
+
+        $this->assertResourcesSynced(
+            $response,
+            'roles',
+            $user,
+            $this->buildSyncMap([$roleToAttach], [$roleToDetach], [$roleToUpdate]),
+            [$roleToUpdate->id => ['custom_name' => 'test updated']]
+        );
+    }
+
+    /** @test */
+    public function syncing_relation_resources_with_multiple_route_parameters_fails_with_default_key_resolver(): void
+    {
+        if (DB::connection()->getDriverName() === 'pgsql') {
+            $this->withoutExceptionHandling();
+            $this->expectException(QueryException::class);
+        }
+
+        /** @var User $user */
+        $user = factory(User::class)->create();
+        $roleToAttach = factory(Role::class)->create();
+        $roleToDetach = factory(Role::class)->create();
+        $roleToUpdate = factory(Role::class)->create();
+        $user->roles()->attach($roleToDetach->id);
+        $user->roles()->attach($roleToUpdate->id, ['custom_name' => 'test original']);
+
+        Gate::policy(User::class, GreenPolicy::class);
+        Gate::policy(Role::class, GreenPolicy::class);
+
+        self::assertEquals(2, $user->roles()->count());
+
+        $response = $this->patch(
+            "/api/v1/users/{$user->id}/roles/sync",
+            [
+                'resources' => [
+                    $roleToAttach->id,
+                    $roleToUpdate->id => ['custom_name' => 'test updated'],
+                ],
+            ]
+        );
+
+        $response->assertNotFound();
+    }
+
+    /** @test */
+    public function toggling_relation_resources_with_multiple_route_parameters(): void
+    {
+        $this->useKeyResolver(TwoRouteParameterKeyResolver::class);
+
+        /** @var User $user */
+        $user = factory(User::class)->create();
+        $roleToAttach = factory(Role::class)->create();
+        $roleToDetach = factory(Role::class)->create();
+        $user->roles()->attach($roleToDetach->id);
+
+        Gate::policy(User::class, GreenPolicy::class);
+        Gate::policy(Role::class, GreenPolicy::class);
+
+        self::assertEquals(1, $user->roles()->count());
+
+        $response = $this->patch(
+            "/api/v1/users/{$user->id}/roles/toggle",
+            [
+                'resources' => [$roleToAttach->id, $roleToDetach->id],
+            ]
+        );
+
+        $this->assertResourcesToggled(
+            $response,
+            'roles',
+            $user,
+            $this->buildSyncMap([$roleToAttach], [$roleToDetach])
+        );
+    }
+
+    /** @test */
+    public function toggling_relation_resources_with_multiple_route_parameters_fails_with_default_key_resolver(): void
+    {
+        if (DB::connection()->getDriverName() === 'pgsql') {
+            $this->withoutExceptionHandling();
+            $this->expectException(QueryException::class);
+        }
+
+        /** @var User $user */
+        $user = factory(User::class)->create();
+        $roleToAttach = factory(Role::class)->create();
+        $roleToDetach = factory(Role::class)->create();
+        $user->roles()->attach($roleToDetach->id);
+
+        Gate::policy(User::class, GreenPolicy::class);
+        Gate::policy(Role::class, GreenPolicy::class);
+
+        self::assertEquals(1, $user->roles()->count());
+
+        $response = $this->patch(
+            "/api/v1/users/{$user->id}/roles/toggle",
+            [
+                'resources' => [$roleToAttach->id, $roleToDetach->id],
+            ]
+        );
+
+        $response->assertNotFound();
+    }
+
+    /** @test */
+    public function updating_pivot_of_relation_resource_with_multiple_route_parameters(): void
+    {
+        $this->useKeyResolver(TwoRouteParameterKeyResolver::class);
+
+        /** @var User $user */
+        $user = factory(User::class)->create();
+        $role = factory(Role::class)->create();
+        $user->roles()->save($role);
+
+        Gate::policy(Role::class, GreenPolicy::class);
+
+        $response = $this->patch(
+            "/api/v1/users/{$user->id}/roles/{$role->id}/pivot",
+            [
+                'pivot' => [
+                    'custom_name' => 'test value',
+                ],
+            ]
+        );
+
+        $this->assertResourcePivotUpdated(
+            $response,
+            'roles',
+            $user,
+            $role,
+            ['custom_name' => 'test value']
+        );
+    }
+
+    /** @test */
+    public function updating_pivot_of_relation_resource_with_multiple_route_parameters_fails_with_default_key_resolver(): void
+    {
+        if (DB::connection()->getDriverName() === 'pgsql') {
+            $this->withoutExceptionHandling();
+            $this->expectException(QueryException::class);
+        }
+
+        /** @var User $user */
+        $user = factory(User::class)->create();
+        $role = factory(Role::class)->create();
+        $user->roles()->save($role);
+
+        Gate::policy(Role::class, GreenPolicy::class);
+
+        $response = $this->patch(
+            "/api/v1/users/{$user->id}/roles/{$role->id}/pivot",
+            [
+                'pivot' => [
+                    'custom_name' => 'test value',
+                ],
+            ]
+        );
+
+        $response->assertNotFound();
     }
 }
