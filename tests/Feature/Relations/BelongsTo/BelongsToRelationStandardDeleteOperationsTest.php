@@ -2,6 +2,8 @@
 
 namespace Orion\Tests\Feature\Relations\BelongsTo;
 
+use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Mockery;
 use Orion\Contracts\ComponentsResolver;
@@ -178,6 +180,10 @@ class BelongsToRelationStandardDeleteOperationsTest extends TestCase
     /** @test */
     public function deleting_a_single_relation_resource_with_multiple_route_parameters_fails_with_default_key_resolver(): void
     {
+        if (DB::connection()->getDriverName() === 'pgsql') {
+            $this->expectException(QueryException::class);
+        }
+
         $category = factory(Category::class)->create();
         $post = factory(Post::class)->create(['category_id' => $category->id]);
 

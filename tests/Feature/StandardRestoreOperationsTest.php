@@ -2,6 +2,8 @@
 
 namespace Orion\Tests\Feature;
 
+use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Mockery;
 use Orion\Contracts\ComponentsResolver;
@@ -128,6 +130,10 @@ class StandardRestoreOperationsTest extends TestCase
     /** @test */
     public function restoring_a_single_resource_with_multiple_route_parameters_fails_with_default_key_resolver(): void
     {
+        if (DB::connection()->getDriverName() === 'pgsql') {
+            $this->expectException(QueryException::class);
+        }
+
         $trashedPost = factory(Post::class)->state('trashed')->create(['user_id' => factory(User::class)->create()->id]);
 
         Gate::policy(Post::class, GreenPolicy::class);

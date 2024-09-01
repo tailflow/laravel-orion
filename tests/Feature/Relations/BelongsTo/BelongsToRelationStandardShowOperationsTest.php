@@ -2,6 +2,8 @@
 
 namespace Orion\Tests\Feature\Relations\BelongsTo;
 
+use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Orion\Tests\Feature\TestCase;
 use Orion\Tests\Fixtures\App\Drivers\TwoRouteParameterKeyResolver;
@@ -129,6 +131,10 @@ class BelongsToRelationStandardShowOperationsTest extends TestCase
     /** @test */
     public function getting_a_single_relation_resource_with_multiple_route_parameters_fails_with_default_key_resolver(): void
     {
+        if (DB::connection()->getDriverName() === 'pgsql') {
+            $this->expectException(QueryException::class);
+        }
+
         $user = factory(User::class)->create();
         $post = factory(Post::class)->create(['user_id' => $user->id]);
 

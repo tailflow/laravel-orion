@@ -2,6 +2,8 @@
 
 namespace Orion\Tests\Feature;
 
+use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Mockery;
 use Orion\Contracts\ComponentsResolver;
@@ -206,6 +208,10 @@ class StandardDeleteOperationsTest extends TestCase
     /** @test */
     public function deleting_a_single_resource_with_multiple_route_parameters_fails_with_default_key_resolver(): void
     {
+        if (DB::connection()->getDriverName() === 'pgsql') {
+            $this->expectException(QueryException::class);
+        }
+
         $user = factory(User::class)->create();
         $post = factory(Post::class)->create(['user_id' => $user->id]);
 
