@@ -257,11 +257,13 @@ trait HandlesRelationStandardOperations
      * Create new relation resource.
      *
      * @param Request $request
-     * @param int|string $parentKey
+     * @param array<int, mixed> $args
      * @return Resource
      */
-    public function store(Request $request, $parentKey)
+    public function store(Request $request, ...$args)
     {
+        $parentKey = $this->keyResolver->resolveRelationOperationParentKey($request, $args);
+
         try {
             $this->startTransaction();
             $result = $this->storeWithTransaction($request, $parentKey);
