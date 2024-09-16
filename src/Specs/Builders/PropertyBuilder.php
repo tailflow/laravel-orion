@@ -19,7 +19,7 @@ class PropertyBuilder
         /** @var SchemaProperty $property */
         $property = new $concretePropertyClass();
         $property->name = $column['name'];
-        $property->nullable = !$column['nullable'];
+        $property->nullable = $column['nullable'];
 
         return $property;
     }
