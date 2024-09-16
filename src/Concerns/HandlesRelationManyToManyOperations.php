@@ -17,11 +17,13 @@ trait HandlesRelationManyToManyOperations
      * Attach resource to the relation in a transaction-safe way.
      *
      * @param Request $request
-     * @param int|string $parentKey
+     * @param array<int, mixed>$args
      * @return JsonResponse
      */
-    public function attach(Request $request, $parentKey)
+    public function attach(Request $request, ...$args)
     {
+        $parentKey = $this->keyResolver->resolveRelationOperationParentKey($request, $args);
+
         try {
             $this->startTransaction();
             $result = $this->attachWithTransaction($request, $parentKey);
@@ -237,11 +239,13 @@ trait HandlesRelationManyToManyOperations
      * Detach resource to the relation in a transaction-safe way.
      *
      * @param Request $request
-     * @param int|string $parentKey
+     * @param array<int, mixed> $args
      * @return JsonResponse
      */
-    public function detach(Request $request, $parentKey)
+    public function detach(Request $request, ...$args)
     {
+        $parentKey = $this->keyResolver->resolveRelationOperationParentKey($request, $args);
+
         try {
             $this->startTransaction();
             $result = $this->detachWithTransaction($request, $parentKey);
@@ -360,11 +364,13 @@ trait HandlesRelationManyToManyOperations
      * Sync relation resources in a transaction-safe way.
      *
      * @param Request $request
-     * @param int|string $parentKey
+     * @param array<int, mixed> $args
      * @return JsonResponse
      */
-    public function sync(Request $request, $parentKey)
+    public function sync(Request $request, ...$args)
     {
+        $parentKey = $this->keyResolver->resolveRelationOperationParentKey($request, $args);
+
         try {
             $this->startTransaction();
             $result = $this->syncWithTransaction($request, $parentKey);
@@ -486,11 +492,13 @@ trait HandlesRelationManyToManyOperations
      * Toggle relation resources in a transaction-safe way.
      *
      * @param Request $request
-     * @param int|string $parentKey
+     * @param array<int, mixed> $args
      * @return JsonResponse
      */
-    public function toggle(Request $request, $parentKey)
+    public function toggle(Request $request, ...$args)
     {
+        $parentKey = $this->keyResolver->resolveRelationOperationParentKey($request, $args);
+
         try {
             $this->startTransaction();
             $result = $this->toggleWithTransaction($request, $parentKey);
@@ -603,12 +611,14 @@ trait HandlesRelationManyToManyOperations
      * Update relation resource pivot in a transaction-safe wqy.
      *
      * @param Request $request
-     * @param int|string $parentKey
-     * @param int|string $relatedKey
+     * @param array<int, mixed> $args
      * @return JsonResponse
      */
-    public function updatePivot(Request $request, $parentKey, $relatedKey)
+    public function updatePivot(Request $request, ...$args)
     {
+        $parentKey = $this->keyResolver->resolveRelationOperationParentKey($request, $args);
+        $relatedKey = $this->keyResolver->resolveRelationOperationRelatedKey($request, $args);
+
         try {
             $this->startTransaction();
             $result = $this->updatePivotWithTransaction($request, $parentKey, $relatedKey);

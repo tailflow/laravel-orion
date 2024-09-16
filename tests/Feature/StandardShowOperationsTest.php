@@ -2,9 +2,12 @@
 
 namespace Orion\Tests\Feature;
 
+use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Mockery;
 use Orion\Contracts\ComponentsResolver;
+use Orion\Tests\Fixtures\App\Drivers\TwoRouteParameterKeyResolver;
 use Orion\Tests\Fixtures\App\Http\Resources\SampleResource;
 use Orion\Tests\Fixtures\App\Models\AccessKey;
 use Orion\Tests\Fixtures\App\Models\Comment;
@@ -165,5 +168,38 @@ class StandardShowOperationsTest extends TestCase
         $response = $this->get("/api/teams/{$team->id}?include=company");
 
         $this->assertResourceShown($response, $team->fresh('company')->toArray());
+    }
+
+    /** @test */
+    public function getting_a_single_resource_with_multiple_route_parameters(): void
+    {
+        $this->useKeyResolver(TwoRouteParameterKeyResolver::class);
+
+        $user = factory(User::class)->create();
+        $post = factory(Post::class)->create(['user_id' => $user->id]);
+
+        Gate::policy(Post::class, GreenPolicy::class);
+
+        $response = $this->get("/api/v1/posts/$post->id");
+
+        $this->assertResourceShown($response, $post);
+    }
+
+    /** @test */
+    public function getting_a_single_resource_with_multiple_route_parameters_fails_with_default_key_resolver(): void
+    {
+        if (DB::connection()->getDriverName() === 'pgsql') {
+            $this->withoutExceptionHandling();
+            $this->expectException(QueryException::class);
+        }
+
+        $user = factory(User::class)->create();
+        $post = factory(Post::class)->create(['user_id' => $user->id]);
+
+        Gate::policy(Post::class, GreenPolicy::class);
+
+        $response = $this->get("/api/v1/posts/$post->id");
+
+        $response->assertNotFound();
     }
 }

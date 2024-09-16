@@ -4,15 +4,17 @@ namespace Orion\Tests\Feature;
 
 use Mockery;
 use Orion\Contracts\ComponentsResolver;
+use Orion\Contracts\KeyResolver;
 use Orion\Testing\InteractsWithAuthorization;
 use Orion\Testing\InteractsWithJsonFields;
 use Orion\Testing\InteractsWithResources;
+use Orion\Tests\Fixtures\App\Drivers\TwoRouteParameterKeyResolver;
 use Orion\Tests\Fixtures\App\Models\User;
 use Orion\Tests\TestCase as BaseTestCase;
 
 abstract class TestCase extends BaseTestCase
 {
-    use InteractsWithResources, InteractsWithJsonFields, InteractsWithAuthorization;
+    use InteractsWithAuthorization, InteractsWithJsonFields, InteractsWithResources;
 
     protected function setUp(): void
     {
@@ -82,6 +84,16 @@ abstract class TestCase extends BaseTestCase
 
                 return $componentsResolverMock;
             }
+        );
+
+        return $this;
+    }
+
+    protected function useKeyResolver(string $keyResolverClass): self
+    {
+        app()->bind(
+            KeyResolver::class,
+            TwoRouteParameterKeyResolver::class
         );
 
         return $this;

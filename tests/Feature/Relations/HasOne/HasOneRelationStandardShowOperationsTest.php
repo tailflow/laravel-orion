@@ -3,8 +3,6 @@
 namespace Orion\Tests\Feature\Relations\HasOne;
 
 use Illuminate\Support\Facades\Gate;
-use Mockery;
-use Orion\Contracts\ComponentsResolver;
 use Orion\Tests\Feature\TestCase;
 use Orion\Tests\Fixtures\App\Http\Resources\SampleResource;
 use Orion\Tests\Fixtures\App\Models\Post;
@@ -66,7 +64,6 @@ class HasOneRelationStandardShowOperationsTest extends TestCase
 
         $this->assertResourceShown($response, $trashedPostMeta);
     }
-
 
     /** @test */
     public function getting_a_single_transformed_relation_resource(): void

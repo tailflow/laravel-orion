@@ -5,6 +5,7 @@ namespace Orion\Tests\Unit\Http\Controllers;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\App;
 use Orion\Drivers\Standard\ComponentsResolver;
+use Orion\Drivers\Standard\KeyResolver;
 use Orion\Drivers\Standard\Paginator;
 use Orion\Drivers\Standard\ParamsValidator;
 use Orion\Drivers\Standard\QueryBuilder;
@@ -39,6 +40,7 @@ class RelationControllerTest extends TestCase
         $fakeSearchBuilder = new SearchBuilder([]);
         $fakeQueryBuilder = new QueryBuilder(Post::class, $fakeParamsValidator, $fakeRelationsResolver, $fakeSearchBuilder);
         $fakeRelationQueryBuilder = new QueryBuilder(User::class, $fakeParamsValidator, $fakeRelationsResolver, $fakeSearchBuilder);
+        $fakeKeyResolver = new KeyResolver();
 
         App::shouldReceive('makeWith')->with(
             \Orion\Contracts\ComponentsResolver::class,
@@ -108,6 +110,10 @@ class RelationControllerTest extends TestCase
                 'searchBuilder' => $fakeSearchBuilder,
             ]
         )->once()->andReturn($fakeRelationQueryBuilder);
+
+        App::shouldReceive('make')->with(
+            \Orion\Contracts\KeyResolver::class,
+        )->once()->andReturn($fakeKeyResolver);
 
         $stub = new RelationControllerStub();
         $this->assertEquals($fakeComponentsResolver, $stub->getComponentsResolver());

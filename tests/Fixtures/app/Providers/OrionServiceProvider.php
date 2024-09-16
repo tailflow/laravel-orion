@@ -5,6 +5,7 @@ namespace Orion\Tests\Fixtures\App\Providers;
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Support\ServiceProvider;
 use Orion\Contracts\ComponentsResolver;
+use Orion\Contracts\KeyResolver;
 use Orion\Contracts\Paginator;
 use Orion\Contracts\ParamsValidator;
 use Orion\Contracts\QueryBuilder;
@@ -31,6 +32,7 @@ class OrionServiceProvider extends ServiceProvider
         $this->app->bind(Paginator::class, \Orion\Drivers\Standard\Paginator::class);
         $this->app->bind(SearchBuilder::class, \Orion\Drivers\Standard\SearchBuilder::class);
         $this->app->bind(ComponentsResolver::class, \Orion\Drivers\Standard\ComponentsResolver::class);
+        $this->app->bind(KeyResolver::class, \Orion\Drivers\Standard\KeyResolver::class);
 
         $this->app->singleton(ResourcesCacheStore::class);
     }
