@@ -329,16 +329,18 @@ trait HandlesStandardOperations
      * Fetches resource.
      *
      * @param Request $request
-     * @param int|string $key
+     * @param array<int, mixed> $args
      * @return Resource
      * @throws AuthorizationException
      * @throws BindingResolutionException
      */
-    public function show(Request $request, $key)
+    public function show(Request $request, ...$args)
     {
         $requestedRelations = $this->relationsResolver->requestedRelations($request);
 
         $query = $this->buildShowFetchQuery($request, $requestedRelations);
+
+        $key = $this->keyResolver->resolveStandardOperationKey($request, $args);
 
         $beforeHookResult = $this->beforeShow($request, $key);
         if ($this->hookResponds($beforeHookResult)) {
@@ -438,11 +440,13 @@ trait HandlesStandardOperations
      * Update a resource in a transaction-safe way.
      *
      * @param Request $request
-     * @param int|string $key
+     * @param array<int, mixed> $args
      * @return Resource
      */
-    public function update(Request $request, $key)
+    public function update(Request $request, ...$args)
     {
+        $key = $this->keyResolver->resolveStandardOperationKey($request, $args);
+
         try {
             $this->startTransaction();
             $result = $this->updateWithTransaction($request, $key);
@@ -602,12 +606,14 @@ trait HandlesStandardOperations
      * Deletes a resource.
      *
      * @param Request $request
-     * @param int|string $key
+     * @param array<int, mixed> $args
      * @return Resource
      * @throws Exception
      */
-    public function destroy(Request $request, $key)
+    public function destroy(Request $request, ...$args)
     {
+        $key = $this->keyResolver->resolveStandardOperationKey($request, $args);
+
         try {
             $this->startTransaction();
             $result = $this->destroyWithTransaction($request, $key);
@@ -767,12 +773,14 @@ trait HandlesStandardOperations
      * Restore previously deleted resource in a transaction-safe way.
      *
      * @param Request $request
-     * @param int|string $key
+     * @param array<int, mixed> $args
      * @return Resource
      * @throws Exception
      */
-    public function restore(Request $request, $key)
+    public function restore(Request $request, ...$args)
     {
+        $key = $this->keyResolver->resolveStandardOperationKey($request, $args);
+
         try {
             $this->startTransaction();
             $result = $this->restoreWithTransaction($request, $key);

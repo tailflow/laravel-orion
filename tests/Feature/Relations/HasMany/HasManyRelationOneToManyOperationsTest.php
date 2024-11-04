@@ -2,10 +2,11 @@
 
 namespace Orion\Tests\Feature\Relations\HasMany;
 
+use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
-use Mockery;
-use Orion\Contracts\ComponentsResolver;
 use Orion\Tests\Feature\TestCase;
+use Orion\Tests\Fixtures\App\Drivers\TwoRouteParameterKeyResolver;
 use Orion\Tests\Fixtures\App\Http\Resources\SampleResource;
 use Orion\Tests\Fixtures\App\Models\Company;
 use Orion\Tests\Fixtures\App\Models\Team;
@@ -203,5 +204,90 @@ class HasManyRelationOneToManyOperationsTest extends TestCase
             'company',
             ['test-field-from-resource' => 'test-value']
         );
+    }
+
+    /** @test */
+    public function associating_relation_resource_with_multiple_route_parameters(): void
+    {
+        $this->useKeyResolver(TwoRouteParameterKeyResolver::class);
+
+        $company = factory(Company::class)->create();
+        $team = factory(Team::class)->create();
+
+        Gate::policy(Company::class, GreenPolicy::class);
+        Gate::policy(Team::class, GreenPolicy::class);
+
+        $response = $this->post(
+            "/api/v1/companies/{$company->id}/teams/associate",
+            [
+                'related_key' => $team->id,
+            ]
+        );
+
+        $this->assertResourceAssociated($response, $company, $team, 'company');
+    }
+
+    /** @test */
+    public function associating_relation_resource_with_multiple_route_parameters_fails_with_default_key_resolver(): void
+    {
+        if (DB::connection()->getDriverName() === 'pgsql') {
+            $this->withoutExceptionHandling();
+            $this->expectException(QueryException::class);
+        }
+
+        $company = factory(Company::class)->create();
+        $team = factory(Team::class)->create();
+
+        Gate::policy(Company::class, GreenPolicy::class);
+        Gate::policy(Team::class, GreenPolicy::class);
+
+        $response = $this->post(
+            "/api/v1/companies/{$company->id}/teams/associate",
+            [
+                'related_key' => $team->id,
+            ]
+        );
+
+        $response->assertNotFound();
+    }
+
+    /** @test */
+    public function disassociating_relation_resource_with_multiple_route_parameters(): void
+    {
+        $this->useKeyResolver(TwoRouteParameterKeyResolver::class);
+
+        $company = factory(Company::class)->create();
+        $team = factory(Team::class)->create(['company_id' => $company->id]);
+
+        Gate::policy(Company::class, GreenPolicy::class);
+        Gate::policy(Team::class, GreenPolicy::class);
+
+        $response = $this->delete("/api/v1/companies/{$company->id}/teams/{$team->id}/dissociate");
+
+        $this->assertResourceDissociated($response, $team, 'company');
+    }
+
+    /** @test */
+    public function disassociating_relation_resource_with_multiple_route_parameters_fails_with_default_key_resolver(): void
+    {
+        if (DB::connection()->getDriverName() === 'pgsql') {
+            $this->withoutExceptionHandling();
+            $this->expectException(QueryException::class);
+        }
+
+        $company = factory(Company::class)->create();
+        $team = factory(Team::class)->create();
+
+        Gate::policy(Company::class, GreenPolicy::class);
+        Gate::policy(Team::class, GreenPolicy::class);
+
+        $response = $this->post(
+            "/api/v1/companies/{$company->id}/teams/associate",
+            [
+                'related_key' => $team->id,
+            ]
+        );
+
+        $response->assertNotFound();
     }
 }

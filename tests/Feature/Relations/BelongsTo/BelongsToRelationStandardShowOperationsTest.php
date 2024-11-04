@@ -2,8 +2,11 @@
 
 namespace Orion\Tests\Feature\Relations\BelongsTo;
 
+use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Orion\Tests\Feature\TestCase;
+use Orion\Tests\Fixtures\App\Drivers\TwoRouteParameterKeyResolver;
 use Orion\Tests\Fixtures\App\Http\Resources\SampleResource;
 use Orion\Tests\Fixtures\App\Models\Category;
 use Orion\Tests\Fixtures\App\Models\Post;
@@ -65,7 +68,6 @@ class BelongsToRelationStandardShowOperationsTest extends TestCase
         $this->assertResourceShown($response, $trashedCategory);
     }
 
-
     /** @test */
     public function getting_a_single_transformed_relation_resource(): void
     {
@@ -109,5 +111,38 @@ class BelongsToRelationStandardShowOperationsTest extends TestCase
         $response = $this->get("/api/posts/{$post->id}/user?with_count=posts");
 
         $this->assertResourceShown($response, $user->fresh()->loadCount('posts')->toArray());
+    }
+
+    /** @test */
+    public function getting_a_single_relation_resource_with_multiple_route_parameters(): void
+    {
+        $this->useKeyResolver(TwoRouteParameterKeyResolver::class);
+
+        $user = factory(User::class)->create();
+        $post = factory(Post::class)->create(['user_id' => $user->id]);
+
+        Gate::policy(User::class, GreenPolicy::class);
+
+        $response = $this->get("/api/v1/posts/{$post->id}/user");
+
+        $this->assertResourceShown($response, $user);
+    }
+
+    /** @test */
+    public function getting_a_single_relation_resource_with_multiple_route_parameters_fails_with_default_key_resolver(): void
+    {
+        if (DB::connection()->getDriverName() === 'pgsql') {
+            $this->withoutExceptionHandling();
+            $this->expectException(QueryException::class);
+        }
+
+        $user = factory(User::class)->create();
+        $post = factory(Post::class)->create(['user_id' => $user->id]);
+
+        Gate::policy(User::class, GreenPolicy::class);
+
+        $response = $this->get("/api/v1/posts/{$post->id}/user");
+
+        $response->assertNotFound();
     }
 }

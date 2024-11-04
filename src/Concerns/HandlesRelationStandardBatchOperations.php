@@ -17,11 +17,13 @@ trait HandlesRelationStandardBatchOperations
      * Create a batch of new relation resources in a transaction-safe way.
      *
      * @param Request $request
-     * @param int|string $parentKey
+     * @param array<int, mixed> $args
      * @return CollectionResource
      */
-    public function batchStore(Request $request, $parentKey)
+    public function batchStore(Request $request, ...$args)
     {
+        $parentKey = $this->keyResolver->resolveRelationOperationParentKey($request, $args);
+
         try {
             $this->startTransaction();
             $result = $this->batchStoreWithTransaction($request, $parentKey);
@@ -161,11 +163,13 @@ trait HandlesRelationStandardBatchOperations
      * Updates a batch of relation resources in a transaction-safe way.
      *
      * @param Request $request
-     * @param int|string $parentKey
+     * @param array<int, mixed> $args
      * @return CollectionResource
      */
-    public function batchUpdate(Request $request, $parentKey)
+    public function batchUpdate(Request $request, ...$args)
     {
+        $parentKey = $this->keyResolver->resolveRelationOperationParentKey($request, $args);
+
         try {
             $this->startTransaction();
             $result = $this->batchUpdateWithTransaction($request, $parentKey);
@@ -355,12 +359,14 @@ trait HandlesRelationStandardBatchOperations
      * Deletes a batch of relation resources in a transaction-safe way.
      *
      * @param Request $request
-     * @param int|string $parentKey
+     * @param array<int, mixed> $args
      * @return CollectionResource
      * @throws Exception
      */
-    public function batchDestroy(Request $request, $parentKey)
+    public function batchDestroy(Request $request, ...$args)
     {
+        $parentKey = $this->keyResolver->resolveRelationOperationParentKey($request, $args);
+
         try {
             $this->startTransaction();
             $result = $this->batchDestroyWithTransaction($request, $parentKey);
@@ -527,12 +533,14 @@ trait HandlesRelationStandardBatchOperations
      * Restores a batch of relation resources in a transaction-safe way.
      *
      * @param Request $request
-     * @param int|string $parentKey
+     * @param array<int, mixed> $args
      * @return CollectionResource
      * @throws Exception
      */
-    public function batchRestore(Request $request, $parentKey)
+    public function batchRestore(Request $request, ...$args)
     {
+        $parentKey = $this->keyResolver->resolveRelationOperationParentKey($request, $args);
+
         try {
             $this->startTransaction();
             $result = $this->batchRestoreWithTransaction($request, $parentKey);

@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\App;
 use Mockery;
 use Orion\Drivers\Standard\ComponentsResolver;
+use Orion\Drivers\Standard\KeyResolver;
 use Orion\Drivers\Standard\Paginator;
 use Orion\Drivers\Standard\ParamsValidator;
 use Orion\Drivers\Standard\QueryBuilder;
@@ -25,7 +26,6 @@ use Orion\Tests\Unit\TestCase;
 
 class BaseControllerTest extends TestCase
 {
-
     /** @test */
     public function binding_exception_is_thrown_if_model_is_not_set()
     {
@@ -44,6 +44,7 @@ class BaseControllerTest extends TestCase
         $fakePaginator = new Paginator(15, null);
         $fakeSearchBuilder = new SearchBuilder([]);
         $fakeQueryBuilder = new QueryBuilder(Post::class, $fakeParamsValidator, $fakeRelationsResolver, $fakeSearchBuilder);
+        $fakeKeyResolver = new KeyResolver();
 
         App::shouldReceive('makeWith')->with(
             \Orion\Contracts\ComponentsResolver::class,
@@ -96,6 +97,10 @@ class BaseControllerTest extends TestCase
                 'intermediateMode' => false,
             ]
         )->once()->andReturn($fakeQueryBuilder);
+
+        App::shouldReceive('make')->with(
+            \Orion\Contracts\KeyResolver::class,
+        )->once()->andReturn($fakeKeyResolver);
 
         $stub = new BaseControllerStubWithWhitelistedFieldsAndRelations();
         $this->assertEquals($fakeComponentsResolver, $stub->getComponentsResolver());

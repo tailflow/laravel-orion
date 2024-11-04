@@ -2,10 +2,13 @@
 
 namespace Orion\Tests\Feature\Relations\BelongsTo;
 
+use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Mockery;
 use Orion\Contracts\ComponentsResolver;
 use Orion\Tests\Feature\TestCase;
+use Orion\Tests\Fixtures\App\Drivers\TwoRouteParameterKeyResolver;
 use Orion\Tests\Fixtures\App\Http\Resources\SampleResource;
 use Orion\Tests\Fixtures\App\Models\Category;
 use Orion\Tests\Fixtures\App\Models\Post;
@@ -157,5 +160,38 @@ class BelongsToRelationStandardDeleteOperationsTest extends TestCase
         $response = $this->delete("/api/posts/{$post->id}/user?include=posts");
 
         $this->assertResourceDeleted($response, $user, ['posts' => [$post->toArray()]]);
+    }
+
+    /** @test */
+    public function deleting_a_single_relation_resource_with_multiple_route_parameters(): void
+    {
+        $this->useKeyResolver(TwoRouteParameterKeyResolver::class);
+
+        $category = factory(Category::class)->create();
+        $post = factory(Post::class)->create(['category_id' => $category->id]);
+
+        Gate::policy(Category::class, GreenPolicy::class);
+
+        $response = $this->delete("/api/v1/posts/{$post->id}/category");
+
+        $this->assertResourceTrashed($response, $category);
+    }
+
+    /** @test */
+    public function deleting_a_single_relation_resource_with_multiple_route_parameters_fails_with_default_key_resolver(): void
+    {
+        if (DB::connection()->getDriverName() === 'pgsql') {
+            $this->withoutExceptionHandling();
+            $this->expectException(QueryException::class);
+        }
+
+        $category = factory(Category::class)->create();
+        $post = factory(Post::class)->create(['category_id' => $category->id]);
+
+        Gate::policy(Category::class, GreenPolicy::class);
+
+        $response = $this->delete("/api/v1/posts/{$post->id}/category");
+
+        $response->assertNotFound();
     }
 }
