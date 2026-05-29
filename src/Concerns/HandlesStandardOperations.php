@@ -67,7 +67,15 @@ trait HandlesStandardOperations
                 return $this->beforeFilterApplied($request, $filterDescriptor);
             })->toArray();
 
-        $request->request->add(['filters' => $filters]);
+        // Write the rewritten filters back to the same bag they are later read
+        // from. Filters are read via $request->input(), which resolves to the
+        // JSON bag for JSON requests and the request bag otherwise; writing only
+        // to the request bag would silently drop the rewrite for JSON requests.
+        if ($request->isJson()) {
+            $request->json()->set('filters', $filters);
+        } else {
+            $request->request->set('filters', $filters);
+        }
 
         return $this->buildFetchQuery($request, $requestedRelations);
     }
