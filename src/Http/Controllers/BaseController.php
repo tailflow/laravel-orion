@@ -64,6 +64,11 @@ abstract class BaseController extends \Illuminate\Routing\Controller
     protected $collectionResource = null;
 
     /**
+     * @var string $searchStrategy
+     */
+    protected $searchStrategy = 'like';
+
+    /**
      * @var string|null $policy
      */
     protected $policy;
@@ -148,6 +153,7 @@ abstract class BaseController extends \Illuminate\Routing\Controller
             SearchBuilder::class,
             [
                 'searchableBy' => $this->searchableBy(),
+                'searchStrategy' => $this->searchStrategy(),
             ]
         );
         $this->queryBuilder = App::makeWith(
@@ -279,6 +285,18 @@ abstract class BaseController extends \Illuminate\Routing\Controller
     public function searchableBy(): array
     {
         return [];
+    }
+
+    /**
+     * Strategy used by the search operation.
+     *
+     * Supported values: like, fulltext.
+     *
+     * @return string
+     */
+    public function searchStrategy(): string
+    {
+        return $this->searchStrategy;
     }
 
     /**
