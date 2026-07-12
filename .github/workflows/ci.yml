@@ -276,11 +276,15 @@ jobs:
 
       - name: Install laravel/legacy-factories only for Laravel >= 8.0
         if: matrix.laravel-version == '^8.0' || matrix.laravel-version == '^9.0' || matrix.laravel-version == '^10.0' || matrix.laravel-version == '^11.0' || matrix.laravel-version == '^12.0' || matrix.laravel-version == '^13.0'
-        run: composer require "laravel/legacy-factories" --prefer-dist --no-progress
+        run: composer require "laravel/legacy-factories" --prefer-dist --no-progress -W
 
       - name: Upgrade to PHPUnit 9 for PHP >= 8.0
         if: matrix.laravel-version == '^8.0' || matrix.laravel-version == '^9.0' || matrix.laravel-version == '^10.0' || matrix.laravel-version == '^11.0' || matrix.laravel-version == '^12.0'
         run: composer update --with "phpunit/phpunit=^9.0" --prefer-dist --no-progress
+
+      - name: Pin PHPUnit 11 for Laravel 13
+        if: matrix.laravel-version == '^13.0'
+        run: composer update --with "phpunit/phpunit=^11.0" --prefer-dist --no-progress
 
       - name: Upgrade PHPUnit Config for Laravel >= 8.0
         if: matrix.laravel-version == '^8.0' || matrix.laravel-version == '^9.0' || matrix.laravel-version == '^10.0' || matrix.laravel-version == '^11.0' || matrix.laravel-version == '^12.0' || matrix.laravel-version == '^13.0'

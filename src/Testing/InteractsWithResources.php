@@ -89,7 +89,8 @@ trait InteractsWithResources
             $this->buildMetaLink(
                 $paginator->currentPage() > 1 ? $this->resolveResourceLink($paginator, $paginator->currentPage() - 1) : null,
                 (float)app()->version() >= 8.0 ? '&laquo; Previous' : 'Previous',
-                false
+                false,
+                $paginator->currentPage() > 1 ? $paginator->currentPage() - 1 : null
             ),
         ];
 
@@ -97,26 +98,39 @@ trait InteractsWithResources
             $links[] = $this->buildMetaLink(
                 $this->resolveResourceLink($paginator, $page),
                 (float)app()->version() >= 8.0 ? (string)$page : $page,
-                $paginator->currentPage() === $page
+                $paginator->currentPage() === $page,
+                $page
             );
         }
 
         $links[] = $this->buildMetaLink(
             $paginator->lastPage() > 1 ? $this->resolveResourceLink($paginator, $paginator->currentPage() + 1) : null,
             (float)app()->version() >= 8.0 ? 'Next &raquo;' : 'Next',
-            false
+            false,
+            $paginator->currentPage() < $paginator->lastPage() ? $paginator->currentPage() + 1 : null
         );
 
         return $links;
     }
 
-    protected function buildMetaLink(?string $url, $label, bool $active): array
+    protected function buildMetaLink(?string $url, $label, bool $active, ?int $page = null): array
     {
-        return [
+        $link = [
             'url' => $url,
             'label' => $label,
             'active' => $active,
         ];
+
+        if ((float)app()->version() >= 13.0) {
+            $link = [
+                'url' => $url,
+                'label' => $label,
+                'page' => $page,
+                'active' => $active,
+            ];
+        }
+
+        return $link;
     }
 
     protected function assertResponseContent(array $expected, $response, bool $exact)
