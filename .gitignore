@@ -1,7 +1,9 @@
 /.idea
 /vendor
 /.vscode
+/.cursor
 .phpunit.result.cache
 phpunit.xml
+phpunit.xml.dist.bak
 composer.lock
 .DS_Store

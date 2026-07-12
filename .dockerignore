@@ -1,0 +1,9 @@
+vendor
+.git
+.phpunit.result.cache
+phpunit.xml
+phpunit.xml.dist.bak
+composer.lock
+.idea
+.vscode
+.DS_Store
