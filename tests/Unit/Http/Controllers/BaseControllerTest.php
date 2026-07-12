@@ -19,6 +19,7 @@ use Orion\Tests\Fixtures\App\Http\Resources\SampleResource;
 use Orion\Tests\Fixtures\App\Models\Post;
 use Orion\Tests\Fixtures\App\Models\User;
 use Orion\Tests\Unit\Http\Controllers\Stubs\BaseControllerStub;
+use Orion\Tests\Unit\Http\Controllers\Stubs\BaseControllerStubWithFulltextSearchStrategy;
 use Orion\Tests\Unit\Http\Controllers\Stubs\BaseControllerStubWithoutComponents;
 use Orion\Tests\Unit\Http\Controllers\Stubs\BaseControllerStubWithoutModel;
 use Orion\Tests\Unit\Http\Controllers\Stubs\BaseControllerStubWithWhitelistedFieldsAndRelations;
@@ -84,6 +85,7 @@ class BaseControllerTest extends TestCase
             \Orion\Contracts\SearchBuilder::class,
             [
                 'searchableBy' => ['test_searchable_field'],
+                'searchStrategy' => 'like',
             ]
         )->once()->andReturn($fakeSearchBuilder);
 
@@ -108,6 +110,79 @@ class BaseControllerTest extends TestCase
         $this->assertEquals($fakeRelationsResolver, $stub->getRelationsResolver());
         $this->assertEquals($fakePaginator, $stub->getPaginator());
         $this->assertEquals($fakeSearchBuilder, $stub->getSearchBuilder());
+        $this->assertEquals($fakeQueryBuilder, $stub->getQueryBuilder());
+    }
+
+    /** @test */
+    public function fulltext_search_strategy_is_passed_to_query_builder_when_overridden()
+    {
+        $fakeComponentsResolver = new ComponentsResolver(Post::class);
+        $fakeParamsValidator = new ParamsValidator();
+        $fakeRelationsResolver = new RelationsResolver([], []);
+        $fakePaginator = new Paginator(15, null);
+        $fakeSearchBuilder = new SearchBuilder([]);
+        $fakeQueryBuilder = new QueryBuilder(Post::class, $fakeParamsValidator, $fakeRelationsResolver, $fakeSearchBuilder);
+        $fakeKeyResolver = new KeyResolver();
+
+        App::shouldReceive('makeWith')->with(
+            \Orion\Contracts\ComponentsResolver::class,
+            [
+                'resourceModelClass' => Post::class,
+            ]
+        )->once()->andReturn($fakeComponentsResolver);
+
+        App::shouldReceive('makeWith')->with(
+            \Orion\Contracts\ParamsValidator::class,
+            [
+                'exposedScopes' => ['testScope'],
+                'filterableBy' => ['test_filterable_field'],
+                'sortableBy' => ['test_sortable_field'],
+                'aggregatableBy' => ['test_aggregatable_field'],
+                'includableBy' => ['testRelation', 'testAlwaysIncludedRelation'],
+            ]
+        )->once()->andReturn($fakeParamsValidator);
+
+        App::shouldReceive('makeWith')->with(
+            \Orion\Contracts\RelationsResolver::class,
+            [
+                'includableRelations' => ['testRelation'],
+                'alwaysIncludedRelations' => ['testAlwaysIncludedRelation'],
+            ]
+        )->once()->andReturn($fakeRelationsResolver);
+
+        App::shouldReceive('makeWith')->with(
+            \Orion\Contracts\Paginator::class,
+            [
+                'defaultLimit' => 15,
+                'maxLimit' => null,
+            ]
+        )->once()->andReturn($fakePaginator);
+
+        App::shouldReceive('makeWith')->with(
+            \Orion\Contracts\SearchBuilder::class,
+            [
+                'searchableBy' => ['test_searchable_field'],
+                'searchStrategy' => 'fulltext',
+            ]
+        )->once()->andReturn($fakeSearchBuilder);
+
+        App::shouldReceive('makeWith')->with(
+            \Orion\Contracts\QueryBuilder::class,
+            [
+                'resourceModelClass' => Post::class,
+                'paramsValidator' => $fakeParamsValidator,
+                'relationsResolver' => $fakeRelationsResolver,
+                'searchBuilder' => $fakeSearchBuilder,
+                'intermediateMode' => false,
+            ]
+        )->once()->andReturn($fakeQueryBuilder);
+
+        App::shouldReceive('make')->with(
+            \Orion\Contracts\KeyResolver::class,
+        )->once()->andReturn($fakeKeyResolver);
+
+        $stub = new BaseControllerStubWithFulltextSearchStrategy();
+
         $this->assertEquals($fakeQueryBuilder, $stub->getQueryBuilder());
     }
 

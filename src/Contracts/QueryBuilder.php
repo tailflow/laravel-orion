@@ -17,7 +17,13 @@ interface QueryBuilder
      * @param SearchBuilder $searchBuilder
      * @param bool $intermediateMode
      */
-    public function __construct(string $resourceModelClass, ParamsValidator $paramsValidator, RelationsResolver $relationsResolver, SearchBuilder $searchBuilder, bool $intermediateMode = false);
+    public function __construct(
+        string $resourceModelClass,
+        ParamsValidator $paramsValidator,
+        RelationsResolver $relationsResolver,
+        SearchBuilder $searchBuilder,
+        bool $intermediateMode = false
+    );
 
     /**
      * @param Builder|Relation $query

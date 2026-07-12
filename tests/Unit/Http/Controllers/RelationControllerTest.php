@@ -87,6 +87,7 @@ class RelationControllerTest extends TestCase
             \Orion\Contracts\SearchBuilder::class,
             [
                 'searchableBy' => ['test_searchable_field'],
+                'searchStrategy' => 'like',
             ]
         )->once()->andReturn($fakeSearchBuilder);
 

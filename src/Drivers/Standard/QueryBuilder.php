@@ -417,7 +417,7 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
                                 /**
                                  * @var Builder $relationQuery
                                  */
-                                if (!$caseSensitive) {
+                                if ($this->usesCaseInsensitiveLikeSearch($caseSensitive)) {
                                     return $relationQuery->whereRaw(
                                         "lower({$qualifiedRelationFieldName}) like lower(?)",
                                         ['%'.$requestedSearchString.'%']
@@ -434,7 +434,9 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
                     } else {
                         $qualifiedFieldName = $this->getQualifiedFieldName($searchable);
 
-                        if (!$caseSensitive) {
+                        if ($this->usesFullTextSearchStrategy()) {
+                            $whereQuery->orWhereFullText($qualifiedFieldName, $requestedSearchString);
+                        } elseif ($this->usesCaseInsensitiveLikeSearch($caseSensitive)) {
                             $whereQuery->orWhereRaw(
                                 "lower({$qualifiedFieldName}) like lower(?)",
                                 ['%'.$requestedSearchString.'%']
@@ -450,6 +452,23 @@ class QueryBuilder implements \Orion\Contracts\QueryBuilder
                 }
             }
         );
+    }
+
+    /**
+     * @param bool $caseSensitive
+     * @return bool
+     */
+    protected function usesCaseInsensitiveLikeSearch(bool $caseSensitive): bool
+    {
+        return !$caseSensitive || $this->usesFullTextSearchStrategy();
+    }
+
+    /**
+     * @return bool
+     */
+    protected function usesFullTextSearchStrategy(): bool
+    {
+        return $this->searchBuilder->searchStrategy() === 'fulltext';
     }
 
     /**
