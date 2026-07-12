@@ -730,4 +730,78 @@ class StandardIndexFilteringOperationsTest extends TestCase
             $this->makePaginator([$matchingPost], 'posts/search')
         );
     }
+
+    /** @test */
+    public function filters_rewritten_in_before_filter_applied_take_effect_for_json_requests(): void
+    {
+        $matchingPost = factory(Post::class)->create(['title' => 'match', 'body' => 'no match'])->fresh();
+        factory(Post::class)->create(['title' => 'no match', 'body' => 'match'])->fresh();
+
+        Gate::policy(Post::class, GreenPolicy::class);
+
+        $response = $this->json(
+            'POST',
+            '/api/posts_before_filter/search',
+            [
+                'filters' => [
+                    ['field' => 'body', 'value' => 'match'],
+                ],
+            ]
+        );
+
+        $response->assertOk();
+        $response->assertJsonCount(1, 'data');
+        $response->assertJsonPath('data.0.id', $matchingPost->id);
+    }
+
+    /** @test */
+    public function filters_rewritten_in_before_filter_applied_take_effect_for_form_requests(): void
+    {
+        $matchingPost = factory(Post::class)->create(['title' => 'match', 'body' => 'no match'])->fresh();
+        factory(Post::class)->create(['title' => 'no match', 'body' => 'match'])->fresh();
+
+        Gate::policy(Post::class, GreenPolicy::class);
+
+        $response = $this->post(
+            '/api/posts_before_filter/search',
+            [
+                'filters' => [
+                    ['field' => 'body', 'value' => 'match'],
+                ],
+            ]
+        );
+
+        $response->assertOk();
+        $response->assertJsonCount(1, 'data');
+        $response->assertJsonPath('data.0.id', $matchingPost->id);
+    }
+
+    /** @test */
+    public function relation_filters_rewritten_in_before_filter_applied_take_effect_for_json_requests(): void
+    {
+        $user = factory(User::class)->create();
+        $matchingPost = factory(Post::class)->create([
+            'user_id' => $user->id, 'title' => 'match', 'body' => 'no match',
+        ])->fresh();
+        factory(Post::class)->create([
+            'user_id' => $user->id, 'title' => 'no match', 'body' => 'match',
+        ])->fresh();
+
+        Gate::policy(User::class, GreenPolicy::class);
+        Gate::policy(Post::class, GreenPolicy::class);
+
+        $response = $this->json(
+            'POST',
+            "/api/users/{$user->id}/posts/search",
+            [
+                'filters' => [
+                    ['field' => 'body', 'value' => 'match'],
+                ],
+            ]
+        );
+
+        $response->assertOk();
+        $response->assertJsonCount(1, 'data');
+        $response->assertJsonPath('data.0.id', $matchingPost->id);
+    }
 }
