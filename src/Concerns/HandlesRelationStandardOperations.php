@@ -158,7 +158,11 @@ trait HandlesRelationStandardOperations
                 return $this->beforeFilterApplied($request, $parentEntity, $filterDescriptor);
             })->toArray();
 
-        $request->request->add(['filters' => $filters]);
+        if ($request->isJson()) {
+            $request->json()->set('filters', $filters);
+        } else {
+            $request->request->set('filters', $filters);
+        }
 
         return $this->buildRelationFetchQuery($request, $parentEntity, $requestedRelations);
     }

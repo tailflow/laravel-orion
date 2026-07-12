@@ -67,7 +67,11 @@ trait HandlesStandardOperations
                 return $this->beforeFilterApplied($request, $filterDescriptor);
             })->toArray();
 
-        $request->request->add(['filters' => $filters]);
+        if ($request->isJson()) {
+            $request->json()->set('filters', $filters);
+        } else {
+            $request->request->set('filters', $filters);
+        }
 
         return $this->buildFetchQuery($request, $requestedRelations);
     }
